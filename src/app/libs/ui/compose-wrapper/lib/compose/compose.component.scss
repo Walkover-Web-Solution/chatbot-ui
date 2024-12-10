@@ -1,7 +1,0 @@
-@import 'src/assets/scss/utils/mixins/common-utils';
-@import 'src/assets/scss/utils/placeholder';
-@include media-breakpoint-down('tablet') {
-    .action-btn {
-        display: none;
-    }
-}
