@@ -1,0 +1,66 @@
+<!-- Content::START -->
+<div class="mat-right-dialog-content task-content">
+    <div class="pt-4">
+        <div class="row">
+            <div class="col-lg-6">
+                <mat-form-field class="w-100" appearance="outline">
+                    <mat-label>Language</mat-label>
+                    <mat-select
+                        disableRipple
+                        placeholder="Select Campaign Type"
+                        [formControl]="platForm"
+                        class="campaing-select"
+                        (selectionChange)="snippetsChange()"
+                        [disableOptionCentering]="true"
+                        msg91AutoSelectDropdown
+                        (setControlValue)="snippetsChange()"
+                    >
+                        <mat-option [value]="platForm.platform" *ngFor="let platForm of snippetType">
+                            {{ platForm.platform }}</mat-option
+                        >
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <!-- <div class="col-lg-6">
+                <mat-form-field class="w-100" appearance="outline">
+                    <mat-label>Header</mat-label>
+                    <mat-select
+                        disableRipple
+                        placeholder="Select Header Type"
+                        [formControl]="header"
+                        class="campaing-select"
+                        (selectionChange)="snippetsChange()"
+                        [disableOptionCentering]="true"
+                        msg91AutoSelectDropdown
+                    >
+                        <mat-option value="authkey">Authkey</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div> -->
+            <div class="col-lg-12">
+                <div class="code-container d-flex">
+                    <!-- <div class="copy pr-4 text-white">
+                        <mat-icon
+                            [cdkCopyToClipboard]="content"
+                            (mouseup)="copyDetails()"
+                            matTooltip="Copy"
+                            matTooltipPosition="below"
+                            >content_copy</mat-icon
+                        >
+                    </div> -->
+                    <msg91-copy-button
+                        class="position-absolute"
+                        [copyData]="content"
+                        tooltip="Copy"
+                    ></msg91-copy-button>
+                    <markdown
+                        style="width: 100%"
+                        [data]="content | language: 'javascript'"
+                        darkLightButtonMarkdown
+                    ></markdown>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Content::END -->

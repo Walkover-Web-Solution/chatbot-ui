@@ -1,0 +1,241 @@
+<div style="display: flex; align-items: flex-end" *ngIf="messages?.message_type !== 'activity'">
+    <div class="input-msg-box" [ngClass]="{ 'if-attachment': messages.content?.attachment?.length > 0 }">
+        <h6 class="my-0 fw-bold agent-name" *ngIf="messages.firstAgentMsg">
+            {{
+                fromName
+                    ? fromName
+                    : messages.is_auto_response
+                    ? 'Auto Response'
+                    : messages.sender_id !== 'bot' && !messages.is_auto_response
+                    ? ''
+                    : widgetInfo?.bot_name ?? 'Bot'
+            }}
+            <!-- Changes assignee?.name to '' on line 10 as per this comment https://app.clickup.com/t/86cx25g2v?comment=90160073952092 -->
+        </h6>
+        <ng-container *ngFor="let attachment of messages.content?.attachment">
+            <ng-template [ngIf]="attachment?.mime_type?.includes('image')">
+                <div
+                    style="position: relative"
+                    [style.margin-bottom]="messages.content?.attachment?.length > 1 ? '4px' : '0px'"
+                >
+                    <img
+                        #imageTag
+                        [src]="attachment.path"
+                        class="img-msg-box"
+                        *ngIf="supportedFiles[attachment.name]"
+                        loading="lazy"
+                        (error)="onImageLoadError(imageTag)"
+                    />
+                    <button
+                        *ngIf="
+                            attachment?.mime_type?.includes('image') &&
+                            !downloadInProgress[attachment.path] &&
+                            supportedFiles[attachment.name]
+                        "
+                        mat-icon-button
+                        (click)="download(attachment?.path, attachment?.name)"
+                        style="position: absolute; bottom: 0; right: 0"
+                    >
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="16" cy="16" r="16" fill="black" fill-opacity="0.6" />
+                            <path
+                                d="M20.9997 18.5V21H10.9997V18.5H9.33301V21C9.33301 21.9166 10.083 22.6666 10.9997 22.6666H20.9997C21.9163 22.6666 22.6663 21.9166 22.6663 21V18.5H20.9997ZM20.1663 15.1666L18.9913 13.9916L16.833 16.1416V9.33331H15.1663V16.1416L13.008 13.9916L11.833 15.1666L15.9997 19.3333L20.1663 15.1666Z"
+                                fill="white"
+                            />
+                        </svg>
+                    </button>
+                    <div
+                        class="show-loader"
+                        *ngIf="downloadInProgress[attachment.path]"
+                        style="position: absolute; bottom: 8px; right: 9px"
+                    >
+                        <mat-progress-spinner diameter="20" mode="indeterminate" value="100"></mat-progress-spinner>
+                    </div>
+                </div>
+
+                <div *ngIf="!supportedFiles[attachment.name]" class="attach-bubble">
+                    <div class="attach-icon">
+                        <mat-icon class="material-icons-outlined">insert_drive_file</mat-icon>
+                    </div>
+                    <div class="attach-filename">
+                        <span>{{ attachment.name }}</span>
+                    </div>
+                    <div class="download-icon">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M14.9997 12.5V15H4.99967V12.5H3.33301V15C3.33301 15.9167 4.08301 16.6667 4.99967 16.6667H14.9997C15.9163 16.6667 16.6663 15.9167 16.6663 15V12.5H14.9997ZM14.1663 9.16666L12.9913 7.99166L10.833 10.1417V3.33333H9.16634V10.1417L7.00801 7.99166L5.83301 9.16666L9.99967 13.3333L14.1663 9.16666Z"
+                                fill="#1E75BA"
+                            />
+                        </svg>
+                    </div>
+                    <div class="show-loader" *ngIf="downloadInProgress[attachment.path]">
+                        <mat-progress-spinner
+                            diameter="20"
+                            mode="indeterminate"
+                            value="100"
+                            style="color: var(--msg-outboundMsg)"
+                        >
+                        </mat-progress-spinner>
+                    </div>
+                </div>
+
+                <!-- <div *ngIf="!supportedFiles[attachment.name]" class="file-attachment">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z" />
+                    </svg>
+                    <span>{{attachment.name}}- Rakesh</span>
+                </div> -->
+            </ng-template>
+
+            <div
+                *ngIf="attachment.mime_type?.includes('video') && attachment.path"
+                class="attach-bubble"
+                [style.margin-bottom]="messages.content?.attachment?.length > 1 ? '4px' : '0px'"
+            >
+                <div class="attach-icon">
+                    <mat-icon class="material-icons-outlined">videocam</mat-icon>
+                </div>
+                <div class="attach-filename">
+                    <span>{{ attachment.name }}</span>
+                </div>
+                <div
+                    class="download-icon"
+                    (click)="download(attachment?.path, attachment?.name)"
+                    *ngIf="!downloadInProgress[attachment.path]"
+                >
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M14.9997 12.5V15H4.99967V12.5H3.33301V15C3.33301 15.9167 4.08301 16.6667 4.99967 16.6667H14.9997C15.9163 16.6667 16.6663 15.9167 16.6663 15V12.5H14.9997ZM14.1663 9.16666L12.9913 7.99166L10.833 10.1417V3.33333H9.16634V10.1417L7.00801 7.99166L5.83301 9.16666L9.99967 13.3333L14.1663 9.16666Z"
+                            fill="#1E75BA"
+                        />
+                    </svg>
+                </div>
+                <div class="show-loader" *ngIf="downloadInProgress[attachment.path]">
+                    <mat-progress-spinner
+                        diameter="20"
+                        mode="indeterminate"
+                        value="100"
+                        style="color: var(--msg-outboundMsg)"
+                    >
+                    </mat-progress-spinner>
+                </div>
+            </div>
+
+            <div
+                *ngIf="attachment.mime_type?.includes('audio') && attachment.path"
+                class="attach-bubble"
+                [style.margin-bottom]="messages.content?.attachment?.length > 1 ? '4px' : '0px'"
+            >
+                <div class="attach-icon">
+                    <mat-icon class="material-icons-outlined">audiotrack</mat-icon>
+                </div>
+                <div class="attach-filename">
+                    <span>{{ attachment.name }}</span>
+                </div>
+                <div
+                    class="download-icon"
+                    (click)="download(attachment?.path, attachment?.name)"
+                    *ngIf="!downloadInProgress[attachment.path]"
+                >
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M14.9997 12.5V15H4.99967V12.5H3.33301V15C3.33301 15.9167 4.08301 16.6667 4.99967 16.6667H14.9997C15.9163 16.6667 16.6663 15.9167 16.6663 15V12.5H14.9997ZM14.1663 9.16666L12.9913 7.99166L10.833 10.1417V3.33333H9.16634V10.1417L7.00801 7.99166L5.83301 9.16666L9.99967 13.3333L14.1663 9.16666Z"
+                            fill="#1E75BA"
+                        />
+                    </svg>
+                </div>
+                <div class="show-loader" *ngIf="downloadInProgress[attachment.path]">
+                    <mat-progress-spinner
+                        diameter="20"
+                        mode="indeterminate"
+                        value="100"
+                        style="color: var(--msg-outboundMsg)"
+                    >
+                    </mat-progress-spinner>
+                </div>
+            </div>
+
+            <div
+                *ngIf="
+                    !attachment.mime_type?.includes('image') &&
+                    attachment.path &&
+                    !attachment?.mime_type?.includes('audio') &&
+                    !attachment?.mime_type?.includes('video')
+                "
+                class="attach-bubble"
+                [style.margin-bottom]="messages.content?.attachment?.length > 1 ? '4px' : '0px'"
+            >
+                <div class="attach-icon">
+                    <mat-icon class="material-icons-outlined">insert_drive_file</mat-icon>
+                </div>
+                <div class="attach-filename">
+                    <span>{{ attachment.name }}</span>
+                </div>
+                <div
+                    class="download-icon"
+                    (click)="download(attachment?.path, attachment?.name)"
+                    *ngIf="!downloadInProgress[attachment.path]"
+                >
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M14.9997 12.5V15H4.99967V12.5H3.33301V15C3.33301 15.9167 4.08301 16.6667 4.99967 16.6667H14.9997C15.9163 16.6667 16.6663 15.9167 16.6663 15V12.5H14.9997ZM14.1663 9.16666L12.9913 7.99166L10.833 10.1417V3.33333H9.16634V10.1417L7.00801 7.99166L5.83301 9.16666L9.99967 13.3333L14.1663 9.16666Z"
+                            fill="#1E75BA"
+                        />
+                    </svg>
+                </div>
+                <div class="show-loader" *ngIf="downloadInProgress[attachment.path]">
+                    <mat-progress-spinner
+                        diameter="20"
+                        mode="indeterminate"
+                        value="100"
+                        style="color: var(--msg-outboundMsg)"
+                    >
+                    </mat-progress-spinner>
+                </div>
+            </div>
+        </ng-container>
+        <p
+            *ngIf="
+                messages?.message_type !== 'video_call' &&
+                messages?.message_type !== 'interactive' &&
+                messages?.content?.text
+            "
+            [innerHTML]="messages.content.text | replace: '\n':'</br>' | whatsAppInlineStyleFormat | linkify"
+            class="input-msg-break"
+        ></p>
+
+        <ng-container *ngIf="messages?.message_type === 'video_call'">
+            <a [href]="messages?.content?.text" target="_blank" [ngClass]="{ 'pointer-event-none': linkExpire }">
+                <button
+                    [disabled]="linkExpire"
+                    class="meet-btn"
+                    style="background-color: var(--msg-primaryColor); color: #fff"
+                    mat-flat-button
+                >
+                    Click Here to Join Hello Meet
+                </button>
+            </a>
+            <p *ngIf="!linkExpire && messages?.content?.expiration_time" class="font-12 my-1">
+                <strong class="text-dark">Note: </strong
+                ><span class="text-light"
+                    >Meet will expire in next
+                    {{ messages?.content?.expiration_time | timeToken: false:currentTime }}</span
+                >
+            </p>
+        </ng-container>
+        <ng-container *ngIf="messages?.message_type === 'interactive'">
+            <msg91-chat-interactive
+                [message]="messages"
+                (optionSelected)="botOptionSelected.emit({ value: $event?.value, message: messages })"
+            ></msg91-chat-interactive>
+        </ng-container>
+        <msg91-bot-options
+            *ngIf="messages?.content?.options"
+            [options]="messages.content?.options"
+            (optionClick)="botOptionSelected.emit({ value: $event?.value })"
+        >
+        </msg91-bot-options>
+    </div>
+</div>
+<!-- <msg91-chat-interactive (optionSelected)="botOptionSelected.emit($event?.value)"></msg91-chat-interactive> -->

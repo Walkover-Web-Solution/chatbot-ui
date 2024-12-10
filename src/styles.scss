@@ -1,0 +1,25 @@
+/* You can add global styles to this file, and also import other style files */
+@import './assets/styles/component/animation';
+.ng-trigger-fadeInRight,
+.ng-trigger-fadeInLeft {
+    position: relative;
+}
+.mat-progress-bar-buffer {
+    background-color: #c4c4e9 !important;
+}
+.mat-progress-bar-fill::after {
+    background-color: var(--msg-primaryColor) !important;
+}
+
+.mat-progress-spinner circle,
+.mat-spinner circle {
+    stroke: var(--msg-primaryColor) !important;
+}
+a.linkified {
+    font-size: 12px;
+    color: #000bff;
+    padding: 3px 5px;
+}
+.skeleton-inner {
+    background: #d5d9dc;
+}

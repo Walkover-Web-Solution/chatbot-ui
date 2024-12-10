@@ -1,0 +1,43 @@
+<mat-form-field [appearance]="appearance" class="w-100 no-padding">
+    <mat-label>{{ label }}</mat-label>
+    <mat-chip-set #chipList [formControl]="control">
+        <mat-chip *ngFor="let option of selectedOptions$ | async" (removed)="toggleSelection(option)">
+            {{ keyToUseShowOnOption ? option[keyToUseShowOnOption] : option }}
+            <button matChipRemove [attr.aria-label]="'remove ' + fruit">
+                <mat-icon>cancel</mat-icon>
+            </button>
+        </mat-chip>
+    </mat-chip-set>
+    <input
+        #input
+        [placeholder]="placeholder"
+        [matChipInputFor]="chipList"
+        [formControl]="matChipFormControl"
+        [matAutocomplete]="auto"
+        class="w-100"
+    />
+    <mat-autocomplete #auto="matAutocomplete">
+        <mat-option
+            *ngFor="let option of filteredOptions$ | async"
+            [value]="keyToUseAsValue ? option[keyToUseAsValue] : option"
+        >
+            <div (click)="optionClicked($event, option)">
+                <mat-checkbox
+                    [checked]="control?.value?.includes(keyToUseAsValue ? option?.[keyToUseAsValue] : option)"
+                    (change)="toggleSelection(option)"
+                    (click)="$event.stopPropagation()"
+                >
+                    {{ keyToUseShowOnOption ? option[keyToUseShowOnOption] : option }}
+                </mat-checkbox>
+            </div>
+        </mat-option>
+    </mat-autocomplete>
+</mat-form-field>
+
+<mat-error *ngIf="control.touched">
+    <mat-error *ngFor="let error of control.errors | keyvalue">
+        <ng-container [ngSwitch]="error.key">
+            <ng-template [ngSwitchCase]="'required'">Field is required</ng-template>
+        </ng-container>
+    </mat-error>
+</mat-error>

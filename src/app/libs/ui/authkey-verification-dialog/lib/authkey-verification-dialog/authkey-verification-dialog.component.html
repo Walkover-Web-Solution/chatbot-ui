@@ -1,0 +1,36 @@
+<div style="height: calc(100% - 40px)">
+    <mat-form-field class="w-100">
+        <mat-label>Select Mobile No.</mat-label>
+        <mat-select [formControl]="maskedContactFormControl">
+            <mat-option disabled *ngIf="!(maskedContacts$ | async)?.length">-- No Mobile No. Found --</mat-option>
+            <ng-container *ngFor="let key of maskedContacts$ | async">
+                <mat-option [value]="key.mobile">
+                    {{ key.mobile }}
+                </mat-option>
+            </ng-container>
+        </mat-select>
+    </mat-form-field>
+    <ng-container>
+        <mat-form-field class="w-100" *ngIf="maskedContactFormControl?.value">
+            <mat-label>Mobile No. (with country code)</mat-label>
+            <input matInput [formControl]="mobileNumberFormControl" placeholder="Enter mobile no. with country code" />
+        </mat-form-field>
+        <div class="col-lg-12 d-flex justify-content-end gap-3">
+            <button mat-flat-button mat-dialog-close>Cancel</button>
+            <button
+                mat-flat-button
+                color="primary"
+                (click)="verifyMobileNumber()"
+                [disabled]="
+                    !maskedContactFormControl?.value ||
+                    !mobileNumberFormControl?.value ||
+                    verifyAuthKeyIsSuccess ||
+                    verifyAuthKeyInProgress
+                "
+                [msg91ButtonLoader]="verifyAuthKeyInProgress || verifyAuthKeyIsSuccess"
+            >
+                Verify
+            </button>
+        </div>
+    </ng-container>
+</div>

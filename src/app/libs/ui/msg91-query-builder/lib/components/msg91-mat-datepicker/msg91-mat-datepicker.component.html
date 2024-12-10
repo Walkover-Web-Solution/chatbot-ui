@@ -1,0 +1,43 @@
+<mat-form-field [appearance]="appearance" [ngClass]="class">
+    <mat-label *ngIf="showLabel">{{ labelText }}</mat-label>
+    <input
+        *ngIf="!useControlInForm"
+        matInput
+        [matDatepicker]="picker"
+        (dateChange)="controlValueChange($event)"
+        [placeholder]="placeholder"
+        [value]="control?.value?.split(' ')?.[0]"
+        [readonly]="readonly"
+        [msg91OpenDatepickerOnFocus]="openOnFocus ? picker : null"
+    />
+    <input
+        *ngIf="useControlInForm"
+        matInput
+        [matDatepicker]="picker"
+        [formControl]="control"
+        (dateChange)="controlValueChange($event)"
+        [placeholder]="placeholder"
+        [readonly]="readonly"
+        [msg91OpenDatepickerOnFocus]="openOnFocus ? picker : null"
+    />
+    <!-- <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle> -->
+    <button
+        matSuffix
+        mat-icon-button
+        (click)="picker.open(); $event.stopPropagation()"
+        class="icon-btn-md q-input-field-button"
+    >
+        <mat-icon class="icon-muted">today</mat-icon>
+    </button>
+    <mat-datepicker #picker color="primary"></mat-datepicker>
+    <ng-container [ngTemplateOutlet]="error" *ngIf="showError && showErrorIntoMatFormField"> </ng-container>
+</mat-form-field>
+<ng-container [ngTemplateOutlet]="error" *ngIf="showError && !showErrorIntoMatFormField"> </ng-container>
+
+<ng-template #error let-errors>
+    <ng-container *ngIf="control?.touched">
+        <ng-container *ngFor="let error of controlErrorsMessage || {} | keyvalue">
+            <mat-error *ngIf="control.errors?.[error.key]">{{ error.value }}</mat-error>
+        </ng-container>
+    </ng-container>
+</ng-template>

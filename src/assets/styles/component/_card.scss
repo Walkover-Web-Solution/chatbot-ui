@@ -1,0 +1,110 @@
+.mat-card {
+    border-radius: var(--border-common-radius) !important;
+    background-color: var(--color-common-bg) !important;
+    overflow-x: auto;
+    &:not([class*='mat-elevation-z']) {
+        box-shadow: none !important;
+    }
+    &.shadow-none {
+        box-shadow: none !important;
+    }
+    &.outline-card {
+        border: 1px solid var(--color-common-border);
+        box-shadow: none !important;
+        &.primary-border {
+            border-color: var(--color-common-primary);
+        }
+    }
+    &.outline-dash-card {
+        border: 1px dashed var(--color-common-border);
+        box-shadow: none !important;
+    }
+    &.active-card {
+        background-color: var(--color-common-primary-light) !important;
+        border-color: var(--color-common-primary) !important;
+    }
+    &.hover-primary:not(.active-card) {
+        &:hover {
+            background-color: var(--color-common-silver) !important;
+        }
+    }
+    @media screen and (max-width: 768px) {
+        &.transparent-card {
+            box-shadow: none !important;
+            background-color: transparent !important;
+            border-width: 0px !important;
+        }
+    }
+    &.data-analytics-card {
+        background-color: var(--color-common-graph-bg) !important;
+    }
+
+    &.default-card {
+        background-color: var(--color-common-graph-bg) !important;
+    }
+    &.mat-data-card {
+        padding: 24px 16px 24px 32px;
+        .mat-data-card-content {
+            img {
+                width: 32px;
+                height: 48px;
+            }
+            .mat-data-card-value {
+                padding-left: 20px;
+                p {
+                    font-weight: 500;
+                    font-size: 14px;
+                    line-height: 16px;
+                    margin-bottom: 4px;
+                }
+                h3 {
+                    font-weight: 600;
+                    font-size: 22px;
+                    line-height: 28px;
+                }
+            }
+        }
+        &.delivered {
+            color: var(--color-whatsApp-primary) !important;
+            background-color: var(--color-whatsApp-primary-light) !important;
+        }
+        &.suppressed {
+            background-color: var(--color-short-url-primary-light) !important;
+            color: var(--color-short-url-primary) !important;
+        }
+        &.failed {
+            background-color: var(--color-email-primary-light) !important;
+            color: var(--color-email-primary) !important;
+        }
+        &.others {
+            background-color: var(--color-common-graph-bg) !important;
+            color: var(--color-common-rock) !important;
+        }
+        &.inprogress {
+            background-color: var(--color-short-url-primary-light) !important;
+            color: var(--color-short-url-primary) !important;
+        }
+        &.total {
+            background-color: var(--color-common-primary-light) !important;
+            color: var(--color-common-primary) !important;
+        }
+        &.open {
+            background-color: var(--color-common-primary-light) !important;
+            color: var(--color-common-primary) !important;
+        }
+        &.accepted {
+            background-color: var(--color-number-primary-light) !important;
+            color: var(--color-number-primary) !important;
+        }
+        &.read {
+            background-color: var(--color-telegram-primary-light) !important;
+            color: var(--color-telegram-primary) !important;
+        }
+    }
+
+    // table in card
+    &.card-table-layout {
+        overflow: visible;
+        min-width: min-content;
+    }
+}

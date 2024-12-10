@@ -1,0 +1,30 @@
+.template-preview-wrap {
+    max-width: 300px !important;
+    .whatsapp-preview-wrap {
+        background-color: var(--color-common-bg-whatsapp);
+        height: 500px;
+        min-width: 260px;
+        .whatsapp-header {
+            background-color: var(--color-whatsApp-primary-dark);
+            column-gap: 12px;
+            .contact {
+                column-gap: 12px;
+            }
+        }
+        .whatsapp-content-cont {
+            .whatsapp-content {
+                min-height: 100%;
+                &:first-child {
+                    border-radius: 6px 6px 0 0;
+                }
+                .whatsapp-txt {
+                    border-bottom: 1px solid var(--color-common-bg-whatsapp);
+                }
+            }
+        }
+
+        .whatsapp-footer {
+            border-radius: 0px 0px 6px 6px;
+        }
+    }
+}

@@ -1,0 +1,23 @@
+:host {
+    display: block;
+    z-index: 9;
+}
+
+button.start-msg-btn {
+    border: 0px solid var(--msg-primaryColor);
+    color: var(--msg-primaryColor);
+    width: 100%;
+    background-color: var(--msg-primaryColor);
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.08);
+    border-radius: 6px;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 20px;
+    min-height: 36px;
+    font-family: var(--msg-fontFamily);
+    &:disabled {
+        background-color: rgba(0, 0, 0, 0.12);
+        color: rgba(0, 0, 0, 0.26);
+    }
+}

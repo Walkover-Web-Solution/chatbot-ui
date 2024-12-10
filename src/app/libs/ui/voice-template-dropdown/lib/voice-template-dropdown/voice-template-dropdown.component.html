@@ -1,0 +1,63 @@
+<div class="d-flex align-items-start col-gap-3">
+    <mat-form-field [appearance]="formFieldAppearance" [class]="matFormFieldClass">
+        <mat-label>Select Template</mat-label>
+        <input
+            type="text"
+            matInput
+            [matAutocomplete]="voiceTemplateAutoComplete"
+            #templateTrigger="matAutocompleteTrigger"
+            [msg91CloseDropdownOnEscape]="templateTrigger"
+            #voiceTemplateInput
+            [formControl]="templateForm"
+        />
+        <mat-autocomplete
+            #voiceTemplateAutoComplete="matAutocomplete"
+            (optionSelected)="handleTemplateSelection()"
+            [displayWith]="templateDisplayFunction"
+            msg91AutoSelectDropdown
+            (setControlValue)="templateForm.setValue($event); handleTemplateSelection()"
+        >
+            <msg91-cdk-scroll (fetchNextPage)="fetchNextTemplatePage()">
+                <a
+                    class="flat-primary-light my-2 mx-3"
+                    mat-flat-button
+                    href="javascript:void(0)"
+                    (click)="createVoiceTemplate()"
+                    >Create Voice Template</a
+                >
+                <!-- <mat-option value="">Select template</mat-option> -->
+                <mat-option disabled value="" *ngIf="!(templates$ | async)?.length"> No Template Found </mat-option>
+                <mat-option [value]="temp" *ngFor="let temp of templates$ | async">
+                    {{ temp.name }}
+                </mat-option>
+            </msg91-cdk-scroll>
+        </mat-autocomplete>
+        <button
+            mat-icon-button
+            matSuffix
+            *ngIf="showCloseTemplate"
+            class="icon-btn-md"
+            color="primary"
+            (click)="clearTemplate()"
+        >
+            <mat-icon>close</mat-icon>
+        </button>
+        <mat-error *ngIf="templateForm.touched && templateForm.errors?.required">
+            Template field is required.
+        </mat-error>
+        <mat-error *ngIf="templateForm.touched && templateForm.errors?.elementExistsInList">
+            Select Template from dropdown.
+        </mat-error>
+    </mat-form-field>
+    <button
+        mat-mini-fab
+        class="mt-1"
+        (click)="refreshTemplate()"
+        matTooltip="Refresh"
+        matTooltipPosition="above"
+        [msg91ButtonLoader]="apiInProgress$ | async"
+        [wrapperClass]="'mt-1'"
+    >
+        <mat-icon class="mat-icon-20" fontIcon="refresh"></mat-icon>
+    </button>
+</div>

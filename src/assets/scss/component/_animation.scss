@@ -1,0 +1,31 @@
+@import '../utils/mixins/common-utils';
+// css for skeleton
+.shimmer-loading {
+    animation: shimmer-animation infinite 2s linear;
+    background: #f6f7f8;
+    background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+    background-size: 1000px 100%;
+}
+.shimmer-loading-primary {
+    animation: shimmer-animation infinite 2s linear;
+    background: #f6f7f8;
+    background: linear-gradient(
+            to right,
+            rgb(202, 202, 202) 0%,
+            rgb(222, 222, 222) 20%,
+            rgb(202, 202, 202) 40%,
+            rgb(202, 202, 202) 100%
+        )
+        no-repeat rgb(202, 202, 202);
+    background-size: 1000px 100%;
+}
+
+@include keyframes(shimmer-animation) {
+    0% {
+        background-position: -1000px 0;
+    }
+
+    100% {
+        background-position: 1000px 0;
+    }
+}

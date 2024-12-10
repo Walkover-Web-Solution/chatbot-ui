@@ -1,0 +1,46 @@
+<ul class="articles-list">
+    <ng-container *ngIf="articlesList">
+        <li (click)="selectArticle(article.id)" *ngFor="let article of articlesList" class="folder-list" matRipple>
+            <svg height="16.364" viewBox="0 0 15 16.364" width="15" xmlns="http://www.w3.org/2000/svg">
+                <g id="copy" transform="translate(-1)">
+                    <path
+                        d="M15.886,17.636H7.7a1.706,1.706,0,0,1-1.7-1.7V5.7A1.706,1.706,0,0,1,7.7,4h8.182a1.706,1.706,0,0,1,1.7,1.7V15.932A1.706,1.706,0,0,1,15.886,17.636ZM7.7,4.682A1.024,1.024,0,0,0,6.682,5.7V15.932A1.024,1.024,0,0,0,7.7,16.955h8.182a1.024,1.024,0,0,0,1.023-1.023V5.7a1.024,1.024,0,0,0-1.023-1.023Z"
+                        data-name="Path 51"
+                        id="Path_51"
+                        transform="translate(-1.591 -1.273)"
+                    />
+                    <path
+                        d="M3.386,14.318H2.7a1.706,1.706,0,0,1-1.7-1.7V1.7A1.706,1.706,0,0,1,2.7,0h8.182a1.706,1.706,0,0,1,1.7,1.7.341.341,0,0,1-.682,0A1.024,1.024,0,0,0,10.886.682H2.7A1.024,1.024,0,0,0,1.682,1.7V12.614A1.024,1.024,0,0,0,2.7,13.636h.682a.341.341,0,1,1,0,.682Z"
+                        data-name="Path 52"
+                        id="Path_52"
+                    />
+                    <path
+                        d="M15.8,16.682H10.341a.341.341,0,1,1,0-.682H15.8a.341.341,0,1,1,0,.682Z"
+                        data-name="Path 53"
+                        id="Path_53"
+                        transform="translate(-2.864 -5.091)"
+                    />
+                    <path
+                        d="M15.8,20.682H10.341a.341.341,0,1,1,0-.682H15.8a.341.341,0,1,1,0,.682Z"
+                        data-name="Path 54"
+                        id="Path_54"
+                        transform="translate(-2.864 -6.364)"
+                    />
+                    <path
+                        d="M15.8,12.682H10.341a.341.341,0,0,1,0-.682H15.8a.341.341,0,1,1,0,.682Z"
+                        data-name="Path 55"
+                        id="Path_55"
+                        transform="translate(-2.864 -3.818)"
+                    />
+                    <path
+                        d="M15.8,8.682H10.341a.341.341,0,1,1,0-.682H15.8a.341.341,0,1,1,0,.682Z"
+                        data-name="Path 56"
+                        id="Path_56"
+                        transform="translate(-2.864 -2.545)"
+                    />
+                </g>
+            </svg>
+            <span [innerHTML]="article.formattedTitle | sanitizeHtml"></span>
+        </li>
+    </ng-container>
+</ul>

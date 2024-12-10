@@ -1,0 +1,17 @@
+.cdk-overlay-container {
+    &:has(.overlay-zindex-2000) {
+        z-index: 2000 !important;
+    }
+}
+
+.cdk-overlay-pane .mat-mdc-select-panel-wrap {
+    margin-top: 0 !important;
+}
+
+// Here we have to handle if side dialog and toaster show at same time.
+// Result :: change toaster z-index if taster contain `.overlay-zindex-toast` class.
+.cdk-global-overlay-wrapper {
+    &:has(.overlay-zindex-toast) {
+        z-index: 9999;
+    }
+}

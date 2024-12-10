@@ -1,0 +1,98 @@
+<div class="d-flex align-items-start col-gap-3">
+    <mat-form-field [appearance]="appearance" [class]="matFormFieldClass">
+        <mat-label>Select Template</mat-label>
+        <!-- <mat-select
+            disableRipple
+            msg91CloseDropdownOnEscape
+            [placeholder]="'Select Template'"
+            [formControl]="templateForm"
+            (selectionChange)="templateSelected.emit(true); selectTemplate($event.value)"
+            msg91AutoSelectDropdown
+        >
+            <a
+                class="flat-primary-light my-2 mx-3"
+                mat-flat-button
+                href="javascript:void(0)"
+                (click)="createTemplateClicked.emit()"
+                *ngIf="showCreateTemplate"
+            >
+                Create Template
+            </a>
+            <mat-option *ngIf="showCreateTemplate && !(templates$ | async)?.length" disabled>
+                -- No Template Found --
+            </mat-option>
+            <mat-option [value]="temp.name" *ngFor="let temp of templates$ | async">
+                {{ temp.name }}
+            </mat-option>
+        </mat-select> -->
+        <input
+            type="text"
+            matInput
+            [matAutocomplete]="whatsAppTemplateAutoComplete"
+            #whatsAppTemplateInput
+            [formControl]="templateForm"
+            #whatsAppTemplateTrigger="matAutocompleteTrigger"
+            [msg91CloseDropdownOnEscape]="whatsAppTemplateTrigger"
+        />
+        <mat-autocomplete
+            #whatsAppTemplateAutoComplete="matAutocomplete"
+            (optionSelected)="templateSelected.emit(true); selectTemplate($event.option.value)"
+            msg91AutoSelectDropdown
+        >
+            <!-- <msg91-cdk-scroll [scrollableElementId]="'wa-template'"> -->
+            <a
+                class="flat-primary-light my-2 mx-3"
+                mat-flat-button
+                href="javascript:void(0)"
+                (click)="createTemplateClicked.emit()"
+            >
+                Create Template
+            </a>
+            <mat-option *ngIf="showCreateTemplate && !(templates$ | async)?.length" disabled>
+                -- No Template Found --
+            </mat-option>
+            <mat-option [value]="temp.name" *ngFor="let temp of templates$ | async">
+                {{ temp.name }}
+            </mat-option>
+            <!-- </msg91-cdk-scroll> -->
+        </mat-autocomplete>
+        <div matSuffix class="d-flex align-items-center">
+            <button
+                mat-icon-button
+                *ngIf="showClearTemplateIcon"
+                class="cursor-pointer icon-btn-md"
+                color="primary"
+                (click)="clearNumber(); clearSelectedTemplate.emit(true)"
+            >
+                <mat-icon class="mat-icon-20 text-dark">close</mat-icon>
+            </button>
+        </div>
+        <mat-error>
+            <ng-container *ngIf="showPurchasePlanText$ | async; else subscriptionPresent">
+                <mat-error (click)="noSubscription.emit(subscriptionBasedServices.WhatsApp)" class="cursor-pointer"
+                    >Please integrate WhatsApp number to continue.</mat-error
+                >
+            </ng-container>
+            <ng-template #subscriptionPresent>
+                <ng-container *ngIf="templateForm.touched">
+                    <mat-error *ngIf="templateForm.errors?.required"> Template is required. </mat-error>
+                </ng-container>
+            </ng-template>
+            <mat-error *ngIf="templateForm.errors?.elementExistsInList"> Select Template from list. </mat-error>
+        </mat-error>
+        <mat-hint *ngIf="allCompanyTemplates && (getSelectedTemplate | async)?.integrated_number as integratedNumber">
+            Number: +{{ integratedNumber }}
+        </mat-hint>
+    </mat-form-field>
+    <button
+        mat-mini-fab
+        class="my-1"
+        (click)="fetchTemplate()"
+        matTooltip="Refresh"
+        matTooltipPosition="above"
+        [msg91ButtonLoader]="apiInProgress$ | async"
+        [wrapperClass]="'mt-1'"
+    >
+        <mat-icon class="mat-icon-20" fontIcon="refresh"></mat-icon>
+    </button>
+</div>

@@ -1,0 +1,74 @@
+@import 'src/assets/scss/utils/mixins/common-utils';
+.mat-right-dialog {
+    position: absolute !important;
+    right: 0;
+    top: 0;
+    height: 100%;
+    overflow: auto;
+
+    &.mat-dialog-lg {
+        width: 535px;
+        @media only screen and (max-width: 768px) {
+            width: 100%;
+            max-width: 100% !important;
+        }
+    }
+    &.mat-dialog-md {
+        width: 450px;
+    }
+    &.mat-dialog-xs {
+        width: 374px;
+    }
+    &.mat-dialog-xlg {
+        width: 40vw;
+        @media only screen and (max-width: 1280px) {
+            width: 60vw;
+        }
+        @media only screen and (max-width: 992px) {
+            width: 100%;
+            max-width: 90% !important;
+        }
+    }
+    .mat-mdc-dialog-container {
+        width: 100% !important;
+
+        .mat-right-dialog-container {
+            .mat-right-dialog-header {
+                padding: 8px 16px;
+                border-bottom: 1px solid var(--color-common-border);
+            }
+            .mat-right-dialog-content {
+                overflow-y: auto;
+                max-height: 100%;
+                padding: 16px;
+                &.dailog-content {
+                    @include calculateHeight($offsetHeight: 73);
+                }
+            }
+        }
+        .mat-mdc-dialog-surface {
+            border-radius: unset;
+            .mat-mdc-dialog-content {
+                max-height: unset;
+            }
+        }
+    }
+}
+
+.compose-full-screen {
+    .compose-bottom-dialog {
+        inset: 83px !important;
+        border-radius: var(--border-common-radius);
+    }
+    .mat-mdc-dialog-container {
+        .full-screen-compose {
+            border-radius: var(--border-common-radius) !important;
+        }
+    }
+}
+// To increase the width of the resizable container
+.mat-mdc-dialog-panel {
+    &:has(.resize-container) {
+        max-width: unset !important;
+    }
+}

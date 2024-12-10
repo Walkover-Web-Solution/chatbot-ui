@@ -1,0 +1,11 @@
+.sort-bottom-sheet {
+    border-radius: 8px 8px 0px;
+    padding: 8px 0px !important;
+    .mat-mdc-button-toggle-group {
+        .mat-mdc-button-toggle {
+            .mat-mdc-button-toggle-label-content {
+                line-height: 30px !important;
+            }
+        }
+    }
+}

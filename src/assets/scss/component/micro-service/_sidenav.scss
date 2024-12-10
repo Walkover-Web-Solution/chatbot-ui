@@ -1,0 +1,324 @@
+@import '../../utils/mixins/side-menu-hover';
+
+.default-sidenav {
+    .mat-mdc-nav-list {
+        padding-top: 0px;
+        .mat-mdc-list-item {
+            height: 30px !important;
+            cursor: pointer !important;
+            color: var(--color-sidenav-menu-link-text) !important;
+            position: relative;
+            .mat-mdc-icon {
+                border-radius: 0px !important;
+            }
+            .mat-mdc-list-item-content {
+                padding: 0px 0px 0px 16px;
+            }
+            &.mat-mdc-list-item-disabled {
+                background-color: transparent;
+                pointer-events: none;
+            }
+            .mat-mdc-line {
+                font-size: 14px !important;
+                font-weight: 400;
+                &.menu-svg-icon {
+                    fill: red;
+                    svg {
+                        path {
+                            fill: var(--color-common-slate);
+                        }
+                    }
+                }
+            }
+            .manage-settings {
+                display: none;
+            }
+        }
+        &.bot-sidenav-content {
+            .mat-mdc-list-item {
+                .mat-mdc-list-item-content {
+                    padding: 0px 16px 0px 16px !important;
+                }
+            }
+        }
+    }
+}
+.sidenav-expansion-panel {
+    border-radius: 0px !important;
+    background-color: transparent !important;
+    .mat-mdc-expansion-panel-header {
+        padding: 0 16px !important;
+        height: 30px;
+        color: var(--color-common-slate) !important;
+        &:hover {
+            .mat-mdc-expansion-indicator {
+                display: block;
+            }
+        }
+        &.mat-mdc-expanded {
+            height: 30px;
+            .mat-mdc-expansion-indicator {
+                margin-top: 6px;
+            }
+        }
+        .mat-mdc-content {
+            align-items: center;
+        }
+        .mat-mdc-expansion-indicator {
+            margin-top: -6px;
+            display: none;
+            &:after {
+                color: var(--color-common-slate);
+            }
+        }
+
+        .mat-mdc-line {
+            font-size: 12px !important;
+            // padding-left: 16px;
+            color: var(--color-common-dark);
+            font-weight: 500;
+        }
+        .mat-mdc-icon {
+            svg {
+                width: 18px;
+                path {
+                    fill: var(--color-sidenav-menu-link-icon) !important;
+                }
+            }
+        }
+        &:hover {
+            .mat-mdc-expansion-indicator {
+                &::after {
+                    color: var(--color-common-dark) !important;
+                }
+            }
+            .mat-mdc-icon {
+                svg {
+                    path {
+                        fill: var(--color-common-slate) !important;
+                    }
+                }
+            }
+        }
+        &.bot-sidenav-header {
+            &.active,
+            &:hover {
+                color: var(--color-menu-common-hover-link-text) !important;
+                background-color: var(--color-menu-common-hover-link-background) !important;
+            }
+        }
+    }
+    // Panel Content
+    .mat-mdc-expansion-panel-content {
+        .mat-mdc-expansion-panel-body {
+            padding: 0px;
+            // .mat-mdc-nav-list {
+            //     .mat-mdc-list-item {
+            //         .mat-mdc-list-item-content {
+            //             padding-left: 48px;
+            //         }
+            //     }
+            // }
+        }
+        .bot-sidenav-content {
+            .mat-mdc-list-item {
+                .mat-mdc-list-item-content {
+                    padding-left: 30px !important;
+                }
+                &.active,
+                &:hover {
+                    color: var(--color-menu-common-hover-link-text) !important;
+                    background-color: var(--color-menu-common-hover-link-background) !important;
+                }
+            }
+        }
+    }
+}
+
+.menu-heading {
+    box-sizing: border-box;
+    padding: 5px 16px;
+    margin: 0px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+// Side nav support menu
+
+.support-menu {
+    width: 260px !important;
+    min-height: 42px;
+    .mat-mdc-menu-item {
+        height: 40px !important;
+        line-height: 40px;
+        cursor: pointer !important;
+        color: var(--color-sidenav-menu-link-text) !important;
+        position: relative;
+        .mat-mdc-line {
+            font-weight: 400;
+        }
+        .mat-mdc-icon {
+            color: var(--color-common-rock);
+        }
+    }
+}
+
+.email-menu + .cdk-overlay-connected-position-bounding-box {
+    .support-menu {
+        @include hoverMenu(
+            var(--color-email-primary),
+            var(--color-email-primary-dark),
+            var(--color-email-primary-light),
+            var(--color-common-slate)
+        );
+    }
+}
+.hello-menu + .cdk-overlay-connected-position-bounding-box {
+    .support-menu {
+        @include hoverMenu(
+            var(--color-hello-primary),
+            var(--color-hello-primary-dark),
+            var(--color-hello-primary-light),
+            var(--color-common-slate)
+        );
+    }
+}
+.otp-menu + .cdk-overlay-connected-position-bounding-box {
+    .support-menu {
+        @include hoverMenu(
+            var(--color-otp-primary),
+            var(--color-otp-primary-dark),
+            var(--color-otp-primary-light),
+            var(--color-common-slate)
+        );
+    }
+}
+.segmento-menu + .cdk-overlay-connected-position-bounding-box {
+    .support-menu {
+        @include hoverMenu(
+            var(--color-segmento-primary),
+            var(--color-segmento-primary-dark),
+            var(--color-segmento-primary-light),
+            var(--color-common-slate)
+        );
+    }
+}
+.campaigns-menu + .cdk-overlay-connected-position-bounding-box {
+    .support-menu {
+        @include hoverMenu(
+            var(--color-campaign-primary),
+            var(--color-campaign-primary-dark),
+            var(--color-campaign-primary-light),
+            var(--color-common-slate)
+        );
+    }
+}
+.sms-menu + .cdk-overlay-connected-position-bounding-box {
+    .support-menu {
+        @include hoverMenu(
+            var(--color-otp-primary),
+            var(--color-otp-primary-dark),
+            var(--color-otp-primary-light),
+            var(--color-common-slate)
+        );
+    }
+}
+.voice-menu + .cdk-overlay-connected-position-bounding-box {
+    .support-menu {
+        @include hoverMenu(
+            var(--color-voice-primary),
+            var(--color-voice-primary-dark),
+            var(--color-voice-primary-light),
+            var(--color-common-slate)
+        );
+    }
+}
+.rcs-menu + .cdk-overlay-connected-position-bounding-box {
+    .support-menu {
+        @include hoverMenu(
+            var(--color-rcs-primary),
+            var(--color-rcs-primary-dark),
+            var(--color-rcs-primary-light),
+            var(--color-common-slate)
+        );
+    }
+}
+.shorturl-menu + .cdk-overlay-connected-position-bounding-box {
+    .support-menu {
+        @include hoverMenu(
+            var(--color-short-url-primary),
+            var(--color-short-url-primary-dark),
+            var(--color-short-url-primary-light),
+            var(--color-common-slate)
+        );
+    }
+}
+.whatsapp-menu + .cdk-overlay-connected-position-bounding-box,
+.notifications-menu + .cdk-overlay-connected-position-bounding-box {
+    .support-menu {
+        @include hoverMenu(
+            var(--color-whatsApp-primary),
+            var(--color-whatsApp-primary-dark),
+            var(--color-whatsApp-primary-light),
+            var(--color-common-slate)
+        );
+    }
+}
+.files-menu + .cdk-overlay-connected-position-bounding-box {
+    .support-menu {
+        @include hoverMenu(
+            var(--color-files-primary),
+            var(--color-files-primary-dark),
+            var(--color-files-primary-light),
+            var(--color-common-slate)
+        );
+    }
+}
+
+// When sidebar collapsed
+// 1. Setting icon hide in hello sidenav
+.collapsed-sidebar {
+    .left-menu-main-container {
+        .mat-mdc-list-item {
+            .manage-settings {
+                display: none !important;
+            }
+        }
+        .mat-mdc-expansion-panel-content {
+            .mat-mdc-list-item {
+                .mat-mdc-list-item-content {
+                    padding-left: 18px !important;
+                }
+                .manage-settings {
+                    display: none !important;
+                }
+            }
+        }
+    }
+    // hello-inbox-sidenav
+    .cv-main-sidebar {
+        .client-sidebar {
+            &.hideOnDevice {
+                &.show {
+                    left: 55px !important;
+                }
+            }
+        }
+    }
+}
+// hello-email-close-icon
+.cv-main-sidebar {
+    @include media-breakpoint-down('lg-desktop') {
+        .client-chat-header {
+            .search-client-input {
+                .showOnMobile {
+                    display: block !important;
+
+                    @include media-breakpoint-down('desktop') {
+                        display: none !important;
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,318 @@
+<div class="selected-channel-main-container">
+    <div
+        class="semples-header"
+        [style.background-color]="primaryColor"
+        [style.background-image]="backgroundImage"
+        [ngClass]="{
+            'border-radius-none': isMobileSDK && isBorderRadiusDisabled
+        }"
+    >
+        <div class="header-title">
+            <button (click)="backToChat()" class="btn-w-icon" mat-icon-button>
+                <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M19.2627 20.7375L13.5377 15L19.2627 9.2625L17.5002 7.5L10.0002 15L17.5002 22.5L19.2627 20.7375Z"
+                        fill="white"
+                    />
+                </svg>
+            </button>
+            <ng-container
+                *ngIf="selectedChannelAssignee$ | async as selectedChannelAssignee; else conversationTeamHeader"
+            >
+                <div
+                    class="header-profile-img-with-name"
+                    [ngClass]="{
+                        singleInitial: selectedChannelAssignee?.assignees?.length === 1,
+                        multipleInitial: selectedChannelAssignee?.assignees?.length > 1
+                    }"
+                >
+                    <ng-container *ngFor="let assignee of selectedChannelAssignee?.assignees; let i = index">
+                        <msg91-profile-name
+                            [ngClass]="{
+                                single: selectedChannelAssignee?.assignees?.length === 1,
+                                'profile-1': i === 0,
+                                'profile-2': i === 1,
+                                'profile-3': i === 2
+                            }"
+                            [hashCode]="assignee | getHashCode"
+                            [shortName]="assignee | getShortName"
+                            class="profile-name"
+                            [width]="selectedChannelAssignee?.assignees?.length === 1 ? 40 : 22"
+                            [height]="selectedChannelAssignee?.assignees?.length === 1 ? 40 : 22"
+                            [aProfileClass]="
+                                selectedChannelAssignee?.assignees?.length === 1 ? 'profileLarge' : 'profileSmall'
+                            "
+                        >
+                        </msg91-profile-name>
+                    </ng-container>
+                </div>
+                <span class="assigneeName" [style.color]="textColor">{{ selectedChannelAssignee?.assigneeName }}</span>
+            </ng-container>
+            <ng-template #conversationTeamHeader>
+                <ng-container *ngIf="selectedTeamAssignee$ | async as selectedTeamAssignee; else conversationHeader">
+                    <div
+                        class="header-profile-img-with-name"
+                        [ngClass]="{
+                            singleInitial: selectedTeamAssignee.assignees?.length === 1,
+                            multipleInitial: selectedTeamAssignee.assignees?.length > 1
+                        }"
+                    >
+                        <ng-container
+                            *ngFor="let assignee of selectedTeamAssignee.assignees as allAssignees; let i = index"
+                        >
+                            <msg91-profile-name
+                                [ngClass]="{
+                                    single: allAssignees?.length === 1,
+                                    'profile-1': i === 0,
+                                    'profile-2': i === 1,
+                                    'profile-3': i === 2
+                                }"
+                                [hashCode]="assignee | getHashCode"
+                                [shortName]="assignee | getShortName"
+                                class="profile-name"
+                                [width]="allAssignees?.length === 1 ? 40 : 22"
+                                [height]="allAssignees?.length === 1 ? 40 : 22"
+                                [aProfileClass]="allAssignees?.length === 1 ? 'profileLarge' : 'profileSmall'"
+                            >
+                            </msg91-profile-name>
+                        </ng-container>
+                    </div>
+                    <span [style.color]="textColor" class="assigneeName"> {{ selectedTeamAssignee.assigneeName }}</span>
+                </ng-container>
+            </ng-template>
+            <ng-template #conversationHeader>
+                <div
+                    class="header-profile-img-with-name"
+                    [ngClass]="{
+                        singleInitial: (allAssignees$ | async)?.length === 1,
+                        multipleInitial: (allAssignees$ | async)?.length > 1
+                    }"
+                >
+                    <ng-container *ngFor="let assignee of allAssignees$ | async as allAssignees; let i = index">
+                        <msg91-profile-name
+                            [ngClass]="{
+                                single: allAssignees?.length === 1,
+                                'profile-1': i === 0,
+                                'profile-2': i === 1,
+                                'profile-3': i === 2
+                            }"
+                            [hashCode]="assignee | getHashCode"
+                            [shortName]="assignee | getShortName"
+                            class="profile-name"
+                            [width]="allAssignees?.length === 1 ? 40 : 22"
+                            [height]="allAssignees?.length === 1 ? 40 : 22"
+                            [aProfileClass]="allAssignees?.length === 1 ? 'profileLarge' : 'profileSmall'"
+                        >
+                        </msg91-profile-name>
+                    </ng-container>
+                </div>
+                <span class="assigneeName" [style.color]="textColor">Conversation</span>
+            </ng-template>
+            <button mat-button class="mat-faqs-btn" (click)="enableChatView(false)" *ngIf="widgetShowFaq$ | async">
+                FAQs
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M7.1582 6.175L10.9749 10L7.1582 13.825L8.3332 15L13.3332 10L8.3332 5L7.1582 6.175Z"
+                        fill="white"
+                    />
+                </svg>
+            </button>
+        </div>
+        <!-- Widget Tagline:: START -->
+        <div>
+            <ng-container *ngIf="!widgetTagline$ | async as tagline">
+                <p class="h-desc">We reply within a few hours.</p>
+            </ng-container>
+
+            <ng-container *ngIf="widgetTagline$ | async as tagline">
+                <p class="h-desc">
+                    {{ tagline }}
+                </p>
+            </ng-container>
+        </div>
+        <!-- Widget Tagline:: END -->
+    </div>
+
+    <div class="selected-channel-body-container">
+        <div #container (scroll)="scroll($event)" class="selected-channel-body-inner-container">
+            <div>
+                <mat-spinner
+                    class="loading-indicator loader-center-align"
+                    *ngIf="(createChannelInProcess$ | async) || messageGetInProcess"
+                    [@fadeInOut]="(createChannelInProcess$ | async) || messageGetInProcess"
+                    [diameter]="30"
+                    mode="indeterminate"
+                    style="color: var(--msg-outboundMsg)"
+                ></mat-spinner>
+            </div>
+            <ul class="message-ul" id="message-list">
+                <ng-container
+                    *ngFor="
+                        let messageGroup of channelMessages$ | async | DateGroup;
+                        let i = index;
+                        let isLastGroup = last;
+                        trackBy: identifyList
+                    "
+                >
+                    <div *ngIf="messageGroup[0]?.timetoken" class="chat-time-line">
+                        <span> {{ messageGroup[0]?.timetoken | timeConversion: 'shortDate' }}</span>
+                    </div>
+                    <msg91-in-message
+                        *ngIf="(firstMessage$ | async).text"
+                        [messages]="firstMessage"
+                        [isMobileSDK]="isMobileSDK"
+                        [agentDetails]="getAllAgents$ | async"
+                        (emitDownloadContent)="emitDowloadedContent.emit($event)"
+                        (botOptionSelected)="botOptionSelected($event)"
+                    >
+                    </msg91-in-message>
+                    <div class="timeline-penal" *ngIf="(firstMessage$ | async).text">
+                        <small>{{ firstMessage.timetoken | timeConversion: 'shortTime' }}</small>
+                    </div>
+                    <ng-container
+                        *ngFor="let message of messageGroup; let isLastMessage = last; trackBy: identifyMessage"
+                    >
+                        <div
+                            *ngIf="
+                                (lastMessageToken$ | async) &&
+                                message?.timetoken?.toString() === (lastMessageToken$ | async) &&
+                                !(isLastMessage && isLastGroup)
+                            "
+                            class="chat-unread-line"
+                        >
+                            <span> UNREAD </span>
+                        </div>
+                        <li [id]="message.timetoken">
+                            <ng-container [ngSwitch]="message.message.type">
+                                <ng-template [ngSwitchCase]="'chat'">
+                                    <div
+                                        *ngIf="
+                                            message.message.sender_id ||
+                                            message.message.is_auto_response ||
+                                            message.message.isPushNotificationMessage
+                                        "
+                                        @fadeInLeft
+                                        class="input-msg-container"
+                                    >
+                                        <msg91-in-message
+                                            [fromName]="message?.message?.from_name"
+                                            [messages]="message.message"
+                                            [isMobileSDK]="isMobileSDK"
+                                            [agentDetails]="getAllAgents$ | async"
+                                            (emitDownloadContent)="emitDowloadedContent.emit($event)"
+                                            (botOptionSelected)="botOptionSelected($event)"
+                                            [widgetInfo]="widgetInfo"
+                                        >
+                                        </msg91-in-message>
+                                        <div
+                                            class="timeline-penal"
+                                            *ngIf="
+                                                message.message.lastAgentMsg &&
+                                                message.message?.message_type !== 'activity'
+                                            "
+                                        >
+                                            <small>{{ message.timetoken | timeConversion: 'shortTime' }}</small>
+                                        </div>
+                                    </div>
+                                    <div
+                                        *ngIf="message.message.chat_id && message.message.sender_id !== 'bot'"
+                                        @fadeInRight
+                                        class="out-msg-container"
+                                    >
+                                        <msg91-out-message [messages]="message.message"></msg91-out-message>
+                                        <div
+                                            *ngIf="message.message.lastClientMsg"
+                                            [class.seen-msg]="
+                                                message?.timetoken <= (opponentLastReadMessageToken$ | async)
+                                            "
+                                            class="timeline-penal"
+                                        >
+                                            <small>{{ message.timetoken | timeConversion: 'shortTime' }}</small>
+                                            <svg
+                                                height="7.571"
+                                                viewBox="0 0 13.286 7.571"
+                                                width="13.286"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <g id="double-check" transform="translate(0 -110.123)">
+                                                    <path
+                                                        d="M12.276,110.4,7,115.673l-.55-.55,3.99-3.99-1.01-1.01-3.99,3.99-1.584-1.584-1.01,1.01,1.584,1.584-.55.55L1.01,112.8,0,113.814l3.879,3.879,1.56-1.56L7,117.694l6.285-6.285Z"
+                                                        data-name="Path 48"
+                                                        id="Path_48"
+                                                    />
+                                                </g>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                                <msg91-feedback-form
+                                    (postFeedback)="sendFeedBack($event)"
+                                    *ngSwitchCase="'feedback'"
+                                    [message]="message.message"
+                                    [dynamicValue]="message.message?.dynamic_values"
+                                    [feedbackSetting]="{
+                                        text: widgetInfo?.feedback_text,
+                                        logo: widgetInfo?.logo?.path
+                                    }"
+                                ></msg91-feedback-form>
+
+                                <ng-template [ngSwitchCase]="'form'">
+                                    <div @fadeInLeft class="input-msg-container">
+                                        <msg91-client-input
+                                            class="mb-2"
+                                            (updateClientData)="updateClient($event)"
+                                            *ngSwitchCase="'form'"
+                                            [message]="message.message"
+                                        ></msg91-client-input>
+                                    </div>
+                                </ng-template>
+                            </ng-container>
+                        </li>
+                    </ng-container>
+                </ng-container>
+            </ul>
+        </div>
+        <mat-spinner
+            class="loading-indicator"
+            [@fadeInOut]="reopenInProcess$ | async"
+            *ngIf="reopenInProcess$ | async"
+            [diameter]="30"
+            mode="indeterminate"
+            style="color: var(--msg-outboundMsg)"
+        ></mat-spinner>
+    </div>
+
+    <span
+        *ngIf="
+            botReplyInProcess &&
+            widgetInfo.bot_id &&
+            ((selectedChannel$ | async)?.assigned_type === 'bot' ||
+                ((selectedChannelAssignee$ | async)?.assigneeBot && !(selectedChannel$ | async)?.assigneeChange))
+        "
+        class="d-flex align-items-center someone-typing"
+        ><mat-icon>smart_toy</mat-icon>{{ widgetInfo?.bot_name ?? 'Bot' }} is typing
+        <div class="dots-animation">
+            <span class="dot-item"></span>
+            <span class="dot-item"></span>
+            <span class="dot-item"></span>
+        </div>
+    </span>
+
+    <msg91-message-input
+        (inputBlurred)="inputBlurred($event)"
+        (inputFocused)="inputFocused()"
+        (inputTyping)="userTyped($event)"
+        (send)="send($event)"
+        [disable]="messageGetInProcess || (createChannelInProcess$ | async) || (reopenInProcess$ | async)"
+        [fileUploadError]="fileUploadingError$ | async"
+        [fileUploadPercentage]="fileUploadingPercentage$ | async"
+        [fileUploadSuccessful]="fileUploadingSuccessful$ | async"
+        [publishingInProcess]="messagePublishInProcess$ | async"
+        [fileUploadInProcess]="fileUploadingInProgress$ | async"
+        [channel]="channel?.channel"
+        [clientFormSubmitted]="clientFormSubmitted"
+        [showSendButton]="showSendButton$ | async"
+        [isMobileSDK]="isMobileSDK"
+        *ngIf="(selectWidgetChatStatus$ | async) !== chatStatusEnums.disabled"
+    ></msg91-message-input>
+</div>

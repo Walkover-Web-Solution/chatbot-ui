@@ -1,0 +1,25 @@
+<mat-form-field [appearance]="appearance" [class]="matFormFieldClass">
+    <mat-label>Caller ID</mat-label>
+    <mat-select
+        disableRipple
+        msg91CloseDropdownOnEscape
+        placeholder="Select Caller ID"
+        [formControl]="callerIdControl"
+        msg91AutoSelectDropdown
+        (selectionChange)="optionSelected.emit(true); selectCallerId()"
+    >
+        <mat-option [value]="''" *ngIf="showNoCallerId"> No Caller ID </mat-option>
+        <mat-option disabled [value]="null" *ngIf="!showNoCallerId && !(callerIdList$ | async)?.length">
+            No Caller ID Found
+        </mat-option>
+        <mat-option
+            [value]="setKeyInValue ? callerId?.[setKeyInValue] : callerId"
+            *ngFor="let callerId of callerIdList$ | async"
+        >
+            {{ callerId.did_number }}
+        </mat-option>
+    </mat-select>
+    <mat-error *ngIf="callerIdControl?.touched">
+        <mat-error *ngIf="callerIdControl?.errors?.required"> Caller ID is required </mat-error>
+    </mat-error>
+</mat-form-field>

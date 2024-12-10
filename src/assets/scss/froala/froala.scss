@@ -1,0 +1,73 @@
+.fr-view .fr-cust-text-gray {
+    color: rgb(170, 170, 170);
+}
+
+.fr-view .fr-cust-alternate-rows {
+    tr:nth-child(2n) {
+        background-color: whitesmoke;
+    }
+}
+
+.fr-view .fr-table-border-none {
+    thead tr th,
+    tbody tr td {
+        border-style: none;
+    }
+}
+// CSS For -> Froala Editor :: When user type @ in notes  textarea then User list show
+
+.tribute-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: auto;
+    max-height: 300px;
+    max-width: 500px;
+    overflow: auto;
+    display: block;
+    z-index: 999999;
+    min-width: 200px;
+}
+.tribute-container ul {
+    margin: 0;
+    margin-top: 2px;
+    padding: 0;
+    list-style: none;
+    background: var(--color-common-white);
+    border: 1px solid rgba(49, 60, 70, 0.15);
+}
+.tribute-container li {
+    padding: 5px 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+.tribute-container li.highlight,
+.tribute-container li:hover {
+    background: #337abd;
+    color: var(--color-common-white);
+}
+.tribute-container li span {
+    font-weight: bold;
+}
+.tribute-container li.no-match {
+    cursor: default;
+}
+.tribute-container .menu-highlighted {
+    font-weight: bold;
+}
+
+.code-editor {
+    .fr-code-view .fr-wrapper {
+        max-height: calc(100vh - 233px) !important;
+    }
+}
+.froala-template-code-editor {
+    .fr-wrapper {
+        max-height: calc(100vh - 340px) !important;
+    }
+    @media only screen and (min-width: 995px) and (max-width: 1786px) {
+        .fr-wrapper {
+            max-height: calc(100vh - 388px) !important;
+        }
+    }
+}

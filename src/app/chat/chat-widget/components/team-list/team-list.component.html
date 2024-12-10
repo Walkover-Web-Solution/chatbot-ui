@@ -1,0 +1,42 @@
+<div class="team-list-body-container">
+    <div class="team-list-body-inner-container">
+        <ng-container *ngIf="teams$ | async as teams">
+            <button (click)="selectTeam(team.id)" *ngFor="let team of teams" class="main-team-channel" mat-button>
+                <div class="team-message-list-card">
+                    <div class="team-profile-group" *ngIf="teamAssignees$[team.id] | async as assignees">
+                        <ng-container *ngFor="let assignee of assignees; let i = index">
+                            <msg91-profile-name
+                                [ngClass]="{
+                                    single: assignees?.length === 1,
+                                    'team-profile-1': i === 0,
+                                    'team-profile-2': i === 1,
+                                    'team-profile-3': i === 2
+                                }"
+                                [hashCode]="assignee | getHashCode"
+                                [shortName]="assignee | getShortName"
+                                class="profile-name"
+                                [width]="22"
+                                [height]="22"
+                                [aProfileClass]="assignees?.length === 1 ? 'profileSingle' : 'profileSmall'"
+                            >
+                            </msg91-profile-name>
+                        </ng-container>
+                    </div>
+
+                    <div class="team-message-list-text-content">
+                        <strong> {{ team.name }}</strong>
+                    </div>
+
+                    <button class="team-c-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M8.58984 7.41L13.1698 12L8.58984 16.59L9.99984 18L15.9998 12L9.99984 6L8.58984 7.41Z"
+                                fill="var(--msg-primaryColor)"
+                            />
+                        </svg>
+                    </button>
+                </div>
+            </button>
+        </ng-container>
+    </div>
+</div>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">
+  <g id="Group_740" data-name="Group 740" transform="translate(-309 -102)">
+    <g id="Group_574" data-name="Group 574" transform="translate(309 102)">
+      <g id="account">
+        <g id="account-circle">
+          <path id="Path_293" data-name="Path 293" d="M30,0A30,30,0,1,0,60,30,30.088,30.088,0,0,0,30,0Zm0,9a8.839,8.839,0,0,1,9,9,8.839,8.839,0,0,1-9,9,8.839,8.839,0,0,1-9-9A8.839,8.839,0,0,1,30,9Zm0,42.6A21.886,21.886,0,0,1,12,42c0-6,12-9.3,18-9.3S48,36,48,42A21.887,21.887,0,0,1,30,51.6Z" fill="#606e86"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

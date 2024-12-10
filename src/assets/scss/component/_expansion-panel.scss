@@ -1,0 +1,241 @@
+.default-expansion-panel {
+    &.mat-mdc-expanded {
+        background-color: transparent !important;
+
+        .mat-mdc-expansion-panel-header {
+            .mat-mdc-line,
+            .mat-mdc-icon {
+                color: var(--color-common-primary);
+            }
+
+            .mat-mdc-expansion-indicator {
+                &:after {
+                    color: var(--color-common-primary);
+                }
+
+                margin-top: 6px;
+            }
+
+            &:hover {
+                color: var(--color-common-primary);
+                background-color: var(--color-menu-common-hover-link-background);
+            }
+        }
+    }
+
+    border-radius: 0px !important;
+
+    /* Header*/
+    .mat-expansion-panel-header {
+        padding: 0 16px !important;
+        height: 38px;
+
+        &.mat-expanded {
+            height: 38px;
+        }
+
+        .mat-mdc-content {
+            align-items: center;
+        }
+
+        .mat-expansion-indicator {
+            margin-top: -4px;
+        }
+
+        .mat-mdc-line {
+            font-size: var(--font-size-common-14) !important;
+            padding-left: 16px;
+            color: var(--color-common-text);
+            font-weight: 400;
+        }
+
+        ::ng-deep.mat-mdc-icon {
+            color: var(--color-common-text);
+        }
+
+        &:hover {
+            background: rgba(0, 0, 0, 0.04);
+
+            .mat-mdc-line {
+                color: var(--color-common-primary);
+            }
+
+            .mat-expansion-indicator {
+                &:after {
+                    color: var(--color-common-primary);
+                }
+            }
+        }
+    }
+
+    /* Panel Content*/
+    .mat-expansion-panel-content {
+        visibility: visible;
+
+        .mat-expansion-panel-body {
+            padding: 0px;
+
+            .mat-mdc-nav-list {
+                max-height: 300px;
+                overflow-y: auto;
+                padding-top: 0px;
+
+                .mat-mdc-list-item {
+                    .mat-mdc-list-item-content {
+                        padding-left: 30px !important;
+                    }
+
+                    &.active,
+                    &:hover {
+                        background: rgba(30, 117, 186, 0.11) !important;
+                        color: #1e75ba !important;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Below class also used in new mail thread design
+.custom-expansion-panel {
+    border-radius: var(--border-common-radius) !important;
+
+    // Panel Header
+    .mat-mdc-expansion-panel-header {
+        .mat-mdc-content-hide-toggle {
+            margin-right: 0px;
+        }
+    }
+
+    // Panel Content
+    .mat-mdc-expansion-panel-content {
+        visibility: visible;
+
+        .mat-mdc-expansion-panel-body {
+            padding-inline: 16px;
+        }
+    }
+
+    // Reset Expansion panel body bottom padding reset with 8px
+    &.reset-content-pb-2 {
+        .mat-mdc-expansion-panel-content {
+            .mat-mdc-expansion-panel-body {
+                padding-bottom: 8px;
+            }
+        }
+    }
+}
+
+// expansion-panel header button
+.expansion-button {
+    .mat-mdc-expansion-panel-header {
+        max-width: fit-content;
+        height: 35px;
+        padding: 0 !important;
+
+        &.mat-mdc-expanded {
+            height: 35px;
+        }
+
+        .mat-mdc-expansion-panel-header-title {
+            margin-right: 8px;
+        }
+
+        &:hover {
+            background: transparent !important;
+
+            .mat-mdc-expansion-panel-header-title {
+                color: var(--color-common-primary) !important;
+            }
+        }
+    }
+
+    &.mat-mdc-expanded {
+        .mat-mdc-expansion-panel-header {
+            .mat-mdc-expansion-panel-header-title {
+                color: var(--color-common-primary) !important;
+            }
+        }
+    }
+}
+
+// for gpt expansion
+.gpt-expansion {
+    .mat-expansion-panel-header {
+        &.mat-expanded {
+            height: 48px;
+        }
+    }
+
+    .mat-expansion-panel-body {
+        padding: 0 16px 16px 16px;
+    }
+}
+
+//  admin sidenav expansion color change hover
+.admin-sidenav {
+    // .sidenav-expansion-panel {
+    .mat-expansion-panel {
+        .mat-expansion-panel-header {
+            .mat-icon {
+                svg {
+                    path {
+                        fill: var(--mdc-list-list-item-leading-icon-color);
+                    }
+                }
+            }
+            &:hover {
+                .mat-expansion-indicator {
+                    svg {
+                        fill: var(--color-common-white);
+                    }
+                }
+
+                .mat-mdc-list-item {
+                    .mdc-list-item__primary-text,
+                    .mdc-list-item__content {
+                        color: var(--color-sidenav-menu-hover-link-text) !important;
+                    }
+
+                    .mat-icon {
+                        display: table;
+                        color: var(--color-sidenav-menu-hover-link-icon) !important;
+
+                        &.menu-svg-icon {
+                            svg {
+                                path {
+                                    fill: var(--color-sidenav-menu-hover-link-icon);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .mat-mdc-list-item {
+            &.active-list-item,
+            &:hover {
+                .mdc-list-item__primary-text,
+                .mdc-list-item__content {
+                    color: var(--color-sidenav-menu-hover-link-text) !important;
+                }
+            }
+        }
+    }
+}
+
+// for new admin design changes
+.collapsed-sidebar {
+    .admin-sidenav {
+        .mat-expansion-panel {
+            .mat-expansion-panel-header {
+                padding: 0 10px !important;
+            }
+            .mat-mdc-list-item {
+                .mat-icon {
+                    margin-left: 8px;
+                }
+            }
+        }
+    }
+}

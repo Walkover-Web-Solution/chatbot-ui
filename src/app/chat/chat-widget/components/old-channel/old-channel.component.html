@@ -1,0 +1,54 @@
+<button class="main-msg91-old-channel" mat-button>
+    <div class="old-message-list-card">
+        <div
+            class="old-profile-group"
+            [ngClass]="{
+                'singleInitial': assignees?.assignees?.length === 1,
+                'multipleInitial': assignees?.assignees?.length > 1
+            }"
+        >
+            <ng-container *ngFor="let assignee of assignees?.assignees; let i = index">
+                <msg91-profile-name
+                    [ngClass]="{
+                        single: assignees?.assignees?.length === 1,
+                        'old-profile-1': i === 0,
+                        'old-profile-2': i === 1,
+                        'old-profile-3': i === 2
+                    }"
+                    [hashCode]="assignee | getHashCode"
+                    [shortName]="assignee | getShortName"
+                    class="profile-name"
+                    [width]="assignees?.assignees?.length === 1 ? 40 : 22"
+                    [height]="assignees?.assignees?.length === 1 ? 40 : 22"
+                    [aProfileClass]="assignees?.assignees?.length === 1 ? 'profileLarge' : 'profileSmall'"
+                >
+                </msg91-profile-name>
+            </ng-container>
+        </div>
+        <div class="old-message-list-text-content">
+            <small class="old-title">
+                {{ assignees?.assigneeName
+                }}{{
+                    channel?.last_message?.timetoken
+                        ? ' . ' + (channel?.last_message?.timetoken | timeConversion: 'timeAgo')
+                        : ''
+                }}</small
+            >
+            <span>{{ channel?.last_message | lastConversion: 20 }}</span>
+            <span *ngIf="channel.widget_unread_count > 0" class="unread-count">
+                <p class="new-message">New message</p>
+                <span class="count">
+                    {{ channel.widget_unread_count }}
+                </span>
+            </span>
+        </div>
+        <button class="old-c-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M8.58984 7.41L13.1698 12L8.58984 16.59L9.99984 18L15.9998 12L9.99984 6L8.58984 7.41Z"
+                    fill="var(--msg-primaryColor)"
+                />
+            </svg>
+        </button>
+    </div>
+</button>

@@ -1,0 +1,106 @@
+<div class="client-input-form">
+    <div class="msg-container">
+        <div class="input-msg-box" style="box-sizing: border-box" *ngIf="!$any(message)?.formSubmitted">
+            <h6 class="fw-bold agent-name">Bot</h6>
+            <span>Please fill this form with your details to proceed with the conversation.</span>
+        </div>
+        <mat-card *ngIf="!$any(message)?.formSubmitted" class="mat-elevation-z3 details-card input-msg-box">
+            <form [formGroup]="clientForm">
+                <div class="show-loader" *ngIf="formIsSubmiting" style="position: absolute; bottom: 112px">
+                    <mat-progress-spinner diameter="20" mode="indeterminate" value="100"></mat-progress-spinner>
+                </div>
+                <ng-container *ngFor="let param of defaultParams">
+                    <div class="clint-input-container" style="flex-direction: column; position: relative">
+                        <mat-form-field
+                            appearance="outline"
+                            class="w-100"
+                            *ngIf="param.name?.toUpperCase() !== 'NUMBER'"
+                            [style.marginTop]="param?.name === 'mail' ? '10px' : ''"
+                        >
+                            <mat-label style="text-transform: capitalize">{{
+                                param?.name === 'mail' ? 'Email' : param?.name
+                            }}</mat-label>
+                            <ng-container *ngIf="param.name?.toUpperCase() !== 'NUMBER'">
+                                <input
+                                    #formControl
+                                    [formControlName]="param?.id"
+                                    [name]="param?.name"
+                                    type="text"
+                                    [placeholder]="
+                                        'Your ' + (param.name === 'mail' ? 'email' : param.name?.toLowerCase())
+                                    "
+                                    matInput
+                                    autocomplete="off"
+                                />
+                            </ng-container>
+
+                            <mat-error *ngIf="clientForm.get(param?.id)?.hasError('required')"
+                                >{{ param?.name === 'mail' ? 'Email' : (param.name | titlecase) }} is required.
+                            </mat-error>
+                            <mat-error *ngIf="clientForm.get(param?.id)?.hasError('invalidNumber')"
+                                >{{ param?.name === 'mail' ? 'Email' : (param.name | titlecase) }} is invalid.
+                            </mat-error>
+                            <mat-error *ngIf="clientForm.get(param?.id)?.hasError('maxlength')"
+                                >{{ param?.name === 'mail' ? 'Email' : (param.name | titlecase) }} is too long.
+                            </mat-error>
+                            <mat-error *ngIf="clientForm.get(param?.id)?.hasError('alphabatOnly')"
+                                >{{ param?.name === 'mail' ? 'Email' : (param.name | titlecase) }} only alphanumeric
+                                allow.
+                            </mat-error>
+                            <mat-error *ngIf="clientForm.get(param?.id)?.hasError('pattern')"
+                                >{{ param?.name === 'mail' ? 'Email' : (param.name | titlecase) }} is invalid.
+                            </mat-error>
+                        </mat-form-field>
+                        <ng-container *ngIf="param.name?.toUpperCase() === 'NUMBER'">
+                            <!-- <phone-number-control
+                                #formControl
+                                [formControlName]="param?.id"
+                                [appurl]="appurl"
+                                [placeholder]="
+                                    'Your ' + (param.name === 'mail' ? 'email' : param.name?.toLowerCase())
+                                "
+                                matInput
+                            >
+                            </phone-number-control> -->
+                            <input
+                                type="tel"
+                                #initContact
+                                [formControlName]="param?.id"
+                                (keypress)="intlClass?.onlyPhoneNumber($event)"
+                                id="init-contact"
+                                placeholder="Mobile Number"
+                                matInput
+                            />
+                            <span
+                                *ngIf="clientForm.get(param?.id)?.hasError('invalidNumber')"
+                                class="mat-error invalid-number"
+                                >{{ param?.name === 'mail' ? 'Email' : (param.name | titlecase) }} is invalid.
+                            </span>
+                        </ng-container>
+                    </div>
+                </ng-container>
+                <div class="form-btn">
+                    <button
+                        (click)="submitParam(defaultParams)"
+                        class="focused-color"
+                        color="primary"
+                        mat-flat-button
+                        type="submit"
+                        [disabled]="formIsSubmiting"
+                    >
+                        Submit
+                    </button>
+                </div>
+            </form>
+        </mat-card>
+    </div>
+</div>
+
+<ng-template [ngIf]="$any(message)?.formSubmitted">
+    <div class="success-clint-form">
+        <div style="text-align: center">
+            <img [src]="appurl + 'assets/images/success-icon.png'" loading="lazy" />
+        </div>
+        <strong> Your details are successfully sent! </strong>
+    </div>
+</ng-template>

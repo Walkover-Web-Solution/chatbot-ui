@@ -1,0 +1,12 @@
+<div class="options">
+    <button
+        class="row align-self-start"
+        (click)="optionClick.emit(option)"
+        mat-stroked-button
+        *ngFor="let option of options"
+        style="background: var(--color-common-white) !important"
+        [ngStyle]="{ 'pointer-events': disableAction ? 'none' : 'auto' }"
+    >
+        <span class="overflow-dotted">{{ option.name }}</span>
+    </button>
+</div>

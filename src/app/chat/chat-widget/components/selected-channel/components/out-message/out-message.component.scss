@@ -1,0 +1,164 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+::ng-deep.out-msg-box {
+    padding: 6px;
+    background-color: var(--msg-outboundMsg);
+    color: #ffffff;
+    min-width: 194px;
+    max-width: 194px;
+    min-width: 100px;
+    max-width: 233px;
+    border-radius: 6px;
+    box-sizing: border-box;
+    &.deleted-message {
+        background-color: var(--msg-secondaryColor);
+    }
+    p {
+        -ms-word-break: break-word !important;
+        word-break: break-word !important;
+        -webkit-hyphens: auto !important;
+        hyphens: auto !important;
+        a {
+            color: #ffffff;
+        }
+        font-size: 12.8px;
+        line-height: 20px;
+        margin: 0px;
+        font-family: var(--msg-fontFamily);
+        margin-bottom: 0px;
+    }
+    * {
+        margin: 0px;
+    }
+
+    &.if-attachment {
+        padding: 6px;
+        p {
+            margin-top: 4px;
+            margin-bottom: 4px;
+        }
+        .attach-bubble {
+            background: rgba(0, 0, 0, 0.18);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            padding: 4px;
+            .attach-icon {
+                width: 18px;
+                height: 18px;
+                .mat-icon {
+                    font-size: 18px;
+                    width: 18px;
+                    height: 18px;
+                    opacity: 0.7;
+                }
+            }
+            .attach-filename {
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                span {
+                    font-family: var(--msg-fontFamily);
+                    font-weight: normal;
+                    font-size: 12px;
+                    line-height: 20px;
+                    color: #ffffff;
+                    margin-left: 6px;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                }
+            }
+        }
+        .msg-content {
+            padding-left: 4px;
+        }
+        img {
+            display: block;
+        }
+    }
+}
+
+.img-msg-box {
+    max-width: 100%;
+    border-radius: 3px;
+    // margin-top: 10px;
+}
+
+.file-attachment {
+    display: flex;
+    align-items: center;
+    padding: 3px 5px;
+    margin-top: 15px;
+    border: 1px solid #ffffff;
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+.file-attachment > mat-icon {
+    // margin-right: 10px;
+    // background-color: #ff956d2e;
+    height: 26px;
+    width: 26px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+    font-size: 15px;
+    // transform: rotate(45deg);
+}
+
+.file-attachment > span {
+    // margin-right: 20px;
+    max-width: 120px;
+    min-width: 120px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 12px;
+}
+
+.out-msg-box span {
+    display: block;
+    overflow-wrap: anywhere;
+}
+// .out-msg-box .msg-content{
+//     margin-bottom: 4px;
+// }
+
+::ng-deep.show-loader {
+    .mat-progress-spinner {
+        circle {
+            stroke: var(--msg-primaryColor);
+        }
+    }
+}
+
+::ng-deep.pre-text {
+    white-space: pre-wrap !important;
+    font-family: var(--msg-fontFamily) !important;
+}
+
+.media-not-found::after {
+    pointer-events: none;
+    content: 'Media not Found or Supported';
+    position: absolute;
+    inset: 0;
+    color: #ffffff;
+    background-color: rgb(0 0 0 / 54%);
+    height: 100%;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-common-radius-4);
+    font-weight: 600;
+    cursor: not-allowed;
+    z-index: 9999;
+    font-size: 14px;
+}

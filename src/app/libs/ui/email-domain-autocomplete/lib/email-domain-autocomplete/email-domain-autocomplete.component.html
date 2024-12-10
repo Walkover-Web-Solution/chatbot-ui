@@ -1,0 +1,109 @@
+<div class="d-flex col-gap-3 align-items-start">
+    <mat-form-field
+        [appearance]="formFieldAppearance"
+        [class]="matFormFieldClass"
+        [floatLabel]="fromCampaign ? 'auto' : 'always'"
+    >
+        <mat-label>Select Domain</mat-label>
+        <input
+            type="text"
+            matInput
+            [matAutocomplete]="emailDomainAutoComplete"
+            #emailDomainInput
+            [formControl]="emailDomainFormControl"
+            #domainTrigger="matAutocompleteTrigger"
+            [msg91CloseDropdownOnEscape]="domainTrigger"
+            placeholder=" Select Domain"
+        />
+        <mat-autocomplete
+            #emailDomainAutoComplete="matAutocomplete"
+            [displayWith]="domainDisplayFunction"
+            msg91AutoSelectDropdown
+            (setControlValue)="emailDomainFormControl?.value?.id ? false : setDomainControlValue($event)"
+            (optionSelected)="showCloseDomain = true; optionSelected.emit($event)"
+        >
+            <msg91-cdk-scroll (fetchNextPage)="emailDomainAutoComplete?.isOpen ? fetchNextDomainPage() : null">
+                <ng-container *ngIf="createDomainURL">
+                    <a
+                        class="flat-primary-light my-2 mx-3"
+                        mat-flat-button
+                        [href]="emitAddDomainEvent ? 'javascript:void(0)' : createDomainURL"
+                        (click)="emitAddDomainEvent ? openAddDomainDialog.emit() : null"
+                        target="_blank"
+                        [disabled]="!operationAllowed"
+                        *msg91ButtonWrapper="
+                            operationAllowed;
+                            tooltipText: 'No Permission';
+                            tooltipPosition: 'below';
+                            wrapperClass: 'd-inline-block'
+                        "
+                        >Add Domain</a
+                    >
+                </ng-container>
+                <ng-container *ngIf="emitAddDomainEvent">
+                    <a
+                        class="flat-primary-light my-2 mx-3"
+                        mat-flat-button
+                        href="javascript:void(0)"
+                        (click)="openAddDomainDialog.emit(); autocomplete.closePanel()"
+                        [disabled]="!operationAllowed"
+                        [ngClass]="{ 'pointer-none': !operationAllowed }"
+                        *msg91ButtonWrapper="
+                            operationAllowed;
+                            tooltipText: 'No Permission';
+                            tooltipPosition: 'below';
+                            wrapperClass: 'd-inline-block'
+                        "
+                        >Add Domain</a
+                    >
+                </ng-container>
+
+                <mat-option disabled value="" *ngIf="!domains?.length"> No Domain Found </mat-option>
+                <mat-option
+                    [ngClass]="emailDomainFormControl?.value?.domain === domain?.domain ? 'mat-active' : ''"
+                    [value]="domain"
+                    *ngFor="let domain of domains"
+                >
+                    {{ domain.domain }}
+                </mat-option>
+            </msg91-cdk-scroll>
+        </mat-autocomplete>
+        <button
+            mat-icon-button
+            matSuffix
+            color="primary"
+            *ngIf="showCloseDomain || emailDomainFormControl.value?.id"
+            class="cursor-pointer icon-btn-md"
+            (click)="clearDomain()"
+        >
+            <mat-icon class="mat-icon-20 text-dark">close</mat-icon>
+        </button>
+        <mat-error>
+            <ng-container *ngIf="showPurchasePlanText$ | async; else subscriptionPresent">
+                <mat-error (click)="noSubscription.emit(subscriptionBasedServices.Email)" class="cursor-pointer"
+                    >Click here to subscribe to an Email plan.</mat-error
+                >
+            </ng-container>
+            <ng-template #subscriptionPresent>
+                <ng-container *ngIf="emailDomainFormControl.touched">
+                    <mat-error *ngIf="emailDomainFormControl.errors?.required"> Domain field is required. </mat-error>
+                    <mat-error *ngIf="emailDomainFormControl.errors?.elementExistsInList">
+                        Please select domain from the list
+                    </mat-error>
+                </ng-container>
+            </ng-template>
+        </mat-error>
+    </mat-form-field>
+    <button
+        mat-mini-fab
+        class="mt-1"
+        (click)="refreshDomain()"
+        matTooltip="Refresh"
+        matTooltipPosition="above"
+        *ngIf="!hideRefresh"
+        [msg91ButtonLoader]="apiInProgress$ | async"
+        [wrapperClass]="'mt-1'"
+    >
+        <mat-icon class="mat-icon-20" fontIcon="refresh"></mat-icon>
+    </button>
+</div>

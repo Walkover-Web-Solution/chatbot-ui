@@ -1,0 +1,39 @@
+:host {
+    .code-details-wrapper {
+        .task-content {
+            .code-container {
+                width: 100%;
+                height: calc(100vh - 260px - var(--sip-calling-height));
+                border-radius: 4px;
+                overflow: auto;
+                color: var(--color-common-white);
+            }
+        }
+    }
+}
+
+.copy {
+    float: right;
+    padding: 5px;
+    cursor: pointer;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+}
+
+.note-msg {
+    font-size: 12px;
+    padding: 8px;
+    color: var(--color-common-grey);
+}
+
+@media only screen and (min-width: 768px) {
+    .code-container {
+        font-size: 13px;
+        height: 350px;
+        overflow: auto;
+        overflow: overlay;
+        border-radius: 8px;
+        background: #272822;
+    }
+}

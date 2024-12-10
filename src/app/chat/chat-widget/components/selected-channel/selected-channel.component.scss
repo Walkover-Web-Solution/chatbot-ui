@@ -1,0 +1,318 @@
+.mat-faqs-btn {
+    height: 30px;
+    line-height: 30px;
+    font-size: 16px !important;
+    font-family: var(--msg-fontFamily) !important;
+    font-weight: 600 !important;
+    padding: 0px 4px 0px 10px;
+    margin-left: auto;
+}
+
+.selected-channel-main-container {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.selected-channel-body-container {
+    flex: 1;
+    position: relative;
+}
+
+.selected-channel-body-inner-container {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    overflow: hidden auto;
+    padding: 0 16px;
+    height: 100%;
+}
+
+/*
+header profile img with name style
+*/
+
+.header-profile-img-with-name {
+    // width: 30px;
+    // height: 30px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-right: 10px;
+    &.profileLarge {
+        width: 40px;
+        height: 40px;
+    }
+}
+.assigneeName {
+    font-weight: bold;
+    font-size: 18px;
+    line-height: 20px;
+    width: 150px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    -webkit-font-smoothing: antialiased;
+    font-family: var(--msg-fontFamily);
+}
+
+::ng-deep.header-profile-img-with-name .profile-name {
+    position: absolute;
+}
+
+.header-profile-img-with-name .profile-name.profile-1 {
+    top: 0;
+    z-index: 9;
+}
+
+.header-profile-img-with-name .profile-name.profile-2 {
+    left: 0;
+    bottom: 0;
+}
+
+.header-profile-img-with-name .profile-name.profile-3 {
+    right: 0;
+    bottom: 0;
+}
+.header-profile-img-with-name .profile-name.profile-name.single {
+    position: unset !important;
+    top: unset !important;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+small.indicate-ine {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    color: #a5a5a5;
+}
+
+.seen-msg.timeline-penal svg {
+    fill: var(--msg-primaryColor) !important;
+}
+
+ul.message-ul {
+    padding: 0;
+    list-style: none;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+.timeline-penal {
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+}
+
+.timeline-penal small {
+    font-size: 10px;
+    line-height: 20px;
+    margin-right: 9px;
+    color: #a1a1a1;
+}
+
+.timeline-penal svg {
+    fill: #d0d0d0;
+    height: 14px;
+    width: 14px;
+    transition: 500ms all;
+}
+
+.input-msg-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 6px;
+}
+
+.out-msg-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-bottom: 6px;
+}
+
+.chat-unread-line {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+
+    span {
+        background-color: #ffefd8;
+        padding: 3px 16px;
+        font-size: 10px;
+        color: #df8500;
+        border-radius: 6px;
+        line-height: 1.5;
+        text-transform: capitalize;
+        display: inline-block;
+        white-space: break-spaces;
+    }
+}
+
+.chat-time-line {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 6px;
+
+    span {
+        text-transform: capitalize;
+        font-weight: 600;
+        font-size: 10px;
+        line-height: 20px;
+        color: #393939;
+    }
+}
+
+::ng-deep.loading-indicator {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    margin: auto;
+    &.mat-progress-spinner {
+        circle {
+            stroke: var(--msg-primaryColor);
+        }
+    }
+}
+
+.presence-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: gray;
+    display: block;
+    margin: 2px 2px 2px 15px;
+}
+
+.presence-status-text {
+    font-size: 0.5em !important;
+    padding: 2px;
+    color: #cccccc;
+}
+
+.online {
+    background-color: #0f0;
+    box-shadow: 0px 0px 8px 2px #0f0;
+}
+
+.away {
+    background-color: #ff0;
+    box-shadow: 0px 0px 8px 2px #ff0;
+}
+
+.head-logo {
+    display: flex;
+    justify-content: space-between;
+}
+
+.head-logo {
+    display: flex;
+    align-items: center;
+    .logo {
+        display: flex;
+        align-items: center;
+    }
+    .logo-img {
+        height: 30px !important;
+    }
+    .logo-text {
+        p {
+            line-height: 16px;
+            margin-top: 3px;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 3px 0 0;
+        }
+        span {
+            font-size: 9px;
+            display: block;
+            font-weight: 100;
+        }
+    }
+}
+.d-flex {
+    display: flex;
+}
+
+.border-radius-none {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+}
+
+::ng-deep.header-profile-img-with-name {
+    &.singleInitial {
+        width: 40px;
+        height: 40px;
+        font-weight: 600;
+        font-size: 18px;
+        line-height: 20px;
+    }
+    &.multipleInitial {
+        width: 35px;
+        height: 35px;
+    }
+}
+
+.h-desc {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    margin: -8px;
+    padding: 0 16px 0 26px;
+    -webkit-font-smoothing: antialiased;
+    font-family: var(--msg-fontFamily);
+}
+
+.someone-typing {
+    font-size: 9px;
+    gap: 4px;
+    margin-left: 16px;
+    margin-bottom: 8px;
+    .mat-icon {
+        font-size: 16px;
+        height: 16px;
+        width: 16px;
+        line-height: 16px;
+        color: #5f6368;
+    }
+    .dots-animation {
+        position: relative;
+        bottom: -1px;
+        .dot-item {
+            display: inline-block;
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+            margin-left: 3px;
+            background: #687484;
+            animation: wave 1.3s linear infinite;
+
+            &:nth-child(2) {
+                animation-delay: -1.1s;
+            }
+
+            &:nth-child(3) {
+                animation-delay: -0.9s;
+            }
+        }
+    }
+
+    @keyframes wave {
+        0%,
+        60%,
+        100% {
+            transform: initial;
+        }
+
+        30% {
+            transform: translateY(-3px);
+        }
+    }
+}

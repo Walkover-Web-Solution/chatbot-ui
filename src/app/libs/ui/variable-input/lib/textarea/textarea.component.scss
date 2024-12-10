@@ -1,0 +1,32 @@
+:host::ng-deep .highlight-text {
+    background-color: var(--color-common-primary-light-hover);
+}
+
+:host::ng-deep .text-input-highlight-container .text-highlight-element {
+    color: transparent;
+    box-shadow: none;
+    // border: 1px solid var(--color-common-border);
+    // border-radius: 2px;
+    padding-top: 5px !important;
+    background-color: transparent !important;
+}
+
+:host::ng-deep .text-input-highlight-container .prefix-space .text-highlight-element {
+    margin-left: 16px !important;
+}
+
+:host::ng-deep .text-input-highlight-container .single-line .text-highlight-element {
+    height: 30px;
+}
+// for div text-highlight-element height overflow issue
+:host::ng-deep .text-input-highlight-container .textarea-row4 .text-highlight-element {
+    max-height: 68px;
+}
+
+textarea {
+    resize: none;
+}
+
+.jump-textarea {
+    width: 700px !important;
+}

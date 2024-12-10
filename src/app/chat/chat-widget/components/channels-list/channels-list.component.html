@@ -1,0 +1,50 @@
+<div class="channels-main-container">
+    <div
+        class="widget-header all-conversation"
+        [style.background-color]="primaryColor"
+        [style.background-image]="backgroundImage"
+        [ngClass]="{ 'border-radius-none': isMobileSDK && sdkConfig?.borderRadiusDisable }"
+    >
+        <div style="display: flex; align-items: center; width: 100%">
+            <div style="display: flex; align-items: center">
+                <button (click)="backToChat()" class="btn-w-icon" mat-icon-button>
+                    <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M19.2627 20.7375L13.5377 15L19.2627 9.2625L17.5002 7.5L10.0002 15L17.5002 22.5L19.2627 20.7375Z"
+                            fill="white"
+                            class="ng-tns-c97-2"
+                        ></path>
+                    </svg>
+                </button>
+                <h3 style="margin: 0px">All Coversation</h3>
+            </div>
+            <button mat-button class="mat-faqs-btn" (click)="enableChatView(false)" *ngIf="widgetShowFaq$ | async">
+                FAQs
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M7.1582 6.175L10.9749 10L7.1582 13.825L8.3332 15L13.3332 10L8.3332 5L7.1582 6.175Z"
+                        fill="white"
+                    />
+                </svg>
+            </button>
+        </div>
+        <!-- <ng-container *ngIf="widgetTagline$ | async as tagline">
+      <p style="margin: 7px 0;">{{tagline}}</p>
+    </ng-container> -->
+    </div>
+
+    <div class="channels-body-container">
+        <div class="channels-body-inner-container">
+            <div class="conversation-card">
+                <ng-container *ngFor="let channel of channels$ | async; let i = index">
+                    <msg91-old-channel
+                        *ngIf="channel?.id"
+                        [assignees]="channelAssignees$[channel?.channel] | async"
+                        (click)="selectChannel(channel)"
+                        [channel]="channel"
+                    ></msg91-old-channel>
+                </ng-container>
+            </div>
+        </div>
+    </div>
+</div>

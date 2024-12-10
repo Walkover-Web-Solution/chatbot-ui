@@ -1,0 +1,76 @@
+<div class="d-flex col-gap-3 align-items-start">
+    <mat-form-field [appearance]="appearance" [ngClass]="cssClass">
+        <mat-label
+            >{{ label }}
+            <span *ngIf="showRequiredAsterisk && hasRequiredValidator" class="text-danger">*</span></mat-label
+        >
+        <input
+            type="text"
+            matInput
+            [matAutocomplete]="phonebookAutoComplete"
+            #trigger="matAutocompleteTrigger"
+            #phonebookInput
+            [formControl]="phonebookForm"
+            #phonebookTrigger="matAutocompleteTrigger"
+            [msg91CloseDropdownOnEscape]="phonebookTrigger"
+            [placeholder]="label"
+        />
+        <mat-autocomplete
+            #phonebookAutoComplete="matAutocomplete"
+            (optionSelected)="handlePhonebookSelection($event.option.value)"
+            [displayWith]="phonebookDisplayFunction"
+            msg91AutoSelectDropdown
+            (setControlValue)="setPhonebookControlValue($event)"
+        >
+            <a
+                href="javascript:void(0);"
+                class="mat-option text-primary fw-bold d-flex align-items-center"
+                (click)="trigger.closePanel(); handlePhonebookSelection(null)"
+                *ngIf="showAddPhoneBookButton && !createPhoneBook"
+            >
+                <mat-icon class="mat-icon-16 mr-0">add</mat-icon>&nbsp;Create Phonebook
+            </a>
+            <a
+                href="javascript:void(0);"
+                class="mat-option text-primary fw-bold d-flex align-items-center"
+                (click)="trigger.closePanel(); openPhoneBookDialog()"
+                *ngIf="showAddPhoneBookButton && createPhoneBook"
+            >
+                <mat-icon class="mat-icon-16 mr-0">add</mat-icon>&nbsp;Create Phonebook
+            </a>
+            <mat-option disabled value="" *ngIf="!(phonebooks$ | async)?.length"> No Phonebook Found </mat-option>
+            <mat-option [value]="phone" *ngFor="let phone of phonebooks$ | async">
+                {{ phone.name }}
+            </mat-option>
+        </mat-autocomplete>
+        <div matSuffix class="d-flex align-items-center">
+            <button
+                mat-icon-button
+                color="primary"
+                *ngIf="phonebookForm.value && !phonebookForm.disabled"
+                class="icon-btn-md cursor-pointer"
+                (click)="clearPhonebook()"
+            >
+                <mat-icon class="mat-icon-20 text-dark">close</mat-icon>
+            </button>
+            <mat-spinner *ngIf="(fetchPhonebookInProgress$ | async) && showApiCallLoader" [diameter]="20"></mat-spinner>
+        </div>
+
+        <mat-error *ngIf="phonebookForm.touched">
+            <mat-error *ngIf="phonebookForm.errors?.required"> Field is required. </mat-error>
+            <mat-error *ngIf="phonebookForm?.errors?.elementExistsInList"> Select Phonebook from dropdown </mat-error>
+        </mat-error>
+    </mat-form-field>
+    <button
+        mat-mini-fab
+        class="mt-1"
+        (click)="fetchPhonebook(queryParams)"
+        matTooltip="Refresh"
+        matTooltipPosition="above"
+        [msg91ButtonLoader]="fetchPhonebookInProgress$ | async"
+        [wrapperClass]="'mt-1'"
+        *ngIf="showRefresh"
+    >
+        <mat-icon class="mat-icon-20" fontIcon="refresh"></mat-icon>
+    </button>
+</div>

@@ -1,0 +1,25 @@
+.colors {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    .color {
+        cursor: pointer;
+        display: flex;
+        padding: 2px;
+        border-radius: 50%;
+        &.active {
+            padding: 1px !important;
+
+            border: #212528 1px solid;
+        }
+    }
+}
+
+::ng-deep.color-picker-position-change {
+    lib-color-picker {
+        position: absolute;
+        top: -40px;
+        left: 190px;
+        width: 100%;
+    }
+}

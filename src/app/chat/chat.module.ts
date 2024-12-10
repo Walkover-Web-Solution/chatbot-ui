@@ -1,0 +1,156 @@
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ChatWidgetComponent } from './chat-widget/chat-widget.component';
+import {
+    ArticlePopupComponent,
+    ArticlePopupService,
+    ArticlesListComponent,
+    ArticlesViewComponent,
+    ChannelsListComponent,
+    ChatViewComponent,
+    ClientInputComponent,
+    CreateChannelComponent,
+    DateGroupPipe,
+    FAQViewComponent,
+    FeedbackFormComponent,
+    InMessageComponent,
+    MessageInputComponent,
+    OldChannelComponent,
+    OutMessageComponent,
+    SelectedChannelComponent,
+    TeamListComponent,
+} from './chat-widget';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { EffectsModule } from '@ngrx/effects';
+import {
+    AgentsTeamEffects,
+    BehaviourEffects,
+    ChannelsEffect,
+    ClientEffects,
+    KnowledgeBaseEffect,
+    PubnubEffects,
+    WidgetInfoEffects,
+} from './store/effects';
+import { DragDropModule } from '@angular/cdk/drag-drop';
+import { MatIconModule } from '@angular/material/icon';
+import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
+import { MatRippleModule } from '@angular/material/core';
+import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
+import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
+import { PipesSanitizeHtmlPipeModule } from '@msg91/pipes/SanitizeHtmlPipe';
+import { StoreModule } from '@ngrx/store';
+import { reducers, metaReducers } from './store';
+import { environment } from '../../environments/environment';
+import { HttpClientModule } from '@angular/common/http';
+import { LastConversionPipe } from './chat-widget/components/old-channel/pipes';
+import { MatLegacyProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
+import { UiPhoneNumberMaterialModule } from '@msg91/ui/phone-number-material';
+import { MatLegacyProgressBarModule as MatProgressBarModule } from '@angular/material/legacy-progress-bar';
+import { ProfileNameComponent } from './chat-widget/components/profile-name/profile-name.component';
+import { PipesGetHashCodePipeModule } from '@msg91/pipes/GetHashCodePipe';
+import { PipesGetShortNamePipeModule } from '@msg91/pipes/GetShortNamePipe';
+import { PipesLinkifyPipeModule } from '@msg91/pipes/LinkifyPipe';
+import { SocketService, ChatService, WidgetDataService } from './service';
+import { PipesTimeConversionPipeModule } from '@msg91/pipes/TimeConversionPipe';
+import { ProxyBaseUrls } from '@msg91/models/root-models';
+import { MatLegacyTooltipModule as MatTooltipModule } from '@angular/material/legacy-tooltip';
+import { PipesTimeTokenPipeModule } from '@msg91/pipes/TimeTokenPipe';
+import { ServicesHttpWrapperModule } from '@msg91/services/httpWrapper';
+import { PipesReplaceModule } from '@msg91/pipes/replace';
+import { UiBotOptionsModule } from '@msg91/ui/bot-options';
+import { UiInteractiveMessageModule } from '@msg91/ui/interactive-message';
+import { IdentityVerificationService } from './service/identity-verification.service';
+import { DirectivesSkeletonModule } from '@msg91/directives/skeleton';
+import { PipesTypeofModule } from '@msg91/pipes/typeof';
+import { PipesWhatsappInlineStyleFormatModule } from '@msg91/pipes/whatsapp-inline-style-format';
+import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
+import { ENVIRONMENT_TOKEN } from '@msg91/constant';
+
+export const CHAT_COMPONENTS: any[] = [
+    ChatWidgetComponent,
+    ChatViewComponent,
+    FAQViewComponent,
+    ArticlesListComponent,
+    ArticlesViewComponent,
+    OldChannelComponent,
+    CreateChannelComponent,
+    ChannelsListComponent,
+    TeamListComponent,
+    SelectedChannelComponent,
+    InMessageComponent,
+    OutMessageComponent,
+    FeedbackFormComponent,
+    ClientInputComponent,
+    MessageInputComponent,
+    ArticlePopupComponent,
+    DateGroupPipe,
+    LastConversionPipe,
+];
+
+@NgModule({
+    imports: [
+        CommonModule,
+        HttpClientModule,
+        PipesSanitizeHtmlPipeModule,
+        FormsModule,
+        EffectsModule.forRoot([
+            WidgetInfoEffects,
+            ChannelsEffect,
+            KnowledgeBaseEffect,
+            PubnubEffects,
+            AgentsTeamEffects,
+            ClientEffects,
+            BehaviourEffects,
+        ]),
+        PipesGetHashCodePipeModule,
+        PipesGetShortNamePipeModule,
+        DragDropModule,
+        MatIconModule,
+        MatButtonModule,
+        MatRippleModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatCardModule,
+        ReactiveFormsModule,
+        UiPhoneNumberMaterialModule,
+        StoreModule.forRoot(reducers, {
+            metaReducers,
+            runtimeChecks: {
+                strictStateImmutability: true,
+                strictActionImmutability: true,
+            },
+        }),
+        MatProgressSpinnerModule,
+        MatProgressBarModule,
+        PipesLinkifyPipeModule,
+        PipesTimeConversionPipeModule,
+        MatTooltipModule,
+        PipesTimeTokenPipeModule,
+        ServicesHttpWrapperModule,
+        PipesReplaceModule,
+        UiBotOptionsModule,
+        UiInteractiveMessageModule,
+        MatDialogModule,
+        DirectivesSkeletonModule,
+        PipesTypeofModule,
+        PipesWhatsappInlineStyleFormatModule,
+    ],
+    declarations: [...CHAT_COMPONENTS, ProfileNameComponent],
+    providers: [
+        ChatService,
+        IdentityVerificationService,
+        ArticlePopupService,
+        SocketService,
+        WidgetDataService,
+        { provide: ProxyBaseUrls.Env, useValue: environment.env },
+        { provide: ProxyBaseUrls.ProxyURL, useValue: null },
+        {
+            provide: ProxyBaseUrls.BaseURL,
+            useValue: environment.apiUrl,
+        },
+        { provide: ENVIRONMENT_TOKEN, useValue: environment },
+    ],
+    exports: [ChatWidgetComponent, UiPhoneNumberMaterialModule],
+})
+export class ChatModule {}

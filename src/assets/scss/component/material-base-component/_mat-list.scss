@@ -1,0 +1,54 @@
+.mat-mdc-list {
+    &.custom-nav-list {
+        .mat-mdc-list-item {
+            .mat-mdc-list-item-content {
+                padding: 0px !important;
+            }
+        }
+    }
+    &.default-list {
+        .mat-mdc-list-item {
+            height: 36px;
+            font-size: 14px;
+            color: var(--color-common-dark);
+            cursor: pointer;
+            &.active {
+                background-color: var(--color-common-primary-light);
+                color: var(--color-common-primary);
+            }
+            &.no-hover {
+                cursor: initial;
+            }
+            &:not(.active, .no-hover):hover {
+                background-color: var(--color-common-silver);
+            }
+            &:hover {
+                &.mat-mdc-list-action {
+                    display: block;
+                }
+            }
+            .mat-mdc-list-item-content {
+                padding-inline: 8px;
+            }
+        }
+        &.mat-mdc-list-sm {
+            .mat-mdc-list-item {
+                height: 28px;
+            }
+        }
+        &.mat-mdc-list-p-0 {
+            padding: 0;
+        }
+    }
+}
+
+.mat-mdc-menu-hover-state {
+    .mat-mdc-menu-item {
+        &.active {
+            background-color: var(--color-otp-primary-light);
+        }
+        &:not(.active):hover {
+            background-color: var(--color-common-bg-lighter);
+        }
+    }
+}

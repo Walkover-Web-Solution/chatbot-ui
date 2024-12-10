@@ -1,0 +1,65 @@
+.msg91-query-builder {
+    min-width: 603px;
+    ul {
+        list-style: none;
+        max-width: max-content;
+        .msg91-query-builder-row {
+            &:not(:last-child) {
+                margin-bottom: 8px;
+            }
+            .width-md-70 {
+                min-width: 70px;
+            }
+        }
+    }
+    .rule-set {
+        border: 1px solid var(--color-common-border);
+        background-color: var(--color-common-app-bg);
+
+        &.rule-set-head {
+            margin-bottom: 8px;
+        }
+    }
+    .rule-set-icon-button {
+        height: 32px;
+        line-height: 22px;
+    }
+    .rule-set-form-field {
+        .rule-set-field {
+            &:not(:last-child) {
+                border-right: 1px solid var(--color-common-border);
+            }
+        }
+    }
+}
+
+// Remove border & spacing from form filed
+.remove-form-field-border {
+    .mat-mdc-form-field-wrapper {
+        margin: 0px !important;
+        padding-bottom: 0px !important;
+        .mat-mdc-form-field-flex {
+            [class^='mat-form-field-outline-'] {
+                border-width: 0px !important;
+            }
+            .mat-mdc-form-field-outline {
+                border-radius: 4px;
+            }
+            .mat-mdc-form-field-infix {
+                padding: 0px 0 8px 0 !important;
+            }
+        }
+    }
+}
+
+// Manage height of select form field
+.select-form-field-medium {
+    .mat-mdc-form-field-wrapper {
+        padding-bottom: 0px !important;
+        .mat-mdc-form-field-flex {
+            .mat-mdc-form-field-infix {
+                padding: 0px 0 8px 0 !important;
+            }
+        }
+    }
+}

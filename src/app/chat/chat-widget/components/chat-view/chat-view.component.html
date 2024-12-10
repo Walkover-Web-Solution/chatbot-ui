@@ -1,0 +1,130 @@
+<div *ngIf="!(chatSelectedSection$ | async)" class="msg91-chat-view-inner fixed-layout">
+    <div
+        class="widget-header"
+        @fadeIn
+        [style.background-color]="primaryColor"
+        [style.background-image]="backgroundImage"
+        [ngClass]="{ 'border-radius-none': isMobileSDK && sdkConfig?.borderRadiusDisable }"
+    >
+        <div>
+            <!-- <h3 [style.color]="textColor" class="h-title">Hi {{(clientName$ | async) ? (clientName$ | async | titlecase) :
+        'there'}} 👋</h3> -->
+            <h3 class="h-title">Hi {{ (clientName$ | async) ? (clientName$ | async | titlecase) : 'there' }}</h3>
+
+            <!-- <ng-container *ngIf="!widgetTagline$ | async as tagline">
+                <p class="h-desc">We reply within a few hours.</p>
+            </ng-container>
+
+            <ng-container *ngIf="widgetTagline$ | async as tagline">
+                <p class="h-desc">{{ tagline }}</p>
+            </ng-container> -->
+        </div>
+        <button mat-button class="mat-faqs-btn" (click)="enableChatView(false)" *ngIf="widgetShowFaq$ | async">
+            FAQs
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M7.1582 6.175L10.9749 10L7.1582 13.825L8.3332 15L13.3332 10L8.3332 5L7.1582 6.175Z"
+                    fill="white"
+                />
+            </svg>
+        </button>
+    </div>
+
+    <div class="widget-chat-view-old-conversation" @fadeIn>
+        <div class="widget-chat-view-old-conversation-inner">
+            <div class="main-card" @fadeIn>
+                <ng-container *ngIf="oldChannels$ | async as oldChannels; let i = index">
+                    <div *ngIf="oldChannels && oldChannels.length" class="conversation-card">
+                        <strong>Continue the conversation</strong>
+                        <div [class.progress]="channelListInProcess$ | async">
+                            <ng-container
+                                *ngFor="
+                                    let channel of (channelListInProcess$ | async) ? [1, 2, 3] : oldChannels.slice(0, 3)
+                                "
+                            >
+                                <ng-container *ngIf="(channel | typeof) !== 'number' && channel?.id">
+                                    <msg91-old-channel
+                                        [assignees]="channelAssignees$[channel?.channel] | async"
+                                        (click)="selectChannel(channel)"
+                                        [channel]="channel"
+                                    ></msg91-old-channel>
+                                </ng-container>
+                                <ng-container *ngIf="(channel | typeof) === 'number'">
+                                    <div *skeleton="true; height: '40px'; className: ['my-2', 'mx-2']"></div>
+                                </ng-container>
+                            </ng-container>
+                        </div>
+                        <button
+                            (click)="setChatSection('CHANNEL_LIST')"
+                            *ngIf="oldChannels && oldChannels.length > 3 && (channelListInProcess$ | async) === false"
+                            class="see-all-conversation-btn"
+                            mat-button
+                            style="color: var(--msg-primaryColor) !important"
+                        >
+                            See all conversation
+                        </button>
+                    </div>
+                </ng-container>
+
+                <strong class="main-card-title">Our team is all set to help you!</strong>
+                <ng-container *ngIf="!(teams$ | async) || (teams$ | async)?.length === 0">
+                    <div class="continue-conversation-list-card">
+                        <div class="profile-group">
+                            <ng-container *ngFor="let assignee of allAssignees$ | async; let i = index">
+                                <msg91-profile-name
+                                    [hashCode]="assignee | getHashCode"
+                                    [shortName]="assignee | getShortName"
+                                    [class]="'profile-name profile-' + (i + 1)"
+                                    [width]="44"
+                                    [height]="44"
+                                    [aProfileClass]="'profileLarge'"
+                                    style="margin-right: 10px; margin-bottom: 10px"
+                                >
+                                </msg91-profile-name>
+                            </ng-container>
+                        </div>
+
+                        <!-- <div class="continue-conversation-text-content">
+
+              <small>Our usual reply time</small>
+              <span>
+                <svg height="14" viewBox="0 0 14 14" width="14" xmlns="http://www.w3.org/2000/svg">
+                  <path class="secondary-color-fill"
+                    d="M12.5,7A5.5,5.5,0,1,1,7,1.5,5.5,5.5,0,0,1,12.5,7ZM14,7A7,7,0,1,1,7,0,7,7,0,0,1,14,7ZM6.278,3.482V7.263h0a.3.3,0,0,0,.093.205l.075.057L9.671,9.7l.15.038h.057a.394.394,0,0,0,.206-.131l.413-.655a.3.3,0,0,0,.057-.169c0-.093-.057-.149-.15-.205L7.628,6.683v-3.2a.308.308,0,0,0-.3-.3H6.579A.308.308,0,0,0,6.278,3.482Z"
+                    data-name="Path 2" fill-rule="evenodd" id="Path_2" />
+                </svg>
+                A few minutes
+              </span>
+            </div> -->
+                    </div>
+                    <msg91-create-channel
+                        *ngIf="(selectWidgetChatStatus$ | async) === chatStatusEnums.allowed"
+                        (click)="createChannel()"
+                        style="position: absolute; bottom: 0px; left: 30px; right: 30px; background-color: #fff"
+                        [isClientBlocked]="isClientBlocked$ | async"
+                    >
+                    </msg91-create-channel>
+                </ng-container>
+
+                <msg91-team-list *ngIf="(teams$ | async)?.length"></msg91-team-list>
+            </div>
+        </div>
+    </div>
+</div>
+
+<msg91-channels-list
+    @fadeIn
+    *ngIf="(chatSelectedSection$ | async) === 'CHANNEL_LIST'"
+    [sdkConfig]="sdkConfig"
+    [isMobileSDK]="isMobileSDK"
+></msg91-channels-list>
+
+<msg91-team-list @fadeIn *ngIf="(chatSelectedSection$ | async) === 'TEAM_LIST'"></msg91-team-list>
+
+<msg91-selected-channel
+    [isMobileSDK]="isMobileSDK"
+    [isBorderRadiusDisabled]="sdkConfig?.borderRadiusDisable ?? false"
+    (emitDowloadedContent)="emitDownloadedContent.emit($event)"
+    @fadeIn
+    *ngIf="(chatSelectedSection$ | async) === 'SELECTED_CHANNEL'"
+></msg91-selected-channel>

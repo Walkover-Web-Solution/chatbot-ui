@@ -1,0 +1,299 @@
+<!-- [class.theme-raised]="cardThemeClass === 'theme-raised'" -->
+<ng-container *ngFor="let template of whatsappTemplate">
+    <ng-container *ngTemplateOutlet="templatMainCard; context: { $implicit: template }"></ng-container>
+    <ng-container *ngFor="let content of template">
+        <ng-container
+            *ngIf="content.type === templateMessageType.Button && content; then buttonContainer"
+        ></ng-container>
+        <ng-container
+            *ngIf="content.type === templateMessageType.Carousel && content; then carouselContainer"
+        ></ng-container>
+    </ng-container>
+</ng-container>
+
+<ng-template #templatMainCard let-template let-carouselIndex="carouselIndex">
+    <mat-card
+        class="card list-btn p-2 flex-grow-1"
+        [ngClass]="{ 'full-width': useContainerWidth }"
+        [class.no-data]="!template?.length"
+        [style.background-color]="cardBgColor"
+    >
+        <ng-container *ngFor="let content of template">
+            <div class="inner-card" [ngClass]="content.cssClass">
+                <h5
+                    class="mat-body-2 text-dark fw-bold mt-0 mb-2 word-break"
+                    *ngIf="content.type === templateMessageType.Header && content?.text"
+                    [innerHTML]="
+                        (formattedMappedVariableValues
+                            ? (content?.text
+                              | replace: '\n' : '<br />'
+                              | replace
+                                  : (carouselIndex !== undefined
+                                        ? formattedMappedVariableValues?.carouselVariableMapping?.[carouselIndex]
+                                              ?.header
+                                        : formattedMappedVariableValues?.headerVariableMapping) ??
+                                        formattedMappedVariableValues)
+                            : (content?.text | replace: '\n' : '<br />')
+                        ) | sanitizeHtml
+                    "
+                    (click)="addVariableClickHandler ? clickListener($event) : null"
+                ></h5>
+                <ng-container
+                    *ngIf="
+                        '{{' +
+                        (carouselIndex !== undefined ? 'card_' + carouselIndex + '_' : '') +
+                        'header_1}}' as headerVar
+                    "
+                >
+                    <div
+                        class="card-media d-flex align-items-center justify-content-center mb-2 overflow-hidden"
+                        *ngIf="
+                            content.type === templateMessageType.Header &&
+                            (content.format === templateHeaderFormat.Image ||
+                                content.format === templateHeaderFormat.Video ||
+                                content.format === templateHeaderFormat.Audio ||
+                                content.format === templateHeaderFormat.Document ||
+                                content.format === templateHeaderFormat.Location)
+                        "
+                    >
+                        <ng-container
+                            *ngIf="
+                                addVariableClickHandler ||
+                                    (!content.link &&
+                                        (!formattedMappedVariableValues?.[headerVar] ||
+                                            formattedMappedVariableValues?.[headerVar] === headerVar));
+                                else mediaPreview
+                            "
+                        >
+                            <mat-icon class="material-icons-outlined">{{
+                                content.format === templateHeaderFormat.Image
+                                    ? 'image'
+                                    : content.format === templateHeaderFormat.Video ||
+                                        content.format === templateHeaderFormat.Audio
+                                      ? 'play_circle'
+                                      : content.format === templateHeaderFormat.Document
+                                        ? 'text_snippet'
+                                        : content.format === templateHeaderFormat.Location
+                                          ? 'location_on'
+                                          : ''
+                            }}</mat-icon>
+                        </ng-container>
+                        <ng-template #mediaPreview>
+                            <ng-container *ngIf="content.link || formattedMappedVariableValues?.[headerVar] as link">
+                                <ng-container [ngSwitch]="content.format">
+                                    <ng-container *ngSwitchCase="templateHeaderFormat.Image">
+                                        <img [src]="link" loading="lazy" class="w-100" />
+                                    </ng-container>
+                                    <ng-container *ngSwitchCase="templateHeaderFormat.Video">
+                                        <video width="230" [src]="link" controls></video>
+                                    </ng-container>
+                                    <ng-container *ngSwitchCase="templateHeaderFormat.Audio">
+                                        <audio controls style="height: 44px">
+                                            <source [src]="link" />
+                                        </audio>
+                                    </ng-container>
+                                    <ng-container *ngSwitchCase="templateHeaderFormat.Document">
+                                        <iframe
+                                            width="200%"
+                                            height="100%"
+                                            scrolling="no"
+                                            frameborder="0"
+                                            *ngIf="content.extension === 'pdf'; else defaultDoc"
+                                            [src]="link | safeURL"
+                                        ></iframe>
+                                        <ng-template #defaultDoc>
+                                            <mat-icon class="material-icons-outlined">text_snippet</mat-icon>
+                                        </ng-template>
+                                    </ng-container>
+                                </ng-container>
+                            </ng-container>
+                        </ng-template>
+                        <div
+                            *ngIf="addVariableClickHandler && formattedMappedVariableValues?.[headerVar] as mapHtml"
+                            [innerHTML]="mapHtml | sanitizeHtml"
+                            (click)="clickListener($event)"
+                            class="header-mapping d-flex align-items-center justify-content-center font-12 position-absolute"
+                        ></div>
+                    </div>
+                </ng-container>
+                <p
+                    *ngIf="content.type === templateMessageType.Body && content?.text"
+                    class="font-12 text-dark m-0 word-break"
+                    [innerHTML]="
+                        (formattedMappedVariableValues
+                            ? (content?.text
+                              | replace: '\n' : '<br />'
+                              | replace
+                                  : (carouselIndex !== undefined
+                                        ? formattedMappedVariableValues?.carouselVariableMapping?.[carouselIndex]?.body
+                                        : formattedMappedVariableValues?.bodyVariableMapping) ??
+                                        formattedMappedVariableValues)
+                            : (content?.text | replace: '\n' : '<br />')
+                        )
+                            | whatsAppInlineStyleFormat
+                            | sanitizeHtml
+                    "
+                    (click)="addVariableClickHandler ? clickListener($event) : null"
+                ></p>
+                <p
+                    *ngIf="content.type === templateMessageType.Footer && content?.text"
+                    class="font-10 text-light m-0 pt-2 word-break"
+                    [innerHTML]="
+                        (formattedMappedVariableValues
+                            ? (content?.text
+                              | replace: '\n' : '<br />'
+                              | replace: formattedMappedVariableValues
+                              | replace: whatsappVarRegex : '$1')
+                            : (content?.text | replace: '\n' : '<br />')
+                        ) | sanitizeHtml
+                    "
+                    (click)="addVariableClickHandler ? clickListener($event) : null"
+                ></p>
+                <ng-container *ngIf="content.type === templateMessageType.List">
+                    <div class="d-flex gap-2 px-3 py-2 mb-3 align-items-start">
+                        <mat-icon class="mat-icon-16" style="padding-top: 2px">close</mat-icon>
+                        <p class="my-0 mat-body-2 text-dark">
+                            {{ content.heading }}
+                        </p>
+                    </div>
+                    <ng-container *ngFor="let section of content.sections">
+                        <p class="px-3 py-1 text-success my-0 font-12">
+                            {{ section.text }}
+                        </p>
+                        <div class="product-list">
+                            <div
+                                *ngFor="let row of section.rows"
+                                class="d-flex align-items-center col-gap-1 py-1 pr-1 pl-3 product-item position-relative"
+                            >
+                                <ng-container *ngIf="row.title">
+                                    <div class="d-flex flex-column overflow-dotted w-100">
+                                        <h6 class="my-0 mat-body-2 text-dark overflow-dotted">
+                                            {{ row.title }}
+                                        </h6>
+                                        <p class="my-0 font-12 text-light overflow-dotted">
+                                            {{ row.description }}
+                                        </p>
+                                    </div>
+                                    <mat-radio-button value="1" color="primary"></mat-radio-button>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </ng-container>
+                </ng-container>
+            </div>
+        </ng-container>
+    </mat-card>
+</ng-template>
+
+<ng-template #buttonContainer let-content let-carouselIndex="carouselIndex">
+    <div
+        class="btn-container"
+        [ngClass]="content.cssClass"
+        [ngClass]="{ 'full-width': useContainerWidth }"
+        [class.theme-raised]="cardThemeClass === 'theme-raised'"
+    >
+        <ng-container
+            *ngFor="
+                let button of content.buttons?.length > 3 && !showAllButtons
+                    ? (content.buttons | slice: 0 : 2)
+                    : content.buttons;
+                let index = index
+            "
+        >
+            <ng-container
+                *ngTemplateOutlet="buttonDiv; context: { $implicit: button, index, carouselIndex }"
+            ></ng-container>
+        </ng-container>
+        <div
+            *ngIf="!showAllButtons && content.buttons?.length > 3"
+            (click)="showAllButtons = true; showAllButtonsChange.emit(true)"
+            class="cursor-pointer"
+        >
+            <ng-container
+                *ngTemplateOutlet="
+                    buttonDiv;
+                    context: { $implicit: { text: 'See all Options', type: 'SeeAllOptions' } }
+                "
+            ></ng-container>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #carouselContainer let-content>
+    <!-- Carousel Wrapper :: START-->
+    <div class="carousel-wrapper d-flex gap-2 overflow-x mt-1">
+        <ng-container *ngFor="let card of content?.cards; let carouselIndex = index">
+            <div [attr.id]="'carousel-card-' + carouselIndex" class="d-flex flex-column">
+                <ng-container
+                    *ngTemplateOutlet="templatMainCard; context: { $implicit: card?.components, carouselIndex }"
+                ></ng-container>
+                <ng-container *ngFor="let cardContent of card?.components">
+                    <ng-container *ngIf="cardContent.type === templateMessageType.Button">
+                        <ng-container
+                            *ngTemplateOutlet="buttonContainer; context: { $implicit: cardContent, carouselIndex }"
+                        ></ng-container>
+                    </ng-container>
+                </ng-container>
+            </div>
+        </ng-container>
+    </div>
+    <!-- Carousel Wrapper :: END-->
+
+    <!-- Navigation Button :: START -->
+    <div class="d-flex align-items-center justify-content-between mt-2">
+        <button mat-icon-button type="button" color="primary" (click)="scrollCarousel('left')">
+            <mat-icon class="material-icons-outlined mat-icon-14">arrow_back_ios</mat-icon>
+        </button>
+        <button mat-icon-button type="button" color="primary" (click)="scrollCarousel('right')">
+            <mat-icon class="material-icons-outlined mat-icon-14">arrow_forward_ios</mat-icon>
+        </button>
+    </div>
+    <!-- Navigation Button :: END -->
+</ng-template>
+
+<ng-template #buttonDiv let-buttonObj let-index="index" let-carouselIndex="carouselIndex">
+    <div
+        class="btn-static mat-body-2 fw-bold px-3 py-2 text-dark justify-content-center align-items-center flex-grow-1 gap-2"
+        (click)="showButtonClickDetails(buttonObj)"
+        [ngClass]="{ 'cursor-pointer': showClickCounts && clickCountData[buttonObj?.text] }"
+    >
+        <div class="d-flex justify-content-center align-items-center flex-grow-1 gap-2">
+            <ng-container [ngSwitch]="buttonObj?.type">
+                <ng-container *ngSwitchCase="templateButtonFormat.QuickReply">
+                    <mat-icon class="mat-icon-16">reply</mat-icon>
+                </ng-container>
+                <ng-container *ngSwitchCase="templateButtonFormat.PhoneNumber">
+                    <mat-icon class="mat-icon-16">call</mat-icon>
+                </ng-container>
+                <ng-container *ngSwitchCase="templateButtonFormat.Url">
+                    <mat-icon class="mat-icon-16">open_in_new</mat-icon>
+                </ng-container>
+                <ng-container *ngSwitchCase="templateButtonFormat.Otp">
+                    <mat-icon class="mat-icon-16">content_copy</mat-icon>
+                </ng-container>
+                <ng-container *ngSwitchCase="'SeeAllOptions'">
+                    <mat-icon class="mat-icon-16">list</mat-icon>
+                </ng-container>
+            </ng-container>
+            <span [innerHTML]="buttonObj?.text | replace: '\n' : '<br />'" class="word-break btn-text"></span>
+            <span *ngIf="showClickCounts && clickCountData[buttonObj?.text]" class="fw-bolder">{{
+                clickCountData[buttonObj?.text]
+            }}</span>
+        </div>
+        <div
+            *ngIf="
+                addVariableClickHandler &&
+                formattedMappedVariableValues?.[
+                    '{{' +
+                        (carouselIndex !== undefined ? 'card_' + carouselIndex + '_' : '') +
+                        'button_' +
+                        (index + 1) +
+                        '}}'
+                ] as mapHtml
+            "
+            [innerHTML]="mapHtml | sanitizeHtml"
+            (click)="clickListener($event)"
+            class="d-flex align-items-center justify-content-center font-12"
+        ></div>
+    </div>
+</ng-template>

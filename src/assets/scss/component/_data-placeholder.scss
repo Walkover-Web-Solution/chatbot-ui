@@ -1,0 +1,25 @@
+/*
+// Domain Placeholder Card
+*/
+.domain-placeholder-card {
+    .mat-mdc-card {
+        padding-top: 46px;
+        padding-bottom: 46px;
+    }
+}
+
+/*
+// No data for graph
+*/
+
+.no-data-placeholder {
+    font-weight: 500;
+    font-size: var(--font-size-common-14);
+    line-height: 18px;
+    text-align: center;
+    color: var(--color-common-grey) !important;
+    align-items: center;
+    img {
+        margin-bottom: 25px;
+    }
+}

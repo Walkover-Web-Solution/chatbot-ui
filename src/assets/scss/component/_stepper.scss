@@ -1,0 +1,208 @@
+.default-stepper {
+    &.hide-optional-label {
+        .mat-mdc-horizontal-stepper-header-container {
+            .mat-mdc-step-optional {
+                display: none;
+            }
+        }
+    }
+    .mat-mdc-horizontal-stepper-header {
+        height: 50px;
+        border-radius: var(--color-common-border-4);
+    }
+    .mat-mdc-horizontal-stepper-header-container {
+        height: 50px;
+        .mat-mdc-step-text-label {
+            font-size: 14px;
+            color: var(--color-common-dark);
+        }
+        .mat-mdc-step-optional {
+            font-size: 12px;
+            text-align: center;
+        }
+        .mat-mdc-step-label-selected {
+            font-size: var(--font-size-common-16);
+            font-weight: 500;
+            .mat-mdc-step-text-label,
+            .mat-mdc-step-optional {
+                color: var(--color-common-primary) !important;
+                font-size: 14px;
+            }
+        }
+    }
+
+    .mat-mdc-horizontal-content-container {
+        padding: 0px !important;
+    }
+    .mat-mdc-step-header {
+        .mat-mdc-step-icon {
+            display: none;
+        }
+    }
+
+    @media only screen and (max-width: 768px) {
+        .mat-mdc-step-header {
+            .mat-mdc-step-icon {
+                height: 20px;
+                width: 20px;
+                font-size: var(--font-size-common-12);
+            }
+            .mat-mdc-step-label {
+                font-size: var(--font-size-common-14);
+            }
+            &.mat-mdc-horizontal-stepper-header {
+                padding: 0 24px;
+            }
+        }
+    }
+    &.communication-stepper {
+        .mat-mdc-horizontal-stepper-content {
+            height: calc(100vh - 120px - var(--sip-calling-height));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            .template-preview {
+                border: 1px solid var(--color-common-border);
+                height: calc(100vh - 310px - var(--sip-calling-height));
+                border-radius: 5px;
+                overflow: auto;
+            }
+        }
+    }
+}
+
+// Email Inmox Create
+.email-integration-steps {
+    background-color: transparent !important;
+
+    @media only screen and (min-width: 992px) {
+        width: 800px;
+    }
+
+    .mat-mdc-horizontal-stepper-header-container {
+        @media only screen and (min-width: 992px) {
+            width: 800px;
+        }
+
+        margin: 16px auto 16px 0px;
+
+        .mat-mdc-horizontal-stepper-header {
+            height: 36px;
+
+            @media only screen and (min-width: 400px) and (max-width: 768px) {
+                padding: 0px;
+            }
+            .mat-mdc-step-label {
+                font-size: var(--font-size-common-12);
+                color: #3f4346;
+                font-weight: 500;
+            }
+        }
+        .mat-mdc-step-icon {
+            height: 20px;
+            width: 20px;
+            font-size: var(--font-size-common-12);
+            background-color: var(--color-common-dark);
+            &.mat-mdc-step-icon-selected {
+                background-color: var(--color-common-primary);
+            }
+        }
+    }
+
+    .mat-mdc-horizontal-content-container {
+        background-color: var(--color-common-white);
+        border-radius: var(--border-common-radius);
+        padding: 0px;
+        border: 1px solid var(--color-common-border);
+
+        @media only screen and (min-width: 992px) {
+            padding: 16px;
+        }
+    }
+
+    .permission-step {
+        .permission-list {
+            .mat-mdc-list {
+                padding-top: 0px;
+
+                .mat-mdc-list-item {
+                    .mat-mdc-list-item-content {
+                        .mat-mdc-checkbox {
+                            .mat-mdc-checkbox-layout {
+                                .mat-mdc-checkbox-label {
+                                    white-space: pre-wrap;
+                                    word-break: break-word;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            max-height: calc(100vh - 324px - var(--sip-calling-height));
+            overflow-y: auto;
+        }
+    }
+
+    .name-form {
+        margin: auto;
+        padding: 0px !important;
+    }
+}
+
+// Chnages Stepper Header height
+.stepper-header-layout {
+    .mat-mdc-horizontal-stepper-header-container {
+        height: 50px;
+
+        .mat-mdc-step-header {
+            height: 50px;
+        }
+        .mat-mdc-step-label-selected {
+            font-size: var(--font-size-common-16);
+        }
+    }
+    .mat-mdc-horizontal-content-container {
+        padding: 0px;
+    }
+}
+
+.stepper-intention {
+    .mat-mdc-step-header {
+        .mat-mdc-step-icon {
+            display: none;
+        }
+    }
+    .mat-mdc-horizontal-stepper-header {
+        height: 50px;
+    }
+    .mat-mdc-horizontal-stepper-header-container {
+        .mat-mdc-step-label-selected {
+            font-size: var(--font-size-common-16);
+            color: var(--color-common-primary);
+        }
+    }
+    .mat-mdc-horizontal-content-container {
+        padding: 0px 16px !important;
+    }
+}
+// widget-stepper
+.stepper-widget {
+    background-color: var(--color-common-app-bg) !important;
+    .mat-mdc-horizontal-stepper-header-container {
+        column-gap: 25px;
+    }
+    .mat-mdc-step-label {
+        &.mat-mdc-step-label-active {
+            &.mat-mdc-step-label-selected {
+                font-size: var(--font-size-common-16);
+                .mat-mdc-step-text-label {
+                    p,
+                    span {
+                        color: var(--color-common-primary);
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,44 @@
+<mat-form-field
+    class="select-trigger-chip-input w-100 no-padding"
+    [ngClass]="{
+        'mat-form-field-invalid': getFormControl?.touched && getFormControl?.errors,
+    }"
+>
+    <mat-label>{{ label }}</mat-label>
+    <mat-chip-set #customEmailChipList>
+        <mat-chip
+            *ngFor="let selectedMember of selectedEmails"
+            [removable]="true"
+            (removed)="removeTo(selectedMember)"
+            class="my-0 mat-chip-mini"
+        >
+            {{ selectedMember }}
+            <mat-icon matChipRemove>cancel</mat-icon>
+        </mat-chip>
+
+        <input
+            autocomplete="off"
+            [formControl]="singleMailFormControl"
+            [matChipInputFor]="customEmailChipList"
+            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+            [matChipInputAddOnBlur]="true"
+            (matChipInputTokenEnd)="addCustomEmail($event)"
+            (keyup)="checkEmailValidations()"
+            (blur)="checkEmailValidations()"
+        />
+    </mat-chip-set>
+</mat-form-field>
+<div class="position-relative">
+    <mat-hint *ngIf="!customEmailChipList?.errorState && !getFormControl?.errors" class="font-12 fw-normal d-flex"
+        >You can add multiple emails separated by Enter, comma or space.</mat-hint
+    >
+    <span *ngIf="customEmailChipList?.errorState" class="font-12 fw-normal mat-error">
+        <span class="my-0" *ngIf="singleMailFormControl.errors?.pattern">Enter valid email.</span>
+    </span>
+    <mat-error *ngIf="getFormControl.touched && !singleMailFormControl.errors?.pattern">
+        <mat-error *ngIf="getFormControl.errors?.required"> Field is required. </mat-error>
+        <mat-error *ngIf="getFormControl.errors?.maxlength as maxLengthError">
+            Maximum allowed email is {{ maxLengthError?.requiredLength }}.
+        </mat-error>
+    </mat-error>
+</div>

@@ -1,0 +1,30 @@
+.theme-wrapper {
+    --msg-primaryColor: '#0f22a7';
+    --msg-primaryColorLight: '#7686f8';
+    --msg-primaryColorDark: '#1b2078';
+    --msg-outboundMsg: '#ffefe9';
+    --msg-inboundMsg: '#ECF1F9';
+    --msg-secondaryColor: '#998f8b';
+    --msg-textColor: '#ffffff';
+    --msg-textMsgColor: '#313131';
+    --msg-warningColor: '#cc3300';
+    --msg-font-family: 'Inter', sans-serif;
+}
+
+$variables: (
+    --msg-primaryColor: var(--msg-primaryColor),
+    --msg-primaryColorLight: var(--msg-primaryColorLight),
+    --msg-primaryColorDark: var(--msg-primaryColorDark),
+    --msg-outboundMsg: var(--msg-outboundMsg),
+    --msg-inboundMsg: var(--msg-inboundMsg),
+    --msg-secondaryColor: var(--msg-secondaryColor),
+    --msg-textColor: var(--msg-textColor),
+    --msg-textMsgColor: var(--msg-textMsgColor),
+    --msg-warningColor: var(--msg-warningColor),
+    --msg-font-family: var(--msg-font-family),
+);
+
+/* grabs the native css variable from the global sass map */
+@function var($variable) {
+    @return map-get($variables, $variable);
+}

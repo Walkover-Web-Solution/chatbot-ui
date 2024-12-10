@@ -1,0 +1,315 @@
+@import '../utils/placeholder';
+
+.text-lowercase {
+    text-transform: lowercase !important;
+}
+.text-uppercase {
+    text-transform: uppercase !important;
+}
+.text-capitalize {
+    text-transform: capitalize !important;
+}
+.text-none {
+    text-transform: none !important;
+}
+.text-left {
+    text-align: left !important;
+}
+.text-right {
+    text-align: right !important;
+}
+.text-center {
+    text-align: center !important;
+}
+.cursor-pointer {
+    cursor: pointer;
+}
+.outline-none {
+    outline: none;
+}
+.text-underline {
+    text-decoration: underline !important;
+    text-underline-position: under;
+}
+
+.text-right-md {
+    @media only screen and (max-width: 768px) {
+        text-align: right !important;
+    }
+}
+.text-line-through {
+    text-decoration: line-through;
+}
+.text-none {
+    text-decoration: none !important;
+}
+.white-space-pre {
+    white-space: pre !important;
+}
+.white-space-pre-line {
+    white-space: pre-line !important;
+}
+
+/* Font Weight */
+.fw-thin {
+    font-weight: 100 !important;
+}
+.fw-regular {
+    font-weight: 400 !important;
+}
+.fw-bold {
+    font-weight: 500 !important;
+}
+.fw-bolder {
+    font-weight: 600 !important;
+}
+.fw-normal {
+    font-weight: normal !important;
+}
+
+// Line-height
+.lh-1 {
+    line-height: 20px !important;
+}
+.lh-2 {
+    line-height: 22px !important;
+}
+.lh-3 {
+    line-height: 28px !important;
+}
+
+/* Text Color */
+.text-muted {
+    color: var(--color-common-grey);
+}
+.text-white {
+    color: var(--color-common-white) !important;
+}
+.text-dark {
+    color: var(--color-common-text) !important;
+}
+.text-dark-light {
+    color: var(--color-common-text-2) !important;
+}
+.text-grey {
+    color: var(--color-common-grey) !important;
+}
+.text-secondary {
+    color: var(--color-common-dark) !important;
+}
+.theme-primary {
+    color: var(--color-common-primary) !important;
+}
+.text-success {
+    color: var(--color-whatsApp-primary) !important;
+}
+.text-danger {
+    color: var(--color-email-primary) !important;
+}
+.text-primary {
+    color: var(--color-common-primary) !important;
+}
+.text-pending {
+    color: var(--color-short-url-primary);
+}
+.text-warning {
+    color: var(--color-email-red);
+}
+.text-failed {
+    color: var(--color-email-primary) !important;
+}
+.text-verified {
+    color: var(--color-common-primary) !important;
+}
+.text-light {
+    color: var(--color-common-rock);
+}
+.text-report {
+    color: var(--color-report-primary);
+}
+.text-shorturl {
+    color: var(--color-short-url-primary);
+}
+.text-black {
+    color: var(--color-common-black);
+}
+.text-italic {
+    font-style: italic;
+}
+
+// Text hover state
+
+.text-hover-primary {
+    &:hover {
+        color: var(--color-common-primary) !important;
+    }
+}
+.text-hover-danger {
+    &:hover {
+        color: var(--color-email-primary) !important;
+    }
+}
+.text-hover-underline {
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+// Text size
+.font-10 {
+    font-size: 10px !important;
+}
+.font-11 {
+    font-size: 11px !important;
+}
+.font-12 {
+    font-size: 12px !important;
+}
+.font-13 {
+    font-size: 13px !important;
+}
+.font-14 {
+    font-size: var(--font-size-common-14) !important;
+}
+.font-20 {
+    font-size: var(--font-size-common-20) !important;
+}
+.font-24 {
+    font-size: var(--font-size-common-24) !important;
+}
+.font-32 {
+    font-size: 32px !important;
+}
+.font-40 {
+    font-size: 40px !important;
+}
+
+// Text Opacity
+.t-opacity-5 {
+    opacity: 0.5;
+}
+.t-opacity-6 {
+    opacity: 0.6;
+}
+.t-opacity-7 {
+    opacity: 0.7;
+}
+.t-opacity-8 {
+    opacity: 0.8;
+}
+.t-opacity-9 {
+    opacity: 0.9;
+}
+
+.mat-mdc-error {
+    font-size: var(--font-size-common-12);
+}
+
+/*
+// word Break
+*/
+.w-break {
+    word-break: break-all;
+}
+
+.word-break {
+    -ms-word-break: break-all;
+    word-break: break-all;
+    /* Non standard for WebKit */
+    word-break: break-word;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    hyphens: auto;
+
+    p {
+        -ms-word-break: break-all !important;
+        word-break: break-all !important;
+        /* Non standard for WebKit */
+        word-break: break-word !important;
+        -webkit-hyphens: auto !important;
+        -moz-hyphens: auto !important;
+        hyphens: auto !important;
+    }
+}
+.white-space-nowrap {
+    white-space: nowrap;
+}
+
+.link-disabled {
+    pointer-events: none;
+    color: var(--color-common-text);
+}
+.link-button-disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.w-b-hyphens {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    -ms-word-break: break-all;
+    word-break: break-all;
+    word-break: break-word;
+    -ms-hyphens: auto;
+    -moz-hyphens: auto;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+}
+
+.link {
+    color: var(--color-link);
+}
+
+// MSG91 highlight text directive in bot
+// Ref - https://prnt.sc/19PsApry7mpZ
+.msg91-highlight-text {
+    padding: 6px !important;
+    border-radius: var(--border-common-radius) !important;
+    color: var(--color-common-white) !important;
+}
+
+// admin-panel scss
+pre {
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
+    a {
+        &:link {
+            color: var(--color-link-color) !important;
+        }
+        &:visited {
+            color: var(--color-link-color) !important;
+        }
+        &:hover {
+            color: var(--color-link-color) !important;
+        }
+        &:active {
+            color: var(--color-link-color) !important;
+        }
+    }
+}
+// Line Clamp
+.line-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.line-clamp-2 {
+    @extend .line-clamp;
+    -webkit-line-clamp: 2;
+}
+.line-clamp-3 {
+    @extend .line-clamp;
+    -webkit-line-clamp: 3;
+}
+.line-clamp-4 {
+    @extend .line-clamp;
+    -webkit-line-clamp: 4;
+}
+
+// Ref - https://twitter.com/stackblitz/status/1745063227124261004
+.stop-numb-flickering {
+    font-feature-settings: 'tunm';
+    font-variant-numeric: tabular-nums;
+}

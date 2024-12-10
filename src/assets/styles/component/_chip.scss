@@ -1,0 +1,104 @@
+.mat-chip {
+    &.mat-chip-outlined {
+        background-color: transparent !important;
+        border: 1px solid var(--color-common-border);
+        min-height: 30px;
+        &::after {
+            background: rgba(30, 117, 186, 0.11) !important;
+        }
+        &:hover {
+            background-color: var(--color-common-silver) !important;
+            &::after {
+                opacity: 0 !important;
+            }
+        }
+        &.status-success {
+            color: var(--color-whatsApp-primary);
+            background-color: var(--color-whatsApp-primary-light) !important;
+        }
+        &.status-approved {
+            color: var(--color-common-primary);
+            background-color: var(--color-common-primary-light) !important;
+        }
+        &.status-pending {
+            color: var(--color-hello-primary-dark) !important;
+            background-color: var(--color-hello-primary-light) !important;
+        }
+        &.status-failed {
+            color: var(--color-email-primary) !important;
+            background-color: var(--color-email-primary-light) !important;
+        }
+        .mat-icon {
+            &.mat-chip-remove {
+                cursor: pointer;
+                &:hover {
+                    opacity: 1 !important;
+                }
+            }
+        }
+    }
+    &.mat-chip-mini {
+        min-height: 24px;
+        font-size: 12px;
+    }
+    &.mat-chip-fill {
+        background-color: var(--color-common-silver) !important;
+        color: var(--color-common-rock) !important;
+        font-size: 12px;
+        font-weight: 400;
+        padding: 6px 12px;
+        .mat-icon {
+            color: var(--color-common-rock) !important;
+        }
+        &:hover {
+            color: var(--color-common-slate) !important;
+            background-color: transparent !important;
+        }
+    }
+}
+
+.status-chip {
+    .mat-chip-list-wrapper {
+        display: flex;
+        flex-direction: row !important;
+        justify-content: flex-end;
+        .mat-chip {
+            width: auto !important;
+        }
+    }
+}
+// Chip list
+
+.custom-chip-list {
+    .mat-chip-list-wrapper {
+        gap: 8px;
+        margin: 0px !important;
+        .mat-chip {
+            margin: 0px;
+            .mat-icon {
+                color: var(--color-common-icon);
+                border-radius: 50%;
+                &:hover {
+                    background-color: var(--color-common-smoke);
+                }
+            }
+        }
+    }
+}
+
+// List Of chips
+.mat-chip-list {
+    &.chip-list {
+        .mat-chip-list-wrapper {
+            gap: 8px;
+        }
+    }
+}
+
+// Remove margin mat chip wrapper
+
+.filter-chip-list {
+    .mat-chip-list-wrapper {
+        margin-inline: 0px;
+    }
+}
