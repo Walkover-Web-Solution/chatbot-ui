@@ -4,8 +4,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "node --max_old_space_size=8192 node_modules/@angular/cli/bin/ng build --configuration=production && node tools/postbuild --path=dist/chat-widget",
-    "bundle": "npm run build",
+    "build:test": "node --max_old_space_size=8192 node_modules/@angular/cli/bin/ng build --configuration=development && node tools/postbuild --path=dist/chat-widget",
+    "build:prod": "node --max_old_space_size=8192 node_modules/@angular/cli/bin/ng build --configuration=production && node tools/postbuild --path=dist/chat-widget",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
