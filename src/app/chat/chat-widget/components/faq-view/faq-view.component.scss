@@ -66,18 +66,9 @@
     font-family: var(--msg-fontFamily) !important;
     color: #4f4f4f !important;
 
-    .folder-icon {
-        color: var(--msg-outboundMsg);
-        width: 20px;
-        height: 20px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 10px;
-        fa-icon {
-            display: flex;
-        }
-    }
+}
+.folder-icon {
+    color: var(--msg-outboundMsg) !important;
 }
 
 .search-box {
@@ -160,6 +151,24 @@
 
 .d-flex {
     display: flex;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.border-bottom {
+    border-bottom: 1px solid #e3e3e4;
+}
+
+.cursor-pointer {
+    cursor: pointer !important;
+}
+
+.mdc-list-item {
+    &.mdc-list-item--with-one-line {
+        height: 52px !important;
+    }
 }
 
 .faq-view-header {
@@ -275,4 +284,11 @@
 
 .secondary-color-stroke {
     stroke: var(--msg-secondaryColor);
+}
+
+.faq-list {
+    .mat-mdc-list-item {
+        color: #4f4f4f;
+        font-size: 14px;
+    }
 }

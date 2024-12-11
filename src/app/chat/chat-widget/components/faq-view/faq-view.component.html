@@ -80,21 +80,26 @@
 
     <div class="frequently-body-container">
         <div class="frequently-body-inner-container">
-            <div class="folder-items" *ngIf="(currentView$ | async) === 'folderList'">
+            <div class="folder-items d-flex flex-column" *ngIf="(currentView$ | async) === 'folderList'">
                 <ng-container *ngIf="faqsList$ | async as ifaqs">
-                    <button
+                    <!-- <button
                         (click)="selectFolder(folder.id)"
                         *ngFor="let folder of ifaqs"
-                        class="folder-list"
                         mat-button
-                    >
-                        <span class="folder-icon">
+                    > -->
+                        <!-- <span class="folder-icon"> -->
                             <!-- <fa-icon class="faIcon" [icon]="getIcon(folder.icon_url)"></fa-icon> -->
-                            <mat-icon class="mr-2">{{ folder.icon_url }}</mat-icon>
-                        </span>
+                            <!-- <mat-icon class="mr-2">{{ folder.icon_url }}</mat-icon> -->
+                        <!-- </span> -->
                         <!-- <span class="folder-name">{{ folder.name }}</span> -->
-                        <span class="folder-name" [innerHTML]="folder.name | sanitizeHtml"></span>
-                    </button>
+                        <!-- <span class="folder-name" [innerHTML]="folder.name | sanitizeHtml"></span>
+                    </button> -->
+                    <mat-list class="faq-list">
+                        <mat-list-item *ngFor="let folder of ifaqs" (click)="selectFolder(folder.id)" class="border-bottom cursor-pointer">
+                          <mat-icon matListItemIcon class="folder-icon">{{ folder.icon_url }}</mat-icon>
+                          <div matListItemTitle  class="folder-name" [innerHTML]="folder.name | sanitizeHtml"></div>
+                        </mat-list-item>
+                    </mat-list>
                 </ng-container>
             </div>
             <msg91-articles-list

@@ -33,20 +33,20 @@ import {
 } from './store/effects';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
+import { MatButtonModule } from '@angular/material/button';
 import { MatRippleModule } from '@angular/material/core';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
-import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
 import { PipesSanitizeHtmlPipeModule } from '@msg91/pipes/SanitizeHtmlPipe';
 import { StoreModule } from '@ngrx/store';
 import { reducers, metaReducers } from './store';
 import { environment } from '../../environments/environment';
 import { HttpClientModule } from '@angular/common/http';
 import { LastConversionPipe } from './chat-widget/components/old-channel/pipes';
-import { MatLegacyProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { UiPhoneNumberMaterialModule } from '@msg91/ui/phone-number-material';
-import { MatLegacyProgressBarModule as MatProgressBarModule } from '@angular/material/legacy-progress-bar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ProfileNameComponent } from './chat-widget/components/profile-name/profile-name.component';
 import { PipesGetHashCodePipeModule } from '@msg91/pipes/GetHashCodePipe';
 import { PipesGetShortNamePipeModule } from '@msg91/pipes/GetShortNamePipe';
@@ -54,7 +54,7 @@ import { PipesLinkifyPipeModule } from '@msg91/pipes/LinkifyPipe';
 import { SocketService, ChatService, WidgetDataService } from './service';
 import { PipesTimeConversionPipeModule } from '@msg91/pipes/TimeConversionPipe';
 import { ProxyBaseUrls } from '@msg91/models/root-models';
-import { MatLegacyTooltipModule as MatTooltipModule } from '@angular/material/legacy-tooltip';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { PipesTimeTokenPipeModule } from '@msg91/pipes/TimeTokenPipe';
 import { ServicesHttpWrapperModule } from '@msg91/services/httpWrapper';
 import { PipesReplaceModule } from '@msg91/pipes/replace';
@@ -64,8 +64,9 @@ import { IdentityVerificationService } from './service/identity-verification.ser
 import { DirectivesSkeletonModule } from '@msg91/directives/skeleton';
 import { PipesTypeofModule } from '@msg91/pipes/typeof';
 import { PipesWhatsappInlineStyleFormatModule } from '@msg91/pipes/whatsapp-inline-style-format';
-import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
+import { MatDialogModule } from '@angular/material/dialog';
 import { ENVIRONMENT_TOKEN } from '@msg91/constant';
+import { MatListModule } from '@angular/material/list';
 
 export const CHAT_COMPONENTS: any[] = [
     ChatWidgetComponent,
@@ -135,6 +136,7 @@ export const CHAT_COMPONENTS: any[] = [
         DirectivesSkeletonModule,
         PipesTypeofModule,
         PipesWhatsappInlineStyleFormatModule,
+        MatListModule
     ],
     declarations: [...CHAT_COMPONENTS, ProfileNameComponent],
     providers: [
