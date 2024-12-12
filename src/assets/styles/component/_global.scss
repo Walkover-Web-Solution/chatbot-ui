@@ -1,0 +1,32 @@
+.align-items-center {
+    align-items: center;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.border-bottom {
+    border-bottom: 1px solid #e3e3e4;
+}
+
+.cursor-pointer {
+    cursor: pointer !important;
+}
+
+.feedbak-mat-form-field {
+    &.mat-form-field-appearance-outline {
+        &.mat-focused {
+            .mdc-notched-outline {
+                color: var(--msg-outboundMsg);
+            }
+        }
+        .mdc-notched-outline {
+            color: #0000001f;
+        }
+    }
+}

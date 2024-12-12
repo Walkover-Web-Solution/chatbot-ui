@@ -1,3 +1,10 @@
+@mixin button-styles {
+    border: none;
+    height: 44px;
+    width: 44px;
+    padding: 0px 8px;
+    min-width: 44px;
+}
 .mat-button {
     font-family: var(--msg-fontFamily) !important;
 }
@@ -64,25 +71,17 @@
             align-items: center;
             justify-content: center;
             margin-left: 5px;
-
+            
             .link-btn {
-                border: none;
-                height: 44px;
-                width: 44px;
-                padding: 0px 8px;
-                min-width: 44px;
-
+                @include button-styles;
                 .mat-icon {
                     color: #A1A1A1;
                     transform: rotate(30deg);
                 }
             }
+            
             .send-msg-btn {
-                border: none;
-                height: 44px;
-                width: 44px;
-                padding: 0px 8px;
-                min-width: 44px;
+                @include button-styles;
                 .mat-icon {
                     color: var(--msg-outboundMsg);
                 }

@@ -57,17 +57,6 @@
         color: #393939 !important;
     }
 
-    .mat-form-field-appearance-outline {
-        &.mat-focused {
-            .mdc-notched-outline {
-                color: var(--msg-outboundMsg);
-            }
-        }
-        .mdc-notched-outline {
-            color: #0000001f;
-        }
-    }
-
     .mat-form-field.mat-focused .mat-form-field-label {
         color: var(--msg-primaryColor);
     }

@@ -38,16 +38,6 @@ textarea {
 }
 
 ::ng-deep.feedbak-textarea {
-    &.mat-form-field-appearance-outline {
-        &.mat-focused {
-            .mdc-notched-outline {
-                color: var(--msg-outboundMsg);
-            }
-        }
-        .mdc-notched-outline {
-            color: #0000001f;
-        }
-    }
     
     .mat-mdc-text-field-wrapper {
         .mat-mdc-form-field-flex {
