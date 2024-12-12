@@ -22,16 +22,16 @@
                             }}</mat-label>
                             <ng-container *ngIf="param.name?.toUpperCase() !== 'NUMBER'">
                                 <input
-                                    #formControl
-                                    [formControlName]="param?.id"
-                                    [name]="param?.name"
-                                    type="text"
-                                    [placeholder]="
-                                        'Your ' + (param.name === 'mail' ? 'email' : param.name?.toLowerCase())
-                                    "
-                                    matInput
-                                    autocomplete="off"
-                                />
+                                #formControl
+                                [formControlName]="param?.id"
+                                [name]="param?.name"
+                                type="text"
+                                [placeholder]="
+                                'Your ' + (param.name === 'mail' ? 'email' : param.name?.toLowerCase())
+                                "
+                                matInput
+                                autocomplete="off"
+                                >
                             </ng-container>
 
                             <mat-error *ngIf="clientForm.get(param?.id)?.hasError('required')"
@@ -70,6 +70,7 @@
                                 id="init-contact"
                                 placeholder="Mobile Number"
                                 matInput
+                                class="w-100"
                             />
                             <span
                                 *ngIf="clientForm.get(param?.id)?.hasError('invalidNumber')"

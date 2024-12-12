@@ -106,8 +106,8 @@
     display: flex;
     justify-content: flex-end;
 
-    .mat-flat-button.mat-primary,
-    .mat-flat-button.mat-primary,
+    .mdc-button--unelevated.mat-primary,
+    .mdc-button--unelevated.mat-primary,
     .mat-fab.mat-primary,
     .mat-mini-fab.mat-primary {
         background-color: var(--msg-primaryColor);
@@ -115,6 +115,7 @@
         font-size: 12px;
         box-shadow: none !important;
         font-weight: 600;
+        color: var(--msg-textColor);
         // background-image: linear-gradient(
         //     211deg,
         //     var(--msg-primaryColor) 52%,
