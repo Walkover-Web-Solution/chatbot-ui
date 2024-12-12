@@ -1,10 +1,11 @@
+// flex property
+.d-flex {
+    display: flex;
+}
 .align-items-center {
     align-items: center;
 }
 
-.d-flex {
-    display: flex;
-}
 
 .flex-column {
     flex-direction: column;
@@ -17,6 +18,38 @@
 .cursor-pointer {
     cursor: pointer !important;
 }
+
+
+// Text size
+.font-10 {
+    font-size: 10px !important;
+}
+.font-11 {
+    font-size: 11px !important;
+}
+.font-12 {
+    font-size: 12px !important;
+}
+.font-13 {
+    font-size: 13px !important;
+}
+.font-14 {
+    font-size: var(--font-size-common-14) !important;
+}
+.font-20 {
+    font-size: var(--font-size-common-20) !important;
+}
+.font-24 {
+    font-size: var(--font-size-common-24) !important;
+}
+.font-32 {
+    font-size: 32px !important;
+}
+.font-40 {
+    font-size: 40px !important;
+}
+
+// mat form field appearance outline color
 
 .feedbak-mat-form-field {
     &.mat-form-field-appearance-outline {
