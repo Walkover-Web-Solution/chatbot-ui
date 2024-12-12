@@ -95,7 +95,7 @@
                         <!-- <span class="folder-name" [innerHTML]="folder.name | sanitizeHtml"></span>
                     </button> -->
                     <mat-list class="faq-list">
-                        <mat-list-item *ngFor="let folder of ifaqs" (click)="selectFolder(folder.id)" class="border-bottom cursor-pointer">
+                        <mat-list-item *ngFor="let folder of ifaqs" (click)="selectFolder(folder.id)" class="border-bottom cursor-pointer font-14">
                           <mat-icon matListItemIcon class="folder-icon">{{ folder.icon_url }}</mat-icon>
                           <div matListItemTitle  class="folder-name" [innerHTML]="folder.name | sanitizeHtml"></div>
                         </mat-list-item>
