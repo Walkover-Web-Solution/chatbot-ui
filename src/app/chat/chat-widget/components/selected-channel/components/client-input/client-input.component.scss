@@ -53,13 +53,19 @@
     .clint-input-container .mat-form-field-label {
         font-size: 12px !important;
     }
-    .mat-form-field-label-wrapper .mat-form-field-label {
-        font-size: 12px !important;
-        top: 2.2em !important;
+    .mat-mdc-text-field-wrapper .mat-mdc-floating-label {
+        color: #393939 !important;
     }
 
-    .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
-        color: var(--msg-primaryColor);
+    .mat-form-field-appearance-outline {
+        &.mat-focused {
+            .mdc-notched-outline {
+                color: var(--msg-outboundMsg);
+            }
+        }
+        .mdc-notched-outline {
+            color: #0000001f;
+        }
     }
 
     .mat-form-field.mat-focused .mat-form-field-label {
@@ -80,9 +86,12 @@
     .mat-input-element {
         font-size: 12px !important;
     }
-    .mat-form-field-subscript-wrapper {
-        margin-top: 1px;
+    .mat-mdc-form-field-subscript-wrapper {
+        margin-block: 1px;
         padding-left: 0px !important;
+        .mat-mdc-form-field-error {
+            font-size: 12px;
+        }
     }
 }
 
@@ -222,5 +231,6 @@
 }
 
 #init-contact {
-    height: 38.72px !important;
+    height: 56px !important;
+    background-color: transparent;
 }

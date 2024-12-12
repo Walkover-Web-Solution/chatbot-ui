@@ -64,24 +64,31 @@
             align-items: center;
             justify-content: center;
             margin-left: 5px;
+
+            .link-btn {
+                border: none;
+                height: 44px;
+                width: 44px;
+                padding: 0px 8px;
+                min-width: 44px;
+
+                .mat-icon {
+                    color: #A1A1A1;
+                    transform: rotate(30deg);
+                }
+            }
+            .send-msg-btn {
+                border: none;
+                height: 44px;
+                width: 44px;
+                padding: 0px 8px;
+                min-width: 44px;
+                .mat-icon {
+                    color: var(--msg-outboundMsg);
+                }
+            }
         }
     }
-}
-
-button.link-btn {
-    border: none;
-    height: 44px;
-    width: 44px;
-    padding: 0px 8px;
-    min-width: 44px;
-}
-
-button.send-msg-btn {
-    border: none;
-    height: 44px;
-    width: 44px;
-    padding: 0px 8px;
-    min-width: 44px;
 }
 
 .attach-file {
@@ -108,9 +115,12 @@ button.send-msg-btn {
         box-sizing: border-box;
 
         .remove-attach {
-            width: 18px;
-            height: 18px;
+            min-width: 18px;
+            height: 22px;
             line-height: 18px;
+            .mat-icon {
+                color: var(--msg-outboundMsg);
+            }
         }
     }
 }

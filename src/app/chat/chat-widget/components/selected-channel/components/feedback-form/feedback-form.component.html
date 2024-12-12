@@ -230,7 +230,7 @@
         </div>
 
         <div *ngIf="!message?.feedbackGiven" class="form-btn">
-            <button (click)="submit()" color="primary" mat-flat-button type="submit" [disabled]="feedbackForm?.invalid">
+            <button class="w-100" (click)="submit()" color="primary" mat-flat-button type="submit" [disabled]="feedbackForm?.invalid">
                 Submit
             </button>
         </div>

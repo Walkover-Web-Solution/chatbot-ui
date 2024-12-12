@@ -37,14 +37,9 @@
                 *ngIf="!(fileUploadPercentage > 0) || fileUploadError"
                 (click)="cancelFile()"
                 mat-button
-                class="remove-attach align-items-baseline"
+                class="remove-attach"
             >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M15.8337 5.34163L14.6587 4.16663L10.0003 8.82496L5.34199 4.16663L4.16699 5.34163L8.82533 9.99996L4.16699 14.6583L5.34199 15.8333L10.0003 11.175L14.6587 15.8333L15.8337 14.6583L11.1753 9.99996L15.8337 5.34163Z"
-                        fill="var(--msg-outboundMsg)"
-                    />
-                </svg>
+                <mat-icon class="mat-icon-20 m-0" aria-hidden="false" aria-label="close icon" fontIcon="close"></mat-icon>
             </button>
         </div>
     </div>
@@ -111,19 +106,7 @@
                 type="button"
                 *ngIf="!fileUploadPercentage || fileUploadPercentage === 0"
             >
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g clip-path="url(#clip0)">
-                        <path
-                            d="M19.4075 11.2051L14.6158 19.5046C13.695 21.0995 11.6573 21.6455 10.0624 20.7246C8.46745 19.8038 7.92146 17.7661 8.8423 16.1712L14.0506 7.15012C14.6256 6.15419 15.9006 5.81257 16.8965 6.38757C17.8924 6.96257 18.2341 8.23752 17.6591 9.23345L13.2841 16.8112C13.0549 17.2081 12.5426 17.3454 12.1457 17.1162C11.7488 16.887 11.6115 16.3748 11.8407 15.9778L15.799 9.12181L14.7165 8.49681L10.7582 15.3528C10.1832 16.3488 10.5248 17.6237 11.5207 18.1987C12.5166 18.7737 13.7916 18.4321 14.3666 17.4362L18.7416 9.85845C19.6624 8.26352 19.1164 6.22587 17.5215 5.30503C15.9266 4.3842 13.8889 4.93019 12.9681 6.52512L7.75977 15.5462C6.4931 17.7401 7.24345 20.5405 9.43738 21.8072C11.6313 23.0738 14.4317 22.3235 15.6983 20.1296L20.49 11.8301L19.4075 11.2051Z"
-                            fill="#A1A1A1"
-                        />
-                    </g>
-                    <defs>
-                        <clipPath id="clip0">
-                            <rect width="20" height="20" fill="white" transform="translate(10) rotate(30)" />
-                        </clipPath>
-                    </defs>
-                </svg>
+                <mat-icon class="mat-icon-20 m-0" aria-hidden="false" aria-label="attach file icon" fontIcon="attach_file"></mat-icon>
             </button>
             <button
                 (click)="sendMessage()"
@@ -131,12 +114,7 @@
                 class="send-msg-btn"
                 mat-button
             >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M3.34199 5.025L9.60033 7.70833L3.33366 6.875L3.34199 5.025ZM9.59199 12.2917L3.33366 14.975V13.125L9.59199 12.2917ZM1.67533 2.5L1.66699 8.33333L14.167 10L1.66699 11.6667L1.67533 17.5L19.167 10L1.67533 2.5Z"
-                        fill="var(--msg-outboundMsg)"
-                    />
-                </svg>
+                <mat-icon class="mat-icon-20 m-0" aria-hidden="false" aria-label="send icon" fontIcon="send"></mat-icon>
             </button>
         </div>
     </div>
