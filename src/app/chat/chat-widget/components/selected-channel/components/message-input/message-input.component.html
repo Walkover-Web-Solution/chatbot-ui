@@ -1,7 +1,7 @@
-<div class="textarea-bord-container">
-    <div class="attach-file" *ngIf="File">
-        <div class="attach-file-wrapper">
-            <div class="file-preview">
+<div class="textarea-bord-container position-relative">
+    <div class="attach-file py-2 pl-2 text-dotted font-14 d-flex align-items-center" *ngIf="File">
+        <div class="attach-file-wrapper rounded-4 d-flex w-100 p-2">
+            <div class="file-preview w-100 d-flex align-items-center">
                 <img
                     *ngIf="fileType === 'image'"
                     [src]="srcData || appurl + 'assets/img/doc-preview.svg'"
@@ -17,8 +17,9 @@
                 <mat-icon class="attach-file-icon" *ngIf="fileType === 'audio'">audiotrack</mat-icon>
                 <mat-icon class="attach-file-icon" *ngIf="fileType === 'video'">videocam</mat-icon>
 
-                <div class="file-content">
+                <div class="file-content overflow-hidden d-flex align-items-center ml-1">
                     <small
+                    class="text-dotted font-12 fw-normal w-100 d-block"
                         >{{ File.name }}
                         {{ fileUploadPercentage > 0 ? fileUploadPercentage?.toFixed(2) + ' %' : '' }}</small
                     >
@@ -56,7 +57,7 @@
         >Message too large.</mat-error
     >
 
-    <div class="bottom-bar">
+    <div class="bottom-bar w-100 d-flex align-items-start justify-content-between py-1">
         <div style="flex-grow: 1; display: inline-flex; min-height: 43px">
             <input
                 #fileInput
@@ -75,7 +76,7 @@
                 (ngModelChange)="modalChanges($event)"
                 (keyup)="checkEnterPress($event)"
                 [(ngModel)]="messageContent"
-                class="textarea-bord"
+                class="textarea-bord w-100 font-14"
                 placeholder="Send us a message"
                 type="text"
                 [hidden]="!isMobileSDK"
@@ -93,12 +94,12 @@
                 (keyup)="checkEnterPress($event)"
                 [(ngModel)]="messageContent"
                 placeholder="Send us a message"
-                class="textarea-bord"
+                class="textarea-bord w-100 font-14"
                 (keydown)="preventEnterKey($event)"
             ></textarea>
         </div>
 
-        <div class="action-button">
+        <div class="action-button d-flex align-items-center justify-content-center px-2">
             <button
                 (click)="fileInput.click()"
                 class="link-btn"

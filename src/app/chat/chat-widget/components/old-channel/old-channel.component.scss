@@ -3,137 +3,121 @@
 }
 
 .old-message-list-card {
-    display: flex;
-    position: relative;
-    width: 100%;
-}
-
-.old-message-list-card .old-profile-group {
-    // min-width: 35px;
-    // height: 35px;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    &.singleInitial {
-        width: 40px;
-        height: 40px;
-        font-weight: 600;
-        font-size: 18px;
-        line-height: 20px;
+    .old-profile-group {
+        &.singleInitial {
+            width: 40px;
+            height: 40px;
+            font-weight: 600;
+            font-size: 18px;
+            line-height: 20px;
+        }
+        &.multipleInitial {
+            width: 35px;
+            height: 35px;
+        }
+        .profile-name {
+            &.old-profile-1 {
+                top: 0;
+                z-index: 9;
+            }
+            &.old-profile-2 {
+                left: 0;
+                bottom: 0;
+            }
+            &.old-profile-3 {
+                right: 0;
+                bottom: 0;
+            }
+        }
+        .profile-name.single {
+            position: unset !important;
+            top: unset !important;
+        }
     }
-    &.multipleInitial {
-        width: 35px;
-        height: 35px;
+    .old-message-list-text-content {
+        .count {
+            color: #979797;
+            line-height: 16px;
+        }
+    
+        .old-title {
+            color: #999797;
+            line-height: 20px;
+            width: 160px;
+            font-family: var(--msg-fontFamily) !important;
+        }
+    
+        > span {
+            line-height: 20px;
+            width: 160px;
+            color: #313131;
+            font-family: var(--msg-fontFamily) !important;
+        }
+        span.unread-count {
+            color: #5eaf00;
+            border-radius: 20px;
+          
+            mat-icon {
+              font-size: 13px;
+              width: 13px;
+              height: 13px;
+              margin-right: 6px;
+              color: #ffb700;
+            }
+            .new-message {
+                line-height: 11px;
+                color: var(--msg-primaryColor);
+            }
+            .count {
+                background-color: #f50505;
+                left: -5px;
+                top: -6px;
+                width: 20px;
+                height: 20px;
+                line-height: 20px;
+                z-index: 9;
+            }
+        }
+    }
+    button {
+        &.old-c-btn {
+            border: unset;
+            background-color: unset;
+            min-width: 24px;
+            height: 24px;
+            bottom: 0px;
+            right: 0;
+
+            &:focus {
+                outline: unset !important;
+            }
+        }
     }
 }
 
-.old-message-list-card .old-profile-group .profile-name {
-    position: absolute;
-}
 
-// ::ng-deep.old-message-list-card .old-profile-group .profile-name.single .profile-caption {
-//     width: 40px !important;
-//     height: 40px !important;
+// button.start-msg-btn {
+//     border: 1px solid var(--msg-primaryColor);
+//     color: var(--msg-primaryColor);
+//     background-color: white;
+//     padding: 7px;
+//     width: 100%;
+//     border-radius: 50px;
+//     cursor: pointer;
+//     box-shadow: 0px 4px 5px #00000024;
+//     transition: 500ms all;
+
+//     &:hover {
+//         box-shadow: unset !important;
+//         background-color: #f1f2ff;
+//     }
+
+//     &:focus {
+//         outline: unset !important;
+//     }
 // }
 
-.old-message-list-text-content {
-    display: flex;
-    flex-direction: column;
-    margin-left: 8px;
-    flex: 1;
-}
 
-.old-message-list-card .old-profile-group .profile-name.old-profile-1 {
-    top: 0;
-    z-index: 9;
-}
-
-.old-message-list-card .old-profile-group .profile-name.old-profile-2 {
-    left: 0;
-    bottom: 0;
-}
-
-.old-message-list-card .old-profile-group .profile-name.old-profile-3 {
-    right: 0;
-    bottom: 0;
-}
-
-.old-message-list-card .old-profile-group .profile-name.single {
-    position: unset !important;
-    top: unset !important;
-}
-
-.old-message-list-text-content small.count {
-    color: #979797;
-    font-size: 13px;
-    font-weight: 300;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    line-height: 16px;
-}
-
-.old-message-list-text-content .old-title {
-    color: #999797;
-    font-size: 12px;
-    font-weight: 300;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    line-height: 20px;
-    width: 160px;
-    font-family: var(--msg-fontFamily) !important;
-    font-weight: normal;
-}
-
-.old-message-list-text-content span {
-    font-size: 12px;
-    line-height: 20px;
-    white-space: nowrap;
-    width: 160px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: #313131;
-    font-family: var(--msg-fontFamily) !important;
-}
-
-button.start-msg-btn {
-    border: 1px solid var(--msg-primaryColor);
-    color: var(--msg-primaryColor);
-    background-color: white;
-    padding: 7px;
-    width: 100%;
-    border-radius: 50px;
-    cursor: pointer;
-    box-shadow: 0px 4px 5px #00000024;
-    transition: 500ms all;
-
-    &:hover {
-        box-shadow: unset !important;
-        background-color: #f1f2ff;
-    }
-
-    &:focus {
-        outline: unset !important;
-    }
-}
-
-button.old-c-btn {
-    border: unset;
-    background-color: unset;
-    min-width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    position: absolute;
-    bottom: 0px;
-    right: 0;
-    padding: 0px;
-    &:focus {
-        outline: unset !important;
-    }
-}
 
 :host {
     &:last-child {
@@ -157,44 +141,6 @@ button.old-c-btn {
     span.mdc-button__label {
         width: 100%;
     }
-}
-
-span.unread-count {
-    font-size: 11px !important;
-    display: flex;
-    align-items: center;
-    color: #5eaf00;
-    border-radius: 20px;
-}
-
-span.unread-count mat-icon {
-    font-size: 13px;
-    width: 13px;
-    height: 13px;
-    margin-right: 6px;
-    color: #ffb700;
-}
-.new-message {
-    font-size: 9px;
-    line-height: 11px;
-    color: var(--msg-primaryColor);
-    margin: 0px;
-}
-
-span.unread-count .count {
-    color: white !important;
-    background-color: #f50505;
-    border-radius: 50%;
-    position: absolute;
-    left: -5px;
-    top: -6px;
-    width: 20px;
-    height: 20px;
-    font-weight: 600;
-    font-size: 9px;
-    line-height: 20px;
-    text-align: center;
-    z-index: 9;
 }
 
 .secondary-color-fill {

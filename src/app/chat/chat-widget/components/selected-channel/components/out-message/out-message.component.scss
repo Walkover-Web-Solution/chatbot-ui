@@ -7,9 +7,6 @@
 ::ng-deep.out-msg-box {
     padding: 6px;
     background-color: var(--msg-outboundMsg);
-    color: #ffffff;
-    min-width: 194px;
-    max-width: 194px;
     min-width: 100px;
     max-width: 233px;
     border-radius: 6px;
@@ -83,53 +80,23 @@
     }
 }
 
-.img-msg-box {
-    max-width: 100%;
-    border-radius: 3px;
-    // margin-top: 10px;
-}
-
 .file-attachment {
-    display: flex;
-    align-items: center;
     padding: 3px 5px;
-    margin-top: 15px;
     border: 1px solid #ffffff;
-    border-radius: 5px;
-    font-size: 12px;
-}
-
-.file-attachment > mat-icon {
-    // margin-right: 10px;
-    // background-color: #ff956d2e;
-    height: 26px;
-    width: 26px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #ffffff;
-    font-size: 15px;
-    // transform: rotate(45deg);
-}
-
-.file-attachment > span {
-    // margin-right: 20px;
-    max-width: 120px;
-    min-width: 120px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    font-size: 12px;
+    > mat-icon {
+        height: 26px;
+        width: 26px;
+    }
+    > span {
+        max-width: 120px;
+        min-width: 120px;
+    }
 }
 
 .out-msg-box span {
     display: block;
     overflow-wrap: anywhere;
 }
-// .out-msg-box .msg-content{
-//     margin-bottom: 4px;
-// }
-
 ::ng-deep.show-loader {
     .mat-progress-spinner {
         circle {

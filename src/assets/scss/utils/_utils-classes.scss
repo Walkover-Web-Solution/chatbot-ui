@@ -36,9 +36,6 @@
     overflow: hidden !important;
 }
 
-.overflow-dotted {
-    @extend %overflow-dotted;
-}
 .overflow-visible {
     overflow: visible !important;
 }

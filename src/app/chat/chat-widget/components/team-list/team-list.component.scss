@@ -1,17 +1,4 @@
-.team-list-main-container {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    .select-team {
-        font-weight: bold;
-        font-size: 18px;
-        line-height: 20px;
-    }
-}
-
 .team-list-body-container {
-    flex: 1;
-    position: relative;
     .team-list-body-inner-container {
         margin-bottom: 32px !important;
         box-shadow: 0px 0px 10px rgb(0 0 0 / 8%);
@@ -19,108 +6,45 @@
     }
 }
 
-.team-message-list-card {
-    display: flex;
-    position: relative;
-    width: 100%;
-    align-items: center;
-}
-
 .team-message-list-card .team-profile-group {
     width: 35px;
     height: 35px;
     min-width: 35px;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
-::ng-deep .team-message-list-card .team-profile-group .profile-name {
-    position: absolute;
-}
+.team-message-list-card {
+    .team-profile-group {
+        .profile-name {
+            &.team-profile-1 {
+                top: 0;
+                z-index: 9999;
+            }
 
-.team-message-list-text-content {
-    display: flex;
-    flex-direction: column;
-    margin-left: 8px;
-    flex: 1;
-}
+            &.team-profile-2 {
+                left: 0;
+                bottom: 0;
+            }
 
-.team-message-list-card .team-profile-group .profile-name.team-profile-1 {
-    top: 0;
-    z-index: 9999;
-}
-
-.team-message-list-card .team-profile-group .profile-name.team-profile-2 {
-    left: 0;
-    bottom: 0;
-}
-
-.profile-name.team-profile-3 {
-    right: 0;
-    bottom: 0;
-}
-
-.team-message-list-text-content small {
-    color: #989898;
-    font-size: 12px;
-    white-space: nowrap;
-    width: 172px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 16px;
+            &.team-profile-3 {
+                right: 0;
+                bottom: 0;
+            }
+        }
+    }
 }
 
 .team-message-list-text-content strong {
-    font-weight: normal;
-    white-space: nowrap;
     width: 172px;
-    overflow: hidden;
-    text-overflow: ellipsis;
     line-height: 18px;
     color: #4f4f4f;
-    font-size: 14px;
-    display: block;
-    text-transform: capitalize;
-}
-
-.team-message-list-text-content span {
-    font-size: 14px;
-    margin-top: 8px;
-}
-
-button.start-msg-btn {
-    border: 1px solid var(--msg-primaryColor);
-    color: var(--msg-primaryColor);
-    background-color: white;
-    padding: 7px;
-    width: 100%;
-    border-radius: 50px;
-    cursor: pointer;
-    box-shadow: 0px 4px 5px #00000024;
-    transition: 500ms all;
-
-    &:hover {
-        box-shadow: unset !important;
-        background-color: #f1f2ff;
-    }
-
-    &:focus {
-        outline: unset !important;
-    }
 }
 
 button.team-c-btn {
     border: unset;
     background-color: unset;
-    border: unset;
     background-color: unset;
     min-width: 24px;
     height: 24px;
-    display: flex;
-    align-items: center;
-    padding: 0px;
 
     &:focus {
         outline: unset !important;
@@ -136,48 +60,11 @@ button.team-c-btn {
 }
 
 ::ng-deep.main-team-channel {
-    display: flex !important;
-    align-items: center;
     padding: 12px 16px !important;
     border-bottom: 1px solid #e3e3e4 !important;
-    margin-right: 0 !important;
-    width: 100% !important;
-    text-align: left !important;
     line-height: 1 !important;
-    font-weight: normal !important;
-    border-radius: 0 !important;
 
     span.mat-button-wrapper {
         width: 100%;
-    }
-}
-
-.head-logo {
-    display: flex;
-    align-items: center;
-
-    .logo {
-        display: flex;
-        align-items: center;
-    }
-
-    .logo-img {
-        height: 30px !important;
-    }
-
-    .logo-text {
-        p {
-            line-height: 16px;
-            margin-top: 3px;
-            font-size: 18px;
-            font-weight: 600;
-            margin: 3px 0 0;
-        }
-
-        span {
-            font-size: 9px;
-            display: block;
-            font-weight: 100;
-        }
     }
 }

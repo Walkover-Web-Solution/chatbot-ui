@@ -1,15 +1,15 @@
-<mat-card [class.full-fill-feedback]="message?.feedbackGiven" class="feedback-card">
-    <div class="feedback-logo-wrapper" *ngIf="feedbackSetting?.logo">
+<mat-card [class.full-fill-feedback]="message?.feedbackGiven" class="feedback-card p-4 mb-3">
+    <div class="feedback-logo-wrapper d-flex justify-content-center" *ngIf="feedbackSetting?.logo">
         <img [src]="feedbackSetting.logo" alt="Brand Logo" loading="lazy" height="40" />
     </div>
-    <h3 *ngIf="!message?.feedbackGiven && feedbackSetting?.text" class="feedback-label">
+    <h3 *ngIf="!message?.feedbackGiven && feedbackSetting?.text" class="feedback-label text-center font-14 fw-bold my-4 mx-0">
         {{ feedbackSetting.text | replace: variableMapping }}
     </h3>
 
     <h3 *ngIf="message?.feedbackGiven" class="feedback-label">Thanks for Your feedback</h3>
 
     <form [formGroup]="feedbackForm">
-        <div class="select-emoji">
+        <div class="select-emoji d-flex gap-4 mb-4 justify-content-center">
             <label
                 [class.rating-disabled]="message?.feedbackGiven"
                 class="button"
@@ -229,7 +229,7 @@
             </p>
         </div>
 
-        <div *ngIf="!message?.feedbackGiven" class="form-btn">
+        <div *ngIf="!message?.feedbackGiven" class="form-btn d-flex justify-content-end">
             <button class="w-100" (click)="submit()" color="primary" mat-flat-button type="submit" [disabled]="feedbackForm?.invalid">
                 Submit
             </button>

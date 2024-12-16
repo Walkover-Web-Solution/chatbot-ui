@@ -1,5 +1,5 @@
 <div
-    class="out-msg-box"
+    class="out-msg-box text-white"
     [ngClass]="{ 'if-attachment': messages.content?.attachment?.length > 0, 'deleted-message': messages?.is_deleted }"
     *ngIf="messages?.message_type !== 'activity'"
 >
@@ -9,16 +9,16 @@
                 <img
                     #imageTag
                     [src]="attachment.path"
-                    class="img-msg-box"
+                    class="img-msg-box max-w-100 rounded-4"
                     *ngIf="supportedFiles[attachment.name]"
                     loading="lazy"
                     (error)="onImageLoadError(imageTag)"
                 />
             </div>
 
-            <div *ngIf="!supportedFiles[attachment.name]" class="file-attachment">
-                <mat-icon class="material-icons-outlined">attach_file</mat-icon>
-                <span>{{ attachment.name }}</span>
+            <div *ngIf="!supportedFiles[attachment.name]" class="file-attachment rounded-4 font-12 d-flex align-items-center mt-3">
+                <mat-icon class="material-icons-outlined d-flex justify-content-center align-items-center font-14 w-100">attach_file</mat-icon>
+                <span class="text-dotted font-12">{{ attachment.name }}</span>
             </div>
         </ng-template>
 

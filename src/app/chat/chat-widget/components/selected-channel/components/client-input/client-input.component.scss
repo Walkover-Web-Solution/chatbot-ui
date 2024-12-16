@@ -1,6 +1,5 @@
 :host {
     display: block;
-    // max-width: 77%;
     max-width: 90%;
 
     .client-input-form {
@@ -32,48 +31,10 @@
     }
 }
 ::ng-deep.clint-input-container {
-    display: flex;
-
-    .mat-form-field-appearance-outline .mat-form-field-infix {
-        padding: 0.7em 0 0.7em 0 !important;
-    }
-
-    .mat-form-field-infix {
-        border-top: 7px solid transparent !important;
-    }
-
-    .mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-label,
-    .mat-form-field-appearance-outline.mat-form-field-can-float
-        .mat-input-server:focus
-        + .mat-form-field-label-wrapper
-        .mat-form-field-label {
-        transform: translateY(-17px) scale(0.75) !important;
-    }
-
-    .clint-input-container .mat-form-field-label {
-        font-size: 12px !important;
-    }
-    .mat-mdc-text-field-wrapper .mat-mdc-floating-label {
-        color: #393939 !important;
-    }
-
-    .mat-form-field.mat-focused .mat-form-field-label {
-        color: var(--msg-primaryColor);
-    }
-
-    .mat-form-field.mat-focused .mat-form-field-ripple {
-        background-color: var(--msg-primaryColor);
-    }
-
-    button {
-        padding: 0 !important;
-        min-width: 41px !important;
-        min-height: 41px !important;
-        margin-left: 15px !important;
-    }
-
-    .mat-input-element {
-        font-size: 12px !important;
+    .mat-mdc-text-field-wrapper {
+        .mat-mdc-floating-label {
+            color: #393939 !important;
+        }
     }
     .mat-mdc-form-field-subscript-wrapper {
         margin-block: 1px;
@@ -82,141 +43,50 @@
             font-size: 12px;
         }
     }
-}
-
-.clint-input-card-header {
-    margin-bottom: 12px;
-    display: block;
-}
-
-.clint-input-form {
-    padding: 15px;
-    background-color: white;
-    box-shadow: 0px 1px 6px #00000042;
-    border-radius: 4px;
-}
-
-.w-100 {
-    width: 100%;
+    .invalid-number {
+        bottom: -9px;
+    }
 }
 
 ::ng-deep.form-btn {
-    display: flex;
-    justify-content: flex-end;
 
     .mdc-button--unelevated.mat-primary,
     .mdc-button--unelevated.mat-primary,
     .mat-fab.mat-primary,
     .mat-mini-fab.mat-primary {
         background-color: var(--msg-primaryColor);
-        width: 100%;
-        font-size: 12px;
         box-shadow: none !important;
-        font-weight: 600;
         color: var(--msg-textColor);
-        // background-image: linear-gradient(
-        //     211deg,
-        //     var(--msg-primaryColor) 52%,
-        //     var(--msg-primaryColor) 40.2%,
-        //     var(--msg-primaryColorLight) 116.5%,
-        //     var(--msg-primaryColorLight) 102.1%
-        // );
     }
 }
 
 ::ng-deep.details-card {
-    // margin-bottom: 16px;
     box-shadow: none !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
     box-sizing: border-box;
-    .mat-form-field-label-wrapper {
-        top: -15px !important;
-    }
-    .mat-form-field-outline {
-        background-color: #ffffff !important;
-    }
 }
 
 .success-clint-form {
     padding: 22px 12px;
     background-color: var(--msg-inboundMsg);
     border-radius: 6px;
-    margin-bottom: 15px;
-    margin-top: 15px;
-
     strong {
-        font-weight: 600;
-        font-size: 14px;
         line-height: 20px;
         color: #313131;
-        text-align: center;
-        display: block;
+    }
+    img {
+        width: 42px;
+        height: 42px;
     }
 }
 
-.success-clint-form label {
-    display: block;
-    font-size: 14px;
-    margin-bottom: 10px;
-    color: #6e6e6e;
-}
-
-.success-clint-form img {
-    width: 42px;
-    height: 42px;
-    margin-bottom: 15px;
-}
-
-.mat-card {
-    padding: 12px 16px;
-}
-
-.focused-color:focus {
-    // background-color: #011287 !important;
-    // background-image: unset;
-}
 
 .input-msg-box {
-    // padding: 6px;
-    // background-color: var(--msg-inboundMsg);
-    // color: var(--msg-textMsgColor);
-    // min-width: 72px;
-    // max-width: 196px;
-    // border-radius: 8px;
-    // border-top-left-radius: 0;
-    // font-size: 13px;
-    // line-height: 1.8;
-
-    padding: 6px;
     background-color: var(--msg-inboundMsg);
     color: #393939;
-    min-width: 100% !important;
-    max-width: 100% !important;
-    font-size: 12.8px;
     line-height: 20px;
-    border-radius: 6px;
-
-    span {
-        display: block;
+    .agent-name {
+        color: #8f9396;
     }
-}
-.agent-name {
-    font-size: 10.8px;
-    color: #8f9396;
-    margin-bottom: 0px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin: 0px;
-    font-weight: 500;
-}
-
-.invalid-number {
-    font-size: 9px;
-    position: absolute;
-    bottom: -9px;
-    font-weight: 400;
 }
 
 #init-contact {

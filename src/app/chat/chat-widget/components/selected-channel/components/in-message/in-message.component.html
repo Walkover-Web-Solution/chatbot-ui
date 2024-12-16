@@ -1,6 +1,6 @@
 <div style="display: flex; align-items: flex-end" *ngIf="messages?.message_type !== 'activity'">
-    <div class="input-msg-box" [ngClass]="{ 'if-attachment': messages.content?.attachment?.length > 0 }">
-        <h6 class="my-0 fw-bold agent-name" *ngIf="messages.firstAgentMsg">
+    <div class="input-msg-box font-14" [ngClass]="{ 'if-attachment': messages.content?.attachment?.length > 0 }">
+        <h6 class="my-0 fw-bold agent-name text-dotted font-10 mb-0 fw-bold" *ngIf="messages.firstAgentMsg">
             {{
                 fromName
                     ? fromName
@@ -21,7 +21,7 @@
                     <img
                         #imageTag
                         [src]="attachment.path"
-                        class="img-msg-box"
+                        class="img-msg-box max-w-100 rounded-4 w-100"
                         *ngIf="supportedFiles[attachment.name]"
                         loading="lazy"
                         (error)="onImageLoadError(imageTag)"
@@ -202,21 +202,20 @@
                 messages?.content?.text
             "
             [innerHTML]="messages.content.text | replace: '\n':'</br>' | whatsAppInlineStyleFormat | linkify"
-            class="input-msg-break"
+            class="input-msg-break "
         ></p>
 
         <ng-container *ngIf="messages?.message_type === 'video_call'">
             <a [href]="messages?.content?.text" target="_blank" [ngClass]="{ 'pointer-event-none': linkExpire }">
                 <button
                     [disabled]="linkExpire"
-                    class="meet-btn"
-                    style="background-color: var(--msg-primaryColor); color: #fff"
+                    class="meet-btn font-12 text-white"
                     mat-flat-button
                 >
                     Click Here to Join Hello Meet
                 </button>
             </a>
-            <p *ngIf="!linkExpire && messages?.content?.expiration_time" class="font-12 my-1">
+            <p *ngIf="!linkExpire && messages?.content?.expiration_time" class="font-12">
                 <strong class="text-dark">Note: </strong
                 ><span class="text-light"
                     >Meet will expire in next
