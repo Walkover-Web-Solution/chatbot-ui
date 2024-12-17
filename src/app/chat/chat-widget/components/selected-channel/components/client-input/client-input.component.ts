@@ -14,7 +14,7 @@ import {
 import { BaseComponent } from '@msg91/ui/base-component';
 import { select, Store } from '@ngrx/store';
 import { IAppState } from '../../../../../store';
-import { AbstractControl, UntypedFormControl, UntypedFormGroup, ValidationErrors  } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ValidationErrors  } from '@angular/forms';
 import { IClient, IFormMessage, IParam, Message } from '../../../../../model';
 import { Observable, of } from 'rxjs';
 import { selectChatInputSubmitted, selectDefaultClientParams } from '../../../../../store/selectors';
@@ -37,7 +37,7 @@ export class ClientInputComponent extends BaseComponent implements OnInit, OnDes
         client: Partial<IClient>;
         channel: string;
     }>();
-    public clientForm: UntypedFormGroup = new UntypedFormGroup({});
+    public clientForm: FormGroup = new FormGroup({});
     public defaultParams$: Observable<IParam[]>;
     public appurl: string = environment.appUrl;
     public formIsSubmiting = false;
@@ -61,11 +61,11 @@ export class ClientInputComponent extends BaseComponent implements OnInit, OnDes
                     if (x.name?.toUpperCase() === 'NUMBER') {
                         this.initIntl(x);
                         phoneValue = ((this.message as IFormMessage)?.form[x.id].value as PhoneNumber).phonenumber;
-                        this.clientForm.addControl(x.id, new UntypedFormControl(phoneValue));
+                        this.clientForm.addControl(x.id, new FormControl(phoneValue));
                     } else {
                         this.clientForm.addControl(
                             x.id,
-                            new UntypedFormControl(
+                            new FormControl(
                                 (this.message as IFormMessage)?.form[x.id].value,
                                 (this.message as IFormMessage)?.form[x.id].validators,
                                 x.name?.toUpperCase() === 'NAME' ? this.validateName.bind(this) : null
