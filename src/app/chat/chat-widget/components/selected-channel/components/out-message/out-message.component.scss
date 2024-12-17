@@ -20,7 +20,7 @@
         -webkit-hyphens: auto !important;
         hyphens: auto !important;
         a {
-            color: #ffffff;
+            color: var(--msg-textColor);
         }
         font-size: 12.8px;
         line-height: 20px;
@@ -63,7 +63,6 @@
                     font-weight: normal;
                     font-size: 12px;
                     line-height: 20px;
-                    color: #ffffff;
                     margin-left: 6px;
                     overflow: hidden;
                     white-space: nowrap;
@@ -82,7 +81,7 @@
 
 .file-attachment {
     padding: 3px 5px;
-    border: 1px solid #ffffff;
+    border: 1px solid var(--msg-textColor);
     > mat-icon {
         height: 26px;
         width: 26px;
@@ -115,7 +114,7 @@
     content: 'Media not Found or Supported';
     position: absolute;
     inset: 0;
-    color: #ffffff;
+    color: var(--msg-textColor);
     background-color: rgb(0 0 0 / 54%);
     height: 100%;
     width: 100%;

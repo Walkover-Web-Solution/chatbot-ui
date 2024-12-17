@@ -52,8 +52,8 @@
 
     .mdc-button--unelevated.mat-primary,
     .mdc-button--unelevated.mat-primary,
-    .mat-fab.mat-primary,
-    .mat-mini-fab.mat-primary {
+    .mat-mdc-fab .mat-primary,
+    .mat-mdc-mini-fab.mat-primary {
         background-color: var(--msg-primaryColor);
         box-shadow: none !important;
         color: var(--msg-textColor);

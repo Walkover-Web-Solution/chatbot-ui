@@ -27,10 +27,6 @@
     left: 0 !important;
     box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16) !important;
     overflow-y: hidden !important;
-
-    &.modify-chat-box {
-        padding-bottom: 26px !important;
-    }
 }
 
 .chat-box-hidden {
@@ -228,7 +224,7 @@ button.close-mobile-icon-btn {
         top: 2px !important;
         right: 2px !important;
         z-index: 10 !important;
-        background-color: #ffffff !important;
+        background-color: var(--msg-textColor) !important;
         border: unset !important;
         border-radius: 100% !important;
         font-weight: bolder !important;
@@ -285,12 +281,6 @@ button.close-mobile-icon-btn {
     }
 }
 
-
-/*.widget-toggle-nav button:focus {*/
-/*  outline: unset !important !important;*/
-/*}*/
-
-
 .msg91-chat-view,
 .msg91-faq-view {
     -webkit-animation: slide-top 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both !important;
@@ -333,7 +323,6 @@ button.close-mobile-icon-btn {
 
 .main-loader {
     z-index: 999 !important;
-    background-color: #ffffffbf !important;
 
     .mat-progress-spinner {
         circle {

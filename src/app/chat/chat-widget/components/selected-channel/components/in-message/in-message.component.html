@@ -21,7 +21,7 @@
                     <img
                         #imageTag
                         [src]="attachment.path"
-                        class="img-msg-box max-w-100 rounded-4 w-100"
+                        class="max-w-100 rounded-4 w-100"
                         *ngIf="supportedFiles[attachment.name]"
                         loading="lazy"
                         (error)="onImageLoadError(imageTag)"

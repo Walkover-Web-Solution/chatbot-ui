@@ -17,7 +17,7 @@
         >
             ✕
         </button>
-        <div class="main-loader d-flex align-items-center justify-content-center h-100 w-100 position-absolute" *ngIf="initWidgetInProcess$ | async">
+        <div class="main-loader d-flex align-items-center justify-content-center h-100 w-100 position-absolute bg-white" *ngIf="initWidgetInProcess$ | async">
             <mat-spinner [diameter]="35"></mat-spinner>
         </div>
 
@@ -38,19 +38,19 @@
         </msg91-faq-view>
 
         <div class="network-status position-absolute w-100 h-100" *ngIf="(networkStatus$ | async) === 'OFFLINE'">
-            <div class="network-status-content d-flex align-items-center justify-content-center h-100">
+            <div class="d-flex align-items-center justify-content-center h-100">
                 <ng-container [ngSwitch]="PubNubStatus$ | async">
                     <ng-template [ngSwitchCase]="'DISCONNECTED'">
-                        <small style="color: #ffffff">Network Down</small>
+                        <small class="text-white">Network Down</small>
                     </ng-template>
                     <ng-template [ngSwitchCase]="'CONNECTED'">
-                        <small style="color: #ffffff">Network up</small>
+                        <small class="text-white">Network up</small>
                     </ng-template>
                     <ng-template [ngSwitchCase]="'LOW-NETWORK'">
-                        <small style="color: #ffffff">Network Low</small>
+                        <small class="text-white">Network Low</small>
                     </ng-template>
                     <ng-template [ngSwitchCase]="'RECONNECTED'">
-                        <small style="color: #ffffff">Network Reconnected</small>
+                        <small class="text-white">Network Reconnected</small>
                     </ng-template>
                 </ng-container>
             </div>
@@ -62,10 +62,10 @@
             ((hideLauncher$ | async) !== true || (visible$ | async)) &&
             ((showCloseButton$ | async) || (visible$ | async) !== true)
         "
-        class="chat-button border-radius-50 overflow-hidded cursor-pointer align-items-center justify-content-center outline-none position-fixed"
+        class="chat-button border-radius-50 overflow-hidden cursor-pointer align-items-center justify-content-center outline-none position-fixed"
         [ngClass]="toggleInputClass"
     >
-        <span *ngIf="visible$ | async" class="m-btn-icon d-flex align-items-center justify-content-center" [style.color]="textColor">
+        <span *ngIf="visible$ | async" class="d-flex align-items-center justify-content-center" [style.color]="textColor">
             <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                     d="M20.7375 10.7375L15 16.4625L9.2625 10.7375L7.5 12.5L15 20L22.5 12.5L20.7375 10.7375Z"

@@ -146,7 +146,7 @@
     content: 'Media not Found or Supported';
     position: absolute;
     inset: 0;
-    color: #ffffff;
+    color: var(--msg-textColor);
     background-color: rgb(0 0 0 / 54%);
     height: 100%;
     width: 100%;

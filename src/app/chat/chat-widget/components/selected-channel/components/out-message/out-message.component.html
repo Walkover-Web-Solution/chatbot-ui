@@ -9,7 +9,7 @@
                 <img
                     #imageTag
                     [src]="attachment.path"
-                    class="img-msg-box max-w-100 rounded-4"
+                    class="max-w-100 rounded-4"
                     *ngIf="supportedFiles[attachment.name]"
                     loading="lazy"
                     (error)="onImageLoadError(imageTag)"
@@ -28,7 +28,7 @@
                     <mat-icon class="material-icons-outlined">audiotrack</mat-icon>
                 </div>
                 <div class="attach-filename">
-                    <span>{{ attachment.name }}</span>
+                    <span class="text-white">{{ attachment.name }}</span>
                 </div>
             </div>
         </ng-template>
@@ -39,7 +39,7 @@
                     <mat-icon class="material-icons-outlined">videocam</mat-icon>
                 </div>
                 <div class="attach-filename">
-                    <span>{{ attachment.name }}</span>
+                    <span class="text-white">{{ attachment.name }}</span>
                 </div>
             </div>
         </ng-template>
@@ -57,7 +57,7 @@
                 <mat-icon class="material-icons-outlined">insert_drive_file</mat-icon>
             </div>
             <div class="attach-filename">
-                <span>{{ attachment.name }}</span>
+                <span class="text-white">{{ attachment.name }}</span>
             </div>
         </div>
         <mat-progress-spinner

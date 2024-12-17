@@ -12,7 +12,7 @@
         line-height: 20px;
         display: flex;
         align-items: center;
-        color: #ffffff;
+        color: var(--msg-textColor);
     }
     &.profileLarge {
         font-weight: 600;

@@ -14,7 +14,7 @@
 .rcw-modal {
     z-index: 9999;
     padding: 5vh 0;
-    font-family: Lato, sans-serif !important;
+    font-family: var(--msg-fontFamily) !important;
     .rcw-modal-content {
         background-color: #fefefe;
         border: 1px solid lightgray;
@@ -92,11 +92,7 @@
         }
     }
     &.notification {
-        font-size: initial;
-        color: initial;
         .rcw-modal-content {
-            max-width: 100%;
-            margin: initial;
             @media only screen and (max-width: 768px) {
                 left: 16px !important;
                 right: 16px !important;

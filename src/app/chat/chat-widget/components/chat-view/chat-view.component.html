@@ -1,4 +1,4 @@
-<div *ngIf="!(chatSelectedSection$ | async)" class="msg91-chat-view-inner h-100 d-flex flex-column fixed-layout">
+<div *ngIf="!(chatSelectedSection$ | async)" class="h-100 d-flex flex-column">
     <div
         class="widget-header d-flex justify-content-between text-white"
         @fadeIn
@@ -19,7 +19,7 @@
                 <p class="h-desc">{{ tagline }}</p>
             </ng-container> -->
         </div>
-        <button mat-button class="mat-faqs-btn flex-row-reverse font-16 font-bolder py-0 pl-2 pr-1" (click)="enableChatView(false)" *ngIf="widgetShowFaq$ | async">
+        <button mat-button class="mat-faqs-btn flex-row-reverse font-16 font-bolder py-0 px-1" (click)="enableChatView(false)" *ngIf="widgetShowFaq$ | async">
             FAQs
             <mat-icon class="material-symbols-outlined mat-icon-20" aria-hidden="false" aria-label="chevron right icon" fontIcon="chevron_right"></mat-icon>
         </button>
@@ -29,8 +29,8 @@
         <div class="widget-chat-view-old-conversation-inner overflow-hidden see-all-conversation-btn position-absolute py-2 px-3">
             <div class="main-card overflow-y bg-white right-top-rounded-8 left-top-rounded-8 border-radius-bottom-none" @fadeIn>
                 <ng-container *ngIf="oldChannels$ | async as oldChannels; let i = index">
-                    <div *ngIf="oldChannels && oldChannels.length" class="conversation-card rounded-8 mb-3 text-white">
-                        <strong class="d-block p-3 fw-bolder font-14 ">Continue the conversation</strong>
+                    <div *ngIf="oldChannels && oldChannels.length" class="conversation-card rounded-8 mb-3">
+                        <strong class="d-block p-3 fw-bold font-14 ">Continue the conversation</strong>
                         <div [class.progress]="channelListInProcess$ | async">
                             <ng-container
                                 *ngFor="
@@ -72,7 +72,7 @@
                                     [width]="44"
                                     [height]="44"
                                     [aProfileClass]="'profileLarge'"
-                                    style="margin-right: 10px; margin-bottom: 10px"
+                                    class="mr-2 mb-2"
                                 >
                                 </msg91-profile-name>
                             </ng-container>

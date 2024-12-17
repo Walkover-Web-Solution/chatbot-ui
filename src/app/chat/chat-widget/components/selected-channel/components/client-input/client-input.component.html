@@ -4,7 +4,7 @@
             <h6 class="fw-bold agent-name font-10 fw-bold m-0 text-dotted">Bot</h6>
             <span class="d-block">Please fill this form with your details to proceed with the conversation.</span>
         </div>
-        <mat-card *ngIf="!$any(message)?.formSubmitted" class="mat-elevation-z3  details-card min-w-100 max-w-100 p-2 rounded-4 font-12 min-w-100 max-w-100 input-msg-box">
+        <mat-card *ngIf="!$any(message)?.formSubmitted" class="mat-elevation-z3 details-card min-w-100 max-w-100 p-2 rounded-4 font-12 input-msg-box">
             <form [formGroup]="clientForm">
                 <div class="show-loader" *ngIf="formIsSubmiting" style="position: absolute; bottom: 112px">
                     <mat-progress-spinner diameter="20" mode="indeterminate" value="100"></mat-progress-spinner>

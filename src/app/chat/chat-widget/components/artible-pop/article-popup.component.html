@@ -29,14 +29,14 @@
 </div>
 
 <div
-    class="rcw-modal overflow-auto h-100vh w-100vw notification d-flex p-3"
+    class="rcw-modal overflow-auto h-100vh w-100vw notification font-16 d-flex p-3"
     *ngIf="isNotification"
     [ngClass]="[
         position?.horizontal_position ? 'horizontal-' + position?.horizontal_position : '',
         position?.vertical_position ? 'vertical-' + position?.vertical_position : ''
     ]"
 >
-    <div class="rcw-modal-content position-relative max-w-100 rounded-8">
+    <div class="rcw-modal-content m-auto position-relative max-w-100 rounded-8">
         <button (click)="closed.next()" class="rcw-full-screen-button position-absolute border-radius-50 cursor-pointer d-flex align-items-center justify-content-center center">
             <svg
                 class="rcw-full-screen-icon"

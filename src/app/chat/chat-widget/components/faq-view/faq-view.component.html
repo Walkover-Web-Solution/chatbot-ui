@@ -4,7 +4,7 @@
     [style.background-color]="primaryColor"
     [style.background-image]="backgroundImage"
 >
-    <div class="head-logo d-flex justify-content-between align-items-center" style="order: 1">
+    <div class="head-logo d-flex justify-content-between align-items-center">
         <button
             mat-icon-button
             class="view-btn"
@@ -71,7 +71,7 @@
                     fill="#A1A1A1"
                 />
             </svg>
-            <input class="" (keyup)="searchInFaqList($event)" placeholder="What are you looking for?" type="text" />
+            <input (keyup)="searchInFaqList($event)" placeholder="What are you looking for?" type="text" />
         </div>
         <div class="search-loader position-absolute" *ngIf="faqSearchInProcess$ | async">
             <mat-spinner [diameter]="20"></mat-spinner>
