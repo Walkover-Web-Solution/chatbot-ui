@@ -152,9 +152,6 @@
 .flex-grow-1 {
     flex-grow: 1;
 }
-.flex-grow-huge {
-    flex-grow: 9999;
-}
 .flex-1 {
     flex: 1;
 }
@@ -173,40 +170,6 @@
 }
 .gap-5 {
     gap: 32px;
-}
-
-// Row Spacing
-.row-gap-1 {
-    row-gap: 4px;
-}
-.row-gap-2 {
-    row-gap: 8px;
-}
-.row-gap-3 {
-    row-gap: 16px;
-}
-.row-gap-4 {
-    row-gap: 24px;
-}
-.row-gap-5 {
-    row-gap: 32px;
-}
-
-// Column Spacing
-.col-gap-1 {
-    column-gap: 4px;
-}
-.col-gap-2 {
-    column-gap: 8px;
-}
-.col-gap-3 {
-    column-gap: 16px;
-}
-.col-gap-4 {
-    column-gap: 24px;
-}
-.col-gap-5 {
-    column-gap: 32px;
 }
 
 // Grid Layout
@@ -248,12 +211,7 @@
         display: none;
     }
 }
-.d-inline-block {
-    display: inline-block;
-}
-.d-table {
-    display: table;
-}
+
 .visibility-visible {
     visibility: visible;
 }
@@ -789,7 +747,7 @@
     min-width: auto !important;
 }
 .min-w-100 {
-    max-width: 100% !important;
+    min-width: 100% !important;
 }
 .max-w-100 {
     max-width: 100% !important;
