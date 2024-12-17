@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { BaseComponent } from '@msg91/ui/base-component';
 import { IFeedbackMessage, IPostFeedback, Ratings } from '../../../../../model';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { environment } from '../../../../../../../environments/environment';
 
 @Component({
@@ -25,10 +25,10 @@ export class FeedbackFormComponent extends BaseComponent implements OnInit, OnDe
     @Input() dynamicValue: any;
     @Input() feedbackSetting: { text: string; logo: string };
     @Output() postFeedback: EventEmitter<IPostFeedback> = new EventEmitter<IPostFeedback>();
-    feedbackForm: UntypedFormGroup = new UntypedFormGroup({
-        feedback_msg: new UntypedFormControl('', [Validators.required]),
-        rating: new UntypedFormControl('', [Validators.required]),
-        token: new UntypedFormControl('', [Validators.required]),
+    feedbackForm: FormGroup = new FormGroup({
+        feedback_msg: new FormControl('', [Validators.required]),
+        rating: new FormControl('', [Validators.required]),
+        token: new FormControl('', [Validators.required]),
     });
     ratings = Ratings;
     appurl: string = environment.appUrl;

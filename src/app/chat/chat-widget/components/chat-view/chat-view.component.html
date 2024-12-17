@@ -1,6 +1,6 @@
-<div *ngIf="!(chatSelectedSection$ | async)" class="msg91-chat-view-inner fixed-layout">
+<div *ngIf="!(chatSelectedSection$ | async)" class="h-100 d-flex flex-column">
     <div
-        class="widget-header"
+        class="widget-header d-flex justify-content-between text-white"
         @fadeIn
         [style.background-color]="primaryColor"
         [style.background-image]="backgroundImage"
@@ -9,7 +9,7 @@
         <div>
             <!-- <h3 [style.color]="textColor" class="h-title">Hi {{(clientName$ | async) ? (clientName$ | async | titlecase) :
         'there'}} 👋</h3> -->
-            <h3 class="h-title">Hi {{ (clientName$ | async) ? (clientName$ | async | titlecase) : 'there' }}</h3>
+            <h3 class="h-title font-24 mb-1 mt-0 text-capitalize overflow-hidden">Hi {{ (clientName$ | async) ? (clientName$ | async | titlecase) : 'there' }}</h3>
 
             <!-- <ng-container *ngIf="!widgetTagline$ | async as tagline">
                 <p class="h-desc">We reply within a few hours.</p>
@@ -19,23 +19,18 @@
                 <p class="h-desc">{{ tagline }}</p>
             </ng-container> -->
         </div>
-        <button mat-button class="mat-faqs-btn" (click)="enableChatView(false)" *ngIf="widgetShowFaq$ | async">
+        <button mat-button class="mat-faqs-btn flex-row-reverse font-16 font-bolder py-0 px-1" (click)="enableChatView(false)" *ngIf="widgetShowFaq$ | async">
             FAQs
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                    d="M7.1582 6.175L10.9749 10L7.1582 13.825L8.3332 15L13.3332 10L8.3332 5L7.1582 6.175Z"
-                    fill="white"
-                />
-            </svg>
+            <mat-icon class="material-symbols-outlined mat-icon-20" aria-hidden="false" aria-label="chevron right icon" fontIcon="chevron_right"></mat-icon>
         </button>
     </div>
 
-    <div class="widget-chat-view-old-conversation" @fadeIn>
-        <div class="widget-chat-view-old-conversation-inner">
-            <div class="main-card" @fadeIn>
+    <div class="widget-chat-view-old-conversation flex-1 position-relative" @fadeIn>
+        <div class="widget-chat-view-old-conversation-inner overflow-hidden see-all-conversation-btn position-absolute py-2 px-3">
+            <div class="main-card overflow-y bg-white right-top-rounded-8 left-top-rounded-8 border-radius-bottom-none" @fadeIn>
                 <ng-container *ngIf="oldChannels$ | async as oldChannels; let i = index">
-                    <div *ngIf="oldChannels && oldChannels.length" class="conversation-card">
-                        <strong>Continue the conversation</strong>
+                    <div *ngIf="oldChannels && oldChannels.length" class="conversation-card rounded-8 mb-3">
+                        <strong class="d-block p-3 fw-bold font-14 ">Continue the conversation</strong>
                         <div [class.progress]="channelListInProcess$ | async">
                             <ng-container
                                 *ngFor="
@@ -57,19 +52,18 @@
                         <button
                             (click)="setChatSection('CHANNEL_LIST')"
                             *ngIf="oldChannels && oldChannels.length > 3 && (channelListInProcess$ | async) === false"
-                            class="see-all-conversation-btn"
+                            class="see-all-conversation-btn d-block mt-0 py-0 px-3 w-100 text-center fw-bolder font-12 text-capitalize"
                             mat-button
-                            style="color: var(--msg-primaryColor) !important"
                         >
                             See all conversation
                         </button>
                     </div>
                 </ng-container>
 
-                <strong class="main-card-title">Our team is all set to help you!</strong>
+                <strong class="main-card-title d-block fw-bolder font-20 mb-4 ">Our team is all set to help you!</strong>
                 <ng-container *ngIf="!(teams$ | async) || (teams$ | async)?.length === 0">
-                    <div class="continue-conversation-list-card">
-                        <div class="profile-group">
+                    <div class="continue-conversation-list-card d-flex">
+                        <div class="profile-group mb-3 d-flex justify-content-center align-items-center">
                             <ng-container *ngFor="let assignee of allAssignees$ | async; let i = index">
                                 <msg91-profile-name
                                     [hashCode]="assignee | getHashCode"
@@ -78,7 +72,7 @@
                                     [width]="44"
                                     [height]="44"
                                     [aProfileClass]="'profileLarge'"
-                                    style="margin-right: 10px; margin-bottom: 10px"
+                                    class="mr-2 mb-2"
                                 >
                                 </msg91-profile-name>
                             </ng-container>

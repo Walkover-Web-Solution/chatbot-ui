@@ -1,7 +1,7 @@
-<button class="main-msg91-old-channel" mat-button>
-    <div class="old-message-list-card">
+<button class="main-msg91-old-channel h-100" mat-button>
+    <div class="old-message-list-card position-relative w-100 d-flex">
         <div
-            class="old-profile-group"
+            class="old-profile-group position-relative d-flex align-items-center justify-content-center"
             [ngClass]="{
                 'singleInitial': assignees?.assignees?.length === 1,
                 'multipleInitial': assignees?.assignees?.length > 1
@@ -17,7 +17,7 @@
                     }"
                     [hashCode]="assignee | getHashCode"
                     [shortName]="assignee | getShortName"
-                    class="profile-name"
+                    class="profile-name position-absolute"
                     [width]="assignees?.assignees?.length === 1 ? 40 : 22"
                     [height]="assignees?.assignees?.length === 1 ? 40 : 22"
                     [aProfileClass]="assignees?.assignees?.length === 1 ? 'profileLarge' : 'profileSmall'"
@@ -25,24 +25,23 @@
                 </msg91-profile-name>
             </ng-container>
         </div>
-        <div class="old-message-list-text-content">
-            <small class="old-title">
+        <div class="old-message-list-text-content d-flex flex-column flex-1 ml-2">
+            <small class="old-title text-dotted fw-normal font-12">
                 {{ assignees?.assigneeName
                 }}{{
                     channel?.last_message?.timetoken
                         ? ' . ' + (channel?.last_message?.timetoken | timeConversion: 'timeAgo')
                         : ''
-                }}</small
-            >
-            <span>{{ channel?.last_message | lastConversion: 20 }}</span>
-            <span *ngIf="channel.widget_unread_count > 0" class="unread-count">
-                <p class="new-message">New message</p>
-                <span class="count">
+                }}</small>
+            <span class="text-dotted font-12">{{ channel?.last_message | lastConversion: 20 }}</span>
+            <span *ngIf="channel.widget_unread_count > 0" class="unread-count d-flex align-items-center">
+                <p class="new-message m-0 font-10">New message</p>
+                <span class="count border-radius-50 position-absolute text-white text-center font-bolder font-10">
                     {{ channel.widget_unread_count }}
                 </span>
             </span>
         </div>
-        <button class="old-c-btn">
+        <button class="old-c-btn d-flex align-items-center position-absolute p-0">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                     d="M8.58984 7.41L13.1698 12L8.58984 16.59L9.99984 18L15.9998 12L9.99984 6L8.58984 7.41Z"

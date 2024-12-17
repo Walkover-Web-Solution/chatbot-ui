@@ -1,6 +1,6 @@
-<div class="channels-main-container">
+<div class="channels-main-container d-flex flex-column h-100">
     <div
-        class="widget-header all-conversation"
+        class="widget-header all-conversation text-white"
         [style.background-color]="primaryColor"
         [style.background-image]="backgroundImage"
         [ngClass]="{ 'border-radius-none': isMobileSDK && sdkConfig?.borderRadiusDisable }"
@@ -16,16 +16,11 @@
                         ></path>
                     </svg>
                 </button>
-                <h3 style="margin: 0px">All Coversation</h3>
+                <h3 class="m-0 font-18">All Coversation</h3>
             </div>
-            <button mat-button class="mat-faqs-btn" (click)="enableChatView(false)" *ngIf="widgetShowFaq$ | async">
+            <button mat-button class="mat-faqs-btn flex-row-reverse ml-auto py-0 pl-1 pr-2 fw-bolder font-16" (click)="enableChatView(false)" *ngIf="widgetShowFaq$ | async">
                 FAQs
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M7.1582 6.175L10.9749 10L7.1582 13.825L8.3332 15L13.3332 10L8.3332 5L7.1582 6.175Z"
-                        fill="white"
-                    />
-                </svg>
+                <mat-icon class="material-symbols-outlined mat-icon-20" aria-hidden="false" aria-label="chevron right icon" fontIcon="chevron_right"></mat-icon>
             </button>
         </div>
         <!-- <ng-container *ngIf="widgetTagline$ | async as tagline">
@@ -33,8 +28,8 @@
     </ng-container> -->
     </div>
 
-    <div class="channels-body-container">
-        <div class="channels-body-inner-container">
+    <div class="position-relative flex-1">
+        <div class="channels-body-inner-container position-absolute p-overflow-auto p-3">
             <div class="conversation-card">
                 <ng-container *ngFor="let channel of channels$ | async; let i = index">
                     <msg91-old-channel

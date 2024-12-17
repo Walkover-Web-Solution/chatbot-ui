@@ -1,5 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
-@import './assets/styles/component/animation';
+// @import './assets/styles/component/animation';
+// @import './assets/styles/layout/sizing';
+@import './assets/styles/component/global';
+
 .ng-trigger-fadeInRight,
 .ng-trigger-fadeInLeft {
     position: relative;

@@ -5,49 +5,27 @@
 }
 
 .input-msg-box {
-    // padding: 6px;
-    // background-color: var(--msg-inboundMsg);
-    // color: var(--msg-textMsgColor);
-    // min-width: 72px;
-    // max-width: 196px;
-    // border-radius: 8px;
-    // border-top-left-radius: 0;
-    // font-size: 13px;
-    // line-height: 1.8;
-
     .agent-name {
-        font-size: 10.8px;
         color: #8f9396;
-        margin-bottom: 0px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-weight: 500;
     }
 
     padding: 6px;
     background-color: var(--msg-inboundMsg);
     color: #393939;
-    // min-width: 160px;
-    // max-width: 160px;
-    // font-size: 14px;
     min-width: 160px;
     max-width: 233px;
     line-height: 20px;
     border-radius: 6px;
     box-sizing: border-box;
-    font-size: 13px;
     line-height: 20px;
     span {
         display: block;
     }
 
     P {
-        font-size: 12.8px;
         line-height: 20px;
         margin: 0px;
         font-family: var(--msg-fontFamily);
-        margin-bottom: 0px;
         color: #313131;
     }
 
@@ -123,62 +101,12 @@
     }
 }
 
-.img-msg-box {
-    max-width: 100%;
-    border-radius: 3px;
-    // margin-top: 10px;
-}
-
-.file-attachment {
-    display: flex;
-    align-items: center;
-    padding: 3px 5px;
-    margin-top: 15px;
-    border: 1px solid #c5c5c5;
-    border-radius: 5px;
-    font-size: 12px;
-}
-
-.file-attachment > mat-icon {
-    // margin-right: 10px;
-    // background-color: #76767630;
-    // height: 30px;
-    // width: 30px;
-    // border-radius: 100%;
-    // display: flex;
-    // justify-content: center;
-    // align-items: center;
-    // color: #767676;
-    // font-size: 17px;
-
-    height: 26px;
-    width: 26px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #767676;
-    font-size: 15px;
-    transform: rotate(45deg);
-}
-
-.file-attachment > span {
-    margin-right: 20px;
-    max-width: 120px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    font-size: 12px;
-}
-
 ::ng-deep.input-msg-box {
     * {
         overflow-wrap: anywhere;
         margin: 0px;
     }
 
-    img {
-        width: 100%;
-    }
     .input-msg-break {
         -ms-word-break: break-word !important;
         word-break: break-word !important;
@@ -205,11 +133,7 @@
 .meet-btn {
     min-height: 26px;
     line-height: 30px !important;
-    font-size: 12px !important;
-    a {
-        color: #fff;
-        text-decoration: none;
-    }
+    background-color: var(--msg-primaryColor);
     &.mat-button-disabled {
         color: #00000042 !important;
         background-color: #0000001f !important;
@@ -217,16 +141,12 @@
     }
 }
 
-.pointer-event-none {
-    pointer-events: none;
-}
-
 .media-not-found::after {
     pointer-events: none;
     content: 'Media not Found or Supported';
     position: absolute;
     inset: 0;
-    color: #ffffff;
+    color: var(--msg-textColor);
     background-color: rgb(0 0 0 / 54%);
     height: 100%;
     width: 100%;

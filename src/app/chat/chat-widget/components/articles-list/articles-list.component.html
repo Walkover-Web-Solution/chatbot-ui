@@ -1,6 +1,6 @@
-<ul class="articles-list">
+<ul class="articles-list m-0 p-0 bg-white">
     <ng-container *ngIf="articlesList">
-        <li (click)="selectArticle(article.id)" *ngFor="let article of articlesList" class="folder-list" matRipple>
+        <li (click)="selectArticle(article.id)" *ngFor="let article of articlesList" class="folder-list position-relative cursor-pointer d-flex align-items-center w-auto font-14" matRipple>
             <svg height="16.364" viewBox="0 0 15 16.364" width="15" xmlns="http://www.w3.org/2000/svg">
                 <g id="copy" transform="translate(-1)">
                     <path
