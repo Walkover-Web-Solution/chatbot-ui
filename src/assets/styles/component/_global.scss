@@ -768,3 +768,13 @@
         height: 100% !important;
     }
 }
+
+.clint-input-container {
+    .iti--allow-dropdown {
+        &:has(.iti--allow-dropdown) {
+           > .iti__flag-container {
+                display: none;
+            }
+        }
+    }   
+}
