@@ -779,8 +779,17 @@
         }
     }   
 }
-.msg91-articles-view-body-inner-container , .rcw-modal-body {
+.msg91-articles-view-body-inner-container {
     header , .inert-menu-hook {
+        position: static !important;
+    }
+}
+
+.rcw-modal-body {
+    header {
+        position: static !important;
+    }
+    .inert-menu-hook {
         position: static !important;
     }
 }
