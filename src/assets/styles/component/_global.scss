@@ -772,9 +772,13 @@
 .clint-input-container {
     .iti--allow-dropdown {
         &:has(.iti--allow-dropdown) {
+            margin-bottom: 0;
            > .iti__flag-container {
                 display: none;
             }
         }
     }   
+}
+header {
+    position: static !important;
 }
