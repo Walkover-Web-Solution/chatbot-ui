@@ -36,7 +36,7 @@
             <span class="text-dotted font-12">{{ channel?.last_message | lastConversion: 20 }}</span>
             <span *ngIf="channel.widget_unread_count > 0" class="unread-count d-flex align-items-center">
                 <p class="new-message m-0 font-10">New message</p>
-                <span class="count border-radius-50 position-absolute text-white text-center font-bolder font-10">
+                <span class="count border-radius-50 position-absolute text-white text-center fw-bolder font-10">
                     {{ channel.widget_unread_count }}
                 </span>
             </span>
