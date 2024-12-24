@@ -159,3 +159,11 @@
         margin: 0px;
     }
 }
+
+.inert-menu-hook {
+    position: static !important;
+}
+
+header {
+    position: static !important;
+}

@@ -35,3 +35,11 @@ li.folder-list svg {
         width: 100%;
     }
 }
+
+.inert-menu-hook {
+    position: static !important;
+}
+
+header {
+    position: static !important;
+}
