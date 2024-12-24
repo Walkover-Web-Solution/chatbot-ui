@@ -129,7 +129,7 @@
     </div>
 
     <div class="selected-channel-body-container flex-1 position-relative">
-        <div #container (scroll)="scroll($event)" class="selected-channel-body-inner-container px-3 h-100 overflow-auto position-absolute">
+        <div #container (scroll)="scroll($event)" class="selected-channel-body-inner-container px-3 h-100 overflow-y position-absolute">
             <div>
                 <mat-spinner
                     class="loading-indicator loader-center-align m-auto position-absolute"
@@ -200,13 +200,13 @@
                                         >
                                         </msg91-in-message>
                                         <div
-                                            class="timeline-penal text-uppercase d-flex align-items-center"
+                                            class="timeline-penal text-uppercase d-flex align-items-center gap-1 mt-1"
                                             *ngIf="
                                                 message.message.lastAgentMsg &&
                                                 message.message?.message_type !== 'activity'
                                             "
                                         >
-                                            <small>{{ message.timetoken | timeConversion: 'shortTime' }}</small>
+                                            <small class="font-10">{{ message.timetoken | timeConversion: 'shortTime' }}</small>
                                         </div>
                                     </div>
                                     <div

@@ -1,6 +1,6 @@
-<div class="rcw-modal overflow-auto h-100vh w-100vw" *ngIf="!isNotification">
-    <div class="rcw-modal-content m-auto rcw-modal-center position-absolute rounded-8">
-        <button (click)="closed.next()" class="rcw-full-screen-button position-absolute border-radius-50 cursor-pointer d-flex align-items-center justify-content-center center">
+<div class="rcw-modal" *ngIf="!isNotification">
+    <div class="rcw-modal-content rcw-modal-center">
+        <button (click)="closed.next()" class="rcw-full-screen-button">
             <svg
                 class="rcw-full-screen-icon"
                 fill="white"
@@ -18,10 +18,10 @@
             </svg>
         </button>
         <div class="rcw-post">
-            <div class="rcw-modal-header p-3 d-flex align-items-start justify-content-center" *ngIf="title">
+            <div class="rcw-modal-header" *ngIf="title">
                 <div class="rcw-modal-title" [innerHTML]="title | sanitizeHtml"></div>
             </div>
-            <div class="rcw-modal-body overflow-auto p-3">
+            <div class="rcw-modal-body">
                 <div [innerHTML]="message | sanitizeHtml"></div>
             </div>
         </div>
@@ -29,15 +29,15 @@
 </div>
 
 <div
-    class="rcw-modal overflow-auto h-100vh w-100vw notification font-16 d-flex p-3"
+    class="rcw-modal notification"
     *ngIf="isNotification"
     [ngClass]="[
         position?.horizontal_position ? 'horizontal-' + position?.horizontal_position : '',
         position?.vertical_position ? 'vertical-' + position?.vertical_position : ''
     ]"
 >
-    <div class="rcw-modal-content m-auto position-relative max-w-100 rounded-8">
-        <button (click)="closed.next()" class="rcw-full-screen-button position-absolute border-radius-50 cursor-pointer d-flex align-items-center justify-content-center center">
+    <div class="rcw-modal-content">
+        <button (click)="closed.next()" class="rcw-full-screen-button">
             <svg
                 class="rcw-full-screen-icon"
                 fill="white"
@@ -52,8 +52,8 @@
                 />
             </svg>
         </button>
-        <div class="rcw-post notification-post w-100">
-            <div class="notification-modal-body p-3">
+        <div class="rcw-post notification-post">
+            <div class="notification-modal-body">
                 <!-- <div [innerHTML]="message | sanitizeHtml"></div> -->
                 <iframe
                     width="100%"

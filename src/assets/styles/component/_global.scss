@@ -772,9 +772,15 @@
 .clint-input-container {
     .iti--allow-dropdown {
         &:has(.iti--allow-dropdown) {
+            margin-bottom: 0;
            > .iti__flag-container {
                 display: none;
             }
         }
     }   
+}
+.msg91-articles-view-body-inner-container {
+    header {
+        position: static !important;
+    }
 }

@@ -14,13 +14,19 @@
 .rcw-modal {
     z-index: 9999;
     padding: 5vh 0;
+    overflow: auto;
+    width: 100vw;
+    height: 100vh;
     font-family: var(--msg-fontFamily) !important;
     .rcw-modal-content {
         background-color: #fefefe;
         border: 1px solid lightgray;
         max-width: 700px;
         word-break: break-word;
+        margin: auto;
+        border-radius: 8px;
         &.rcw-modal-center {
+            position: absolute;
             left: 0px;
             right: 0px;
             top: 16px;
@@ -40,6 +46,11 @@
             width: 32px;
             height: 32px;
             min-height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             svg {
                 width: 16px;
             }
@@ -54,6 +65,9 @@
         }
         .rcw-modal-header {
             border-bottom: 1px solid #f7f7f7;
+            padding: 16px;
+            align-items: start;
+            justify-content: center;
             .rcw-full-screen-button {
                 position: absolute;
                 top: -14px;
@@ -84,7 +98,8 @@
         }
         .rcw-modal-body {
             max-height: calc(100vh - 64px - 57px);
-            overflow: overlay;
+            overflow: auto;
+            padding: 16px;
             img {
                 max-width: 100%;
                 height: auto;
@@ -92,10 +107,21 @@
         }
     }
     &.notification {
+        font-size: 16px;
+        display: flex;
+        padding: 16px;
         .rcw-modal-content {
+            position: relative;
+            max-width: 100%;
             @media only screen and (max-width: 768px) {
                 left: 16px !important;
                 right: 16px !important;
+            }
+            .notification-post {
+                width: 100%;
+                .notification-modal-body {
+                    padding: 16px;
+                }
             }
         }
         // @media only screen and (min-width: 768px) {
