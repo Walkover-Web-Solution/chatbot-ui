@@ -10,7 +10,7 @@
                     <mat-progress-spinner diameter="20" mode="indeterminate" value="100"></mat-progress-spinner>
                 </div>
                 <ng-container *ngFor="let param of defaultParams">
-                    <div class="clint-input-container d-flex flex-column position-relative ">
+                    <div class="clint-input-container d-flex flex-column position-relative mb-2">
                         <mat-form-field
                             appearance="outline"
                             class="w-100 feedback-mat-form-field"
@@ -74,7 +74,7 @@
                             />
                             <span
                                 *ngIf="clientForm.get(param?.id)?.hasError('invalidNumber')"
-                                class="mat-error invalid-number position-absolute fw-regular font-10"
+                                class="mat-error invalid-number position-absolute fw-regular font-12 d-inline-block px-3"
                                 >{{ param?.name === 'mail' ? 'Email' : (param.name | titlecase) }} is invalid.
                             </span>
                         </ng-container>

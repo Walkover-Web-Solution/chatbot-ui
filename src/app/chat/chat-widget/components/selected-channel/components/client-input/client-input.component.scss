@@ -37,14 +37,14 @@
         }
     }
     .mat-mdc-form-field-subscript-wrapper {
-        margin-block: 1px;
         padding-left: 0px !important;
         .mat-mdc-form-field-error {
             font-size: 12px;
         }
     }
     .invalid-number {
-        bottom: -9px;
+        bottom: -11px;
+        color: #f44336;
     }
 }
 
@@ -56,7 +56,7 @@
     .mat-mdc-mini-fab.mat-primary {
         background-color: var(--msg-primaryColor);
         box-shadow: none !important;
-        color: var(--msg-textColor);
+        color: #ffffff;
     }
 }
 
