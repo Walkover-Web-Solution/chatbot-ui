@@ -779,16 +779,16 @@
         }
     }   
 }
-.inert-menu-hook {
-    position: static !important;
-}
-
-header {
-    position: static !important;
+.msg91-articles-view-body-inner-container  {
+    .inert-menu-hook {
+        position: static !important;
+    }
+    
+    header {
+        position: static !important;
+    }
 }
 
 .rcw-modal-body {
-    * {
-        position: static !important;
-    }
+    transform: translateZ(0) !important;
 }
