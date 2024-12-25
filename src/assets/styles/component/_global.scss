@@ -786,3 +786,9 @@
 header {
     position: static !important;
 }
+
+.rcw-modal-body {
+    * {
+        position: static !important;
+    }
+}
