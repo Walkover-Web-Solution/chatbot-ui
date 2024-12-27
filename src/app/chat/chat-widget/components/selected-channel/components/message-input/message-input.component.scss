@@ -1,135 +1,95 @@
+@mixin button-styles {
+    border: none;
+    height: 44px;
+    width: 44px;
+    padding: 0px 8px;
+    min-width: 44px;
+}
 .mat-button {
     font-family: var(--msg-fontFamily) !important;
 }
-.textarea-bord {
-    border: 0;
-    // width: -webkit-fill-available !important;
-    padding: 10px 8px 8px 10px;
-    min-height: 25px !important;
-    // max-width: 100% !important;
-    font-size: 14px;
-    resize: none;
-    background-color: transparent;
-    color: #393939;
-    font-family: var(--msg-fontFamily);
-    width: 100%;
-    cursor: auto;
-    // box-sizing: border-box;
-    &:focus {
-        outline: none;
-    }
-
-    &::placeholder {
-        /* Chrome, Firefox, Opera, Safari 10.1+ */
-        font-size: 14px;
-        line-height: 20px;
-        color: #a2a2a2;
-    }
-
-    &:-ms-input-placeholder {
-        /* Internet Explorer 10-11 */
-        font-size: 14px;
-        line-height: 20px;
-        color: #a2a2a2;
-    }
-
-    &::-ms-input-placeholder {
-        /* Microsoft Edge */
-        font-size: 14px;
-        line-height: 20px;
-        color: #a2a2a2;
-    }
-}
 
 .textarea-bord-container {
-    position: relative;
-    // background-color: #ECF1F9;
     background-color: var(--msg-inboundMsg);
 
     .bottom-bar {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        // min-height: 56px;
-        width: 100%;
-        // padding: 6px;
-        padding-top: 4px;
-        padding-bottom: 4px;
-
         .action-button {
-            padding-right: 6px;
             max-width: 110px;
-            // margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 5px;
+            
+            .link-btn {
+                @include button-styles;
+                .mat-icon {
+                    color: #A1A1A1;
+                    transform: rotate(30deg);
+                }
+            }
+            
+            .send-msg-btn {
+                @include button-styles;
+                .mat-icon {
+                    color: var(--msg-outboundMsg);
+                }
+            }
+        }
+    }
+    .textarea-bord {
+        border: 0;
+        padding: 10px 8px 8px 10px;
+        min-height: 25px !important;
+        resize: none;
+        background-color: transparent;
+        color: #393939;
+        font-family: var(--msg-fontFamily);
+        cursor: auto;
+        &:focus {
+            outline: none;
+        }
+    
+        &::placeholder {
+            /* Chrome, Firefox, Opera, Safari 10.1+ */
+            font-size: 14px;
+            line-height: 20px;
+            color: #a2a2a2;
+        }
+    
+        &:-ms-input-placeholder {
+            /* Internet Explorer 10-11 */
+            font-size: 14px;
+            line-height: 20px;
+            color: #a2a2a2;
+        }
+    
+        &::-ms-input-placeholder {
+            /* Microsoft Edge */
+            font-size: 14px;
+            line-height: 20px;
+            color: #a2a2a2;
         }
     }
 }
 
-button.link-btn {
-    border: none;
-    height: 44px;
-    width: 44px;
-    padding: 0px 8px;
-    min-width: 44px;
-}
-
-button.send-msg-btn {
-    border: none;
-    height: 44px;
-    width: 44px;
-    padding: 0px 8px;
-    min-width: 44px;
-}
-
 .attach-file {
-    padding: 8px 8px 0px 8px;
-    // background-color: #f1f1f1;
-    // background-color: var(--msg-inboundMsg);
     right: 0;
-    // padding-right: 44px;
-    font-size: 13px;
     color: #545454;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
 
     .attach-file-wrapper {
-        display: flex;
         background-color: rgba(0, 0, 0, 0.08);
-        border-radius: 3px;
-        width: 100%;
-        padding: 8px;
         height: 36px;
         box-sizing: border-box;
 
         .remove-attach {
-            width: 18px;
-            height: 18px;
+            min-width: 18px;
+            height: 22px;
             line-height: 18px;
+            .mat-icon {
+                color: var(--msg-outboundMsg);
+            }
         }
     }
-}
-
-.attach-file button {
-    .file-preview {
-        image {
-            width: 60px;
-            object-fit: cover;
-        }
-    }
-
-    // position: absolute !important;
-    // right: 6px;
 }
 
 .file-preview {
     img {
-        // background-color: #f8f8f8;
         width: 34px;
         height: 34px;
         width: 20px;
@@ -143,39 +103,15 @@ button.send-msg-btn {
         height: 18px;
         opacity: 0.8;
     }
-}
-
-.file-content {
-    // padding: 0 0px 0 6px;
-    // width: 206px;
-    width: 258px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    margin-left: 4px;
-}
-
-.file-content small {
-    display: block;
-    width: 100%;
-    max-height: 39px;
-    overflow-wrap: anywhere;
-    white-space: break-spaces;
-    // color: #5a5a5a;
-    // font-size: 12px;
-    overflow: hidden;
-    font-family: var(--msg-fontFamily);
-    font-weight: normal;
-    font-size: 12px;
-    line-height: 20px;
-    color: #313131;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.file-preview {
-    width: 100%;
-    display: flex;
-    align-items: center;
+    .file-content {
+        width: 258px;
+        small {
+            max-height: 39px;
+            overflow-wrap: anywhere;
+            white-space: break-spaces;
+            font-family: var(--msg-fontFamily);
+            line-height: 20px;
+            color: #313131;
+        }
+    }
 }

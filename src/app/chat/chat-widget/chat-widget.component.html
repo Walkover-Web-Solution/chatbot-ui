@@ -1,7 +1,7 @@
 <div class="wrapper" [hidden]="(isHidden | async) || !primaryColor" *ngIf="delayTimerEnd">
     <div
         *ngIf="visible$ | async as visible"
-        class="chat-box"
+        class="chat-box position-fixed w-100vw h-100vh m-0 p-0 d-flex flex-column bg-white "
         [ngClass]="{ 'border-radius-none': isMobileSDK && sdkConfig?.borderRadiusDisable }"
     >
         <button
@@ -17,13 +17,13 @@
         >
             ✕
         </button>
-        <div class="main-loader" *ngIf="initWidgetInProcess$ | async">
+        <div class="main-loader d-flex align-items-center justify-content-center h-100 w-100 position-absolute bg-white" *ngIf="initWidgetInProcess$ | async">
             <mat-spinner [diameter]="35"></mat-spinner>
         </div>
 
         <msg91-chat-view
             *ngIf="(activeChatView$ | async) === 'Chat'"
-            class="msg91-chat-view"
+            class="msg91-chat-view h-100"
             [sdkConfig]="sdkConfig"
             [isMobileSDK]="isMobileSDK"
             (emitDownloadedContent)="widgetClientData($event)"
@@ -33,24 +33,24 @@
             [isMobileSDK]="isMobileSDK"
             *ngIf="(activeChatView$ | async) === 'FAQ'"
             [widgetToken]="widgetToken"
-            class="msg91-faq-view"
+            class="msg91-faq-view d-flex flex-column h-100"
         >
         </msg91-faq-view>
 
-        <div class="network-status" *ngIf="(networkStatus$ | async) === 'OFFLINE'">
-            <div class="network-status-content">
+        <div class="network-status position-absolute w-100 h-100" *ngIf="(networkStatus$ | async) === 'OFFLINE'">
+            <div class="d-flex align-items-center justify-content-center h-100">
                 <ng-container [ngSwitch]="PubNubStatus$ | async">
                     <ng-template [ngSwitchCase]="'DISCONNECTED'">
-                        <small style="color: #ffffff">Network Down</small>
+                        <small class="text-white">Network Down</small>
                     </ng-template>
                     <ng-template [ngSwitchCase]="'CONNECTED'">
-                        <small style="color: #ffffff">Network up</small>
+                        <small class="text-white">Network up</small>
                     </ng-template>
                     <ng-template [ngSwitchCase]="'LOW-NETWORK'">
-                        <small style="color: #ffffff">Network Low</small>
+                        <small class="text-white">Network Low</small>
                     </ng-template>
                     <ng-template [ngSwitchCase]="'RECONNECTED'">
-                        <small style="color: #ffffff">Network Reconnected</small>
+                        <small class="text-white">Network Reconnected</small>
                     </ng-template>
                 </ng-container>
             </div>
@@ -62,10 +62,10 @@
             ((hideLauncher$ | async) !== true || (visible$ | async)) &&
             ((showCloseButton$ | async) || (visible$ | async) !== true)
         "
-        class="chat-button"
+        class="chat-button border-radius-50 overflow-hidden cursor-pointer align-items-center justify-content-center outline-none position-fixed"
         [ngClass]="toggleInputClass"
     >
-        <span *ngIf="visible$ | async" class="m-btn-icon" [style.color]="textColor">
+        <span *ngIf="visible$ | async" class="d-flex align-items-center justify-content-center" [style.color]="textColor">
             <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                     d="M20.7375 10.7375L15 16.4625L9.2625 10.7375L7.5 12.5L15 20L22.5 12.5L20.7375 10.7375Z"
@@ -73,7 +73,7 @@
                 />
             </svg>
         </span>
-        <span *ngIf="(visible$ | async) !== true">
+        <span class="d-flex align-items-center justify-content-center" *ngIf="(visible$ | async) !== true">
             <svg width="30" height="23" viewBox="0 0 30 23" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                     d="M27.6307 10.3971V10.7451C27.6423 11.4903 27.5047 12.2303 27.2257 12.9223C26.9467 13.6144 26.532 14.2446 26.0055 14.7766C25.4791 15.3086 24.8514 15.7318 24.1588 16.0216C23.4662 16.3113 22.7225 16.462 21.9707 16.4648H13.7221V17.1715C13.7336 17.8812 14.0245 18.5583 14.5328 19.0581C15.0411 19.558 15.7265 19.841 16.4424 19.8465H23.3967L26.457 22.8912C26.5777 23 26.6874 23 26.9397 23H27.159C27.2677 22.9471 27.3592 22.8651 27.4232 22.7632C27.4872 22.6613 27.5211 22.5437 27.521 22.4237V19.8465C28.198 19.7918 28.8292 19.486 29.2887 18.9901C29.7482 18.4943 30.0022 17.8449 30 17.1715V13.0721C29.9888 12.4203 29.7445 11.7935 29.3106 11.3035C28.8766 10.8136 28.2813 10.4924 27.6307 10.3971ZM26.106 10.6363V4.20988C26.1033 3.64602 25.9869 3.0884 25.7637 2.56977C25.5405 2.05115 25.2149 1.58197 24.8061 1.1899C24.3973 0.797822 23.9136 0.49074 23.3833 0.286682C22.8531 0.0826237 22.287 -0.0142579 21.7184 0.00169327H4.38757C3.24821 0.0010966 2.15328 0.439898 1.33443 1.22527C0.515583 2.01065 0.0370352 3.08099 6.01214e-06 4.20988V10.6363C-0.00184898 11.7478 0.425614 12.8179 1.19464 13.6268C1.96367 14.4357 3.01589 14.922 4.13527 14.9859V19.1724C4.14794 19.3634 4.20755 19.5485 4.30887 19.7115C4.4102 19.8745 4.55017 20.0104 4.71662 20.1075H5.14443C5.35992 20.1047 5.56686 20.0234 5.72578 19.8791L10.7934 14.9859H21.7623C22.3422 14.9993 22.9188 14.896 23.4572 14.6821C23.9957 14.4683 24.4848 14.1484 24.8949 13.7418C25.305 13.3352 25.6277 12.8504 25.8434 12.3166C26.0591 11.7828 26.1634 11.2112 26.1499 10.6363H26.106Z"

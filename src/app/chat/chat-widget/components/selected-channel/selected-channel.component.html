@@ -1,4 +1,4 @@
-<div class="selected-channel-main-container">
+<div class="selected-channel-main-container min-h-100 d-flex flex-column">
     <div
         class="semples-header"
         [style.background-color]="primaryColor"
@@ -7,7 +7,7 @@
             'border-radius-none': isMobileSDK && isBorderRadiusDisabled
         }"
     >
-        <div class="header-title">
+        <div class="header-title d-flex align-items-center m-0 position-relative fw-bolder">
             <button (click)="backToChat()" class="btn-w-icon" mat-icon-button>
                 <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
@@ -20,7 +20,7 @@
                 *ngIf="selectedChannelAssignee$ | async as selectedChannelAssignee; else conversationTeamHeader"
             >
                 <div
-                    class="header-profile-img-with-name"
+                    class="header-profile-img-with-name position-relative d-flex justify-content-center mr-2"
                     [ngClass]="{
                         singleInitial: selectedChannelAssignee?.assignees?.length === 1,
                         multipleInitial: selectedChannelAssignee?.assignees?.length > 1
@@ -36,7 +36,7 @@
                             }"
                             [hashCode]="assignee | getHashCode"
                             [shortName]="assignee | getShortName"
-                            class="profile-name"
+                            class="profile-name position-absolute"
                             [width]="selectedChannelAssignee?.assignees?.length === 1 ? 40 : 22"
                             [height]="selectedChannelAssignee?.assignees?.length === 1 ? 40 : 22"
                             [aProfileClass]="
@@ -46,12 +46,12 @@
                         </msg91-profile-name>
                     </ng-container>
                 </div>
-                <span class="assigneeName" [style.color]="textColor">{{ selectedChannelAssignee?.assigneeName }}</span>
+                <span class="assigneeName text-dotted fw-bolder font-18" [style.color]="textColor">{{ selectedChannelAssignee?.assigneeName }}</span>
             </ng-container>
             <ng-template #conversationTeamHeader>
                 <ng-container *ngIf="selectedTeamAssignee$ | async as selectedTeamAssignee; else conversationHeader">
                     <div
-                        class="header-profile-img-with-name"
+                        class="header-profile-img-with-name position-relative d-flex justify-content-center mr-2"
                         [ngClass]="{
                             singleInitial: selectedTeamAssignee.assignees?.length === 1,
                             multipleInitial: selectedTeamAssignee.assignees?.length > 1
@@ -69,7 +69,7 @@
                                 }"
                                 [hashCode]="assignee | getHashCode"
                                 [shortName]="assignee | getShortName"
-                                class="profile-name"
+                                class="profile-name position-absolute"
                                 [width]="allAssignees?.length === 1 ? 40 : 22"
                                 [height]="allAssignees?.length === 1 ? 40 : 22"
                                 [aProfileClass]="allAssignees?.length === 1 ? 'profileLarge' : 'profileSmall'"
@@ -77,12 +77,12 @@
                             </msg91-profile-name>
                         </ng-container>
                     </div>
-                    <span [style.color]="textColor" class="assigneeName"> {{ selectedTeamAssignee.assigneeName }}</span>
+                    <span [style.color]="textColor" class="assigneeName text-dotted fw-bolder font-18"> {{ selectedTeamAssignee.assigneeName }}</span>
                 </ng-container>
             </ng-template>
             <ng-template #conversationHeader>
                 <div
-                    class="header-profile-img-with-name"
+                    class="header-profile-img-with-name position-relative d-flex justify-content-center mr-2"
                     [ngClass]="{
                         singleInitial: (allAssignees$ | async)?.length === 1,
                         multipleInitial: (allAssignees$ | async)?.length > 1
@@ -98,7 +98,7 @@
                             }"
                             [hashCode]="assignee | getHashCode"
                             [shortName]="assignee | getShortName"
-                            class="profile-name"
+                            class="profile-name position-absolute"
                             [width]="allAssignees?.length === 1 ? 40 : 22"
                             [height]="allAssignees?.length === 1 ? 40 : 22"
                             [aProfileClass]="allAssignees?.length === 1 ? 'profileLarge' : 'profileSmall'"
@@ -106,26 +106,21 @@
                         </msg91-profile-name>
                     </ng-container>
                 </div>
-                <span class="assigneeName" [style.color]="textColor">Conversation</span>
+                <span class="assigneeName text-dotted fw-bolder font-18" [style.color]="textColor">Conversation</span>
             </ng-template>
-            <button mat-button class="mat-faqs-btn" (click)="enableChatView(false)" *ngIf="widgetShowFaq$ | async">
+            <button mat-button class="mat-faqs-btn font-16 fw-bolder ml-auto py-0 pr-1 pl-2 flex-row-reverse gap-1" (click)="enableChatView(false)" *ngIf="widgetShowFaq$ | async">
                 FAQs
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M7.1582 6.175L10.9749 10L7.1582 13.825L8.3332 15L13.3332 10L8.3332 5L7.1582 6.175Z"
-                        fill="white"
-                    />
-                </svg>
+                <mat-icon class="material-symbols-outlined mat-icon-20" aria-hidden="false" aria-label="chevron right icon" fontIcon="chevron_right"></mat-icon>
             </button>
         </div>
         <!-- Widget Tagline:: START -->
         <div>
             <ng-container *ngIf="!widgetTagline$ | async as tagline">
-                <p class="h-desc">We reply within a few hours.</p>
+                <p class="h-desc text-white">We reply within a few hours.</p>
             </ng-container>
 
             <ng-container *ngIf="widgetTagline$ | async as tagline">
-                <p class="h-desc">
+                <p class="h-desc text-white">
                     {{ tagline }}
                 </p>
             </ng-container>
@@ -133,11 +128,11 @@
         <!-- Widget Tagline:: END -->
     </div>
 
-    <div class="selected-channel-body-container">
-        <div #container (scroll)="scroll($event)" class="selected-channel-body-inner-container">
+    <div class="selected-channel-body-container flex-1 position-relative">
+        <div #container (scroll)="scroll($event)" class="selected-channel-body-inner-container px-3 h-100 overflow-y position-absolute">
             <div>
                 <mat-spinner
-                    class="loading-indicator loader-center-align"
+                    class="loading-indicator loader-center-align m-auto position-absolute"
                     *ngIf="(createChannelInProcess$ | async) || messageGetInProcess"
                     [@fadeInOut]="(createChannelInProcess$ | async) || messageGetInProcess"
                     [diameter]="30"
@@ -145,7 +140,7 @@
                     style="color: var(--msg-outboundMsg)"
                 ></mat-spinner>
             </div>
-            <ul class="message-ul" id="message-list">
+            <ul class="message-ul my-2 p-0" id="message-list">
                 <ng-container
                     *ngFor="
                         let messageGroup of channelMessages$ | async | DateGroup;
@@ -154,8 +149,8 @@
                         trackBy: identifyList
                     "
                 >
-                    <div *ngIf="messageGroup[0]?.timetoken" class="chat-time-line">
-                        <span> {{ messageGroup[0]?.timetoken | timeConversion: 'shortDate' }}</span>
+                    <div *ngIf="messageGroup[0]?.timetoken" class="chat-time-line d-flex justify-content-center mb-2">
+                        <span class="font-10 fw-bolder text-capitalize"> {{ messageGroup[0]?.timetoken | timeConversion: 'shortDate' }}</span>
                     </div>
                     <msg91-in-message
                         *ngIf="(firstMessage$ | async).text"
@@ -166,7 +161,7 @@
                         (botOptionSelected)="botOptionSelected($event)"
                     >
                     </msg91-in-message>
-                    <div class="timeline-penal" *ngIf="(firstMessage$ | async).text">
+                    <div class="timeline-penal text-uppercase d-flex align-items-center" *ngIf="(firstMessage$ | async).text">
                         <small>{{ firstMessage.timetoken | timeConversion: 'shortTime' }}</small>
                     </div>
                     <ng-container
@@ -178,9 +173,9 @@
                                 message?.timetoken?.toString() === (lastMessageToken$ | async) &&
                                 !(isLastMessage && isLastGroup)
                             "
-                            class="chat-unread-line"
+                            class="chat-unread-line d-flex justofy-content-center align-items-center"
                         >
-                            <span> UNREAD </span>
+                            <span class="py-1 px-3 font-12 d-inline-block text-capitalize"> UNREAD </span>
                         </div>
                         <li [id]="message.timetoken">
                             <ng-container [ngSwitch]="message.message.type">
@@ -192,7 +187,7 @@
                                             message.message.isPushNotificationMessage
                                         "
                                         @fadeInLeft
-                                        class="input-msg-container"
+                                        class="input-msg-container d-flex flex-column align-items-start mb-2"
                                     >
                                         <msg91-in-message
                                             [fromName]="message?.message?.from_name"
@@ -205,19 +200,19 @@
                                         >
                                         </msg91-in-message>
                                         <div
-                                            class="timeline-penal"
+                                            class="timeline-penal text-uppercase d-flex align-items-center gap-1 mt-1"
                                             *ngIf="
                                                 message.message.lastAgentMsg &&
                                                 message.message?.message_type !== 'activity'
                                             "
                                         >
-                                            <small>{{ message.timetoken | timeConversion: 'shortTime' }}</small>
+                                            <small class="font-10">{{ message.timetoken | timeConversion: 'shortTime' }}</small>
                                         </div>
                                     </div>
                                     <div
                                         *ngIf="message.message.chat_id && message.message.sender_id !== 'bot'"
                                         @fadeInRight
-                                        class="out-msg-container"
+                                        class="d-flex flex-column align-items-end mb-2"
                                     >
                                         <msg91-out-message [messages]="message.message"></msg91-out-message>
                                         <div
@@ -225,9 +220,9 @@
                                             [class.seen-msg]="
                                                 message?.timetoken <= (opponentLastReadMessageToken$ | async)
                                             "
-                                            class="timeline-penal"
+                                            class="timeline-penal text-uppercase d-flex align-items-center gap-1 mt-1"
                                         >
-                                            <small>{{ message.timetoken | timeConversion: 'shortTime' }}</small>
+                                            <small class="font-10">{{ message.timetoken | timeConversion: 'shortTime' }}</small>
                                             <svg
                                                 height="7.571"
                                                 viewBox="0 0 13.286 7.571"
@@ -257,7 +252,7 @@
                                 ></msg91-feedback-form>
 
                                 <ng-template [ngSwitchCase]="'form'">
-                                    <div @fadeInLeft class="input-msg-container">
+                                    <div @fadeInLeft class="input-msg-container d-flex flex-column align-items-start mb-2">
                                         <msg91-client-input
                                             class="mb-2"
                                             (updateClientData)="updateClient($event)"
@@ -273,7 +268,7 @@
             </ul>
         </div>
         <mat-spinner
-            class="loading-indicator"
+            class="loading-indicator m-auto position-absolute"
             [@fadeInOut]="reopenInProcess$ | async"
             *ngIf="reopenInProcess$ | async"
             [diameter]="30"
@@ -289,12 +284,12 @@
             ((selectedChannel$ | async)?.assigned_type === 'bot' ||
                 ((selectedChannelAssignee$ | async)?.assigneeBot && !(selectedChannel$ | async)?.assigneeChange))
         "
-        class="d-flex align-items-center someone-typing"
-        ><mat-icon>smart_toy</mat-icon>{{ widgetInfo?.bot_name ?? 'Bot' }} is typing
-        <div class="dots-animation">
-            <span class="dot-item"></span>
-            <span class="dot-item"></span>
-            <span class="dot-item"></span>
+        class="d-flex align-items-center someone-typing font-10 gap-1 ml-3 mb-2"
+        ><mat-icon class="font-16">smart_toy</mat-icon>{{ widgetInfo?.bot_name ?? 'Bot' }} is typing
+        <div class="dots-animation position-relative">
+            <span class="dot-item border-radius-50 d-inline-block"></span>
+            <span class="dot-item border-radius-50 d-inline-block"></span>
+            <span class="dot-item border-radius-50 d-inline-block"></span>
         </div>
     </span>
 
