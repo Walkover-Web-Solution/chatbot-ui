@@ -105,7 +105,7 @@
                 class="link-btn"
                 mat-button
                 type="button"
-                *ngIf="!fileUploadPercentage || fileUploadPercentage === 0"
+                *ngIf="!hideUpload && (!fileUploadPercentage || fileUploadPercentage === 0)"
             >
                 <mat-icon class="mat-icon-20 m-0" aria-hidden="false" aria-label="attach file icon" fontIcon="attach_file"></mat-icon>
             </button>

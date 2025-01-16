@@ -39,6 +39,7 @@ export const CreateChannel = createAction(
             authorization: string;
             client: Partial<IClient>;
             firstMessage: Message;
+            otherParams?: { [key: string]: any };
         };
     }>()
 );

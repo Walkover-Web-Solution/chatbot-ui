@@ -117,6 +117,8 @@
 
 <msg91-selected-channel
     [isMobileSDK]="isMobileSDK"
+    [botConfig]="botConfig"
+    [hideUpload]="hideUpload"
     [isBorderRadiusDisabled]="sdkConfig?.borderRadiusDisable ?? false"
     (emitDowloadedContent)="emitDownloadedContent.emit($event)"
     @fadeIn

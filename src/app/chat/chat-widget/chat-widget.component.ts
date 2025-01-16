@@ -84,6 +84,8 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
     // optional, if not passed in code, a form will be displayed
     @Input() public widgetClose: (arg: any) => any;
     @Input() public widgetClientData: (arg: any) => any;
+    @Input() public botConfig: { [key: string]: string | number };
+    @Input() public hideUpload: boolean;
     public initWidgetSuccess$: Observable<boolean>;
     public initWidgetInProcess$: Observable<boolean>;
     public widgetFAQEnables$: Observable<boolean>;
