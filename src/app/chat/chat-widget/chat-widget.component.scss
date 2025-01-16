@@ -20,6 +20,10 @@
     background-color: var(--msg-outboundMsg);
     border: none !important;
     line-height: 40px !important;
+     &.chat-button-left {
+         left: 40px !important;
+         right: auto !important;
+     }
 }
 
 .chat-box {
@@ -259,6 +263,11 @@ button.close-mobile-icon-btn {
         overflow-x: hidden;
         min-height: 250px;
         max-height: 659px;
+
+        &.chat-box-left {
+            left: 40px !important;
+            right: auto !important;
+        }
     }
 }
 
