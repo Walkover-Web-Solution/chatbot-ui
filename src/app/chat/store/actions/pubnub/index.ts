@@ -36,6 +36,7 @@ export const publishMessage = createAction(
             message: Message;
             channel: string;
             storeInHistory: boolean;
+            otherParams?: { [key: string]: any };
         };
     }>()
 );

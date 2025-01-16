@@ -108,8 +108,8 @@ export class ChannelsEffect {
     createChannel$ = createEffect(() =>
         this.actions$.pipe(
             ofType(actions.CreateChannel),
-            switchMap(({ request: { authorization, client, firstMessage } }) => {
-                return this.chatService.createChannel(firstMessage, client, authorization).pipe(
+            switchMap(({ request: { authorization, client, firstMessage, otherParams } }) => {
+                return this.chatService.createChannel(firstMessage, client, authorization, null, otherParams).pipe(
                     switchMap((data) => {
                         const client: IClient = {
                             ...data.request,

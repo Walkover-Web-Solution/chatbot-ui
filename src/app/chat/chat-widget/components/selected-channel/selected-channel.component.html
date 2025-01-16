@@ -308,6 +308,7 @@
         [clientFormSubmitted]="clientFormSubmitted"
         [showSendButton]="showSendButton$ | async"
         [isMobileSDK]="isMobileSDK"
+        [hideUpload]="hideUpload"
         *ngIf="(selectWidgetChatStatus$ | async) !== chatStatusEnums.disabled"
     ></msg91-message-input>
 </div>

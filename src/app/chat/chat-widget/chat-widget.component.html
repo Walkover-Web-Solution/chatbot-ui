@@ -25,7 +25,9 @@
             *ngIf="(activeChatView$ | async) === 'Chat'"
             class="msg91-chat-view h-100"
             [sdkConfig]="sdkConfig"
+            [botConfig]="botConfig"
             [isMobileSDK]="isMobileSDK"
+            [hideUpload]="hideUpload"
             (emitDownloadedContent)="widgetClientData($event)"
         ></msg91-chat-view>
         <msg91-faq-view

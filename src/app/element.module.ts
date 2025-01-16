@@ -43,6 +43,15 @@ window['initChatWidget'] = (config, delay = 5000) => {
             chatwidget.delay = delay;
             chatwidget.isMobileSDK = config?.isMobileSDK ? config?.isMobileSDK : false;
             chatwidget.sdkConfig = config?.sdkConfig;
+            chatwidget.hideUpload = config?.hide_upload;
+            config?.bot_type && config?.bot_id
+            ? {
+                  bot_type: config?.bot_type,
+                  bot_id: config?.bot_id,
+                  type: 'trial_bot',
+                  session_id: `trial-${config?.bot_type}-${config?.bot_id}-${new Date().getTime()}`,
+              }
+            : null;
             chatwidget.widgetClientData = config?.widgetClientData;
             if (config?.isMobileSDK && config?.widgetClose) {
                 chatwidget.widgetClose = config?.widgetClose;
