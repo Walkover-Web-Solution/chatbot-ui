@@ -152,17 +152,19 @@ export class PubnubEffects {
             mergeMap((action) => {
                 let authtoken;
                 this.store.pipe(select(getAuthToken), take(1)).subscribe((token) => (authtoken = token));
-                return this.chatService.sendMessage(action.request.message, authtoken).pipe(
-                    map((res) => {
-                        if (res.success) {
-                            return actions.publishMessageComplete({ response: action.request });
-                        }
-                        return actions.publishMessageError({ error: res.message });
-                    }),
-                    catchError((err) => {
-                        return of(actions.publishMessageError({ error: err }));
-                    })
-                );
+                return this.chatService
+                    .sendMessage(action.request.message, authtoken, null, action.request.otherParams)
+                    .pipe(
+                        map((res) => {
+                            if (res.success) {
+                                return actions.publishMessageComplete({ response: action.request });
+                            }
+                            return actions.publishMessageError({ error: res.message });
+                        }),
+                        catchError((err) => {
+                            return of(actions.publishMessageError({ error: err }));
+                        })
+                    );
             }),
             catchError((error) => {
                 return EMPTY;

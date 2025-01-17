@@ -87,7 +87,8 @@ export class ChatService {
         message: IInboundMessageModel | Message,
         request: Partial<IClient>,
         token: string,
-        uuid: string = null
+        uuid: string = null,
+        otherParams: { [key: string]: any } = {}
     ): Observable<{ request?: Partial<IClient>; response?: IClientChannel }> {
         this.options.headers.Authorization = uuid ? `${token}:${uuid}` : token;
         return this.http
@@ -97,6 +98,7 @@ export class ChatService {
                     ...message,
                     channelDetail: request,
                     ...this.identityVerificationService.getUserData(),
+                    ...otherParams,
                 },
                 this.options
             )
@@ -359,7 +361,8 @@ export class ChatService {
     public sendMessage(
         data: IInboundMessageModel | Message,
         token: string,
-        uuid: string = null
+        uuid: string = null,
+        otherParams: { [key: string]: any } = {}
     ): Observable<{ message: string; success: boolean }> {
         this.options.headers.Authorization = uuid ? `${token}:${uuid}` : token;
         return this.http.post<{ message: string; success: boolean }>(
@@ -367,6 +370,7 @@ export class ChatService {
             {
                 ...data,
                 ...this.identityVerificationService.getUserData(),
+                ...otherParams,
             },
             this.options
         );

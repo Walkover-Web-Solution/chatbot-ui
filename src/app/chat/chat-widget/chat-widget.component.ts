@@ -19,6 +19,7 @@ import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { select, Store } from '@ngrx/store';
 import { IAppState } from '../store';
 import {
+    allChannelsNames,
     getAuthToken,
     getPubNubDisconnectedTime,
     getPubNubNetworkStatus,
@@ -44,12 +45,13 @@ import { distinctUntilChanged, filter, take, takeUntil } from 'rxjs/operators';
 import * as actions from '../store/actions';
 import {
     addDomainTracking,
+    GetChannelHistory,
     getChannelList,
     setNetworkStatus,
     setWidgetTheme,
     SubscribeChannels,
 } from '../store/actions';
-import { CHAT_SECTION_VALUE, IAdditionalData } from '../model';
+import { CHAT_SECTION, CHAT_SECTION_VALUE, IAdditionalData, IChannel } from '../model';
 import { isEqual } from 'lodash-es';
 import { createCustomElement } from '@angular/elements';
 import { ArticlePopupComponent, ArticlePopupService } from './components';
@@ -84,6 +86,8 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
     // optional, if not passed in code, a form will be displayed
     @Input() public widgetClose: (arg: any) => any;
     @Input() public widgetClientData: (arg: any) => any;
+    @Input() public botConfig: { [key: string]: string | number };
+    @Input() public hideUpload: boolean;
     public initWidgetSuccess$: Observable<boolean>;
     public initWidgetInProcess$: Observable<boolean>;
     public widgetFAQEnables$: Observable<boolean>;
@@ -273,7 +277,6 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
                 this.addDomainData();
             }
         }, 2000);
-
         this.store
             .pipe(select(selectClientUUID), distinctUntilChanged(isEqual), takeUntil(this.destroy$))
             .subscribe((res) => {
@@ -484,6 +487,21 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
             .subscribe((res) => {
                 if (res) {
                     this.store.dispatch(SubscribeChannels({ channel: [`ch-comp-${res[1]?.company_id}.${res[0]}`] }));
+                    if (this.botConfig?.type === 'trial_bot') {
+                        const channel: IChannel = {
+                            id: 1,
+                            channel: this.botConfig?.session_id,
+                        } as any;
+                        this.store.dispatch(
+                            actions.setChannels({
+                                channels: [channel],
+                                uuid: res[0],
+                            })
+                        );
+                        this.store.dispatch(actions.SubscribeChannels({ channel: [channel.channel] }));
+                        this.store.dispatch(actions.selectChannel({ channel: channel.channel }));
+                        this.store.dispatch(actions.setChatScreen({ chatScreen: CHAT_SECTION.selectedChannel }));
+                    }
                 }
             });
 
