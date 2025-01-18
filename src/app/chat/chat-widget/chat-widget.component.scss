@@ -14,12 +14,13 @@
     z-index: 999999 !important;
     width: 60px !important;
     height: 60px !important;
-    bottom: 20px !important;
+    bottom: 20px;
     right: 40px !important;
     box-shadow: 0 5px 40px rgb(0 0 0 / 16%) !important;
     background-color: var(--msg-outboundMsg);
     border: none !important;
     line-height: 40px !important;
+    
      &.chat-button-left {
          left: 40px !important;
          right: auto !important;
