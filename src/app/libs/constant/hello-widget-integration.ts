@@ -19,6 +19,8 @@ export const CHAT_SCRIPT_CONFIG = `var helloConfig = {
   name: <name>,  // optional, if not passed in code, a form will be displayed
   number: <number>, // optional, if not passed in code, a form will be displayed
   mail: <mail>, // optional, if not passed in code, a form will be displayed{params}
+  icon_position: <'left'|'right'>,
+  icon_bottom_margin: <icon_bottom_margin>
 };`;
 
 export const CHAT_SCRIPT_JS = `

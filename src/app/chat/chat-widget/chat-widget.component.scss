@@ -14,12 +14,17 @@
     z-index: 999999 !important;
     width: 60px !important;
     height: 60px !important;
-    bottom: 20px !important;
+    bottom: 20px;
     right: 40px !important;
     box-shadow: 0 5px 40px rgb(0 0 0 / 16%) !important;
     background-color: var(--msg-outboundMsg);
     border: none !important;
     line-height: 40px !important;
+    
+     &.chat-button-left {
+         left: 40px !important;
+         right: auto !important;
+     }
 }
 
 .chat-box {
@@ -251,7 +256,7 @@ button.close-mobile-icon-btn {
     .chat-box {
         top: auto !important;
         left: auto !important;
-        bottom: 100px !important;
+        bottom: 100px;
         right: 40px !important;
         height: calc(100% - 120px) !important;
         width: 354px !important;
@@ -259,6 +264,11 @@ button.close-mobile-icon-btn {
         overflow-x: hidden;
         min-height: 250px;
         max-height: 659px;
+
+        &.chat-box-left {
+            left: 40px !important;
+            right: auto !important;
+        }
     }
 }
 
