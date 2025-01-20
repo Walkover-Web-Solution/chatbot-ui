@@ -35,8 +35,8 @@ window['initChatWidget'] = (config, delay = 5000) => {
             const chatwidget = document.createElement('chat-widget') as NgElement & WithProperties<ChatWidgetComponent>;
             chatwidget.widgetToken = config.widgetToken;
             chatwidget.name = config.name;
-            chatwidget.bot_position_align = config.bot_position_align;
-            chatwidget.bot_position_bottom = config.bot_position_bottom;
+            chatwidget.icon_position = config.icon_position;
+            chatwidget.icon_bottom_margin = config.icon_bottom_margin;
             chatwidget.number = config.number;
             chatwidget.mail = config.mail;
             chatwidget.additionalData = config;

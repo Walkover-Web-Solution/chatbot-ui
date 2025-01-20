@@ -75,8 +75,8 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
     @Input() public widgetToken: string;
     @Input() public unique_id: string; // any unique id, could be username, email etc.
     @Input() public user_jwt_token: string;
-    @Input() public bot_position_align: string = 'right';
-    @Input() public bot_position_bottom: any;
+    @Input() public icon_position: string = 'right';
+    @Input() public icon_bottom_margin: any;
     @Input() public name: string; // optional, if not passed in code, a form will be displayed
     @Input() public number: string; // optional, if not passed in code, a form will be displayed
     @Input() public mail: string; // optional, if not passed in code, a form will be displayed
