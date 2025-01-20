@@ -2,7 +2,8 @@
     <div
         *ngIf="visible$ | async as visible"
         class="chat-box position-fixed w-100vw h-100vh m-0 p-0 d-flex flex-column bg-white "
-        [ngClass]="{ 'border-radius-none': isMobileSDK && sdkConfig?.borderRadiusDisable, 'chat-box-left': bot_position }"
+        [ngClass]="{ 'border-radius-none': isMobileSDK && sdkConfig?.borderRadiusDisable, 'chat-box-left' : bot_position_align === 'left' }"
+        [ngStyle]="{ 'bottom': bot_position_bottom ? bot_position_bottom + 60 + 'px' : null}"
     >
         <button
             (click)="
@@ -29,7 +30,6 @@
             [isMobileSDK]="isMobileSDK"
             [hideUpload]="hideUpload"
             (emitDownloadedContent)="widgetClientData($event)"
-            [bot_position]="bot_position"
         ></msg91-chat-view>
         <msg91-faq-view
             [isBorderRadiusDisabled]="sdkConfig?.borderRadiusDisable ?? false"
@@ -66,8 +66,8 @@
             ((showCloseButton$ | async) || (visible$ | async) !== true)
         "
         class="chat-button border-radius-50 overflow-hidden cursor-pointer align-items-center justify-content-center outline-none position-fixed"
-        [ngClass]="{ toggleInputClass, 'chat-button-left': bot_position }"
-        [ngStyle]="{ 'bottom': bot_position_align ? bot_position_align + 'px' : null}"
+        [ngClass]="{ toggleInputClass, 'chat-button-left': bot_position_align === 'left' }"
+        [ngStyle]="{ 'bottom': bot_position_bottom ? bot_position_bottom + 'px' : null}"
         
     >
         <span *ngIf="visible$ | async" class="d-flex align-items-center justify-content-center" [style.color]="textColor">
