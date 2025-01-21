@@ -101,13 +101,9 @@ export class ArticlePopupComponent implements OnInit, OnDestroy {
         if (this.size?.width && this.size?.height) {
             iframe.style.height = this.size.height + 'px';
             iframe.style.width = this.size.width + 'px';
-            iframe.style.minWidth =  'min(50vw, 500px)';
-            iframe.style.minHeight =  'min(60vh, 600px)';
         } else {
             iframe.style.height = frame.scrollingElement.scrollHeight + 'px';
             iframe.style.width = frame.scrollingElement.scrollWidth + 'px';
-            iframe.style.minWidth =  'min(50vw, 500px)';
-            iframe.style.minHeight =  'min(60vh, 600px)';
         }
     }
 }

@@ -1,4 +1,4 @@
-<div class="rcw-modal" *ngIf="!isNotification">
+<!-- <div class="rcw-modal" *ngIf="!isNotification">
     <div class="rcw-modal-content rcw-modal-center">
         <button (click)="closed.next()" class="rcw-full-screen-button">
             <svg
@@ -26,11 +26,11 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 
 <div
     class="rcw-modal notification"
-    *ngIf="isNotification"
+    *ngIf="!isNotification"
     [ngClass]="[
         position?.horizontal_position ? 'horizontal-' + position?.horizontal_position : '',
         position?.vertical_position ? 'vertical-' + position?.vertical_position : ''
@@ -58,7 +58,7 @@
                 <iframe
                     width="100%"
                     height="100%"
-                    style="border: none; max-height: 548px"
+                    style="border: none;"
                     frameborder="1"
                     #iframe
                     (load)="onIframeLoad(iframe, message)"
