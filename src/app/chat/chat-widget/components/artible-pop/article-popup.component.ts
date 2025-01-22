@@ -94,27 +94,47 @@ export class ArticlePopupComponent implements OnInit, OnDestroy {
         this.store.dispatch(SetPushNotifications({ response: { message: null } }));
     }
 
-    public onIframeLoad(iframe, data): void {
-        const frame = iframe.contentDocument || iframe.contentWindow.document;
-        const sizeIframe = frame.body;
-        frame.open();
-        frame.write(data);
-        console.log('frame', frame);
-        console.log('sizeIframe', sizeIframe);
-        if (this.size?.width && this.size?.height) {
-            iframe.style.height = this.size.height + 'px';
-            iframe.style.width = this.size.width + 'px';
-        } else if (sizeIframe) {
-            const frameWidth = sizeIframe.offsetWidth;
-            const frameHeight = sizeIframe.offsetHeight;
-            iframe.style.width = frameWidth + 'px';
-            iframe.style.height = frameHeight + 'px';
-            console.log('frameWidth', frameWidth);
-            iframe.style.width = "200px";
-        } else {
-            iframe.style.height = frame.scrollingElement.scrollHeight + 'px';
-            iframe.style.width = frame.scrollingElement.scrollWidth + 'px';
-        }
-
+  public onIframeLoad(iframe, data): void {
+    const frame = iframe.contentDocument || iframe.contentWindow.document;
+    frame.open();
+    frame.write(data);
+    const { width, height } = this.extractWidthHeightFromHtmlStringBody(data);
+    if (this.size?.width && this.size?.height) {
+      iframe.style.height = this.size.height + 'px';
+      iframe.style.width = this.size.width + 'px';
+    } else if (width && height) {
+      iframe.style.width = width;
+      iframe.style.height = height;
+    } else {
+      iframe.style.height = frame.scrollingElement.scrollHeight + 'px';
+      iframe.style.width = frame.scrollingElement.scrollWidth + 'px';
     }
+  }
+
+  private extractWidthHeightFromHtmlStringBody(htmlString: string): {
+    width?: string;
+    height?: string;
+  } {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+    const bodyStyle = doc.body?.getAttribute('style');
+    if (!bodyStyle) {
+      return {};
+    }
+
+    const styles = bodyStyle
+      .split(';')
+      .reduce<Record<string, string>>((acc, style) => {
+        const [key, value] = style.split(':').map((s) => s.trim());
+        if (key && value) {
+          acc[key.toLowerCase()] = value;
+        }
+        return acc;
+      }, {});
+
+    return {
+      width: styles['width'],
+      height: styles['height'],
+    };
+  }
 }
