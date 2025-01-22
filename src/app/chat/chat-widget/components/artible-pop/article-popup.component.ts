@@ -96,7 +96,7 @@ export class ArticlePopupComponent implements OnInit, OnDestroy {
 
     public onIframeLoad(iframe, data): void {
         const frame = iframe.contentDocument || iframe.contentWindow;
-        const sizeIframe = frame.getElementsByTagName("body")[0];
+        const sizeIframe = frame.body;
         frame.open();
         frame.write(data);
         if (this.size?.width && this.size?.height) {
