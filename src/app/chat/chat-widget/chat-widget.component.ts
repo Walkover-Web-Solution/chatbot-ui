@@ -75,8 +75,8 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
     @Input() public widgetToken: string;
     @Input() public unique_id: string; // any unique id, could be username, email etc.
     @Input() public user_jwt_token: string;
-    @Input() public icon_position: string = 'right';
-    @Input() public icon_bottom_margin: any;
+    @Input() public icon_position: string = 'right'; // optional, if passed in the code, the icon position will change from left to right
+    @Input() public icon_bottom_margin: any; // optional, if passed in the code, the icon position from the bottom will change.
     @Input() public name: string; // optional, if not passed in code, a form will be displayed
     @Input() public number: string; // optional, if not passed in code, a form will be displayed
     @Input() public mail: string; // optional, if not passed in code, a form will be displayed
@@ -522,6 +522,20 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
                     this.openChat();
                 }
             });
+
+        this.isValidIconBottomMargin();
+    }
+    /**
+     * for value check icon position from bottom
+     *
+     * @return {*}  {boolean}
+     * @memberof ChatWidgetComponent
+     */
+    public isValidIconBottomMargin(): boolean {
+        if (typeof this.icon_bottom_margin !== 'number' || !Number.isInteger(this.icon_bottom_margin)) {
+            console.warn(this.icon_bottom_margin, 'Invalid chat icon position. Please check the document at https://msg91.com/help')
+            return ;
+        }
     }
 
     private addDomainData(): void {
