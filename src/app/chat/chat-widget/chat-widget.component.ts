@@ -162,6 +162,7 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
     public isHidden: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
     public chatSelectedSection$: Observable<CHAT_SECTION_VALUE>;
     public delayTimerEnd: boolean = false;
+    public isValidIconBottomMargin: boolean = true;
 
     constructor(
         private store: Store<IAppState>,
@@ -523,18 +524,10 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
                 }
             });
 
-        this.isValidIconBottomMargin();
-    }
-    /**
-     * for value check icon position from bottom
-     *
-     * @return {*}  {boolean}
-     * @memberof ChatWidgetComponent
-     */
-    public isValidIconBottomMargin(): boolean {
-        if (typeof this.icon_bottom_margin !== 'number' || !Number.isInteger(this.icon_bottom_margin)) {
-            console.warn(this.icon_bottom_margin, 'Invalid chat icon position. Please check the document at https://msg91.com/help')
-            return ;
+        // for checking value icon bottom space is number or not
+        if (typeof this.icon_bottom_margin !== 'number') {
+            this.isValidIconBottomMargin = false
+            console.warn(this.icon_bottom_margin, 'Invalid chat icon position. Please check the document at https://msg91.com/help');
         }
     }
 

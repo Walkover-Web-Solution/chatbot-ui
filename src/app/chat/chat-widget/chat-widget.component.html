@@ -66,7 +66,7 @@
             ((showCloseButton$ | async) || (visible$ | async) !== true)
         "
         class="chat-button border-radius-50 overflow-hidden cursor-pointer align-items-center justify-content-center outline-none position-fixed"
-        [ngClass]="{ toggleInputClass, 'chat-button-left': icon_position === 'left' || (!isValidIconBottomMargin) }"
+        [ngClass]="{ toggleInputClass, 'chat-button-left': icon_position === 'left'}"
         [ngStyle]="{ 'bottom': isValidIconBottomMargin ? icon_bottom_margin + 'px' : null }"
         
     >
