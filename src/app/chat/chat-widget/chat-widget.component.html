@@ -3,7 +3,7 @@
         *ngIf="visible$ | async as visible"
         class="chat-box position-fixed w-100vw h-100vh m-0 p-0 d-flex flex-column bg-white "
         [ngClass]="{ 'border-radius-none': isMobileSDK && sdkConfig?.borderRadiusDisable, 'chat-box-left' : icon_position === 'left' }"
-        [ngStyle]="{ 'bottom': icon_bottom_margin ? icon_bottom_margin + 60 + 'px' : null}"
+        [ngStyle]="{ 'bottom': isValidIconBottomMargin ? icon_bottom_margin + 60 + 'px' : null}"
     >
         <button
             (click)="
@@ -66,8 +66,8 @@
             ((showCloseButton$ | async) || (visible$ | async) !== true)
         "
         class="chat-button border-radius-50 overflow-hidden cursor-pointer align-items-center justify-content-center outline-none position-fixed"
-        [ngClass]="{ toggleInputClass, 'chat-button-left': icon_position === 'left' }"
-        [ngStyle]="{ 'bottom': icon_bottom_margin ? icon_bottom_margin + 'px' : null}"
+        [ngClass]="{ toggleInputClass, 'chat-button-left': icon_position === 'left'}"
+        [ngStyle]="{ 'bottom': isValidIconBottomMargin ? icon_bottom_margin + 'px' : null }"
         
     >
         <span *ngIf="visible$ | async" class="d-flex align-items-center justify-content-center" [style.color]="textColor">
