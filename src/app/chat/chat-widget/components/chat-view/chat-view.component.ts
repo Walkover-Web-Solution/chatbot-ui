@@ -61,7 +61,9 @@ import { getCookie } from '../../../utils';
 export class ChatViewComponent extends BaseComponent implements OnInit, OnDestroy {
     @Output() emitDownloadedContent = new EventEmitter<any>();
     @Input() sdkConfig: any;
+    @Input() public botConfig: { [key: string]: string | number };
     @Input() isMobileSDK: boolean;
+    @Input() hideUpload: boolean;
 
     public chatSelectedSection$: Observable<CHAT_SECTION_VALUE>;
     public clientInfo$: Observable<IClient>;

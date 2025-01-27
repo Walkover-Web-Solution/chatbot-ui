@@ -35,6 +35,8 @@ window['initChatWidget'] = (config, delay = 5000) => {
             const chatwidget = document.createElement('chat-widget') as NgElement & WithProperties<ChatWidgetComponent>;
             chatwidget.widgetToken = config.widgetToken;
             chatwidget.name = config.name;
+            chatwidget.icon_position = config.icon_position;
+            chatwidget.icon_bottom_margin = config.icon_bottom_margin;
             chatwidget.number = config.number;
             chatwidget.mail = config.mail;
             chatwidget.additionalData = config;
@@ -43,6 +45,16 @@ window['initChatWidget'] = (config, delay = 5000) => {
             chatwidget.delay = delay;
             chatwidget.isMobileSDK = config?.isMobileSDK ? config?.isMobileSDK : false;
             chatwidget.sdkConfig = config?.sdkConfig;
+            chatwidget.hideUpload = config?.hide_upload;
+            chatwidget.botConfig =
+                config?.bot_type && config?.bot_id
+                    ? {
+                          bot_type: config?.bot_type,
+                          bot_id: config?.bot_id,
+                          type: 'trial_bot',
+                          session_id: `trial-${config?.bot_type}-${config?.bot_id}-${new Date().getTime()}`,
+                      }
+                    : null;
             chatwidget.widgetClientData = config?.widgetClientData;
             if (config?.isMobileSDK && config?.widgetClose) {
                 chatwidget.widgetClose = config?.widgetClose;

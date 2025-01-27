@@ -38,6 +38,7 @@ export class MessageInputComponent extends BaseComponent implements OnInit, OnCh
     @Input() clientFormSubmitted: boolean;
     @Input() showSendButton: boolean;
     @Input() isMobileSDK: boolean;
+    @Input() hideUpload: boolean;
     @ViewChild('textInput', { static: true }) public textInputElem: ElementRef<HTMLInputElement>;
     @ViewChild('textArea', { static: true }) public textAreaElem: ElementRef<HTMLInputElement>;
     @ViewChild('fileInput', { static: true }) public FileInputElem: ElementRef<HTMLInputElement>;

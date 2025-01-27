@@ -19,6 +19,7 @@ import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { select, Store } from '@ngrx/store';
 import { IAppState } from '../store';
 import {
+    allChannelsNames,
     getAuthToken,
     getPubNubDisconnectedTime,
     getPubNubNetworkStatus,
@@ -44,12 +45,13 @@ import { distinctUntilChanged, filter, take, takeUntil } from 'rxjs/operators';
 import * as actions from '../store/actions';
 import {
     addDomainTracking,
+    GetChannelHistory,
     getChannelList,
     setNetworkStatus,
     setWidgetTheme,
     SubscribeChannels,
 } from '../store/actions';
-import { CHAT_SECTION_VALUE, IAdditionalData } from '../model';
+import { CHAT_SECTION, CHAT_SECTION_VALUE, IAdditionalData, IChannel } from '../model';
 import { isEqual } from 'lodash-es';
 import { createCustomElement } from '@angular/elements';
 import { ArticlePopupComponent, ArticlePopupService } from './components';
@@ -73,6 +75,8 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
     @Input() public widgetToken: string;
     @Input() public unique_id: string; // any unique id, could be username, email etc.
     @Input() public user_jwt_token: string;
+    @Input() public icon_position: string = 'right'; // optional, if passed in the code, the icon position will change from left to right
+    @Input() public icon_bottom_margin: any; // optional, if passed in the code, the icon position from the bottom will change.
     @Input() public name: string; // optional, if not passed in code, a form will be displayed
     @Input() public number: string; // optional, if not passed in code, a form will be displayed
     @Input() public mail: string; // optional, if not passed in code, a form will be displayed
@@ -84,6 +88,8 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
     // optional, if not passed in code, a form will be displayed
     @Input() public widgetClose: (arg: any) => any;
     @Input() public widgetClientData: (arg: any) => any;
+    @Input() public botConfig: { [key: string]: string | number };
+    @Input() public hideUpload: boolean;
     public initWidgetSuccess$: Observable<boolean>;
     public initWidgetInProcess$: Observable<boolean>;
     public widgetFAQEnables$: Observable<boolean>;
@@ -156,6 +162,7 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
     public isHidden: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
     public chatSelectedSection$: Observable<CHAT_SECTION_VALUE>;
     public delayTimerEnd: boolean = false;
+    public isValidIconBottomMargin: boolean = true;
 
     constructor(
         private store: Store<IAppState>,
@@ -273,7 +280,6 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
                 this.addDomainData();
             }
         }, 2000);
-
         this.store
             .pipe(select(selectClientUUID), distinctUntilChanged(isEqual), takeUntil(this.destroy$))
             .subscribe((res) => {
@@ -484,6 +490,21 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
             .subscribe((res) => {
                 if (res) {
                     this.store.dispatch(SubscribeChannels({ channel: [`ch-comp-${res[1]?.company_id}.${res[0]}`] }));
+                    if (this.botConfig?.type === 'trial_bot') {
+                        const channel: IChannel = {
+                            id: 1,
+                            channel: this.botConfig?.session_id,
+                        } as any;
+                        this.store.dispatch(
+                            actions.setChannels({
+                                channels: [channel],
+                                uuid: res[0],
+                            })
+                        );
+                        this.store.dispatch(actions.SubscribeChannels({ channel: [channel.channel] }));
+                        this.store.dispatch(actions.selectChannel({ channel: channel.channel }));
+                        this.store.dispatch(actions.setChatScreen({ chatScreen: CHAT_SECTION.selectedChannel }));
+                    }
                 }
             });
 
@@ -502,6 +523,12 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
                     this.openChat();
                 }
             });
+
+        // for checking value icon bottom space is number or not
+        if (typeof this.icon_bottom_margin !== 'number') {
+            this.isValidIconBottomMargin = false;
+            console.warn(this.icon_bottom_margin, 'Invalid chat icon position. Please check the document at https://msg91.com/help');
+        }
     }
 
     private addDomainData(): void {

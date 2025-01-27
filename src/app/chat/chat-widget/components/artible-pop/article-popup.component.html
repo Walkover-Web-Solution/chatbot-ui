@@ -56,9 +56,7 @@
             <div class="notification-modal-body">
                 <!-- <div [innerHTML]="message | sanitizeHtml"></div> -->
                 <iframe
-                    width="100%"
-                    height="100%"
-                    style="border: none; max-height: 548px"
+                    style="border: none;"
                     frameborder="1"
                     #iframe
                     (load)="onIframeLoad(iframe, message)"
