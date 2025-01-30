@@ -114,6 +114,7 @@
         .rcw-modal-content {
             position: relative;
             max-width: 100%;
+            margin: 0 !important;
             @media only screen and (max-width: 768px) {
                 left: 16px !important;
                 right: 16px !important;
