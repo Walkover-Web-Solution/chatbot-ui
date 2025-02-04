@@ -525,7 +525,7 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
             });
 
         // for checking value icon bottom space is number or not
-        if (typeof this.icon_bottom_margin !== 'number') {
+        if (this.icon_bottom_margin && typeof this.icon_bottom_margin !== 'number') {
             this.isValidIconBottomMargin = false;
             console.warn(this.icon_bottom_margin, 'Invalid chat icon position. Please check the document at https://msg91.com/help');
         }
