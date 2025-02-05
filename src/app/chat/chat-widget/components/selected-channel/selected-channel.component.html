@@ -120,7 +120,7 @@
             </ng-container>
 
             <ng-container *ngIf="widgetTagline$ | async as tagline">
-                <p class="h-desc text-white">
+                <p [title]="tagline" class="h-desc text-white text-dotted">
                     {{ tagline }}
                 </p>
             </ng-container>
