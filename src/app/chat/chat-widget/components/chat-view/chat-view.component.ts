@@ -43,7 +43,7 @@ import {
     selectWidgetTagline,
     selectWidgetToken,
 } from '../../../store/selectors';
-import { distinctUntilChanged, filter, skip, take, takeUntil, tap } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map, skip, take, takeUntil, tap } from 'rxjs/operators';
 import { isEqual } from 'lodash-es';
 import { ArticlePopupService } from '../artible-pop/article-popup.service';
 import { environment } from '../../../../../environments/environment';
@@ -69,6 +69,7 @@ export class ChatViewComponent extends BaseComponent implements OnInit, OnDestro
     public clientInfo$: Observable<IClient>;
     public oldChannels$: Observable<IChannel[]>;
     public clientName$: Observable<string>;
+    public clientName: String;
     public selectVideoCallURL$: Observable<string>;
     public widgetTagline$: Observable<any>;
     public selectTotalTeamsCount$: Observable<number>;
@@ -213,6 +214,11 @@ export class ChatViewComponent extends BaseComponent implements OnInit, OnDestro
                             });
                     }
                 }
+            });
+            this.clientName$
+              .pipe(map((name) => name?.split(' ')[0].slice(0, 12) || ''))
+              .subscribe((clientName) => {
+                this.clientName = clientName;
             });
     }
 
