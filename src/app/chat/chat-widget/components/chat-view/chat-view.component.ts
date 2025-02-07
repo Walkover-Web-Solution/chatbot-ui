@@ -214,12 +214,12 @@ export class ChatViewComponent extends BaseComponent implements OnInit, OnDestro
                             });
                     }
                 }
-            });
-            this.clientName$
-              .pipe(map((name) => name?.split(' ')[0].slice(0, 12) || ''))
-              .subscribe((clientName) => {
-                this.clientName = clientName;
-            });
+        });
+        this.clientName$
+            .pipe(map((name) => name?.split(' ')[0].slice(0, 12) || ''),takeUntil(this.destroy$))
+            .subscribe((clientName) => {
+            this.clientName = clientName;
+        });
     }
 
     private getChannelList(): void {
