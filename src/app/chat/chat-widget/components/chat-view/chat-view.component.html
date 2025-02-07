@@ -9,7 +9,7 @@
         <div>
             <!-- <h3 [style.color]="textColor" class="h-title">Hi {{(clientName$ | async) ? (clientName$ | async | titlecase) :
         'there'}} 👋</h3> -->
-            <h3 class="h-title font-24 mb-1 mt-0 text-capitalize overflow-hidden">Hi {{ (clientName$ | async) ? (clientName$ | async | titlecase) : 'there' }}</h3>
+            <h3 class="h-title font-24 mb-1 mt-0 text-capitalize overflow-hidden">Hi {{ clientName ? (clientName | titlecase) : 'there' }}</h3>
 
             <!-- <ng-container *ngIf="!widgetTagline$ | async as tagline">
                 <p class="h-desc">We reply within a few hours.</p>
