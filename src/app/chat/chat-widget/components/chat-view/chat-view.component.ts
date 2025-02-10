@@ -69,7 +69,7 @@ export class ChatViewComponent extends BaseComponent implements OnInit, OnDestro
     public clientInfo$: Observable<IClient>;
     public oldChannels$: Observable<IChannel[]>;
     public clientName$: Observable<string>;
-    public clientName: String;
+    public clientName: string;
     public selectVideoCallURL$: Observable<string>;
     public widgetTagline$: Observable<any>;
     public selectTotalTeamsCount$: Observable<number>;
