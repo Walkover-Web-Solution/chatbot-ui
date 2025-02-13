@@ -98,7 +98,10 @@ export class ArticlePopupComponent implements OnInit, OnDestroy {
     const frame = iframe.contentDocument || iframe.contentWindow.document;
     frame.open();
     frame.write(data);
+    console.log(data)
+    console.log(iframe)
     const { width, height } = this.extractWidthHeightFromHtmlStringBody(data);
+    console.log(height)
     console.log('extract', this.extractWidthHeightFromHtmlStringBody);
     if (this.size?.width && this.size?.height) {
       iframe.style.height = this.size.height + 'px';
