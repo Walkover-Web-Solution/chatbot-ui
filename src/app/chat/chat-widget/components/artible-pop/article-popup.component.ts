@@ -99,15 +99,22 @@ export class ArticlePopupComponent implements OnInit, OnDestroy {
     frame.open();
     frame.write(data);
     const { width, height } = this.extractWidthHeightFromHtmlStringBody(data);
+    console.log('extract', this.extractWidthHeightFromHtmlStringBody);
     if (this.size?.width && this.size?.height) {
       iframe.style.height = this.size.height + 'px';
       iframe.style.width = this.size.width + 'px';
+      console.log(this.size.height);
+      console.log(this.size.width);
     } else if (width && height) {
       iframe.style.width = width;
       iframe.style.height = height;
+      console.log(iframe.style.width);
+      console.log(iframe.style.height);
     } else {
       iframe.style.height = frame.scrollingElement.scrollHeight + 'px';
       iframe.style.width = frame.scrollingElement.scrollWidth + 'px';
+      console.log(frame.scrollingElement.scrollHeight);
+      console.log(frame.scrollingElement.scrollWidth);
     }
   }
 
