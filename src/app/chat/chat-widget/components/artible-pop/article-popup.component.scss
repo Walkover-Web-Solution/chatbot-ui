@@ -90,12 +90,12 @@
                 }
             }
         }
-        .notification-modal-body {
-            img {
-                max-width: 100%;
-                height: auto;
-            }
-        }
+        // .notification-modal-body {
+        //     img {
+        //         max-width: 100%;
+        //         height: auto;
+        //     }
+        // }
         .rcw-modal-body {
             max-height: calc(100vh - 64px - 57px);
             overflow: auto;
@@ -121,9 +121,9 @@
             }
             .notification-post {
                 width: 100%;
-                .notification-modal-body {
-                    padding: 16px;
-                }
+                // .notification-modal-body {
+                //     padding: 16px;
+                // }
             }
         }
         // @media only screen and (min-width: 768px) {
