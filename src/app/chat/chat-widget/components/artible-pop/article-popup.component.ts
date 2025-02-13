@@ -116,6 +116,10 @@ export class ArticlePopupComponent implements OnInit, OnDestroy {
       console.log(frame.scrollingElement.scrollHeight);
       console.log(frame.scrollingElement.scrollWidth);
     }
+    console.log(iframe.contentDocument);
+    console.log(frame);
+    console.log(iframe.contentWindow.document);
+    console.log(this.extractWidthHeightFromHtmlStringBody);
   }
 
   private extractWidthHeightFromHtmlStringBody(htmlString: string): {
