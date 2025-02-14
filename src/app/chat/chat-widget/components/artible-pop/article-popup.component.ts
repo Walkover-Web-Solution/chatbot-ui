@@ -103,26 +103,44 @@ export class ArticlePopupComponent implements OnInit, OnDestroy {
     const { width, height } = this.extractWidthHeightFromHtmlStringBody(data);
     console.log(height)
     console.log('extract', this.extractWidthHeightFromHtmlStringBody);
-    if (this.size?.width && this.size?.height) {
-      iframe.style.height = this.size.height + 'px';
-      iframe.style.width = this.size.width + 'px';
-      console.log(this.size.height);
-      console.log(this.size.width);
-    } else if (width && height) {
-      iframe.style.width = width;
-      iframe.style.height = height;
-      console.log(iframe.style.width);
-      console.log(iframe.style.height);
-    } else {
-      iframe.style.height = frame.scrollingElement.scrollHeight + 'px';
-      iframe.style.width = frame.scrollingElement.scrollWidth + 'px';
-      console.log(frame.scrollingElement.scrollHeight);
-      console.log(frame.scrollingElement.scrollWidth);
-    }
-    console.log(iframe.contentDocument);
-    console.log(frame);
-    console.log(iframe.contentWindow.document);
-    console.log(this.extractWidthHeightFromHtmlStringBody);
+    setTimeout(() => {
+      const finalWidth = this.size?.width || width;
+      const finalHeight = this.size?.height || height;
+
+      console.log(`Extracted Width: ${width}, Height: ${height}`);
+      console.log(`Provided Width: ${this.size?.width}, Height: ${this.size?.height}`);
+
+      if (finalWidth && finalHeight) {
+          iframe.style.width = finalWidth;
+          iframe.style.height = finalHeight;
+      } else {
+          iframe.style.height = frame.scrollingElement?.scrollHeight + 'px' || 'auto';
+          iframe.style.width = frame.scrollingElement?.scrollWidth + 'px' || 'auto';
+      }
+
+      console.log(`Final Applied: Width - ${iframe.style.width}, Height - ${iframe.style.height}`);
+  }, 100)
+
+    // if (this.size?.width && this.size?.height) {
+    //   iframe.style.height = this.size.height + 'px';
+    //   iframe.style.width = this.size.width + 'px';
+    //   console.log(this.size.height);
+    //   console.log(this.size.width);
+    // } else if (width && height) {
+    //   iframe.style.width = width;
+    //   iframe.style.height = height;
+    //   console.log(iframe.style.width);
+    //   console.log(iframe.style.height);
+    // } else {
+    //   iframe.style.height = frame.scrollingElement.scrollHeight + 'px';
+    //   iframe.style.width = frame.scrollingElement.scrollWidth + 'px';
+    //   console.log(frame.scrollingElement.scrollHeight);
+    //   console.log(frame.scrollingElement.scrollWidth);
+    // }
+    // console.log(iframe.contentDocument);
+    // console.log(frame);
+    // console.log(iframe.contentWindow.document);
+    // console.log(this.extractWidthHeightFromHtmlStringBody);
   }
 
   private extractWidthHeightFromHtmlStringBody(htmlString: string): {
