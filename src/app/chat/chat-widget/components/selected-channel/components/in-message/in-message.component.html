@@ -203,7 +203,7 @@
                 messages?.message_type !== 'interactive' &&
                 messages?.content?.text
             "
-            [innerHTML]="messages.content.text | replace: '\n':'</br>' | whatsAppInlineStyleFormat"
+            [innerHTML]="messages.content.text | whatsAppInlineStyleFormat"
             class="input-msg-break "
         ></ng-container>
 
