@@ -197,7 +197,7 @@
         </ng-container>
         {{messages?.content?.text}}
         {{whatsAppInlineStyleFormat}}
-        <ng-container
+        <p
             *ngIf="
                 messages?.message_type !== 'video_call' &&
                 messages?.message_type !== 'interactive' &&
@@ -205,7 +205,7 @@
             "
             [innerHTML]="messages.content.text | whatsAppInlineStyleFormat"
             class="input-msg-break "
-        ></ng-container>
+        ></p>
 
         <ng-container *ngIf="messages?.message_type === 'video_call'">
             <a [href]="messages?.content?.text" target="_blank" [ngClass]="{ 'pointer-event-none': linkExpire }">
