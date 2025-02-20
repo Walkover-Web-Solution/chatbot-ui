@@ -201,7 +201,7 @@
                 messages?.message_type !== 'interactive' &&
                 messages?.content?.text
             "
-            [innerHTML]="messages.content.text | replace: '\n':'</br>' | whatsAppInlineStyleFormat | linkify"
+            [innerHTML]="messages.content.text | whatsAppInlineStyleFormat | linkify"
             class="input-msg-break "
         ></p>
 
