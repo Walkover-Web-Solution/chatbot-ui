@@ -70,7 +70,6 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
                 }
             }
         }
-        console.log('message', this.messages.content);
     }
 
     ngOnDestroy() {
@@ -78,7 +77,6 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     public download(attachment_url: string | undefined, fileName: string): void {
-        console.log('download', this);
         if (this.isMobileSDK) {
             const downloadContent = {
                 content: this.messages?.content,
