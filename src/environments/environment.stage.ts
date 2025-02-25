@@ -1,9 +1,9 @@
 import { envVariables } from './env-variables';
 
 export const environment = {
-    production: false,
-    server: 'https://test.msg91.com',
-    env: 'development',
+    production: true,
+    server: 'https://control.msg91.com',
+    env: 'prod',
     basePath: '',
     ...envVariables,
 };

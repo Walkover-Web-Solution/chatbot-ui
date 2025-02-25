@@ -56,7 +56,7 @@ export class FeedbackFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes?.dynamicValue && Object.keys(this.dynamicValue)?.length) {
+        if (changes?.dynamicValue?.currentValue && this.dynamicValue && Object.keys(this.dynamicValue)?.length) {
             for (let key in this.dynamicValue) {
                 this.variableMapping[`##${key}##`] = this.dynamicValue[key];
             }
