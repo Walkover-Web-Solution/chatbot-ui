@@ -11,7 +11,7 @@ export interface IPubnubState {
     error: any;
     subscribedChannels: string[];
     historyRequest: Pubnub.HistoryParameters;
-    pubnubStatus: 'CONNECTED' | 'LOW-NETWORK' | 'DISCONNECTED' | 'RECONNECTED';
+    pubnubStatus: string;
     reAuthenticateInProcess: boolean;
     publishMessageInProcess: boolean;
     getChannelMessagesInProcess: boolean;

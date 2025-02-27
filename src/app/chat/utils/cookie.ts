@@ -1,5 +1,5 @@
 import { IChannel, IMessage } from '../model';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { ConvertToDigitTimeToken } from '@msg91/utils';
 
 export function setCookie(cname: string, cvalue: string, exdays: number = 28) {

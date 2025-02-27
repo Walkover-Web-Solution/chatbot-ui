@@ -1,8 +1,8 @@
 import { ModuleWithProviders, NgModule, Pipe, PipeTransform } from '@angular/core';
-import * as dayjs from 'dayjs';
-import * as relativeTime from 'dayjs/plugin/relativeTime';
-import * as localizedFormat from 'dayjs/plugin/localizedFormat';
-import * as advancedFormat from 'dayjs/plugin/advancedFormat';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
 import { ConvertToDigitTimeToken } from '@msg91/utils';
 
 dayjs.extend(relativeTime);

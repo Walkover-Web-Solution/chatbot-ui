@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { IMessage } from '../../../../model';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 
 @Pipe({
     name: 'DateGroup',
