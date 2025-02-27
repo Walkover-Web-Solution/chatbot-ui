@@ -12,6 +12,7 @@ const IMAGE_PLACEHOLDER = `${environment.appUrl}assets/images/image-placeholder.
     selector: 'msg91-out-message',
     templateUrl: './out-message.component.html',
     styleUrls: ['./out-message.component.scss'],
+    standalone: false
 })
 export class OutMessageComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() messages: IMessageModel;

@@ -11,6 +11,7 @@ dayjs.extend(advancedFormat);
 
 @Pipe({
     name: 'timeConversion',
+    standalone: false
 })
 export class TimeConversionPipe implements PipeTransform {
     transform(

@@ -19,6 +19,7 @@ import { environment } from '../../../../../../../environments/environment';
     templateUrl: './feedback-form.component.html',
     styleUrls: ['./feedback-form.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class FeedbackFormComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges {
     @Input() message: IFeedbackMessage;

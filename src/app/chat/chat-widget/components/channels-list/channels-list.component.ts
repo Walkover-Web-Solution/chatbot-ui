@@ -22,6 +22,7 @@ import { DomSanitizer } from '@angular/platform-browser';
     selector: 'msg91-channels-list',
     templateUrl: './channels-list.component.html',
     styleUrls: ['./channels-list.component.scss'],
+    standalone: false
 })
 export class ChannelsListComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() sdkConfig: any;

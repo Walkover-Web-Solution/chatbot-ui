@@ -109,9 +109,9 @@
           "defaultConfiguration": "development"
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "builder": "@angular/build:extract-i18n",
           "options": {
-            "browserTarget": "chat-widget:build"
+            "buildTarget": "chat-widget:build"
           }
         }
       }

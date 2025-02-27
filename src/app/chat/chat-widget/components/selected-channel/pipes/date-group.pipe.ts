@@ -4,6 +4,7 @@ import * as dayjs from 'dayjs';
 
 @Pipe({
     name: 'DateGroup',
+    standalone: false
 })
 export class DateGroupPipe implements PipeTransform {
     transform(value: IMessage[]): IMessage[][] {

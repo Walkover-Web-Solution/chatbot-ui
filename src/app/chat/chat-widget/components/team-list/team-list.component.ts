@@ -16,6 +16,7 @@ import { DomSanitizer } from '@angular/platform-browser';
     selector: 'msg91-team-list',
     templateUrl: './team-list.component.html',
     styleUrls: ['./team-list.component.scss'],
+    standalone: false
 })
 export class TeamListComponent extends BaseComponent implements OnInit, OnDestroy {
     public teamAssignees$: { [teamID: number]: Observable<string[]> } = {};

@@ -17,6 +17,7 @@ type ConfirmDialogSettingType = {
 
 @Component({
     template: '',
+    standalone: false
 })
 export abstract class BaseComponent implements OnDestroy {
     private _destroy$: Subject<any>;

@@ -23,6 +23,7 @@ export interface ISize {
             transition('* => *', animate('100ms ease-in')),
         ]),
     ],
+    standalone: false
 })
 export class ArticlePopupComponent implements OnInit, OnDestroy {
     @HostBinding('@state')

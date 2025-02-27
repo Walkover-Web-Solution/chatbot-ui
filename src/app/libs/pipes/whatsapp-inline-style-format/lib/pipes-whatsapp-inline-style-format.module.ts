@@ -1,7 +1,10 @@
 import { ModuleWithProviders, NgModule, Pipe, PipeTransform } from '@angular/core';
 import { FORMAT_WHATSAPP_BODY } from '@msg91/models/whatsapp-models';
 
-@Pipe({ name: 'whatsAppInlineStyleFormat' })
+@Pipe({
+    name: 'whatsAppInlineStyleFormat',
+    standalone: false
+})
 export class WhatsappInlineStyleFormat implements PipeTransform {
     public formatWhatsAppBody = FORMAT_WHATSAPP_BODY;
 

@@ -4,7 +4,10 @@ import * as objectSupport from 'dayjs/plugin/objectSupport';
 import { ConvertToDigitTimeToken } from '@msg91/utils';
 
 dayjs.extend(objectSupport);
-@Pipe({ name: 'timeToken' })
+@Pipe({
+    name: 'timeToken',
+    standalone: false
+})
 export class TimeTokenPipe implements PipeTransform {
     constructor() {}
 

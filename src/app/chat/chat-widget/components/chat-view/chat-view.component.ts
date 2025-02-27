@@ -57,6 +57,7 @@ import { getCookie } from '../../../utils';
     styleUrls: ['./chat-view.component.scss', '../../../icon.css', '../../../css2.css'],
     animations: [fadeInOut, fadeIn],
     encapsulation: ViewEncapsulation.ShadowDom,
+    standalone: false
 })
 export class ChatViewComponent extends BaseComponent implements OnInit, OnDestroy {
     @Output() emitDownloadedContent = new EventEmitter<any>();
