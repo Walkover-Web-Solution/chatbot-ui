@@ -100,10 +100,10 @@
           },
           "configurations": {
             "production": {
-              "browserTarget": "chat-widget:build:production"
+              "buildTarget": "chat-widget:build:production"
             },
             "development": {
-              "browserTarget": "chat-widget:build:development"
+              "buildTarget": "chat-widget:build:development"
             }
           },
           "defaultConfiguration": "development"
