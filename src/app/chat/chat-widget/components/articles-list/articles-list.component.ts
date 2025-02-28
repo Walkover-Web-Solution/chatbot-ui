@@ -9,6 +9,7 @@ import { environment } from '../../../../../environments/environment';
     selector: 'msg91-articles-list',
     templateUrl: './articles-list.component.html',
     styleUrls: ['./articles-list.component.scss'],
+    standalone: false
 })
 export class ArticlesListComponent extends BaseComponent implements OnDestroy {
     @Input() public widgetToken: string;

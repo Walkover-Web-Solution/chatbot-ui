@@ -28,6 +28,7 @@ import { DomSanitizer } from '@angular/platform-browser';
     templateUrl: './faq-view.component.html',
     styleUrls: ['./faq-view.component.scss', '../../../icon.css', '../../../css2.css'],
     encapsulation: ViewEncapsulation.ShadowDom,
+    standalone: false
 })
 export class FAQViewComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() public widgetToken: string;

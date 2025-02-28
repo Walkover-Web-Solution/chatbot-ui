@@ -12,6 +12,7 @@ const IMAGE_PLACEHOLDER = `${environment.appUrl}assets/images/image-placeholder.
     selector: 'msg91-in-message',
     templateUrl: './in-message.component.html',
     styleUrls: ['./in-message.component.scss'],
+    standalone: false
 })
 export class InMessageComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() fromName: string;

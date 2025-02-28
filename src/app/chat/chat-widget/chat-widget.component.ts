@@ -68,6 +68,7 @@ import { removeCookie } from '../utils';
     styleUrls: ['./chat-widget.component.scss', '../css2.css', '../icon.css'],
     animations: [fadeInOut, fadeIn],
     encapsulation: ViewEncapsulation.ShadowDom,
+    standalone: false
 })
 export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() public additionalData: IAdditionalData;

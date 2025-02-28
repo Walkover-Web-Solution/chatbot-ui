@@ -29,6 +29,7 @@ import { ALPHANUMERIC_WITH_SPACE_REGEX } from '@msg91/regex';
     selector: 'msg91-client-input',
     templateUrl: './client-input.component.html',
     styleUrls: ['./client-input.component.scss'],
+    standalone: false
 })
 export class ClientInputComponent extends BaseComponent implements OnInit, OnDestroy, AfterViewInit {
     @ViewChildren('formControl') public controlElements: QueryList<ElementRef<HTMLInputElement> | PhoneNumberControl>;

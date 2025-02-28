@@ -8,8 +8,8 @@ export * from './random-string';
 export * from './intl-tel-countries';
 
 import { Result, getHostNameDetail } from '@msg91/ui/handle-domain';
-import * as dayjs from 'dayjs';
-import * as customParseFormat from 'dayjs/plugin/customParseFormat';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 dayjs.extend(customParseFormat);
 import { cloneDeep, differenceWith, isEqual, pickBy, uniqBy } from 'lodash-es';
 import { Validators } from '@angular/forms';

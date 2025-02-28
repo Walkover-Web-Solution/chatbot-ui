@@ -7,6 +7,7 @@ import { environment } from '../../../../../environments/environment';
     selector: 'msg91-old-channel',
     templateUrl: './old-channel.component.html',
     styleUrls: ['./old-channel.component.scss'],
+    standalone: false
 })
 export class OldChannelComponent extends BaseComponent implements OnDestroy {
     @Input() channel: IChannel;

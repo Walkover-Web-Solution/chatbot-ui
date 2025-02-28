@@ -8,6 +8,7 @@ import { downloadFile } from '@msg91/utils';
     selector: 'msg91-chat-interactive',
     templateUrl: './chat-interactive.component.html',
     styleUrls: ['./chat-interactive.component.scss'],
+    standalone: false
 })
 export class ChatInteractiveComponent implements OnInit {
     @Input() public message: { interactive: InteractiveMessage };
