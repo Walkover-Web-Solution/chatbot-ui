@@ -233,6 +233,8 @@ export class MessageInputComponent extends BaseComponent implements OnInit, OnCh
             !event.shiftKey
         ) {
             event.preventDefault();
+        } else if (event.key === 'Enter') {
+            event.preventDefault();
         }
     }
 }
