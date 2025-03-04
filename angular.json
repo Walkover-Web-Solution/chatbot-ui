@@ -29,6 +29,7 @@
               "src/favicon.ico",
               "src/assets",
               "src/.platform",
+              "src/assets/scss/theme/theme_theme-colors.scss",
               {
                 "glob": "**/*",
                 "input": "./src/assets/styles",
