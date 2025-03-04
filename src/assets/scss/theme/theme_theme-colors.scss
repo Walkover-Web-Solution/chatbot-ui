@@ -5,8 +5,9 @@
 @use '@angular/material' as mat;
 
 html {
+  color: red;
   @include mat.theme((
-    density: -2,
+    density: -2
   ));
 }
 
