@@ -5,14 +5,9 @@
 @use '@angular/material' as mat;
 
 html {
-  color: red;
   @include mat.theme((
     density: -2
   ));
-}
-
-body {
-  color: green;
 }
 
 // Note: Color palettes are generated from primary: 1A6222
