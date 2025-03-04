@@ -32,7 +32,7 @@
               "src/assets/scss/theme/theme_theme-colors.scss",
               {
                 "glob": "**/*",
-                "input": "./src/assets/styles",
+                "input": "src/assets/scss/theme/theme_theme-colors.scss",
                 "output": "./assets"
               }
             ],
