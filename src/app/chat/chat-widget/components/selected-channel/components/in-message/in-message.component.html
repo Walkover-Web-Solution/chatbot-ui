@@ -201,8 +201,8 @@
                 messages?.message_type !== 'interactive' &&
                 messages?.content?.text
             "
-            [innerHTML]="messages.content  | linkify"
-            class="input-msg-break tes sst"
+            [innerHTML]="messages.content.text | whatsAppInlineStyleFormat | linkify"
+            class="input-msg-break"
         ></p>
 
         <ng-container *ngIf="messages?.message_type === 'video_call'">
