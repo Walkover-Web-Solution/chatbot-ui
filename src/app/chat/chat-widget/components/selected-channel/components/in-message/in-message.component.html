@@ -202,7 +202,7 @@
                 messages?.content?.text
             "
             [innerHTML]="sanitizeContent(messages.content.text) | whatsAppInlineStyleFormat | linkify"
-            class="input-msg-break"
+            class="input-msg-break test"
         ></p>
 
         <ng-container *ngIf="messages?.message_type === 'video_call'">
