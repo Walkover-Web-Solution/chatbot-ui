@@ -1,6 +1,10 @@
-@import 'src/assets/scss/theme/theme_theme-colors.scss';
+@import '../../../theme_theme-colors.scss';
+html {
+    color: red;
+}
 body {
     box-sizing: border-box;
+    color: green;
 }
 .border-bottom {
     border-bottom: 1px solid #e3e3e4;
