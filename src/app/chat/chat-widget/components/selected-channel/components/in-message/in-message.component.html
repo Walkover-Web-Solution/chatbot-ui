@@ -201,7 +201,7 @@
                 messages?.message_type !== 'interactive' &&
                 messages?.content?.text
             "
-            [innerHTML]="sanitizeContent(messages.content.text) | whatsAppInlineStyleFormat | linkify"
+            [innerHTML]="sanitizedContent | whatsAppInlineStyleFormat | linkify"
             class="input-msg-break test"
         ></p>
 

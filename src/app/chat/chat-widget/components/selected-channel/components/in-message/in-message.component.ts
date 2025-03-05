@@ -29,6 +29,7 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
     public linkExpire: boolean = false;
     public currentTime: number;
     private timerInterval: any;
+    public  sanitizedContent: SafeHtml;
 
     constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef, private sanitizer: DomSanitizer) {
         super();
@@ -40,6 +41,9 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
             }
         }
 
+        if (this.messages?.content?.text) {
+            this.sanitizedContent = this.sanitizer.bypassSecurityTrustHtml(this.messages.content.text);
+        }
         if (this.messages.sender_id !== 'bot') {
             this.assignee = this.agentDetails.find((e) => e.id === this.messages.sender_id);
         }
