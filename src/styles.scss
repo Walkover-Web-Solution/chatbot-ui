@@ -1,8 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
 // @import './assets/styles/component/animation';
 // @import './assets/styles/layout/sizing';
-@import './theme_theme-colors';
-@import './assets/styles/component/global';
+@use './theme_theme-colors' as theme;
+@use './assets/styles/component/global' as global;
 
 
 .ng-trigger-fadeInRight,

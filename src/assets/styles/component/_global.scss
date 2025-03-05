@@ -1,11 +1,4 @@
-@import '../../../theme_theme-colors.scss';
-html {
-    color: red;
-}
-body {
-    box-sizing: border-box;
-    color: green;
-}
+@use '../../../theme_theme-colors' as theme;
 .border-bottom {
     border-bottom: 1px solid #e3e3e4;
 }

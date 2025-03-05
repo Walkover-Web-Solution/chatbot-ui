@@ -4,7 +4,7 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
 
-html {
+* {
   @include mat.theme((
     density: -2
   ));
@@ -208,3 +208,4 @@ $tertiary-palette: map.merge(map.get($_palettes, tertiary), $_rest);
     on-surface-variant: _high-contrast-value(#000000, #ffffff, $theme-type),
   ))
  }
+ 
