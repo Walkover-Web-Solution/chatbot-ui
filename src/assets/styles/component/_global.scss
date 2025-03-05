@@ -1,7 +1,4 @@
-@import 'src/assets/scss/theme/theme_theme-colors.scss';
-body {
-    box-sizing: border-box;
-}
+@use '../../scss/theme/theme_theme-colors' as theme;
 .border-bottom {
     border-bottom: 1px solid #e3e3e4;
 }

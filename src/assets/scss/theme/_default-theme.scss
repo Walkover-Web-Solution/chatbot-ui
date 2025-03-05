@@ -5,7 +5,7 @@
 */
 @import './theme-colors';
 @import 'src/assets/scss/theme/_typography.scss';
-@import 'src/assets/scss/theme/theme_theme-colors.scss';
+@import './theme_theme-colors';
 @include mat.all-component-typographies($custom-typography);
 @include mat.elevation-classes();
 @include mat.app-background();
