@@ -44,6 +44,7 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
         }
 
         let content = this.messages.content;
+        console.log(this.messages , "47")
         if (content?.expiration_time) {
             const currentTimeToken = new Date().getTime();
             this.currentTime = currentTimeToken;
