@@ -5,7 +5,6 @@ import { DOCUMENT } from '@angular/common';
 import { ajax } from 'rxjs/ajax';
 import { fileNotSupportAtUI } from '@msg91/utils';
 import { environment } from '../../../../../../../environments/environment';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 const IMAGE_PLACEHOLDER = `${environment.appUrl}assets/images/image-placeholder.png`;
 
@@ -29,9 +28,8 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
     public linkExpire: boolean = false;
     public currentTime: number;
     private timerInterval: any;
-    public  sanitizedContent: SafeHtml;
 
-    constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef, private sanitizer: DomSanitizer) {
+    constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef) {
         super();
     }
     ngOnInit() {
@@ -41,9 +39,6 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
             }
         }
 
-        if (this.messages?.content?.text) {
-            this.sanitizedContent = this.sanitizer.bypassSecurityTrustHtml(this.messages.content.text);
-        }
         if (this.messages.sender_id !== 'bot') {
             this.assignee = this.agentDetails.find((e) => e.id === this.messages.sender_id);
         }
@@ -77,10 +72,6 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
             }
         }
     }
-
-    public  sanitizeContent(content: string): SafeHtml {
-        return this.sanitizer.bypassSecurityTrustHtml(content);
-      }
 
     ngOnDestroy() {
         super.ngOnDestroy();
