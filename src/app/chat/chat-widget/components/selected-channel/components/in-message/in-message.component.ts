@@ -5,6 +5,7 @@ import { DOCUMENT } from '@angular/common';
 import { ajax } from 'rxjs/ajax';
 import { fileNotSupportAtUI } from '@msg91/utils';
 import { environment } from '../../../../../../../environments/environment';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 const IMAGE_PLACEHOLDER = `${environment.appUrl}assets/images/image-placeholder.png`;
 
@@ -29,7 +30,7 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
     public currentTime: number;
     private timerInterval: any;
 
-    constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef) {
+    constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef, private sanitizer: DomSanitizer) {
         super();
     }
     ngOnInit() {
@@ -72,6 +73,10 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
             }
         }
     }
+
+    public  sanitizeContent(content: string): SafeHtml {
+        return this.sanitizer.bypassSecurityTrustHtml(content);
+      }
 
     ngOnDestroy() {
         super.ngOnDestroy();
