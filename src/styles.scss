@@ -1,7 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 // @import './assets/styles/component/animation';
 // @import './assets/styles/layout/sizing';
-@use './theme_theme-colors' as theme;
+@use './assets/scss/theme/theme_theme-colors' as theme;
 @use './assets/styles/component/global' as global;
 
 
@@ -27,8 +27,4 @@ a.linkified {
 }
 .skeleton-inner {
     background: #d5d9dc;
-}
-
-body {
-    color: blue;
 }
