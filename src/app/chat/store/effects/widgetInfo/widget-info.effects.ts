@@ -38,6 +38,7 @@ export class WidgetInfoEffects {
                         if (config.mail || config.unique_id || config.number) {
                             // login case
                             // remove uuid from cookies
+                            // remove anonymous_client_uuid from payload 
                             return [
                                 actions.setWidgetInfo({ widgetInfo: res[0] }),
                                 actions.setClientParam({ clientParam: res[1] }),
@@ -52,7 +53,6 @@ export class WidgetInfoEffects {
                                         number: config.number,
                                         unique_id: config.unique_id,
                                         uuid: config.client_uuid,
-                                        anonymous_client_uuid: anonymousUuid,
                                         ...otherConfigDetails,
                                     },
                                     uuid: config.client_uuid,
