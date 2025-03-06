@@ -1,10 +1,11 @@
-import { ChangeDetectorRef, Component, Inject, Input, Output, OnDestroy, OnInit, EventEmitter } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, Input, Output, OnDestroy, OnInit, EventEmitter ,Sanitizer  } from '@angular/core';
 import { BaseComponent } from '@msg91/ui/base-component';
 import { AgentResponse, IMessageModel } from '../../../../../model';
 import { DOCUMENT } from '@angular/common';
 import { ajax } from 'rxjs/ajax';
 import { fileNotSupportAtUI } from '@msg91/utils';
 import { environment } from '../../../../../../../environments/environment';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 const IMAGE_PLACEHOLDER = `${environment.appUrl}assets/images/image-placeholder.png`;
 
@@ -28,8 +29,9 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
     public linkExpire: boolean = false;
     public currentTime: number;
     private timerInterval: any;
+    rawHtml: SafeHtml;
 
-    constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef) {
+    constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef, private sanitizer: DomSanitizer) {
         super();
     }
     ngOnInit() {
@@ -45,6 +47,7 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
 
         let content = this.messages.content;
         console.log(this.messages , "47")
+        this.rawHtml = this.sanitizer.bypassSecurityTrustHtml(content.text);
         if (content?.expiration_time) {
             const currentTimeToken = new Date().getTime();
             this.currentTime = currentTimeToken;
