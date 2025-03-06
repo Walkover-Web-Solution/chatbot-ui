@@ -88,8 +88,8 @@ function MessageList({ containerRef }: MessageListProps) {
   );
 
   const movetoDown = useCallback(() => {
-    containerRef.current?.scrollTo({
-      top: containerRef.current.scrollHeight,
+    containerRef?.current?.scrollTo({
+      top: containerRef?.current.scrollHeight,
       behavior: "smooth",
     });
   }, []);

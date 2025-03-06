@@ -7,6 +7,7 @@ import ChatbotTextField from '@/components/Interface-Chatbot/ChatbotTextField';
 import MessageList from '@/components/Interface-Chatbot/MessageList';
 import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
+export const runtime = "edge";
 
 function ChatbotPreview() {
     const theme = useTheme();

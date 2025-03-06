@@ -4,7 +4,7 @@ import { EmbedVerificationStatus } from "@/utils/enums";
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { ChatbotContext } from "./layout";
-
+export const runtime = "edge";
 interface InterfaceEmbedProps {
     chatbot_id: string;
     config: any;
