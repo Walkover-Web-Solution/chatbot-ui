@@ -1,9 +1,9 @@
 'use client';
+import { ChatbotContext } from "@/components/context";
 import { SetSessionStorage } from "@/utils/ChatbotUtility";
 import { EmbedVerificationStatus } from "@/utils/enums";
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
-import { ChatbotContext } from "./layout";
 export const runtime = "edge";
 
 export default function InterfaceEmbed() {

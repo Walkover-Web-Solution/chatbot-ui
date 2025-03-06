@@ -1,37 +1,34 @@
 // MUI Icons
-import OpenSidebarIcon from "@/assests/OpenSidebar";
 import ChatIcon from "@mui/icons-material/Chat";
 import SyncIcon from "@mui/icons-material/Sync";
-import { AlignLeft, EllipsisVertical, History, Plus, Settings, SquarePen } from "lucide-react";
+import { AlignLeft, EllipsisVertical, History, Settings, SquarePen } from "lucide-react";
 
 // MUI Components
 import { useTheme } from "@mui/material";
 
 // Third-party libraries
 import axios from "axios";
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 
 // App imports
 import { successToast } from "@/components/customToast";
 import { createNewThreadApi, performChatAction } from "@/config/api";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { $ReduxCoreType } from "@/types/reduxCore";
-import { GetSessionStorageData, toggleSidebar } from "@/utils/ChatbotUtility";
+import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
-import { createRandomId, EMIT_EVENTS, ParamsEnums } from "@/utils/enums";
+import { createRandomId, ParamsEnums } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import ChatbotDrawer from "./ChatbotDrawer";
 
 // Styles
-import { ChevronDown } from "lucide-react";
-import "./InterfaceChatbot.css";
-import CloseSidebarIcon from "@/assests/CloseSidebar";
 import { setThreads } from "@/store/interface/interfaceSlice";
-import { useDispatch } from "react-redux";
-import { ChatbotContext } from "@/app/chatbot/layout";
-import Image from "next/image";
 import { HeaderButtonType } from "@/types/interface/InterfaceReduxType";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
+import { ChevronDown } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { ChatbotContext } from "../context";
+import "./InterfaceChatbot.css";
 
 interface ChatbotHeaderProps {
   setLoading: (loading: boolean) => void;
@@ -87,7 +84,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
         <div className="flex-1 flex justify-center w-full">
           <div className="flex flex-col items-center gap-1">
             <div className="flex items-center sm:gap-3 gap-1 justify-center">
-              {headerImage ? <img width={20} height={20} src={headerImage}/> : <ChatIcon className="text-gray-600" />}
+              {headerImage ? <img width={20} height={20} src={headerImage} /> : <ChatIcon className="text-gray-600" />}
               <h2 className="text-lg font-semibold text-gray-800 text-center">
                 {chatbotTitle || "AI Assistant"}
               </h2>
