@@ -201,7 +201,7 @@
                 messages?.message_type !== 'interactive' &&
                 messages?.content?.text
             "
-            [innerHTML]="rawHtml | linkify"
+            [innerHTML]="rawHtml | whatsAppInlineStyleFormat"
             class="input-msg-break"
         >{{ messages | json}}</p>
         <span>{{ messages.content.text | json}}</span>
