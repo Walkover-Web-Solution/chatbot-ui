@@ -26,4 +26,5 @@ const nextConfig: NextConfig = {
 //   setupDevPlatform(); // Removed await since top-level await is not supported
 // }
 
+
 export default nextConfig;
