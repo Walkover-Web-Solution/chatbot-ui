@@ -5,12 +5,6 @@ import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { ChatbotContext } from "./layout";
 export const runtime = "edge";
-interface InterfaceEmbedProps {
-    chatbot_id: string;
-    config: any;
-    token: string;
-    userId: string;
-}
 
 export default function InterfaceEmbed() {
     const { chatbot_id, userId, token } = useContext(ChatbotContext);
