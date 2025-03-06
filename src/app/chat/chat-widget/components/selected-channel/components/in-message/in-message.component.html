@@ -201,10 +201,9 @@
                 messages?.message_type !== 'interactive' &&
                 messages?.content?.text
             "
-            [innerHTML]="rawHtml | whatsAppInlineStyleFormat"
+            [innerHTML]="messages.content.text | whatsAppInlineStyleFormat | linkify"
             class="input-msg-break"
-        >{{ messages | json}}</p>
-        <span>{{ messages.content.text | json}}</span>
+        ></p>
 
         <ng-container *ngIf="messages?.message_type === 'video_call'">
             <a [href]="messages?.content?.text" target="_blank" [ngClass]="{ 'pointer-event-none': linkExpire }">
