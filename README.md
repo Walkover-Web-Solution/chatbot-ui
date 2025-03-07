@@ -1,5 +1,7 @@
 Main -> Production Branch
 
+stage -> used for new branches checkout
+
 Test -> Test Branch
 
 
