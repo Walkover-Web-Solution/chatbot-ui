@@ -5,6 +5,7 @@ import {
   addDefaultContext,
   getInterfaceDataByIdStart,
   setConfig,
+  setDataInInterfaceRedux,
   setEventsSubsribedByParent,
   setHeaderActionButtons,
   setModalConfig,
@@ -48,7 +49,8 @@ function ChatbotWrapper({ chatbotId, loadInterface = true }) {
             version_id = null,
             headerButtons = [],
             eventsToSubscribe = [],
-            modalConfig = {}
+            modalConfig = {},
+            allowModalSwitch = false
           } = receivedData;
           
           if (threadId) {
@@ -85,6 +87,7 @@ function ChatbotWrapper({ chatbotId, loadInterface = true }) {
           if(modalConfig){
             dispatch(setModalConfig(modalConfig))
           }
+          dispatch(setDataInInterfaceRedux({allowModalSwitch}))
         }
       }
     };
