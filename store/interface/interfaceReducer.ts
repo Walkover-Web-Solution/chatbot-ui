@@ -266,5 +266,8 @@ export const reducers: ValidateSliceCaseReducers<
   },
   setSelectedAIServiceAndModal(state,action:actionType<SelectedAiServicesType>){
     state.selectedAiServiceAndModal = action.payload
+  },
+  setDataInInterfaceRedux(state,action:actionType<any>){
+    return {...state,...action.payload}
   }
 };

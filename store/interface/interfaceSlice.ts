@@ -56,7 +56,8 @@ export const {
   setEventsSubsribedByParent,
   setAvailableModelsToSwitch,
   setModalConfig,
-  setSelectedAIServiceAndModal
+  setSelectedAIServiceAndModal,
+  setDataInInterfaceRedux
 
 } = interfaceSlice.actions;
 export default interfaceSlice.reducer;
