@@ -157,7 +157,8 @@ function InterfaceTable({ props, meta, propsPath }: InterfaceTableProps) {
     <DataGrid
       apiRef={apiRef}
       rows={rows || []}
-      className="bg-white"
+      key={JSON.stringify(rows)}
+      className="bg-white w-full h-full"
       columns={columns || []}
       // columns={[{ field: "id", headerName: "ID" }]}
       initialState={{
