@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
   /* config options here */
 };
 
+
 // if (process.env.NODE_ENV === 'development') {
 //   setupDevPlatform(); // Removed await since top-level await is not supported
 // }
