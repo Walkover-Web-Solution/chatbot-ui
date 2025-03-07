@@ -48,19 +48,39 @@ export const KNOWLEDGE_BASE_CUSTOM_SECTION = [
   { value: "recursive", label: "Recursive Chunking" },
 ];
 
-export const  createRandomId = () => {
+export const createRandomId = () => {
   return Math.random().toString(36).substring(2, 15);
 };
 
 export const EMIT_EVENTS = {
-  FRONT_END_ACTION:'frontEndAction',
-  HEADER_BUTTON_PRESS:'headerButtonPress'
+  FRONT_END_ACTION: 'frontEndAction',
+  HEADER_BUTTON_PRESS: 'headerButtonPress'
 }
 
 export const ALLOWED_EVENTS_TO_SUBSCRIBE: Record<'MESSAGE_CLICK' | 'USER_TYPING', 'MESSAGE_CLICK' | 'USER_TYPING'> = {
   "MESSAGE_CLICK": "MESSAGE_CLICK",
   "USER_TYPING": "USER_TYPING"
 }
+
+export const DEFAULT_AI_SERVICE_MODALS = {
+  "openai": [
+    "gpt-4o",
+    "gpt-4o-mini",
+    "o1-preview",
+    "o1-mini"
+  ],
+  "anthropic": [
+    "claude-3-opus-20240229",
+    "claude-3-5-sonnet-20241022",
+    "claude-3-5-haiku-20241022"
+  ],
+  "groq": [
+    "llama-3.3-70b-versatile",
+    "mixtral-8x7b-32768",
+    "llama3-70b-8192"
+  ]
+}
+
 
 Object.freeze(EmbedVerificationStatus);
 Object.freeze(ParamsEnums);

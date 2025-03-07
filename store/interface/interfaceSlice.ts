@@ -53,7 +53,10 @@ export const {
 
   // chat bot 
   setHeaderActionButtons,
-  setEventsSubsribedByParent
+  setEventsSubsribedByParent,
+  setAvailableModelsToSwitch,
+  setModalConfig,
+  setSelectedAIServiceAndModal
 
 } = interfaceSlice.actions;
 export default interfaceSlice.reducer;
