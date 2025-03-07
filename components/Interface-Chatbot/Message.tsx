@@ -132,7 +132,7 @@ const AssistantMessageCard = React.memo(
               </div>
             </div>
           ) : (
-            <div className="min-w-[150px] max-w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3" style={{ backgroundColor: theme.palette.background.default, }}>
+            <div className="min-w-[150px] w-full dark:bg-gray-800 rounded-lg p-3" style={{ backgroundColor: theme.palette.background.default }}>
               {message?.timeOut ? (
                 <div className="flex items-center gap-2 text-error">
                   <AlertCircle className="w-4 h-4" />
@@ -156,7 +156,7 @@ const AssistantMessageCard = React.memo(
                   </a>
                 </div>
               ) : (
-                <div className="prose dark:prose-invert max-w-none">
+                <div className="prose dark:prose-invert">
                   {Object.keys(message?.tools_data || {})?.length > 0 && (
                     <Box className="flex items-center gap-2 mb-2">
                       <CircleCheckBig color="green" size={20} />
@@ -404,8 +404,8 @@ function Message({ message, handleFeedback, addMessage }: any) {
   const theme = useTheme();
   const backgroundColor = theme.palette.primary.main;
   const textColor = isColorLight(backgroundColor) ? "black" : "white";
-  const {sendEventToParentOnMessageClick} = useCustomSelector((state:$ReduxCoreType)=>({
-    sendEventToParentOnMessageClick : state.Interface.eventsSubscribedByParent?.includes(ALLOWED_EVENTS_TO_SUBSCRIBE.MESSAGE_CLICK) || false
+  const { sendEventToParentOnMessageClick } = useCustomSelector((state: $ReduxCoreType) => ({
+    sendEventToParentOnMessageClick: state.Interface.eventsSubscribedByParent?.includes(ALLOWED_EVENTS_TO_SUBSCRIBE.MESSAGE_CLICK) || false
   }))
   return (
     <Box className="w-100">
