@@ -44,7 +44,9 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
   const { chatbotConfig: { chatbotTitle, chatbotSubtitle, headerImage = '' } } = useContext<any>(ChatbotContext);
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
-
+  const {allowModalSwitch} = useCustomSelector((state:$ReduxCoreType)=>({
+    allowModalSwitch : state.Interface.allowModalSwitch || false
+  }))
   const handleCreateNewSubThread = async () => {
     const result = await createNewThreadApi({
       threadId: threadId,
@@ -100,7 +102,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
           </div>
         </div>
         <div className="flex justify-center">
-        <AiServicesToSwitch />
+        {allowModalSwitch && <AiServicesToSwitch />}
           {headerButtons?.map((item, index) => {
             return <React.Fragment key={`header-button-${index}`}>
               {renderIconsByType(item)}
