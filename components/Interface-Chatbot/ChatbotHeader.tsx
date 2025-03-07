@@ -1,7 +1,7 @@
 // MUI Icons
 import ChatIcon from "@mui/icons-material/Chat";
 import SyncIcon from "@mui/icons-material/Sync";
-import { AlignLeft, EllipsisVertical, History, Settings, SquarePen } from "lucide-react";
+import { AlignLeft, CircleX, EllipsisVertical, History, Settings, SquarePen } from "lucide-react";
 
 // MUI Components
 import { useTheme } from "@mui/material";
@@ -44,8 +44,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
   const { chatbotConfig: { chatbotTitle, chatbotSubtitle, headerImage = '' } } = useContext<any>(ChatbotContext);
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
-  const {allowModalSwitch} = useCustomSelector((state:$ReduxCoreType)=>({
-    allowModalSwitch : state.Interface.allowModalSwitch || false
+  const { allowModalSwitch } = useCustomSelector((state: $ReduxCoreType) => ({
+    allowModalSwitch: state.Interface.allowModalSwitch || false
   }))
   const handleCreateNewSubThread = async () => {
     const result = await createNewThreadApi({
@@ -102,12 +102,20 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
           </div>
         </div>
         <div className="flex justify-center">
-        {allowModalSwitch && <AiServicesToSwitch />}
+          {allowModalSwitch && <AiServicesToSwitch />}
           {headerButtons?.map((item, index) => {
             return <React.Fragment key={`header-button-${index}`}>
               {renderIconsByType(item)}
             </React.Fragment>
           })}
+
+          <div className="cursor-pointer p-1 rounded-full" onClick={() => {
+            if (window?.parent) {
+              window.parent.postMessage({ type: "CLOSE_CHATBOT" }, "*")
+            }
+          }}>
+            <CircleX />
+          </div>
 
         </div>
       </div>
@@ -396,13 +404,13 @@ const renderIconsByType = (item: { type: string }) => {
 
 const AiServicesToSwitch = () => {
 
-  const { currentSelectedModal, aiServiceAndModalOptions , defaultModal} = useCustomSelector((state: $ReduxCoreType) => {
+  const { currentSelectedModal, aiServiceAndModalOptions, defaultModal } = useCustomSelector((state: $ReduxCoreType) => {
     const selectedAiServiceAndModal = state.Interface?.selectedAiServiceAndModal || {};
     const modalConfig = state.Interface?.modalConfig || {};
     const availableAiServicesToSwitch = state.Interface?.availableAiServicesToSwitch || [];
     const { defaultSelected = {}, aiServices = [] } = modalConfig;
-    
-    const filteredUserRequestedOptions = aiServices.filter((item: any) => 
+
+    const filteredUserRequestedOptions = aiServices.filter((item: any) =>
       availableAiServicesToSwitch.includes(item.service)
     ).map((item: any) => ({
       ...item,
@@ -412,15 +420,15 @@ const AiServicesToSwitch = () => {
       ]))
     }));
 
-    const aiServiceAndModalOptions = filteredUserRequestedOptions.length > 0 
-      ? filteredUserRequestedOptions 
+    const aiServiceAndModalOptions = filteredUserRequestedOptions.length > 0
+      ? filteredUserRequestedOptions
       : availableAiServicesToSwitch.map((service) => ({
-          service,
-          modals: DEFAULT_AI_SERVICE_MODALS[service] || []
-        }));
+        service,
+        modals: DEFAULT_AI_SERVICE_MODALS[service] || []
+      }));
 
-    const isValidSelection = (selection: SelectedAiServicesType) => 
-      selection.service && selection.modal && aiServiceAndModalOptions.some((item) => 
+    const isValidSelection = (selection: SelectedAiServicesType) =>
+      selection.service && selection.modal && aiServiceAndModalOptions.some((item) =>
         item.service === selection.service && item.modals.includes(selection.modal)
       );
 
@@ -428,10 +436,10 @@ const AiServicesToSwitch = () => {
       ? selectedAiServiceAndModal
       : { service: "", modal: "" };
 
-    const defaultModal =  isValidSelection(defaultSelected)
+    const defaultModal = isValidSelection(defaultSelected)
       ? defaultSelected : null
 
-    return { currentSelectedModal, aiServiceAndModalOptions , defaultModal};
+    return { currentSelectedModal, aiServiceAndModalOptions, defaultModal };
   });
 
   const dispatch = useDispatch()
@@ -450,7 +458,7 @@ const AiServicesToSwitch = () => {
 
 
   const [dropdownIsOpen, setDropdownIsOpen] = useState(false);
-  const handleSelectedModalChange = (item:SelectedAiServicesType) =>{
+  const handleSelectedModalChange = (item: SelectedAiServicesType) => {
     dispatch(setSelectedAIServiceAndModal(item))
   }
 
@@ -479,7 +487,7 @@ const AiServicesToSwitch = () => {
           tabIndex={-1}
         >
           <div className="py-1" role="none">
-            { Array.isArray(aiServiceAndModalOptions) && aiServiceAndModalOptions?.map((item, sectionIndex) => (
+            {Array.isArray(aiServiceAndModalOptions) && aiServiceAndModalOptions?.map((item, sectionIndex) => (
               item.service && (
                 <div key={sectionIndex}>
                   <h4 className="text-gray-900 font-semibold px-4 py-2">{item?.service}</h4>
