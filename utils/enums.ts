@@ -64,10 +64,14 @@ export const ALLOWED_EVENTS_TO_SUBSCRIBE: Record<'MESSAGE_CLICK' | 'USER_TYPING'
 
 export const DEFAULT_AI_SERVICE_MODALS = {
   "openai": [
+    "gpt-3.5-turbo",
+    "gpt-4",
+    "gpt-4-turbo",
     "gpt-4o",
     "gpt-4o-mini",
     "o1-preview",
-    "o1-mini"
+    "o1-mini",
+    "o3-mini"
   ],
   "anthropic": [
     "claude-3-opus-20240229",

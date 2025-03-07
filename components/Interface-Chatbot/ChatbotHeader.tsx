@@ -100,12 +100,12 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
           </div>
         </div>
         <div className="flex justify-center">
+        <AiServicesToSwitch />
           {headerButtons?.map((item, index) => {
             return <React.Fragment key={`header-button-${index}`}>
               {renderIconsByType(item)}
             </React.Fragment>
           })}
-          <AiServicesToSwitch />
 
         </div>
       </div>
@@ -434,11 +434,17 @@ const AiServicesToSwitch = () => {
 
   const dispatch = useDispatch()
 
-  useEffect(()=>{
-    if(defaultModal && (!currentSelectedModal?.modal || !currentSelectedModal?.service)){
-      dispatch(setSelectedAIServiceAndModal(defaultModal))
+  useEffect(() => {
+    const shouldSetDefaultModal = defaultModal && (!currentSelectedModal?.modal || !currentSelectedModal?.service);
+    const shouldSetFirstAvailableOption = !defaultModal && (!currentSelectedModal?.modal || !currentSelectedModal?.service) && aiServiceAndModalOptions?.[0]?.service && aiServiceAndModalOptions?.[0]?.modals?.[0];
+
+    if (shouldSetDefaultModal) {
+      dispatch(setSelectedAIServiceAndModal(defaultModal));
+    } else if (shouldSetFirstAvailableOption) {
+      const firstOption = aiServiceAndModalOptions[0];
+      dispatch(setSelectedAIServiceAndModal({ service: firstOption.service, modal: firstOption.modals[0] }));
     }
-  },[defaultModal])
+  }, [defaultModal, currentSelectedModal, aiServiceAndModalOptions]);
 
 
   const [dropdownIsOpen, setDropdownIsOpen] = useState(false);
@@ -447,7 +453,7 @@ const AiServicesToSwitch = () => {
   }
 
   return (
-    <div className="relative inline-block text-left">
+    <div className="relative inline-block text-left z-[99]">
       <div>
         <button
           type="button"
