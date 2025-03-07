@@ -73,11 +73,11 @@ export const MessageContext = createContext<{
   newMessage?: boolean;
   currentPage?: Number;
   starterQuestions?: string[];
-  headerButtons?:HeaderButtonType
+  headerButtons?: HeaderButtonType
 }>({
   messages: [],
   helloMessages: [],
-  headerButtons:[]
+  headerButtons: []
 });
 
 function InterfaceChatbot({
@@ -101,7 +101,8 @@ function InterfaceChatbot({
     chat_id,
     channelId,
     mode,
-    reduxHeaderButtons
+    reduxHeaderButtons,
+    selectedAiServiceAndModal
   } = useCustomSelector((state: $ReduxCoreType) => ({
     interfaceContextData:
       state.Interface?.interfaceContext?.[chatbotId]?.[
@@ -121,6 +122,7 @@ function InterfaceChatbot({
     chat_id: state.Hello?.Channel?.id,
     channelId: state.Hello?.Channel?.channel || null,
     mode: state.Hello?.mode || [],
+    selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null
   }));
 
   const [chatsLoading, setChatsLoading] = useState(false);
@@ -546,6 +548,10 @@ function InterfaceChatbot({
       slugName: bridge || bridgeName,
       chatBotId: chatbotId,
       version_id: bridgeVersionId,
+      ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {
+        configuration: { model: selectedAiServiceAndModal?.modal },
+        service: selectedAiServiceAndModal?.service
+      } : {})
     });
     if (!response?.success) {
       setMessages((prevMessages) => prevMessages.slice(0, -1));
@@ -662,11 +668,11 @@ function InterfaceChatbot({
           <ChatbotHeader
             setLoading={setLoading}
             setChatsLoading={setChatsLoading}
-            setToggleDrawer={setToggleDrawer} 
-            isToggledrawer={isToggledrawer} 
-            threadId = {threadId}
-            reduxBridgeName = {reduxBridgeName}
-            headerButtons= {headerButtons}
+            setToggleDrawer={setToggleDrawer}
+            isToggledrawer={isToggledrawer}
+            threadId={threadId}
+            reduxBridgeName={reduxBridgeName}
+            headerButtons={headerButtons}
           />
           <ChatbotHeaderTab />
 
@@ -681,7 +687,7 @@ function InterfaceChatbot({
             ref={containerRef}
           >
             <div className="w-full max-w-5xl mx-auto px-4">
-              <MessageList containerRef={containerRef}/>
+              <MessageList containerRef={containerRef} />
             </div>
           </div>
 

@@ -1,8 +1,12 @@
 export type HeaderButtonType = Array<{ type: 'history' | 'setting' }>;
-
+export type ModalConfigType = { aiServices: { service: "string", modals: string[] }[] , defaultSelected : {service:"string",modal:"string"} }
+export type SelectedAiServicesType= {service:"string",modal:"string"}
 export interface $InterfaceReduxType {
-  eventsSubscribedByParent : string[]
-  headerButtons : HeaderButtonType
+  selectedAiServiceAndModal : SelectedAiServicesType
+  availableAiServicesToSwitch: string[]
+  eventsSubscribedByParent: string[]
+  headerButtons: HeaderButtonType
+  modalConfig: ModalConfigType
   isLoading: boolean;
   threadId: string;
   subThreadId?: string;

@@ -4,6 +4,7 @@ import { call, put } from "redux-saga/effects";
 import { getHelloDetailsApi } from "@/config/api";
 import { errorToast } from "@/components/customToast";
 import { getHelloDetailsSuccess } from "./helloSlice";
+import { setAvailableModelsToSwitch } from "../interface/interfaceSlice";
 
 export function* getHelloDetailsSaga(
   action: PayloadAction<{
@@ -35,6 +36,7 @@ export function* getHelloDetailsSaga(
       );
     }
     yield put(getHelloDetailsSuccess(response));
+    yield put(setAvailableModelsToSwitch(response?.supportedServices))
   } catch (error) {
     errorToast(
       "Error occurred while fetching hello details, please try again later."

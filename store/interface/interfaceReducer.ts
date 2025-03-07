@@ -5,6 +5,8 @@ import {
   $InterfaceReduxType,
   HeaderButtonType,
   InterFaceDataType,
+  ModalConfigType,
+  SelectedAiServicesType,
 } from "../../types/interface/InterfaceReduxType.ts";
 import actionType from "../../types/utility.ts";
 
@@ -255,5 +257,14 @@ export const reducers: ValidateSliceCaseReducers<
   setEventsSubsribedByParent(state,action:actionType<string[]>){
     state.eventsSubscribedByParent = action.payload
     sessionStorage.setItem("eventsSubscribedByParent", JSON.stringify(action.payload));
+  },
+  setAvailableModelsToSwitch(state,action:actionType<any>){
+    state.availableAiServicesToSwitch = action.payload
+  },
+  setModalConfig(state,action:actionType<ModalConfigType>){
+    state.modalConfig = action.payload
+  },
+  setSelectedAIServiceAndModal(state,action:actionType<SelectedAiServicesType>){
+    state.selectedAiServiceAndModal = action.payload
   }
 };

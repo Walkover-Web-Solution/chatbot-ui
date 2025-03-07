@@ -7,6 +7,7 @@ import {
   setConfig,
   setEventsSubsribedByParent,
   setHeaderActionButtons,
+  setModalConfig,
   setThreadId
 } from "@/store/interface/interfaceSlice";
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
@@ -46,7 +47,8 @@ function ChatbotWrapper({ chatbotId, loadInterface = true }) {
             helloId = null,
             version_id = null,
             headerButtons = [],
-            eventsToSubscribe = []
+            eventsToSubscribe = [],
+            modalConfig = {}
           } = receivedData;
           
           if (threadId) {
@@ -74,11 +76,14 @@ function ChatbotWrapper({ chatbotId, loadInterface = true }) {
               addDefaultContext({ variables: { ...receivedData?.variables } })
             );
           }
-          if(Array.isArray(headerButtons) && headerButtons?.length){
+          if(Array.isArray(headerButtons)){
             dispatch(setHeaderActionButtons(headerButtons))
           }
           if(Array.isArray(eventsToSubscribe) && eventsToSubscribe?.length){
             dispatch(setEventsSubsribedByParent(eventsToSubscribe?.filter((item)=> Object.values(ALLOWED_EVENTS_TO_SUBSCRIBE)?.includes(item))))
+          }
+          if(modalConfig){
+            dispatch(setModalConfig(modalConfig))
           }
         }
       }

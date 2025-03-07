@@ -8,7 +8,7 @@ import { useTheme } from "@mui/material";
 
 // Third-party libraries
 import axios from "axios";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 // App imports
 import { successToast } from "@/components/customToast";
@@ -17,18 +17,18 @@ import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
-import { createRandomId, ParamsEnums } from "@/utils/enums";
+import { createRandomId, DEFAULT_AI_SERVICE_MODALS, ParamsEnums } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import ChatbotDrawer from "./ChatbotDrawer";
 
 // Styles
-import { setThreads } from "@/store/interface/interfaceSlice";
-import { HeaderButtonType } from "@/types/interface/InterfaceReduxType";
+import { setSelectedAIServiceAndModal, setThreads } from "@/store/interface/interfaceSlice";
+import { HeaderButtonType, SelectedAiServicesType } from "@/types/interface/InterfaceReduxType";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 import { ChevronDown } from "lucide-react";
 import { useDispatch } from "react-redux";
-import { ChatbotContext } from "../context";
 import "./InterfaceChatbot.css";
+import { ChatbotContext } from "../context";
 
 interface ChatbotHeaderProps {
   setLoading: (loading: boolean) => void;
@@ -105,6 +105,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
               {renderIconsByType(item)}
             </React.Fragment>
           })}
+          <AiServicesToSwitch />
+
         </div>
       </div>
 
@@ -290,23 +292,213 @@ const ChatbotFeedbackForm = React.memo(function ChatbotFeedbackForm({
   );
 });
 
-const renderIconsByType = (item) => {
-  const iconComponents = {
-    setting: <Settings />,
-    history: <History />,
-    verticalThreeDots: <EllipsisVertical />,
-  };
+const SendEventOnComponentPress = ({ item, children }: { item: { type: string }, children: React.ReactNode }) => (
+  <button
+    className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+    onClick={() => emitEventToParent("HEADER_BUTTON_PRESS", item)}
+  >
+    {children}
+  </button>
+);
 
-  const IconComponent = iconComponents[item.type];
+const renderIconsByType = (item: { type: string }) => {
+  switch (item.type) {
+    case 'setting':
+      return (
+        <SendEventOnComponentPress item={item}>
+          <Settings />
+        </SendEventOnComponentPress>
+      );
+    case 'history':
+      return (
+        <SendEventOnComponentPress item={item}>
+          <History />
+        </SendEventOnComponentPress>
+      );
+    case 'verticalThreeDots':
+      return (
+        <SendEventOnComponentPress item={item}>
+          <EllipsisVertical />
+        </SendEventOnComponentPress>
+      );
+    case 'sectionDropdown':
+      const [dropdownIsOpen, setDropdownIsOpen] = useState(false);
+      const [selectedOption, setSelectedOption] = useState({ value: item?.defaultSelected || '', section: "" });
 
-  if (!IconComponent) return null;
+      useEffect(() => {
+        if (selectedOption?.value) {
+          emitEventToParent("HEADER_BUTTON_PRESS", { ...item, selectedOption });
+        }
+      }, [selectedOption?.value]);
+
+      return (
+        <div className="relative inline-block text-left">
+          <div>
+            <button
+              type="button"
+              className="inline-flex items-center justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              id="menu-button"
+              aria-expanded={dropdownIsOpen}
+              aria-haspopup="true"
+              onClick={() => setDropdownIsOpen(!dropdownIsOpen)}
+            >
+              <span className={selectedOption?.value ? "font-bold" : ""}>{selectedOption?.value || "Select"}</span>
+              <ChevronDown className="w-4 h-4 ml-2" />
+            </button>
+          </div>
+
+          {dropdownIsOpen && (
+            <div
+              className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+              role="menu"
+              aria-orientation="vertical"
+              aria-labelledby="menu-button"
+              tabIndex={-1}
+            >
+              <div className="py-1" role="none">
+                {item?.options && Array.isArray(item?.options) && item?.options.map((item, sectionIndex) => (
+                  item?.section && (
+                    <div key={sectionIndex}>
+                      <h4 className="text-gray-900 font-semibold px-4 py-2">{item?.section}</h4>
+                      <div className="pl-4">
+                        {Array.isArray(item?.options) && item?.options.map((optionValue, optionIndex) => (
+                          <a
+                            key={optionIndex}
+                            href="#"
+                            className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100"
+                            role="menuitem"
+                            tabIndex={-1}
+                            id={`menu-item-${sectionIndex}-${optionIndex}`}
+                            onClick={() => {
+                              setSelectedOption({ value: optionValue, section: item?.section });
+                              setDropdownIsOpen(false);
+                            }}
+                          >
+                            {optionValue}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    default:
+      return null;
+  }
+}
+
+
+const AiServicesToSwitch = () => {
+
+  const { currentSelectedModal, aiServiceAndModalOptions , defaultModal} = useCustomSelector((state: $ReduxCoreType) => {
+    const selectedAiServiceAndModal = state.Interface?.selectedAiServiceAndModal || {};
+    const modalConfig = state.Interface?.modalConfig || {};
+    const availableAiServicesToSwitch = state.Interface?.availableAiServicesToSwitch || [];
+    const { defaultSelected = {}, aiServices = [] } = modalConfig;
+    
+    const filteredUserRequestedOptions = aiServices.filter((item: any) => 
+      availableAiServicesToSwitch.includes(item.service)
+    ).map((item: any) => ({
+      ...item,
+      modals: Array.from(new Set([
+        ...(Array.isArray(item.modals) ? item.modals : []),
+        ...(Array.isArray(DEFAULT_AI_SERVICE_MODALS[item.service]) ? DEFAULT_AI_SERVICE_MODALS[item.service] : [])
+      ]))
+    }));
+
+    const aiServiceAndModalOptions = filteredUserRequestedOptions.length > 0 
+      ? filteredUserRequestedOptions 
+      : availableAiServicesToSwitch.map((service) => ({
+          service,
+          modals: DEFAULT_AI_SERVICE_MODALS[service] || []
+        }));
+
+    const isValidSelection = (selection: SelectedAiServicesType) => 
+      selection.service && selection.modal && aiServiceAndModalOptions.some((item) => 
+        item.service === selection.service && item.modals.includes(selection.modal)
+      );
+
+    const currentSelectedModal = isValidSelection(selectedAiServiceAndModal)
+      ? selectedAiServiceAndModal
+      : { service: "", modal: "" };
+
+    const defaultModal =  isValidSelection(defaultSelected)
+      ? defaultSelected : null
+
+    return { currentSelectedModal, aiServiceAndModalOptions , defaultModal};
+  });
+
+  const dispatch = useDispatch()
+
+  useEffect(()=>{
+    if(defaultModal && (!currentSelectedModal?.modal || !currentSelectedModal?.service)){
+      dispatch(setSelectedAIServiceAndModal(defaultModal))
+    }
+  },[defaultModal])
+
+
+  const [dropdownIsOpen, setDropdownIsOpen] = useState(false);
+  const handleSelectedModalChange = (item:SelectedAiServicesType) =>{
+    dispatch(setSelectedAIServiceAndModal(item))
+  }
 
   return (
-    <button
-      className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-      onClick={() => emitEventToParent("HEADER_BUTTON_PRESS", item)}
-    >
-      {IconComponent}
-    </button>
+    <div className="relative inline-block text-left">
+      <div>
+        <button
+          type="button"
+          className="inline-flex items-center justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          id="menu-button"
+          aria-expanded={dropdownIsOpen}
+          aria-haspopup="true"
+          onClick={() => setDropdownIsOpen(!dropdownIsOpen)}
+        >
+          <span className={currentSelectedModal?.modal ? "font-bold" : ""}>{currentSelectedModal?.modal || "Select"}</span>
+          <ChevronDown className="w-4 h-4 ml-2" />
+        </button>
+      </div>
+
+      {dropdownIsOpen && (
+        <div
+          className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+          role="menu"
+          aria-orientation="vertical"
+          aria-labelledby="menu-button"
+          tabIndex={-1}
+        >
+          <div className="py-1" role="none">
+            { Array.isArray(aiServiceAndModalOptions) && aiServiceAndModalOptions?.map((item, sectionIndex) => (
+              item.service && (
+                <div key={sectionIndex}>
+                  <h4 className="text-gray-900 font-semibold px-4 py-2">{item?.service}</h4>
+                  <div className="pl-4">
+                    {item?.modals && item?.modals?.map((optionValue, optionIndex) => (
+                      <a
+                        key={optionIndex}
+                        href="#"
+                        className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100"
+                        role="menuitem"
+                        tabIndex={-1}
+                        id={`menu-item-${sectionIndex}-${optionIndex}`}
+                        onClick={() => {
+                          handleSelectedModalChange({ modal: optionValue, service: item?.service });
+                          setDropdownIsOpen(false);
+                        }}
+                      >
+                        {optionValue}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
