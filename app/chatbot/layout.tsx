@@ -9,7 +9,7 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
     const [chatbotConfig, setChatbotConfig] = useState({});
     const { themeColor, handleThemeChange } = useContext(ThemeContext);
     const { chatbot_id, userId, token, config } = JSON.parse(
-        search.get("interfaceDetails") || "{}"
+        search.get("interfaceDetails") || '{"chatbot_id":null,"userId":null,"token":null,"config":null}'
     );
 
     const onConfigChange = useCallback((config: any) => {
