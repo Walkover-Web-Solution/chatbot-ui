@@ -119,12 +119,12 @@ const AssistantMessageCard = React.memo(
 
           {message?.wait ? (
             <div className="w-full">
-              <p className="text-sm">{message?.content}</p>
-              {/* <div className="flex gap-1 mt-2">
-                <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce"></div>
-                <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce delay-100"></div>
-                <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce delay-200"></div>
-              </div> */}
+              <div className="flex flex-wrap gap-2 items-center">
+                {message?.Name && Array.isArray(message?.Name) && message.Name.map((name: string, index: number) => (
+                  <p key={index} className="text-sm font-medium">{name}</p>
+                ))}
+                <p className="text-sm">{message?.content}</p>
+              </div>
               <div className="loading-indicator" style={themePalette}>
                 <div className="loading-bar"></div>
                 <div className="loading-bar"></div>
