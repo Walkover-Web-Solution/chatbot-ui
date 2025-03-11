@@ -66,7 +66,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
   };
 
   return (
-    <div className="bg-gray-50 border-b border-gray-200 px-2 py-2 w-full">
+    <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-4 py-2 w-full">
       <div className="flex items-center w-full relative">
         <div className="sm:absolute left-0 flex items-center gap-2">
           <button
@@ -85,25 +85,22 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
           </div>
         </div>
 
-        <div className="flex-1 flex justify-center w-full">
-          <div className="flex flex-col items-center gap-1">
-            <div className="flex items-center sm:gap-3 gap-1 justify-center">
-              {headerImage ? <Image alt="headerIcon" width={20} height={20} src={headerImage} /> : <ChatIcon className="text-gray-600" />}
-              <h2 className="text-lg font-semibold text-gray-800 text-center">
-                {chatbotTitle || "AI Assistant"}
-              </h2>
-              <ResetChatOption
-                textColor={textColor}
-                setChatsLoading={setChatsLoading}
-              />
-            </div>
-            {chatbotSubtitle && <p className="text-sm opacity-75 text-center">
-              {chatbotSubtitle || "Do you have any questions? Ask us!"}
-            </p>}
-
+        <div className="flex flex-col items-center mx-auto">
+          <div className="flex items-center sm:gap-3 gap-1 justify-center">
+            {headerImage ? <Image alt="headerIcon" width={24} height={24} src={headerImage} /> : <ChatIcon height={20} width={20} />}
+            <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis">
+              {chatbotTitle || "AI Assistant"}
+            </h1>
+            <ResetChatOption
+              textColor={textColor}
+              setChatsLoading={setChatsLoading}
+            />
           </div>
+          {chatbotSubtitle && <p className="text-sm opacity-75 text-center whitespace-nowrap overflow-hidden overflow-ellipsis">
+            {chatbotSubtitle || "Do you have any questions? Ask us!"}
+          </p>}
         </div>
-        <div className="flex justify-center">
+        <div className="sm:absolute right-0 flex justify-center items-center">
           {allowModalSwitch && <AiServicesToSwitch />}
           {headerButtons?.map((item, index) => {
             return <React.Fragment key={`header-button-${index}`}>
@@ -117,11 +114,11 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
                 window.parent.postMessage({ type: "CLOSE_CHATBOT" }, "*")
               }
             }}>
-              <CircleX />
-            </div >}
+              <CircleX className="ml-1" />
+            </div>}
 
-        </div >
-      </div >
+        </div>
+      </div>
 
       <ChatbotDrawer
         setLoading={setLoading}
@@ -135,30 +132,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
 };
 
 export default ChatbotHeader;
-
-export function ChatbotHeaderPreview() {
-  const theme = useTheme();
-  const isLightBackground = isColorLight(theme.palette.primary.main);
-  const textColor = isLightBackground ? "black" : "white";
-
-  return (
-    <div className="navbar bg-base-100 shadow-lg rounded-box">
-      <div className="flex-1">
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold">AI Assistant</h2>
-              <ResetChatOption textColor={textColor} preview />
-            </div>
-            <p className="text-sm opacity-75">
-              Do you have any questions? Ask us!
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 const ResetChatOption = React.memo(
   addUrlDataHoc(
@@ -178,16 +151,12 @@ const ResetChatOption = React.memo(
         })
       );
       const userId = GetSessionStorageData("interfaceUserId");
-      const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-      const open = Boolean(anchorEl);
 
       const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.stopPropagation(); // Prevent event bubbling
-        setAnchorEl(event.currentTarget);
       };
 
       const handleClose = async () => {
-        setAnchorEl(null);
       };
 
       const resetHistory = async () => {
@@ -201,17 +170,14 @@ const ResetChatOption = React.memo(
           sub_thread_id: subThreadId,
           purpose: "is_reset",
         });
-        handleClose();
         setChatsLoading(false);
       };
 
       return (
-        <div className="dropdown dropdown-end pt-2 z-[9]" onClick={(e) => e.stopPropagation()}>
-          <button className="" onClick={handleClick}>
-            <ChevronDown className="w-5" color={textColor} />
-          </button>
+        <div className="dropdown dropdown-bottom z-[9]" onClick={(e) => e.stopPropagation()}>
+          <div tabIndex={0} role="button" className=""><ChevronDown className="w-5" color={textColor} /></div>
           <ul className="dropdown-content menu shadow bg-base-100 rounded-box w-52">
-            <li>
+            {/* <li>
               <button
                 onClick={resetHistory}
                 disabled={IsHuman}
@@ -220,7 +186,7 @@ const ResetChatOption = React.memo(
                 <SyncIcon className="h-4 w-4" />
                 Reset Chat
               </button>
-            </li>
+            </li> */}
             <li>
               <button
                 onClick={(e) => {
@@ -247,6 +213,30 @@ const ResetChatOption = React.memo(
 interface ChatbotFeedbackFormProps {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export function ChatbotHeaderPreview() {
+  const theme = useTheme();
+  const isLightBackground = isColorLight(theme.palette.primary.main);
+  const textColor = isLightBackground ? "black" : "white";
+
+  return (
+    <div className="navbar bg-base-100 shadow-lg rounded-box">
+      <div className="flex-1">
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold">AI Assistant</h2>
+              <ResetChatOption textColor={textColor} preview />
+            </div>
+            <p className="text-sm opacity-75">
+              Do you have any questions? Ask us!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const ChatbotFeedbackForm = React.memo(function ChatbotFeedbackForm({
@@ -406,7 +396,6 @@ const renderIconsByType = (item: { type: string }) => {
 
 
 const AiServicesToSwitch = () => {
-
   const { currentSelectedModal, aiServiceAndModalOptions, defaultModal } = useCustomSelector((state: $ReduxCoreType) => {
     const selectedAiServiceAndModal = state.Interface?.selectedAiServiceAndModal || {};
     const modalConfig = state.Interface?.modalConfig || {};
@@ -445,7 +434,7 @@ const AiServicesToSwitch = () => {
     return { currentSelectedModal, aiServiceAndModalOptions, defaultModal };
   });
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const shouldSetDefaultModal = defaultModal && (!currentSelectedModal?.modal || !currentSelectedModal?.service);
@@ -459,65 +448,29 @@ const AiServicesToSwitch = () => {
     }
   }, [defaultModal, currentSelectedModal, aiServiceAndModalOptions]);
 
-
-  const [dropdownIsOpen, setDropdownIsOpen] = useState(false);
-  const handleSelectedModalChange = (item: SelectedAiServicesType) => {
-    dispatch(setSelectedAIServiceAndModal(item))
-  }
+  const handleSelectedModalChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const [service, modal] = event.target.value.split('|');
+    dispatch(setSelectedAIServiceAndModal({ service, modal }));
+  };
 
   return (
-    <div className="relative inline-block text-left z-[99]">
-      <div>
-        <button
-          type="button"
-          className="inline-flex items-center justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          id="menu-button"
-          aria-expanded={dropdownIsOpen}
-          aria-haspopup="true"
-          onClick={() => setDropdownIsOpen(!dropdownIsOpen)}
-        >
-          <span className={currentSelectedModal?.modal ? "font-bold" : ""}>{currentSelectedModal?.modal || "Select"}</span>
-          <ChevronDown className="w-4 h-4 ml-2" />
-        </button>
-      </div>
-
-      {dropdownIsOpen && (
-        <div
-          className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
-          role="menu"
-          aria-orientation="vertical"
-          aria-labelledby="menu-button"
-          tabIndex={-1}
-        >
-          <div className="py-1" role="none">
-            {Array.isArray(aiServiceAndModalOptions) && aiServiceAndModalOptions?.map((item, sectionIndex) => (
-              item.service && (
-                <div key={sectionIndex}>
-                  <h4 className="text-gray-900 font-semibold px-4 py-2">{item?.service}</h4>
-                  <div className="pl-4">
-                    {item?.modals && item?.modals?.map((optionValue, optionIndex) => (
-                      <a
-                        key={optionIndex}
-                        href="#"
-                        className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100"
-                        role="menuitem"
-                        tabIndex={-1}
-                        id={`menu-item-${sectionIndex}-${optionIndex}`}
-                        onClick={() => {
-                          handleSelectedModalChange({ modal: optionValue, service: item?.service });
-                          setDropdownIsOpen(false);
-                        }}
-                      >
-                        {optionValue}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )
+    <label className="form-control w-full max-w-fit">
+      <select
+        value={`${currentSelectedModal.service}|${currentSelectedModal.modal}`}
+        onChange={handleSelectedModalChange}
+        className="select select-sm w-full select-bordered"
+      >
+        <option disabled>Select an AI Service</option>
+        {Array.isArray(aiServiceAndModalOptions) && aiServiceAndModalOptions.map((item, sectionIndex) => (
+          <optgroup label={item.service} key={`group_${sectionIndex}`}>
+            {item.modals.map((modal, optionIndex) => (
+              <option key={`option_${sectionIndex}_${optionIndex}`} value={`${item.service}|${modal}`}>
+                {modal}
+              </option>
             ))}
-          </div>
-        </div>
-      )}
-    </div>
+          </optgroup>
+        ))}
+      </select>
+    </label>
   );
 }
