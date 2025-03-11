@@ -110,16 +110,17 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
             </React.Fragment>
           })}
 
-          {!hideCloseButton && <div className="cursor-pointer p-1 rounded-full" onClick={() => {
-            if (window?.parent) {
-              window.parent.postMessage({ type: "CLOSE_CHATBOT" }, "*")
-            }
-          }}>
-            <CircleX />
-          </div>}
+          {
+            !hideCloseButton && <div className="cursor-pointer p-1 rounded-full" onClick={() => {
+              if (window?.parent) {
+                window.parent.postMessage({ type: "CLOSE_CHATBOT" }, "*")
+              }
+            }}>
+              <CircleX />
+            </div >}
 
-        </div>
-      </div>
+        </div >
+      </div >
 
       <ChatbotDrawer
         setLoading={setLoading}
@@ -128,7 +129,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
         setToggleDrawer={setToggleDrawer}
       />
 
-    </div>
+    </div >
   );
 };
 
