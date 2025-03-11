@@ -637,7 +637,7 @@ function RagCompoonent() {
                                                             ) {
                                                                 case "PDF":
                                                                     return (
-                                                                        <img
+                                                                        <Image
                                                                             src={PdfLogo}
                                                                             alt="PDF"
                                                                             width={20}
@@ -646,7 +646,7 @@ function RagCompoonent() {
                                                                     );
                                                                 case "DOC":
                                                                     return (
-                                                                        <img
+                                                                        <Image
                                                                             src={DocLogo}
                                                                             alt="DOC"
                                                                             width={20}
@@ -655,7 +655,7 @@ function RagCompoonent() {
                                                                     );
                                                                 case "CSV":
                                                                     return (
-                                                                        <img
+                                                                        <Image
                                                                             src={CsvLogo}
                                                                             alt="CSV"
                                                                             width={20}

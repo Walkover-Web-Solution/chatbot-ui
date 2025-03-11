@@ -44,12 +44,15 @@ const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
         {Array.isArray(message?.urls) && message.urls.length > 0 && (
           <div className="flex flex-row-reverse flex-wrap gap-2.5 max-w-[80%] p-2.5 rounded-[10px_10px_1px_10px]">
             {message.urls.map((url: string, index: number) => (
-              <img
+              <Image
                 key={index}
                 src={url}
                 alt={`Image ${index + 1}`}
                 className="block max-w-[40%] h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={() => window.open(url, "_blank")}
+                width={10} // You should replace 0 with the actual width
+                height={10} // You should replace 0 with the actual height
+                layout="responsive"
               />
             ))}
           </div>
@@ -103,9 +106,9 @@ const AssistantMessageCard = React.memo(
     }
 
     return (
-      <div className="flex flex-col gap-2" onClick={handleMessageClick}>
-        <div className="flex items-end gap-2.5 max-w-[90%] mb-2.5 animate-slide-left">
-          <div className="flex flex-col items-center justify-end w-8">
+      <div className="flex flex-col" onClick={handleMessageClick}>
+        <div className="flex items-end max-w-[90%] animate-slide-left">
+          <div className="flex flex-col items-center justify-end w-8 pb-3">
             <div className="w-8 h8 rounded-full bg-primary/10 flex items-center justify-center">
               <Image
                 src={AiIcon}
@@ -140,9 +143,11 @@ const AssistantMessageCard = React.memo(
                 </div>
               ) : message.image_url ? (
                 <div className="space-y-2">
-                  <img
+                  <Image
                     src={message.image_url}
                     alt="Message Image"
+                    width={400}
+                    height={400}
                     className="w-full max-h-[400px] min-h-[100px] rounded-lg object-cover"
                   />
                   <a
@@ -346,17 +351,17 @@ const HumanOrBotMessageCard = React.memo(
             spacing="5px"
           >
             {!isBot ? (
-              <img
+              <Image
                 src={UserAssistant}
-                width="28"
-                height="28"
+                width={28}
+                height={28}
                 alt="AI"
                 style={{ color: "red" }}
               />
             ) : (
-              <img
-                width="24"
-                height="24"
+              <Image
+                width={24}
+                height={24}
                 src="https://img.icons8.com/ios/50/message-bot.png"
                 alt="message-bot"
               />
