@@ -1,9 +1,10 @@
 export type HeaderButtonType = Array<{ type: 'history' | 'setting' }>;
-export type ModalConfigType = { aiServices: { service: "string", modals: string[] }[] , defaultSelected : {service:"string",modal:"string"} }
-export type SelectedAiServicesType= {service:"string",modal:"string"}
+export type ModalConfigType = { aiServices: { service: "string", modals: string[] }[], defaultSelected: { service: "string", modal: "string" } }
+export type SelectedAiServicesType = { service: "string", modal: "string" }
 export interface $InterfaceReduxType {
-  allowModalSwitch : boolean
-  selectedAiServiceAndModal : SelectedAiServicesType
+  allowModalSwitch: boolean
+  hideCloseButton: boolean
+  selectedAiServiceAndModal: SelectedAiServicesType
   availableAiServicesToSwitch: string[]
   eventsSubscribedByParent: string[]
   headerButtons: HeaderButtonType

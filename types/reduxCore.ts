@@ -151,10 +151,10 @@ export interface $DHPluginReduxType {
 
 export interface $DHAuthenticationType {
   [pluginId: string]:
-    | {
-        [authRowId: string]: AuthFieldsType | boolean;
-      }
-    | boolean;
+  | {
+    [authRowId: string]: AuthFieldsType | boolean;
+  }
+  | boolean;
 }
 
 export interface $DHActionReduxType {

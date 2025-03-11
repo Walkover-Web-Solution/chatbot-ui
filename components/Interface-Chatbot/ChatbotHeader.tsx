@@ -44,8 +44,9 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
   const { chatbotConfig: { chatbotTitle, chatbotSubtitle, headerImage = '' } } = useContext<any>(ChatbotContext);
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
-  const { allowModalSwitch } = useCustomSelector((state: $ReduxCoreType) => ({
-    allowModalSwitch: state.Interface.allowModalSwitch || false
+  const { allowModalSwitch, hideCloseButton } = useCustomSelector((state: $ReduxCoreType) => ({
+    allowModalSwitch: state.Interface.allowModalSwitch || false,
+    hideCloseButton: state.Interface.hideCloseButton || false,
   }))
   const handleCreateNewSubThread = async () => {
     const result = await createNewThreadApi({
@@ -109,13 +110,13 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
             </React.Fragment>
           })}
 
-          <div className="cursor-pointer p-1 rounded-full" onClick={() => {
+          {!hideCloseButton && <div className="cursor-pointer p-1 rounded-full" onClick={() => {
             if (window?.parent) {
               window.parent.postMessage({ type: "CLOSE_CHATBOT" }, "*")
             }
           }}>
             <CircleX />
-          </div>
+          </div>}
 
         </div>
       </div>
