@@ -464,7 +464,7 @@ function InterfaceChatbot({
       ) {
         setMessages((prevMessages) => [
           ...prevMessages.slice(0, -1),
-          { role: "assistant", wait: true, content: "Function Calling" },
+          { role: "assistant", wait: true, content: "Function Calling", Name: parsedMessage?.response?.Name || [] },
         ]);
       } else if (
         parsedMessage?.response?.function_call &&

@@ -50,9 +50,10 @@ function ChatbotWrapper({ chatbotId, loadInterface = true }) {
             headerButtons = [],
             eventsToSubscribe = [],
             modalConfig = {},
-            allowModalSwitch = false
+            allowModalSwitch = false,
+            hideCloseButton = false
           } = receivedData;
-          
+
           if (threadId) {
             dispatch(setThreadId({ threadId: threadId }));
           }
@@ -78,16 +79,16 @@ function ChatbotWrapper({ chatbotId, loadInterface = true }) {
               addDefaultContext({ variables: { ...receivedData?.variables } })
             );
           }
-          if(Array.isArray(headerButtons)){
+          if (Array.isArray(headerButtons)) {
             dispatch(setHeaderActionButtons(headerButtons))
           }
-          if(Array.isArray(eventsToSubscribe) && eventsToSubscribe?.length){
-            dispatch(setEventsSubsribedByParent(eventsToSubscribe?.filter((item)=> Object.values(ALLOWED_EVENTS_TO_SUBSCRIBE)?.includes(item))))
+          if (Array.isArray(eventsToSubscribe) && eventsToSubscribe?.length) {
+            dispatch(setEventsSubsribedByParent(eventsToSubscribe?.filter((item) => Object.values(ALLOWED_EVENTS_TO_SUBSCRIBE)?.includes(item))))
           }
-          if(modalConfig){
+          if (modalConfig) {
             dispatch(setModalConfig(modalConfig))
           }
-          dispatch(setDataInInterfaceRedux({allowModalSwitch}))
+          dispatch(setDataInInterfaceRedux({ allowModalSwitch, hideCloseButton }))
         }
       }
     };
