@@ -1,6 +1,5 @@
 // MUI Icons
 import ChatIcon from "@mui/icons-material/Chat";
-import SyncIcon from "@mui/icons-material/Sync";
 import { AlignLeft, CircleX, EllipsisVertical, History, Settings, SquarePen } from "lucide-react";
 
 // MUI Components
