@@ -252,7 +252,7 @@ function ChatbotTextField({
         </div>
       </div> */}
 
-      <div className="w-full max-w-3xl mx-auto h-full cursor-text" onClick={focusTextField}>
+      <div className="w-full h-full cursor-text" onClick={focusTextField}>
         <div
           className="relative flex-col h-full items-center justify-between gap-2 p-2 bg-gray-50 rounded-xl border border-gray-200 focus-within:outline focus-within:outline-2 focus-within:outline-offset-0"
           style={{ outlineColor: theme.palette.primary.main }}
