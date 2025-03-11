@@ -91,7 +91,7 @@ export const Code = ({
 
 export const Anchor = ({ href, children, ...props }) => {
   return (
-    <a href={href} target="_blank" rel="noreferrer" {...props}>
+    <a href={href} target="_blank" rel="noreferrer" {...props} className="link link-primary">
       {children}
     </a>
   );
