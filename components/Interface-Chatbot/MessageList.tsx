@@ -15,12 +15,10 @@ import { Box, LinearProgress } from "@mui/material";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 // App imports
-import { ChatBotGif } from "@/assests/assestsIndex";
+
 import { sendFeedbackAction } from "@/config/api";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
-import { Chat } from "@mui/icons-material";
-import Image from "next/image";
 import { MessageContext } from "./InterfaceChatbot";
 import Message from "./Message";
 import MoveToDownButton from "./MoveToDownButton";
@@ -36,7 +34,6 @@ function MessageList({ containerRef }: MessageListProps) {
     setNewMessage,
     newMessage,
     currentPage = 1,
-    starterQuestions = [],
   } = useContext(MessageContext);
   const MessagesList = useContext(MessageContext);
   const {
@@ -46,7 +43,6 @@ function MessageList({ containerRef }: MessageListProps) {
     helloMessages = [],
   } = MessagesList;
   const [showScrollButton, setShowScrollButton] = useState(false)
-  const [showIcon, setShowGif] = useState(false);
   const [isInverse, setIsInverse] = useState(false);
   const [shouldScroll, setShouldScroll] = useState(true);
   const scrollPositionRef = useRef<number>(0);
@@ -151,49 +147,7 @@ function MessageList({ containerRef }: MessageListProps) {
     ));
   }, [messages, handleFeedback, addMessage, helloMessages, IsHuman]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setShowGif(true), 500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (IsHuman ? helloMessages.length === 0 : messages.length === 0) ? (
-    <div className="flex flex-col items-center h-full w-full">
-      <Image
-        src={ChatBotGif}
-        alt="Chatbot GIF"
-        className={`${showIcon ? 'block' : 'hidden'}`}
-        width={100}
-        height={100}
-      />
-      <h2 className={`text-xl font-bold text-black ${showIcon ? 'block' : 'hidden'}`}>
-        What can I help with?
-      </h2>
-
-      {starterQuestions?.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl w-full px-4 mt-8">
-          {starterQuestions.map((question, index) => (
-            <div
-              key={index}
-              onClick={() => addMessage(question)}
-              className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer"
-            >
-              <div className="p-5">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-primary-100/20 flex items-center justify-center">
-                    <Chat className="h-4 w-4 text-primary-600" />
-                  </div>
-                  <p className="text-gray-700 font-medium line-clamp-2">
-                    {question}
-                  </p>
-                </div>
-                <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-primary-500 to-primary-600 transform scale-x-0 transition-transform group-hover:scale-x-100" />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  ) : (
+  return (
     <Box
       id="scrollableDiv"
       sx={{
