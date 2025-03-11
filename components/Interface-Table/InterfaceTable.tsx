@@ -161,9 +161,7 @@ function InterfaceTable({ props, meta, propsPath }: InterfaceTableProps) {
       className="bg-white w-full h-full"
       columns={columns || []}
       // columns={[{ field: "id", headerName: "ID" }]}
-      initialState={{
-        pagination: { rowCount: paginationVariables?.total || -1 },
-      }}
+      rowCount={paginationVariables?.total || -1}
       paginationMeta={paginationMeta}
       loading={isLoading}
       pageSizeOptions={[currentPageInputVariable?.limit || 5, 10, 20]}
