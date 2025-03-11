@@ -37,6 +37,9 @@ import "./InterfaceChatbot.css";
 import MessageList from "./MessageList";
 import ChatbotDrawer from "./ChatbotDrawer";
 import { HeaderButtonType } from "@/types/interface/InterfaceReduxType";
+import { ChatBotGif, ChatBotIcon } from "@/assests/assestsIndex";
+import Image from "next/image";
+import { Chat } from "@mui/icons-material";
 
 const client = WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
 
@@ -680,31 +683,91 @@ function InterfaceChatbot({
             <div className="h-[0.8] animate-pulse" style={{ backgroundColor: theme.palette.primary.main }} />
           )}
 
-          {/* Messages container with flex layout */}
-          <div
-            className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1 ${messages.length === 0 ? 'flex items-center justify-center' : 'pb-10'}`}
-            id="message-container"
-            ref={containerRef}
-          >
-            <div className="w-full max-w-5xl mx-auto">
-              <MessageList containerRef={containerRef} />
+          {messages.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-70px] p-5">
+              <div className="flex flex-col items-center w-full">
+                <Image
+                  src={ChatBotGif}
+                  alt="Chatbot GIF"
+                  className="block"
+                  width={100}
+                  height={100}
+                />
+                <h2 className="text-xl font-bold text-black">
+                  What can I help with?
+                </h2>
+              </div>
+              <div className="max-w-5xl w-full mt-8">
+                <ChatbotTextField
+                  loading={loading}
+                  options={options}
+                  setChatsLoading={setChatsLoading}
+                  onSend={() => {
+                    IsHuman ? onSendHello() : onSend();
+                  }}
+                  messageRef={messageRef}
+                  setImages={setImages}
+                  images={images}
+                  messages={messages}
+                />
+              </div>
+              {starterQuestions?.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 mt-4 w-full max-5xl">
+                  {starterQuestions?.map((question: string, index: number) => {
+                    const ChatBotIconComponent = typeof ChatBotIcon === 'function' ? ChatBotIcon : () => null;
+                    return (
+                      <div
+                        key={index}
+                        onClick={() => addMessage(question)}
+                        className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md hover:scale-[1.01] cursor-pointer"
+                      >
+                        <div className="p-3">
+                          <div className="flex items-center gap-2">
+                            {/* <div className="h-6 w-6 rounded-full bg-primary-100/20 flex items-center justify-center">
+                              {ChatBotIconComponent && <ChatBotIconComponent className="h-3 w-3 text-primary-600" />}
+                            </div> */}
+                            <Chat className="h-2 w-2 text-primary-600" />
+                            <p className="text-gray-700 text-sm font-medium line-clamp-2">
+                              {question}
+                            </p>
+                          </div>
+                          <div className="absolute bottom-0 left-0 h-0.5 w-full bg-gradient-to-r from-primary-500 to-primary-600 transform scale-x-0 transition-transform group-hover:scale-x-100" />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Messages container with flex layout */}
+              <div
+                className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1 ${messages.length === 0 ? 'flex items-center justify-center' : 'pb-10'}`}
+                id="message-container"
+                ref={containerRef}
+              >
+                <div className="w-full max-w-5xl mx-auto">
+                  <MessageList containerRef={containerRef} />
+                </div>
+              </div>
 
-          {/* Text input at bottom */}
-          <div className="max-w-5xl mx-auto px-4 py-3 w-full">
-            <ChatbotTextField
-              loading={loading}
-              options={options}
-              setChatsLoading={setChatsLoading}
-              onSend={() => {
-                IsHuman ? onSendHello() : onSend();
-              }}
-              messageRef={messageRef}
-              setImages={setImages}
-              images={images}
-            />
-          </div>
+              {/* Text input at bottom */}
+              <div className="max-w-5xl mx-auto px-4 py-3 w-full">
+                <ChatbotTextField
+                  loading={loading}
+                  options={options}
+                  setChatsLoading={setChatsLoading}
+                  onSend={() => {
+                    IsHuman ? onSendHello() : onSend();
+                  }}
+                  messageRef={messageRef}
+                  setImages={setImages}
+                  images={images}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </MessageContext.Provider>
