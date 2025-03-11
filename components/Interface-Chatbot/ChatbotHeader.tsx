@@ -26,9 +26,10 @@ import { setSelectedAIServiceAndModal, setThreads } from "@/store/interface/inte
 import { HeaderButtonType, SelectedAiServicesType } from "@/types/interface/InterfaceReduxType";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 import { ChevronDown } from "lucide-react";
+import Image from "next/image";
 import { useDispatch } from "react-redux";
-import "./InterfaceChatbot.css";
 import { ChatbotContext } from "../context";
+import "./InterfaceChatbot.css";
 
 interface ChatbotHeaderProps {
   setLoading: (loading: boolean) => void;
@@ -87,7 +88,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
         <div className="flex-1 flex justify-center w-full">
           <div className="flex flex-col items-center gap-1">
             <div className="flex items-center sm:gap-3 gap-1 justify-center">
-              {headerImage ? <img width={20} height={20} src={headerImage} /> : <ChatIcon className="text-gray-600" />}
+              {headerImage ? <Image alt="headerIcon" width={20} height={20} src={headerImage} /> : <ChatIcon className="text-gray-600" />}
               <h2 className="text-lg font-semibold text-gray-800 text-center">
                 {chatbotTitle || "AI Assistant"}
               </h2>

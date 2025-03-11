@@ -686,7 +686,7 @@ function InterfaceChatbot({
             id="message-container"
             ref={containerRef}
           >
-            <div className="w-full max-w-5xl mx-auto px-4">
+            <div className="w-full max-w-5xl mx-auto">
               <MessageList containerRef={containerRef} />
             </div>
           </div>

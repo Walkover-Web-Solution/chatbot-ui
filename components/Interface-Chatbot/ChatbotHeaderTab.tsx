@@ -10,6 +10,7 @@ import { AiIcon, UserAssistant } from "@/assests/assestsIndex";
 import { setHuman } from "@/store/hello/helloSlice";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
+import Image from "next/image";
 
 function ChatbotHeaderTab() {
   const dispatch = useDispatch();
@@ -41,10 +42,10 @@ function ChatbotHeaderTab() {
         value="AI"
         label="AI"
         icon={
-          <img
+          <Image
             src={AiIcon}
-            width="24"
-            height="24"
+            width={24}
+            height={24}
             alt="AI Icon"
             style={{
               marginRight: 4,
@@ -64,10 +65,10 @@ function ChatbotHeaderTab() {
         value="Human"
         label="Human"
         icon={
-          <img
+          <Image
             src={UserAssistant}
-            width="24"
-            height="24"
+            width={24}
+            height={24}
             alt="Human Icon"
             className="icon-visible"
             style={{
