@@ -51,7 +51,9 @@ function ChatbotWrapper({ chatbotId, loadInterface = true }) {
             eventsToSubscribe = [],
             modalConfig = {},
             allowModalSwitch = false,
-            hideCloseButton = false
+            hideCloseButton = false,
+            chatTitle = "",
+            chatIcon = ""
           } = receivedData;
 
           if (threadId) {
@@ -88,7 +90,7 @@ function ChatbotWrapper({ chatbotId, loadInterface = true }) {
           if (modalConfig) {
             dispatch(setModalConfig(modalConfig))
           }
-          dispatch(setDataInInterfaceRedux({ allowModalSwitch, hideCloseButton }))
+          dispatch(setDataInInterfaceRedux({ allowModalSwitch, hideCloseButton, chatTitle, chatIcon }))
         }
       }
     };
