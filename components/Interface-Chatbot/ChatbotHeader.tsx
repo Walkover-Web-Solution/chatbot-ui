@@ -1,6 +1,6 @@
 // MUI Icons
 import ChatIcon from "@mui/icons-material/Chat";
-import { AlignLeft, CircleX, EllipsisVertical, History, Settings, SquarePen } from "lucide-react";
+import { AlignLeft, CircleX, EllipsisVertical, History, Maximize, PictureInPicture2, Settings, SquarePen } from "lucide-react";
 
 // MUI Components
 import { useTheme } from "@mui/material";
@@ -41,7 +41,9 @@ interface ChatbotHeaderProps {
 const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoading, setToggleDrawer, isToggledrawer, threadId, reduxBridgeName, headerButtons }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const { chatbotConfig: { chatbotTitle, chatbotSubtitle } } = useContext<any>(ChatbotContext);
+  const { chatbotConfig: { chatbotTitle, chatbotSubtitle, width = '', widthUnit = '' } } = useContext<any>(ChatbotContext);
+  const [fullScreen, setFullScreen] = useState(false)
+  const shouldToggleScreenSize = `${width}${widthUnit}` !== '100%'
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
   const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon } = useCustomSelector((state: $ReduxCoreType) => ({
@@ -65,7 +67,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
       );
     }
   };
-
   return (
     <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-4 py-2 w-full">
       <div className="flex items-center w-full relative">
@@ -108,7 +109,26 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
               {renderIconsByType(item)}
             </React.Fragment>
           })}
+          {shouldToggleScreenSize ? <div>
+            {!fullScreen ? <div className="cursor-pointer p-1 rounded-full" onClick={() => {
 
+              if (window?.parent) {
+                setFullScreen(true)
+                window.parent.postMessage({ type: "ENTER_FULL_SCREEN_CHATBOT" }, "*")
+              }
+            }}>
+              <Maximize />
+            </div > :
+              <div className="cursor-pointer p-1 rounded-full" onClick={() => {
+                if (window?.parent) {
+                  setFullScreen(false)
+
+                  window.parent.postMessage({ type: "EXIT_FULL_SCREEN_CHATBOT" }, "*")
+                }
+              }}>
+                <PictureInPicture2 />
+              </div >}
+          </div> : null}
           {
             !hideCloseButton && <div className="cursor-pointer p-1 rounded-full" onClick={() => {
               if (window?.parent) {
