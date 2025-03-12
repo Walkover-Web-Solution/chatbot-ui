@@ -1,6 +1,6 @@
 // MUI Icons
 import ChatIcon from "@mui/icons-material/Chat";
-import { AlignLeft, CircleX, EllipsisVertical, History, Maximize, PictureInPicture2, Settings, Square, SquarePen } from "lucide-react";
+import { AlignLeft, CircleX, EllipsisVertical, History, Maximize, PictureInPicture2, Settings, SquarePen } from "lucide-react";
 
 // MUI Components
 import { useTheme } from "@mui/material";
