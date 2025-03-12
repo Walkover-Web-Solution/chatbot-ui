@@ -550,7 +550,7 @@ function InterfaceChatbot({
       subThreadId: subThreadId,
       slugName: bridge || bridgeName,
       chatBotId: chatbotId,
-      version_id: bridgeVersionId,
+      version_id: bridgeVersionId === "null" ? null : bridgeVersionId,
       ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {
         configuration: { model: selectedAiServiceAndModal?.modal },
         service: selectedAiServiceAndModal?.service
