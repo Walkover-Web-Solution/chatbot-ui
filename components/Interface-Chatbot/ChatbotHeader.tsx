@@ -41,12 +41,14 @@ interface ChatbotHeaderProps {
 const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoading, setToggleDrawer, isToggledrawer, threadId, reduxBridgeName, headerButtons }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const { chatbotConfig: { chatbotTitle, chatbotSubtitle, headerImage = '' } } = useContext<any>(ChatbotContext);
+  const { chatbotConfig: { chatbotTitle, chatbotSubtitle } } = useContext<any>(ChatbotContext);
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
-  const { allowModalSwitch, hideCloseButton } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon } = useCustomSelector((state: $ReduxCoreType) => ({
     allowModalSwitch: state.Interface.allowModalSwitch || false,
     hideCloseButton: state.Interface.hideCloseButton || false,
+    chatTitle: state.Interface.chatTitle || "",
+    chatIcon: state.Interface.chatIcon || "",
   }))
   const handleCreateNewSubThread = async () => {
     const result = await createNewThreadApi({
@@ -86,9 +88,9 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
 
         <div className="flex flex-col items-center mx-auto">
           <div className="flex items-center sm:gap-3 gap-1 justify-center">
-            {headerImage ? <Image alt="headerIcon" width={24} height={24} src={headerImage} /> : <ChatIcon height={20} width={20} />}
+            {chatIcon ? <Image alt="headerIcon" width={24} height={24} src={chatIcon} className="rounded-full" /> : <ChatIcon height={20} width={20} />}
             <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis">
-              {chatbotTitle || "AI Assistant"}
+              {chatTitle || chatbotTitle || "AI Assistant"}
             </h1>
             <ResetChatOption
               textColor={textColor}
