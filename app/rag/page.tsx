@@ -34,6 +34,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Fade from "@mui/material/Fade";
 import Typography from "@mui/material/Typography";
+import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
@@ -58,6 +59,7 @@ function RagCompoonent() {
     const [KnowledgeBases, setKnowledgeBases] = React.useState<
         KnowledgeBaseType[]
     >([]);
+    const [showListPage, setShowListPage] = React.useState<boolean>(configuration?.listPage || false);
     const [chunkingType, setChunkingType] = React.useState<
         keyof typeof KNOWLEDGE_BASE_CUSTOM_SECTION | ""
     >(configuration?.chunkingType || "auto");
@@ -209,6 +211,7 @@ function RagCompoonent() {
 
     const handleEdit = (kb: KnowledgeBaseType) => {
         setEditingKnowledgeBase(kb);
+        setShowListPage(false);
         // Pre-fill the form fields
         setTimeout(() => {
             const form = document.querySelector("form");
@@ -269,6 +272,7 @@ function RagCompoonent() {
     };
 
     const handleClose = () => {
+        configuration?.listPage && setShowListPage(true);
         window.parent.postMessage({ type: "closeRag" }, "*");
     };
 
@@ -302,6 +306,15 @@ function RagCompoonent() {
                 fullWidth
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
+                sx={{
+                    '& .MuiDialog-paper': {
+                        minHeight: '55vh',
+                        height: 'auto',
+                        display: 'flex',
+                        flexDirection: 'column'
+                    }
+                }}
+                className="relative"
             >
                 {isLoading && <LinearProgress color="success" />}
                 <DialogTitle
@@ -313,12 +326,23 @@ function RagCompoonent() {
                     }}
                     id="alert-dialog-title"
                 >
-                    {editingKnowledgeBase
-                        ? "Edit Knowledge Base"
-                        : "Knowledge Base Configuration"}
+                    {showListPage
+                        ? "Knowledge Base List"
+                        : editingKnowledgeBase
+                            ? "Edit Knowledge Base"
+                            : <div className="flex gap-3 items-center">{configuration?.listPage && !showListPage && <ArrowLeft className="cursor-pointer" onClick={() => { setShowListPage(true) }} />} Knowledge Base Configuration</div>}
                     {editingKnowledgeBase && (
                         <Button variant="outlined" color="error" onClick={handleReset}>
                             Reset
+                        </Button>
+                    )}
+                    {showListPage && (
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => setShowListPage(false)}
+                        >
+                            Add New Document
                         </Button>
                     )}
                 </DialogTitle>
@@ -338,252 +362,254 @@ function RagCompoonent() {
                                 gap: 1,
                             }}
                         >
-                            <div>
-                                <Typography variant="subtitle1">
-                                    Document Name <span style={{ color: "red" }}>*</span>
-                                </Typography>
-                                <TextField
-                                    name="name"
-                                    required
-                                    placeholder="Enter document name"
-                                    variant="outlined"
-                                    sx={{ width: "50%" }}
-                                />
-                            </div>
-
-                            <div>
-                                <Typography variant="subtitle1">
-                                    Document Description / Purpose{" "}
-                                    <span style={{ color: "red" }}>*</span>
-                                </Typography>
-                                <TextField
-                                    name="description"
-                                    fullWidth
-                                    id="outlined-multiline-flexible"
-                                    required
-                                    placeholder="Enter document description / purpose"
-                                    variant="outlined"
-                                    InputProps={{
-                                        rows: 3,
-                                        minRows: 3,
-                                        maxRows: 4,
-                                        multiline: true,
-                                        inputComponent: "textarea",
-                                    }}
-                                />
-                            </div>
-                            <div style={{ display: editingKnowledgeBase ? "none" : "block" }}>
-                                <RadioGroup
-                                    row
-                                    defaultValue={fileType}
-                                    color="primary"
-                                    name="input-type"
-                                    onChange={(e) =>
-                                        setFileType(e.target.value as "url" | "file" | "private")
-                                    }
-                                >
-                                    <FormControlLabel
-                                        value="url"
-                                        control={
-                                            <Radio
-                                                sx={{ color: "black" }}
-                                                checked={fileType === "url"}
-                                            />
-                                        }
-                                        label="URL (Publicly available)"
-                                    />
-                                    <FormControlLabel
-                                        value="file"
-                                        control={
-                                            <Radio
-                                                sx={{ color: "black" }}
-                                                checked={fileType === "file"}
-                                            />
-                                        }
-                                        label="Upload File"
-                                    />
-                                </RadioGroup>
-                                {fileType === "url" && (
-                                    <Box>
-                                        <TextField
-                                            name="url"
-                                            type="url"
-                                            fullWidth
-                                            placeholder="https://example.com/documentation"
-                                            variant="outlined"
-                                            disabled={!!editingKnowledgeBase}
-                                            required={!file}
-                                        />
-                                    </Box>
-                                )}
-                                {fileType === "file" && (
-                                    <Box
-                                        sx={{
-                                            border: "2px dashed #ccc",
-                                            borderRadius: "4px",
-                                            p: 3,
-                                            textAlign: "center",
-                                            cursor: editingKnowledgeBase
-                                                ? "not-allowed"
-                                                : file
-                                                    ? "default"
-                                                    : "pointer",
-                                            opacity: editingKnowledgeBase ? 0.5 : 1,
-                                            pointerEvents: editingKnowledgeBase ? "none" : "auto",
-                                            "&:hover": {
-                                                borderColor: file ? "#ccc" : "primary.main",
-                                                backgroundColor: file
-                                                    ? "transparent"
-                                                    : "rgba(0, 0, 0, 0.04)",
-                                            },
-                                        }}
-                                        onDrop={(e) => {
-                                            e.preventDefault();
-                                            if (!file) {
-                                                const droppedFile = e.dataTransfer.files[0];
-                                                handleFileChange({ target: { files: [droppedFile] } });
-                                            }
-                                        }}
-                                        onDragOver={(e) => {
-                                            e.preventDefault();
-                                        }}
-                                        onClick={() => {
-                                            if (!file) {
-                                                const input = document.createElement("input");
-                                                input.type = "file";
-                                                input.accept = ".pdf,.doc,.docx,.csv";
-                                                input.onchange = handleFileChange;
-                                                input.click();
-                                            }
-                                        }}
-                                    >
-                                        <Typography
-                                            variant="body1"
-                                            color={file ? "success.main" : "text.primary"}
-                                        >
-                                            {file
-                                                ? "File selected"
-                                                : "Drag and drop a file here, or click to select a file"}
+                            {!showListPage &&
+                                <>
+                                    <div>
+                                        <Typography variant="subtitle1">
+                                            Document Name <span style={{ color: "red" }}>*</span>
                                         </Typography>
-                                        {file ? (
-                                            <Box
-                                                sx={{
-                                                    mt: 1,
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    gap: 1,
-                                                }}
-                                            >
-                                                <Chip
-                                                    label={`Selected file: ${file.name}`}
-                                                    color="primary"
-                                                    onDelete={(e) => {
-                                                        e.stopPropagation();
-                                                        setFile(null);
-                                                    }}
+                                        <TextField
+                                            name="name"
+                                            required
+                                            placeholder="Enter document name"
+                                            variant="outlined"
+                                            sx={{ width: "50%" }}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Typography variant="subtitle1">
+                                            Document Description / Purpose{" "}
+                                            <span style={{ color: "red" }}>*</span>
+                                        </Typography>
+                                        <TextField
+                                            name="description"
+                                            fullWidth
+                                            id="outlined-multiline-flexible"
+                                            required
+                                            placeholder="Enter document description / purpose"
+                                            variant="outlined"
+                                            InputProps={{
+                                                rows: 3,
+                                                minRows: 3,
+                                                maxRows: 4,
+                                                multiline: true,
+                                                inputComponent: "textarea",
+                                            }}
+                                        />
+                                    </div>
+                                    <div style={{ display: editingKnowledgeBase ? "none" : "block" }}>
+                                        <RadioGroup
+                                            row
+                                            value={fileType}
+                                            color="primary"
+                                            name="input-type"
+                                            onChange={(e) =>
+                                                setFileType(e.target.value as "url" | "file" | "private")
+                                            }
+                                        >
+                                            <FormControlLabel
+                                                value="url"
+                                                control={
+                                                    <Radio
+                                                        sx={{ color: "black" }}
+                                                    />
+                                                }
+                                                label="URL (Publicly available)"
+                                            />
+                                            <FormControlLabel
+                                                value="file"
+                                                control={
+                                                    <Radio
+                                                        sx={{ color: "black" }}
+                                                    />
+                                                }
+                                                label="Upload File"
+                                            />
+                                        </RadioGroup>
+                                        {fileType === "url" && (
+                                            <Box>
+                                                <TextField
+                                                    name="url"
+                                                    type="url"
+                                                    fullWidth
+                                                    placeholder="https://example.com/documentation"
+                                                    variant="outlined"
+                                                    disabled={!!editingKnowledgeBase}
+                                                    required={!file}
                                                 />
                                             </Box>
-                                        ) : (
-                                            <Button
-                                                component="label"
-                                                role={undefined}
-                                                variant="outlined"
-                                                tabIndex={-1}
-                                                startIcon={<CloudUploadIcon />}
-                                                className="mt-2"
-                                            >
-                                                Upload file
-                                            </Button>
                                         )}
-                                    </Box>
-                                )}
-                            </div>
-                            <div style={{ display: editingKnowledgeBase ? "none" : "block" }}>
-                                {!(
-                                    configuration?.hideConfig === "true" ||
-                                    configuration?.hideConfig === true
-                                ) && (
-                                        <Box
-                                            sx={{
-                                                mt: 1,
-                                                display: "flex",
-                                                flexDirection: { xs: "column", md: "row" },
-                                                gap: 2,
-                                                opacity: editingKnowledgeBase ? 0.5 : 1,
-                                                pointerEvents: editingKnowledgeBase ? "none" : "auto",
-                                            }}
-                                        >
+                                        {fileType === "file" && (
                                             <Box
                                                 sx={{
-                                                    flex:
-                                                        chunkingType === "semantic" || chunkingType === "auto"
-                                                            ? 0.35
-                                                            : 1,
+                                                    border: "2px dashed #ccc",
+                                                    borderRadius: "4px",
+                                                    p: 3,
+                                                    textAlign: "center",
+                                                    cursor: editingKnowledgeBase
+                                                        ? "not-allowed"
+                                                        : file
+                                                            ? "default"
+                                                            : "pointer",
+                                                    opacity: editingKnowledgeBase ? 0.5 : 1,
+                                                    pointerEvents: editingKnowledgeBase ? "none" : "auto",
+                                                    "&:hover": {
+                                                        borderColor: file ? "#ccc" : "primary.main",
+                                                        backgroundColor: file
+                                                            ? "transparent"
+                                                            : "rgba(0, 0, 0, 0.04)",
+                                                    },
+                                                }}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    if (!file) {
+                                                        const droppedFile = e.dataTransfer.files[0];
+                                                        handleFileChange({ target: { files: [droppedFile] } });
+                                                    }
+                                                }}
+                                                onDragOver={(e) => {
+                                                    e.preventDefault();
+                                                }}
+                                                onClick={() => {
+                                                    if (!file) {
+                                                        const input = document.createElement("input");
+                                                        input.type = "file";
+                                                        input.accept = ".pdf,.doc,.docx,.csv";
+                                                        input.onchange = handleFileChange;
+                                                        input.click();
+                                                    }
                                                 }}
                                             >
-                                                <Typography variant="body2" sx={{ mb: 1 }}>
-                                                    Chunking Type
-                                                </Typography>
-                                                <TextField
-                                                    name="chunking_type"
-                                                    select
-                                                    size="small"
-                                                    fullWidth
-                                                    required
-                                                    disabled={isLoading}
-                                                    defaultValue={chunkingType || ""}
-                                                    onChange={(e) => setChunkingType(e.target.value)}
+                                                <Typography
+                                                    variant="body1"
+                                                    color={file ? "success.main" : "text.primary"}
                                                 >
-                                                    <MenuItem value="" disabled>
-                                                        Select strategy
-                                                    </MenuItem>
-                                                    {KNOWLEDGE_BASE_CUSTOM_SECTION?.map((option) => (
-                                                        <MenuItem key={option.value} value={option.value}>
-                                                            {option.label}
-                                                        </MenuItem>
-                                                    ))}
-                                                </TextField>
+                                                    {file
+                                                        ? "File selected"
+                                                        : "Drag and drop a file here, or click to select a file"}
+                                                </Typography>
+                                                {file ? (
+                                                    <Box
+                                                        sx={{
+                                                            mt: 1,
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "center",
+                                                            gap: 1,
+                                                        }}
+                                                    >
+                                                        <Chip
+                                                            label={`Selected file: ${file.name}`}
+                                                            color="primary"
+                                                            onDelete={(e) => {
+                                                                e.stopPropagation();
+                                                                setFile(null);
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                ) : (
+                                                    <Button
+                                                        component="label"
+                                                        role={undefined}
+                                                        variant="outlined"
+                                                        tabIndex={-1}
+                                                        startIcon={<CloudUploadIcon />}
+                                                        className="mt-2"
+                                                    >
+                                                        Upload file
+                                                    </Button>
+                                                )}
                                             </Box>
-
-                                            {chunkingType !== "semantic" && chunkingType !== "auto" && (
-                                                <>
-                                                    <Box sx={{ flex: 1 }}>
+                                        )}
+                                    </div>
+                                    <div style={{ display: editingKnowledgeBase ? "none" : "block" }}>
+                                        {!(
+                                            configuration?.hideConfig === "true" ||
+                                            configuration?.hideConfig === true
+                                        ) && (
+                                                <Box
+                                                    sx={{
+                                                        mt: 1,
+                                                        display: "flex",
+                                                        flexDirection: { xs: "column", md: "row" },
+                                                        gap: 2,
+                                                        opacity: editingKnowledgeBase ? 0.5 : 1,
+                                                        pointerEvents: editingKnowledgeBase ? "none" : "auto",
+                                                    }}
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            flex:
+                                                                chunkingType === "semantic" || chunkingType === "auto"
+                                                                    ? 0.35
+                                                                    : 1,
+                                                        }}
+                                                    >
                                                         <Typography variant="body2" sx={{ mb: 1 }}>
-                                                            Chunk Size
+                                                            Chunking Type
                                                         </Typography>
                                                         <TextField
-                                                            name="chunk_size"
-                                                            type="number"
-                                                            fullWidth
+                                                            name="chunking_type"
+                                                            select
                                                             size="small"
-                                                            defaultValue={512}
-                                                            inputProps={{ min: "100" }}
+                                                            fullWidth
+                                                            required
                                                             disabled={isLoading}
-                                                        />
+                                                            value={chunkingType}
+                                                            onChange={(e) => setChunkingType(e.target.value)}
+                                                        >
+                                                            <MenuItem value="" disabled>
+                                                                Select chunking type
+                                                            </MenuItem>
+                                                            {KNOWLEDGE_BASE_CUSTOM_SECTION?.map((option) => (
+                                                                <MenuItem key={option.value} value={option.value}>
+                                                                    {option.label}
+                                                                </MenuItem>
+                                                            ))}
+                                                        </TextField>
                                                     </Box>
 
-                                                    <Box sx={{ flex: 1 }}>
-                                                        <Typography variant="body2" sx={{ mb: 1 }}>
-                                                            Chunk Overlap
-                                                        </Typography>
-                                                        <TextField
-                                                            name="chunk_overlap"
-                                                            type="number"
-                                                            fullWidth
-                                                            size="small"
-                                                            defaultValue={50}
-                                                            inputProps={{ min: "0" }}
-                                                            disabled={isLoading}
-                                                        />
-                                                    </Box>
-                                                </>
+                                                    {chunkingType !== "semantic" && chunkingType !== "auto" && (
+                                                        <>
+                                                            <Box sx={{ flex: 1 }}>
+                                                                <Typography variant="body2" sx={{ mb: 1 }}>
+                                                                    Chunk Size
+                                                                </Typography>
+                                                                <TextField
+                                                                    name="chunk_size"
+                                                                    type="number"
+                                                                    fullWidth
+                                                                    size="small"
+                                                                    defaultValue={512}
+                                                                    inputProps={{ min: "100" }}
+                                                                    disabled={isLoading}
+                                                                />
+                                                            </Box>
+
+                                                            <Box sx={{ flex: 1 }}>
+                                                                <Typography variant="body2" sx={{ mb: 1 }}>
+                                                                    Chunk Overlap
+                                                                </Typography>
+                                                                <TextField
+                                                                    name="chunk_overlap"
+                                                                    type="number"
+                                                                    fullWidth
+                                                                    size="small"
+                                                                    defaultValue={50}
+                                                                    inputProps={{ min: "0" }}
+                                                                    disabled={isLoading}
+                                                                />
+                                                            </Box>
+                                                        </>
+                                                    )}
+                                                </Box>
                                             )}
-                                        </Box>
-                                    )}
-                            </div>
+                                    </div>
+                                </>
+                            }
+                            {(configuration?.listPage ? showListPage : true) && <Accordion expanded={configuration?.listPage ? (showListPage || undefined) : undefined}>
                             <Divider sx={{ my: 2 }} />
-                            <Accordion>
                                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                     <Typography
                                         variant="subtitle1"
@@ -713,29 +739,30 @@ function RagCompoonent() {
                                         )}
                                     </Box>
                                 </AccordionDetails>
-                            </Accordion>
+                            </Accordion>}
                         </DialogContent>
-                        <DialogActions
-                            sx={{
-                                position: "sticky",
-                                bottom: 0,
-                                bgcolor: "background.paper",
-                                borderTop: "1px solid",
-                                borderColor: "divider",
-                                p: 2,
-                            }}
-                        >
-                            <Button variant="outlined" onClick={handleClose}>
-                                Cancel
-                            </Button>
-                            <Button type="submit" variant="contained" disabled={isLoading}>
-                                {isLoading
-                                    ? "Saving..."
-                                    : editingKnowledgeBase
-                                        ? "Update"
-                                        : "Create"}
-                            </Button>
-                        </DialogActions>
+                        {!showListPage &&
+                            <DialogActions
+                                sx={{
+                                    position: "sticky",
+                                    bottom: 0,
+                                    bgcolor: "background.paper",
+                                    borderTop: "1px solid",
+                                    borderColor: "divider",
+                                    p: 2,
+                                }}
+                            >
+                                <Button variant="outlined" onClick={handleClose}>
+                                    Cancel
+                                </Button>
+                                <Button type="submit" variant="contained" disabled={isLoading}>
+                                    {isLoading
+                                        ? "Saving..."
+                                        : editingKnowledgeBase
+                                            ? "Update"
+                                            : "Create"}
+                                </Button>
+                            </DialogActions>}
                     </form>
                 ) : (
                     <Box sx={{ width: "100%" }}>
