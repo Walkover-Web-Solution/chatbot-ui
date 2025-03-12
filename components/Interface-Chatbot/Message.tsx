@@ -15,7 +15,7 @@ import {
   useTheme
 } from "@mui/material";
 import copy from "copy-to-clipboard";
-import { AlertCircle, Check, CircleCheckBig, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
+import { AlertCircle, Check, ChevronDown, CircleCheckBig, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 import ReactMarkdown from "react-markdown";
@@ -459,12 +459,38 @@ function Message({ message, handleFeedback, addMessage }: any) {
           addMessage={addMessage}
         />
       ) : message?.role === "tools_call" && Object.keys(message?.function) ? (
-        <div className="flex items-center gap-2 pl-3">
-          <div className="flex items-center justify-center w-[30px] sm:w-[30px]"></div>
-          <CircleCheckBig color="green" size={20} />
-          <p className="text-base text-green-900">
-            {Object.keys(message?.function).length} Functions executed
-          </p>
+        <div className="flex gap-2 pl-3 items-center">
+          <div className="collapse collapse-arrow max-w-[230px]">
+            <input type="checkbox" />
+            <div className="collapse-title flex flex-row items-center p-3">
+              <CircleCheckBig color="green" size={20} />
+              <p className="text-base text-green-900 ml-2">
+                {Object.keys(message?.tools_call_data[0]).length} Functions executed
+              </p>
+             
+            </div>
+            <div className="collapse-content">
+              <div className="flex flex-col gap-2 p-2">
+                {message?.tools_call_data && Object.entries(message.tools_call_data?.[0]).map(([key, funcData], index) => {
+                  return (
+                    <div key={key} className="text-sm text-gray-600">
+                      <p>
+                        <span className="font-medium">Step {index + 1}:</span> 
+                        <span className="truncate  inline-block align-bottom" title={funcData?.name}>
+                          {funcData?.name}
+                        </span>
+                        <span className="text-green-500 font-light">(executed)</span>
+                      </p>
+                    </div>
+                  );
+                })}
+               
+              </div>
+              <div className="p-2 rounded-lg">
+  <p className="text-sm text-green-700 font-medium">AI responded...</p>
+</div>
+            </div>
+          </div>
         </div>
       ) : message?.role === "reset" ? (
         <ResetHistoryLine text={message?.mode ? "Talk to human" : ""} />
