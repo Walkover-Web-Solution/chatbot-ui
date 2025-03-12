@@ -8,8 +8,8 @@ import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ParamsEnums } from "@/utils/enums";
 import { useMediaQuery } from "@mui/material";
-import { AlignLeft, ArrowLeftFromLine, CircleX, SquarePen } from "lucide-react";
-import React, { useEffect } from "react";
+import { AlignLeft, SquarePen } from "lucide-react";
+import React from "react";
 import { useDispatch } from "react-redux";
 
 
@@ -26,6 +26,7 @@ interface ChatbotDrawerProps {
 
 const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, setToggleDrawer, isToggledrawer }) => {
   const dispatch = useDispatch();
+  const isSmallScreen = useMediaQuery('(max-width:1023px)');
 
   const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName } =
     useCustomSelector((state: $ReduxCoreType) => ({
@@ -62,13 +63,14 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         })
       );
     }
-
   };
 
   const handleChangeSubThread = (sub_thread_id: string) => {
     setLoading(false);
     dispatch(setThreadId({ subThreadId: sub_thread_id }));
-    // setToggleDrawer(false)
+    if (isSmallScreen) {
+      setToggleDrawer(false);
+    }
   };
 
   const DrawerList = (
