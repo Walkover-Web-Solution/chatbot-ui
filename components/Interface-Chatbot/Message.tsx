@@ -460,35 +460,34 @@ function Message({ message, handleFeedback, addMessage }: any) {
         />
       ) : message?.role === "tools_call" && Object.keys(message?.function) ? (
         <div className="flex gap-2 pl-3 items-center">
-          <div className="collapse collapse-arrow max-w-[230px]">
+          <div className="collapse collapse-arrow w-full">
             <input type="checkbox" />
-            <div className="collapse-title flex flex-row items-center p-3">
+            <div className="collapse-title flex flex-row items-center w-full max-w-64">
               <CircleCheckBig color="green" size={20} />
               <p className="text-base text-green-900 ml-2">
                 {Object.keys(message?.tools_call_data[0]).length} Functions executed
               </p>
-             
             </div>
-            <div className="collapse-content">
-              <div className="flex flex-col gap-2 p-2">
+            <div className="collapse-content w-full gap-2">
+              <div className="flex flex-col gap-2">
                 {message?.tools_call_data && Object.entries(message.tools_call_data?.[0]).map(([key, funcData], index) => {
                   return (
                     <div key={key} className="text-sm text-gray-600">
                       <p>
-                        <span className="font-medium">Step {index + 1}:</span> 
+                        <span className="font-medium">Step {index + 1}: </span>
                         <span className="truncate  inline-block align-bottom" title={funcData?.name}>
                           {funcData?.name}
                         </span>
-                        <span className="text-green-500 font-light">(executed)</span>
+                        <span className="font-light"> (Functon executed)</span>
                       </p>
                     </div>
                   );
                 })}
-               
+
               </div>
-              <div className="p-2 rounded-lg">
-  <p className="text-sm text-green-700 font-medium">AI responded...</p>
-</div>
+              <div className="rounded-lg">
+                <p className="text-sm text-green-700 font-medium">AI responded...</p>
+              </div>
             </div>
           </div>
         </div>
