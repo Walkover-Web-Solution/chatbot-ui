@@ -6,6 +6,8 @@ import { ajax } from 'rxjs/ajax';
 import { fileNotSupportAtUI } from '@msg91/utils';
 import { environment } from '../../../../../../../environments/environment';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { LinkifyPipe } from '@msg91/pipes/LinkifyPipe';
+import { WhatsappInlineStyleFormat } from '@msg91/pipes/whatsapp-inline-style-format';
 
 const IMAGE_PLACEHOLDER = `${environment.appUrl}assets/images/image-placeholder.png`;
 
@@ -31,7 +33,7 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
     private timerInterval: any;
     public rawHtml: SafeHtml;
 
-    constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef, private sanitizer: DomSanitizer,) {
+    constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef, private sanitizer: DomSanitizer, private linkifyPipe: LinkifyPipe, private WhatsappInlineStyleFormat: WhatsappInlineStyleFormat ) {
         super();
     }
     ngOnInit() {
@@ -44,8 +46,10 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
             this.assignee = this.agentDetails.find((e) => e.id === this.messages.sender_id);
         }
         
-        let content = this.messages.content;    
-        this.rawHtml = this.sanitizer.bypassSecurityTrustHtml(content.text);
+        let content = this.messages.content;
+        content.text = this.linkifyPipe.transform(content.text);
+        content.text = this.WhatsappInlineStyleFormat.transform(content.text)      
+        this.rawHtml = this.sanitizer.bypassSecurityTrustHtml(content.text)
         if (content?.expiration_time) {
             const currentTimeToken = new Date().getTime();
             this.currentTime = currentTimeToken;
