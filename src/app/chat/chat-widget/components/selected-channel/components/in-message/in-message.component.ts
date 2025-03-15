@@ -30,7 +30,7 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
     public linkExpire: boolean = false;
     public currentTime: number;
     private timerInterval: any;
-    public rawHtml: any;
+    public rawHtml: SafeHtml;
 
     constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef, private sanitizer: DomSanitizer, private linkifyPipe: LinkifyPipe ) {
         super();
