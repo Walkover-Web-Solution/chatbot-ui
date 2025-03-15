@@ -6,7 +6,7 @@ import linkifyHtml from 'linkifyjs/html';
     standalone: false
 })
 export class LinkifyPipe implements PipeTransform {
-    transform(str: string): string {
+    transform(str: any): any {
         return str
             ? linkifyHtml(str, {
                   className: 'linkified',
