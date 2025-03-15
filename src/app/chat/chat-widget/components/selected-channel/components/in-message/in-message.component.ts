@@ -29,7 +29,7 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
     public linkExpire: boolean = false;
     public currentTime: number;
     private timerInterval: any;
-    public rawHtml: SafeHtml;
+    public rawHtml: any;
 
     constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef, private sanitizer: DomSanitizer ) {
         super();
@@ -46,7 +46,7 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
         
         let content = this.messages.content;
         this.rawHtml = this.sanitizer.bypassSecurityTrustHtml(content.text);
-        console.log(this.rawHtml, "new")
+        console.log(this.rawHtml.SafeHtmlImpl.changingThisBreaksApplicationSecurity, "new")
         console.log(content.text, "old")
         
         if (content?.expiration_time) {
