@@ -6,7 +6,7 @@ import { ajax } from 'rxjs/ajax';
 import { fileNotSupportAtUI } from '@msg91/utils';
 import { environment } from '../../../../../../../environments/environment';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { LinkifyPipe } from '@admin/src/app/libs/pipes/linkify-pipe';
+import { LinkifyPipe } from '@msg91/pipes/LinkifyPipe';
 
 const IMAGE_PLACEHOLDER = `${environment.appUrl}assets/images/image-placeholder.png`;
 
