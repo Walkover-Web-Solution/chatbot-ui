@@ -50,7 +50,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ProfileNameComponent } from './chat-widget/components/profile-name/profile-name.component';
 import { PipesGetHashCodePipeModule } from '@msg91/pipes/GetHashCodePipe';
 import { PipesGetShortNamePipeModule } from '@msg91/pipes/GetShortNamePipe';
-import { PipesLinkifyPipeModule } from '@msg91/pipes/LinkifyPipe';
+import { LinkifyPipe, PipesLinkifyPipeModule } from '@msg91/pipes/LinkifyPipe';
 import { SocketService, ChatService, WidgetDataService } from './service';
 import { PipesTimeConversionPipeModule } from '@msg91/pipes/TimeConversionPipe';
 import { ProxyBaseUrls } from '@msg91/models/root-models';
@@ -140,6 +140,7 @@ export const CHAT_COMPONENTS: any[] = [
         ArticlePopupService,
         SocketService,
         WidgetDataService,
+        LinkifyPipe,
         { provide: ProxyBaseUrls.Env, useValue: environment.env },
         { provide: ProxyBaseUrls.ProxyURL, useValue: null },
         {
