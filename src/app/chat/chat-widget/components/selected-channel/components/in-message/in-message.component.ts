@@ -47,7 +47,7 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
         let content = this.messages.content;
         this.rawHtml = this.sanitizer.bypassSecurityTrustHtml(content.text);
         console.log(this.rawHtml.changingThisBreaksApplicationSecurity, "news")
-        console.log(typeof this.rawHtml.changingThisBreaksApplicationSecurity, "news")
+        console.log(typeof this.rawHtml, "newss")
         console.log(typeof content.text, "olds")
         console.log(content.text, "olds")
         
