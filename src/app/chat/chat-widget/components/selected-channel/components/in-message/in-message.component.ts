@@ -40,13 +40,15 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
                 this.supportedFiles[attachment.name] = !fileNotSupportAtUI(attachment.path);
             }
         }
-
         if (this.messages.sender_id !== 'bot') {
             this.assignee = this.agentDetails.find((e) => e.id === this.messages.sender_id);
         }
-
+        
         let content = this.messages.content;
         this.rawHtml = this.sanitizer.bypassSecurityTrustHtml(content.text);
+        console.log(this.rawHtml, "new")
+        console.log(content.text, "old")
+        
         if (content?.expiration_time) {
             const currentTimeToken = new Date().getTime();
             this.currentTime = currentTimeToken;
