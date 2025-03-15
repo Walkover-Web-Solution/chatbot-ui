@@ -46,8 +46,10 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
         
         let content = this.messages.content;
         this.rawHtml = this.sanitizer.bypassSecurityTrustHtml(content.text);
-        console.log(this.rawHtml.SafeHtmlImpl.changingThisBreaksApplicationSecurity, "new")
-        console.log(content.text, "old")
+        console.log(this.rawHtml.changingThisBreaksApplicationSecurity, "news")
+        console.log(typeof this.rawHtml.changingThisBreaksApplicationSecurity, "news")
+        console.log(typeof content.text, "olds")
+        console.log(content.text, "olds")
         
         if (content?.expiration_time) {
             const currentTimeToken = new Date().getTime();
