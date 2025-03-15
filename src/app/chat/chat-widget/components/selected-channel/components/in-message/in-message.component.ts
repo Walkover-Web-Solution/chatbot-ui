@@ -6,6 +6,7 @@ import { ajax } from 'rxjs/ajax';
 import { fileNotSupportAtUI } from '@msg91/utils';
 import { environment } from '../../../../../../../environments/environment';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { LinkifyPipe } from '@admin/src/app/libs/pipes/linkify-pipe';
 
 const IMAGE_PLACEHOLDER = `${environment.appUrl}assets/images/image-placeholder.png`;
 
@@ -31,7 +32,7 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
     private timerInterval: any;
     public rawHtml: any;
 
-    constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef, private sanitizer: DomSanitizer ) {
+    constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef, private sanitizer: DomSanitizer, private linkifyPipe: LinkifyPipe ) {
         super();
     }
     ngOnInit() {
@@ -45,11 +46,8 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
         }
         
         let content = this.messages.content;
+        content.text = this.linkifyPipe.transform(content.text);
         this.rawHtml = this.sanitizer.bypassSecurityTrustHtml(content.text);
-        console.log(this.rawHtml.changingThisBreaksApplicationSecurity, "news")
-        console.log(typeof this.rawHtml, "newss")
-        console.log(typeof content.text, "olds")
-        console.log(content.text, "olds")
         
         if (content?.expiration_time) {
             const currentTimeToken = new Date().getTime();
