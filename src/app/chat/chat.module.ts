@@ -63,7 +63,7 @@ import { UiInteractiveMessageModule } from '@msg91/ui/interactive-message';
 import { IdentityVerificationService } from './service/identity-verification.service';
 import { DirectivesSkeletonModule } from '@msg91/directives/skeleton';
 import { PipesTypeofModule } from '@msg91/pipes/typeof';
-import { PipesWhatsappInlineStyleFormatModule } from '@msg91/pipes/whatsapp-inline-style-format';
+import { PipesWhatsappInlineStyleFormatModule, WhatsappInlineStyleFormat } from '@msg91/pipes/whatsapp-inline-style-format';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ENVIRONMENT_TOKEN } from '@msg91/constant';
 import { MatListModule } from '@angular/material/list';
@@ -141,6 +141,7 @@ export const CHAT_COMPONENTS: any[] = [
         SocketService,
         WidgetDataService,
         LinkifyPipe,
+        WhatsappInlineStyleFormat,
         { provide: ProxyBaseUrls.Env, useValue: environment.env },
         { provide: ProxyBaseUrls.ProxyURL, useValue: null },
         {
