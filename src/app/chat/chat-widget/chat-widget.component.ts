@@ -572,6 +572,7 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
                 // Issue fixed related to this card
                 // https://app.clickup.com/t/86cu9eu1x
                 removeCookie('hello-widget-anonymous-uuid');
+                removeCookie('hello-widget-uuid')
             } else {
                 this.client_uuid =
                     this.getCookieValue('hello-widget-uuid') || this.getCookieValue('hello-widget-anonymous-uuid');
