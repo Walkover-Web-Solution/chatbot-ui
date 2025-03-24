@@ -465,7 +465,7 @@ function Message({ message, handleFeedback, addMessage }: any) {
             <div className="collapse-title flex flex-row items-center w-full max-w-64">
               <CircleCheckBig color="green" size={20} />
               <p className="text-base text-green-900 ml-2">
-                {Object.keys(message?.tools_call_data[0]).length} Functions executed
+                {Object.keys(message?.tools_call_data?.[0] || []).length} Functions executed
               </p>
             </div>
             <div className="collapse-content w-full gap-2">

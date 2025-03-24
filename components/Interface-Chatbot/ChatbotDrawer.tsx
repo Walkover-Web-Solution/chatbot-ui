@@ -81,8 +81,8 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         </div>
       ) : (
         <ul>
-          {subThreadList.map((thread: any) => (
-            <li key={thread?._id}>
+          {subThreadList.map((thread: any, index: number) => (
+            <li key={`${thread?._id}-${index}`}>
               <a
                 className={`${thread?.sub_thread_id === selectedSubThreadId ? 'active' : ''}`}
                 onClick={() => handleChangeSubThread(thread?.sub_thread_id)}
