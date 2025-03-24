@@ -29,6 +29,7 @@ import Image from "next/image";
 import { useDispatch } from "react-redux";
 import { ChatbotContext } from "../context";
 import "./InterfaceChatbot.css";
+import { MessageContext } from "./InterfaceChatbot";
 
 interface ChatbotHeaderProps {
   setLoading: (loading: boolean) => void;
@@ -42,6 +43,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
   const dispatch = useDispatch();
   const theme = useTheme();
   const { chatbotConfig: { chatbotTitle, chatbotSubtitle, width = '', widthUnit = '' } } = useContext<any>(ChatbotContext);
+  const { setOptions } = useContext(MessageContext);
   const [fullScreen, setFullScreen] = useState(false)
   const shouldToggleScreenSize = `${width}${widthUnit}` !== '100%'
   const isLightBackground = theme.palette.mode === "light";
@@ -65,6 +67,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
           threadId: threadId,
         })
       );
+      setOptions([]);
     }
   };
   return (

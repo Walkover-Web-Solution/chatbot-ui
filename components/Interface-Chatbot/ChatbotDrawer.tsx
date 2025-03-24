@@ -9,8 +9,9 @@ import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ParamsEnums } from "@/utils/enums";
 import { useMediaQuery } from "@mui/material";
 import { AlignLeft, SquarePen } from "lucide-react";
-import React from "react";
+import React, { useContext } from "react";
 import { useDispatch } from "react-redux";
+import { MessageContext } from "./InterfaceChatbot";
 
 
 const createRandomId = () => {
@@ -27,6 +28,7 @@ interface ChatbotDrawerProps {
 const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, setToggleDrawer, isToggledrawer }) => {
   const dispatch = useDispatch();
   const isSmallScreen = useMediaQuery('(max-width:1023px)');
+  const { setOptions } = useContext(MessageContext);
 
   const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName } =
     useCustomSelector((state: $ReduxCoreType) => ({
@@ -62,12 +64,14 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
           threadId: thread_id,
         })
       );
+      setOptions([]);
     }
   };
 
   const handleChangeSubThread = (sub_thread_id: string) => {
     setLoading(false);
     dispatch(setThreadId({ subThreadId: sub_thread_id }));
+    setOptions([]);
     if (isSmallScreen) {
       setToggleDrawer(false);
     }
@@ -115,7 +119,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
       )}
 
       <div className={`drawer-side max-w-[265px] ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
-        <div className="p-4 w-full min-h-full text-base-content relative bg-base-200 border-r-base-300 border">
+        <div className="p-4 w-full min-h-full text-base-content relative bg-base-200 border-r-base-300 border overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             {isToggledrawer && <button className="p-2 hover:bg-gray-200 rounded-full transition-colors" onClick={() => { setToggleDrawer(!isToggledrawer) }}> <AlignLeft /></button>}
             <h2 className="text-lg font-bold">History</h2>
