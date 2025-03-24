@@ -8,9 +8,8 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
     const search = useSearchParams();
     const [chatbotConfig, setChatbotConfig] = useState({});
     const { themeColor, handleThemeChange } = useContext(ThemeContext);
-    const { chatbot_id, userId, token, config } = JSON.parse(
-        search.get("interfaceDetails") || '{"chatbot_id":null,"userId":null,"token":null,"config":null}'
-    );
+    const interfaceDetails = search.get("interfaceDetails");
+    const { chatbot_id, userId, token, config } = interfaceDetails ? JSON.parse(interfaceDetails) : { chatbot_id: null, userId: null, token: null, config: null };
 
     const onConfigChange = useCallback((config: any) => {
         if (!config) return;
