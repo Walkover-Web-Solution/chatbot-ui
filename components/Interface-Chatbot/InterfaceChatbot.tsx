@@ -76,7 +76,8 @@ export const MessageContext = createContext<{
   newMessage?: boolean;
   currentPage?: Number;
   starterQuestions?: string[];
-  headerButtons?: HeaderButtonType
+  headerButtons?: HeaderButtonType;
+  setOptions?: React.Dispatch<React.SetStateAction<any[]>>
 }>({
   messages: [],
   helloMessages: [],
@@ -654,7 +655,8 @@ function InterfaceChatbot({
         newMessage,
         currentPage,
         starterQuestions,
-        headerButtons
+        headerButtons,
+        setOptions
       }}
     >
       <FormComponent open={open} setOpen={setOpen} />
