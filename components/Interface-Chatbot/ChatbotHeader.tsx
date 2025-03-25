@@ -28,7 +28,6 @@ import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { useDispatch } from "react-redux";
 import { ChatbotContext } from "../context";
-import { MessageContext } from "./InterfaceChatbot";
 import "./InterfaceChatbot.css";
 import { MessageContext } from "./InterfaceChatbot";
 
