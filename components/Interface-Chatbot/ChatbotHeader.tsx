@@ -21,7 +21,7 @@ import { isColorLight } from "@/utils/themeUtility";
 import ChatbotDrawer from "./ChatbotDrawer";
 
 // Styles
-import { setSelectedAIServiceAndModal, setThreads } from "@/store/interface/interfaceSlice";
+import { setDataInInterfaceRedux, setSelectedAIServiceAndModal, setThreads } from "@/store/interface/interfaceSlice";
 import { HeaderButtonType, SelectedAiServicesType } from "@/types/interface/InterfaceReduxType";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 import { ChevronDown } from "lucide-react";
@@ -42,17 +42,18 @@ interface ChatbotHeaderProps {
 const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoading, setToggleDrawer, isToggledrawer, threadId, reduxBridgeName, headerButtons, preview = false }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const { chatbotConfig: { chatbotTitle, chatbotSubtitle, width = '', widthUnit = '' } } = useContext<any>(ChatbotContext);
   const { setOptions } = useContext(MessageContext);
+  const { chatbotConfig: { chatbotTitle, chatbotSubtitle, width = '', widthUnit = '', allowBridgeSwitch = false, bridges = [] } } = useContext<any>(ChatbotContext);
   const [fullScreen, setFullScreen] = useState(false)
   const shouldToggleScreenSize = `${width}${widthUnit}` !== '100%'
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
-  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug } = useCustomSelector((state: $ReduxCoreType) => ({
     allowModalSwitch: state.Interface.allowModalSwitch || false,
     hideCloseButton: state.Interface.hideCloseButton || false,
     chatTitle: state.Interface.chatTitle || "",
     chatIcon: state.Interface.chatIcon || "",
+    currentSelectedBridgeSlug: state?.Interface?.bridgeName
   }))
   const handleCreateNewSubThread = async () => {
     if (preview) return;
@@ -106,7 +107,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
             {chatbotSubtitle || "Do you have any questions? Ask us!"}
           </p>}
         </div>
-        <div className="sm:absolute right-0 flex justify-center items-center">
+        <div className="sm:absolute right-0 flex justify-center items-center gap-1">
+          {allowBridgeSwitch && <BridgeSwitchDropdown currentSelectedBridgeSlug={currentSelectedBridgeSlug} bridges={bridges} />}
           {allowModalSwitch && <AiServicesToSwitch />}
           {headerButtons?.map((item, index) => {
             return <React.Fragment key={`header-button-${index}`}>
@@ -499,4 +501,29 @@ const AiServicesToSwitch = () => {
       </select>
     </label>
   );
+}
+
+function BridgeSwitchDropdown({ currentSelectedBridgeSlug, bridges }: { currentSelectedBridgeSlug: string, bridges: { slugName: string, displayName: string, name: string, id: string }[] }) {
+  const dispatch = useDispatch()
+  let allBridges = bridges
+  if (!bridges?.some((bridge) => bridge.slugName === currentSelectedBridgeSlug)) {
+    allBridges.push({ slugName: currentSelectedBridgeSlug, displayName: currentSelectedBridgeSlug, id: "defaultBridge", name: currentSelectedBridgeSlug })
+  }
+  return <label className="form-control max-w-xs">
+    <select
+      value={currentSelectedBridgeSlug}
+      onChange={(e) => {
+        dispatch(setDataInInterfaceRedux({ bridgeName: e.target.value }))
+        sessionStorage.setItem("bridgeName", e.target.value);
+      }}
+      className="select select-sm select-bordered"
+    >
+      <option disabled>Available Bridges</option>
+      {Array.isArray(allBridges) && allBridges.map((item, sectionIndex) => (
+        <option key={item?.id} value={item?.slugName}>
+          {item?.displayName || item?.name}
+        </option>
+      ))}
+    </select>
+  </label>
 }
