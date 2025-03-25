@@ -39,7 +39,7 @@ interface ChatbotHeaderProps {
   headerButtons: HeaderButtonType
 }
 
-const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoading, setToggleDrawer, isToggledrawer, threadId, reduxBridgeName, headerButtons }) => {
+const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoading, setToggleDrawer, isToggledrawer, threadId, reduxBridgeName, headerButtons, preview = false }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const { chatbotConfig: { chatbotTitle, chatbotSubtitle, width = '', widthUnit = '' } } = useContext<any>(ChatbotContext);
@@ -55,6 +55,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
     chatIcon: state.Interface.chatIcon || "",
   }))
   const handleCreateNewSubThread = async () => {
+    if (preview) return;
     const result = await createNewThreadApi({
       threadId: threadId,
       subThreadId: createRandomId(),
@@ -149,6 +150,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
         chatbotId="chatbotId"
         isToggledrawer={isToggledrawer}
         setToggleDrawer={setToggleDrawer}
+        preview={preview}
       />
 
     </div >

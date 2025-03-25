@@ -1,12 +1,12 @@
 "use client";
-import ChatbotWrapper from '@/components/Chatbot-Wrapper/ChatbotWrapper';
+import { ThemeContext } from '@/components/AppWrapper';
 import ChatbotDrawer from '@/components/Interface-Chatbot/ChatbotDrawer';
-import ChatbotHeader, { ChatbotHeaderPreview } from '@/components/Interface-Chatbot/ChatbotHeader';
+import ChatbotHeader from '@/components/Interface-Chatbot/ChatbotHeader';
 import ChatbotHeaderTab from '@/components/Interface-Chatbot/ChatbotHeaderTab';
 import ChatbotTextField from '@/components/Interface-Chatbot/ChatbotTextField';
 import MessageList from '@/components/Interface-Chatbot/MessageList';
-import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
-import { useEffect, useRef, useState } from 'react';
+import { useMediaQuery, useTheme } from '@mui/material';
+import { useContext, useEffect, useRef, useState } from 'react';
 export const runtime = "edge";
 
 function ChatbotPreview() {
@@ -14,11 +14,12 @@ function ChatbotPreview() {
     const containerRef = useRef(null);
     const isLargeScreen = useMediaQuery('(max-width: 1024px)')
     const [isToggledrawer, setToggleDrawer] = useState<boolean>(!isLargeScreen);
+    const { handleThemeChange } = useContext(ThemeContext);
     const [messages, setMessages] = useState([]);
     useEffect(() => {
         const handleMessage = (event: MessageEvent) => {
             if (event?.data?.type === "themeChange") {
-                // onThemeChange(event.data.themeColor || "#000000");
+                handleThemeChange(event.data.themeColor || "#000000");
             }
         };
 
@@ -27,6 +28,7 @@ function ChatbotPreview() {
             window.removeEventListener("message", handleMessage);
         };
     }, []);
+
     return (
         // <ChatbotWrapper />
         <div className="flex h-screen w-full overflow-hidden relative">
@@ -39,8 +41,7 @@ function ChatbotPreview() {
 
             <div className="flex flex-col flex-1 w-full">
                 {/* Mobile header - hidden on large screens */}
-                <ChatbotHeader containerRef={containerRef} setToggleDrawer={setToggleDrawer}
-                    isToggledrawer={isToggledrawer} />
+                <ChatbotHeader containerRef={containerRef} setToggleDrawer={setToggleDrawer} isToggledrawer={isToggledrawer} preview />
                 <ChatbotHeaderTab />
 
                 {/* Messages container with flex layout */}
@@ -56,8 +57,7 @@ function ChatbotPreview() {
 
                 {/* Text input at bottom */}
                 <div className="max-w-5xl mx-auto px-4 py-3 w-full">
-                    <ChatbotTextField
-                    />
+                    <ChatbotTextField />
                 </div>
             </div>
         </div>

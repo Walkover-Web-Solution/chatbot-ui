@@ -2,9 +2,6 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 
-// MUI Components
-import { Tab, Tabs } from "@mui/material";
-
 // App imports
 import { AiIcon, UserAssistant } from "@/assests/assestsIndex";
 import { setHuman } from "@/store/hello/helloSlice";
@@ -32,60 +29,47 @@ function ChatbotHeaderTab() {
     return null;
   }
   return (
-    <Tabs
-      value={value}
-      onChange={(e, newValue) => handleChange(e, newValue)}
-      centered
-      sx={{ minHeight: "2px", padding: "0" }}
-    >
-      <Tab
-        value="AI"
-        label="AI"
-        icon={
-          <Image
-            src={AiIcon}
-            width={24}
-            height={24}
-            alt="AI Icon"
-            style={{
-              marginRight: 4,
-              filter: "drop-shadow(0 0 5px pink)",
-            }}
-          />
-        }
-        iconPosition="start"
-        sx={{
-          fontSize: "0.8rem",
-          padding: "0 2px",
-          color: "black",
-          minHeight: "40px",
-        }}
-      />
-      <Tab
-        value="Human"
-        label="Human"
-        icon={
-          <Image
-            src={UserAssistant}
-            width={24}
-            height={24}
-            alt="Human Icon"
-            className="icon-visible"
-            style={{
-              cursor: "pointer",
-              filter: !IsHuman ? "drop-shadow(0 0 5px pink)" : "",
-            }}
-          />
-        }
-        iconPosition="start"
-        sx={{
-          fontSize: "0.8rem",
-          padding: "0 2px",
-          color: "black",
-          minHeight: "40px",
-        }}
-      />
-    </Tabs>
+    <div className="tabs tabs-boxed bg-base-200 p-1 rounded-lg mx-auto max-w-xs shadow-md">
+      <button
+        className={`tab tab-sm gap-2 transition-all duration-300 ${value === "AI" ? "tab-active text-primary-content" : "hover:bg-base-300"}`}
+        onClick={(e) => handleChange(e, "AI")}
+      >
+        {value === "AI" && <span className="font-medium">AI Assistant</span>}
+        {value !== "AI" && (
+          <>
+            <div className="relative">
+              <Image
+                src={AiIcon}
+                width={20}
+                height={20}
+                alt="AI Icon"
+              />
+            </div>
+            <span className="font-medium">AI Assistant</span>
+          </>
+        )}
+      </button>
+
+      <button
+        className={`tab tab-sm gap-2 transition-all duration-300 ${value === "Human" ? "tab-active bg-secondary text-secondary-content" : "hover:bg-base-300"}`}
+        onClick={(e) => handleChange(e, "Human")}
+      >
+        {value === "Human" && <span className="font-medium">Human Support</span>}
+        {value !== "Human" && (
+          <>
+            <div className="relative">
+              <Image
+                src={UserAssistant}
+                width={20}
+                height={20}
+                alt="Human Icon"
+              />
+            </div>
+            <span className="font-medium">Human Support</span>
+          </>
+        )}
+      </button>
+    </div>
   );
 }
 
