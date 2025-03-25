@@ -65,11 +65,14 @@ ul.message-ul {
     list-style: none;
 }
 
-.timeline-penal svg {
-    fill: #d0d0d0;
-    height: 14px;
-    width: 14px;
-    transition: 500ms all;
+.timeline-penal {
+    svg {
+        fill: #d0d0d0;
+        height: 14px;
+        width: 14px;
+        transition: 500ms all;
+    }
+
     small {
         font-size: 10px;
         line-height: 20px;
