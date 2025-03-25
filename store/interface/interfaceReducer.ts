@@ -1,12 +1,10 @@
 /* eslint-disable */
 import { SliceCaseReducers, ValidateSliceCaseReducers } from "@reduxjs/toolkit";
-// import { successToast } from '../../components/customToast'
 import {
   $InterfaceReduxType,
   HeaderButtonType,
-  InterFaceDataType,
   ModalConfigType,
-  SelectedAiServicesType,
+  SelectedAiServicesType
 } from "../../types/interface/InterfaceReduxType.ts";
 import actionType from "../../types/utility.ts";
 
@@ -41,57 +39,6 @@ export const reducers: ValidateSliceCaseReducers<
   $InterfaceReduxType,
   SliceCaseReducers<$InterfaceReduxType>
 > = {
-  getInterfaceDataByIdStart(state, action: actionType<string>) {
-    const { chatbotId } = action?.urlData;
-    if (!state.interfaceData?.[chatbotId]) {
-      state.interfaceData = {
-        [chatbotId]: { ...sampleInterfaceData, isLoading: true },
-      };
-    } else {
-      state.interfaceData[chatbotId].isLoading = true;
-    }
-  },
-  getInterfaceDataByIdSuccess(state, action: actionType<InterFaceDataType>) {
-    const { chatbotId } = action?.urlData;
-    const tempData = { ...action.payload };
-    state.interfaceData[chatbotId] = { ...tempData, isLoading: false };
-  },
-  getInterfaceDataByIdError(state, action: actionType<any>) {
-    const { chatbotId } = action?.urlData;
-    state.interfaceData[chatbotId].isLoading = false;
-  },
-
-  updateComponentProps(state, action: actionType<any>) {
-    const { chatbotId } = action.urlData;
-    const { data, gridId, componentId } = action.payload;
-    state.interfaceData[chatbotId].components[gridId][componentId].props = {
-      ...state.interfaceData[chatbotId].components[gridId][componentId].props,
-      ...data,
-    };
-  },
-
-  toggleNestedGridSliderOpen(state, action) {
-    state.nestedGridSliderOpen = action.payload || false;
-  },
-
-  setConfigModalState(state, action) {
-    state.currentSelectedComponent = {
-      ...state.currentSelectedComponent,
-      ...action.payload,
-    };
-  },
-
-  resetConfigModalState(state) {
-    state.currentSelectedComponent = {
-      componentType: null,
-      componentId: null,
-      gridId: null,
-    };
-  },
-
-  setConfigSlider(state, action) {
-    state.isConfigSliderOpen = action?.payload?.openSlider || false;
-  },
 
   addInterfaceContext(
     state,
@@ -137,12 +84,9 @@ export const reducers: ValidateSliceCaseReducers<
     }
 
     // Update the state with new data under the specific chatbotId and bridgeName
-    state.interfaceContext[chatbotId][bridgeName] = {
-      ...state.interfaceContext[chatbotId][bridgeName],
-      interfaceData: {
-        ...state.interfaceContext[chatbotId][bridgeName].interfaceData,
-        ...variables,
-      },
+    state.interfaceContext[chatbotId].variables = {
+      ...state.interfaceContext[chatbotId].variables,
+      ...variables,
     };
   },
 
@@ -250,24 +194,24 @@ export const reducers: ValidateSliceCaseReducers<
     state.isVision = data;
     sessionStorage.setItem("config", JSON.stringify(state.isVision));
   },
-  setHeaderActionButtons(state,action:actionType<HeaderButtonType>){
+  setHeaderActionButtons(state, action: actionType<HeaderButtonType>) {
     state.headerButtons = action.payload
     sessionStorage.setItem("headerButtons", JSON.stringify(action.payload));
   },
-  setEventsSubsribedByParent(state,action:actionType<string[]>){
+  setEventsSubsribedByParent(state, action: actionType<string[]>) {
     state.eventsSubscribedByParent = action.payload
     sessionStorage.setItem("eventsSubscribedByParent", JSON.stringify(action.payload));
   },
-  setAvailableModelsToSwitch(state,action:actionType<any>){
+  setAvailableModelsToSwitch(state, action: actionType<any>) {
     state.availableAiServicesToSwitch = action.payload
   },
-  setModalConfig(state,action:actionType<ModalConfigType>){
+  setModalConfig(state, action: actionType<ModalConfigType>) {
     state.modalConfig = action.payload
   },
-  setSelectedAIServiceAndModal(state,action:actionType<SelectedAiServicesType>){
+  setSelectedAIServiceAndModal(state, action: actionType<SelectedAiServicesType>) {
     state.selectedAiServiceAndModal = action.payload
   },
-  setDataInInterfaceRedux(state,action:actionType<any>){
-    return {...state,...action.payload}
+  setDataInInterfaceRedux(state, action: actionType<any>) {
+    return { ...state, ...action.payload }
   }
 };
