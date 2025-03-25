@@ -3,20 +3,6 @@
 // @import './assets/styles/layout/sizing';
 @use './assets/scss/theme/theme_theme-colors' as theme;
 @use './assets/styles/component/global' as global;
-@use '@angular/material' as mat;
-
-body {
-
-  @include mat.theme((
-    color: (
-      theme-type: light,
-      primary: mat.$azure-palette,
-      tertiary: mat.$blue-palette,
-    ),
-    density: 0,
-  ));
-}
-
 
 .ng-trigger-fadeInRight,
 .ng-trigger-fadeInLeft {
