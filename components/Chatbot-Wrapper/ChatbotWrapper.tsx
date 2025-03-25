@@ -3,7 +3,6 @@ import InterfaceChatbot from "@/components/Interface-Chatbot/InterfaceChatbot";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import {
   addDefaultContext,
-  getInterfaceDataByIdStart,
   setConfig,
   setDataInInterfaceRedux,
   setEventsSubsribedByParent,
@@ -11,7 +10,6 @@ import {
   setModalConfig,
   setThreadId
 } from "@/store/interface/interfaceSlice";
-import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE, ParamsEnums } from "@/utils/enums";
 import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -24,18 +22,6 @@ function ChatbotWrapper({ chatbotId, loadInterface = true }) {
   }, []);
 
   useEffect(() => {
-    (async () => {
-      // const interfaceToken = intefaceGetLocalStorage("interfaceToken");
-      const interfaceToken = GetSessionStorageData("interfaceToken");
-      if (
-        chatbotId &&
-        chatbotId !== "preview" &&
-        interfaceToken &&
-        loadInterface
-      ) {
-        // dispatch(getInterfaceDataByIdStart({}));
-      }
-    })();
 
     const handleMessage = (event: MessageEvent) => {
       if (event?.data?.type === "interfaceData") {

@@ -109,9 +109,7 @@ function InterfaceChatbot({
     selectedAiServiceAndModal
   } = useCustomSelector((state: $ReduxCoreType) => ({
     interfaceContextData:
-      state.Interface?.interfaceContext?.[chatbotId]?.[
-        state.Interface?.bridgeName || "root"
-      ]?.interfaceData,
+      state.Interface?.interfaceContext?.[chatbotId]?.variables,
     reduxThreadId: state.Interface?.threadId || "",
     reduxSubThreadId: state.Interface?.subThreadId || "",
     reduxHeaderButtons: state.Interface?.headerButtons || [],

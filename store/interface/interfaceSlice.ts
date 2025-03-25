@@ -8,7 +8,6 @@ const interfaceSlice = createSlice({
 });
 
 export const {
-  toggleNestedGridSliderOpen,
   getAllInterfaceStart,
   getAllInterfaceSuccess,
   getAllInterfaceError,
@@ -22,8 +21,6 @@ export const {
   deleteInterfaceError,
 
   updateRenderingJson,
-  setConfigModalState,
-  updateComponentProps,
   deleteComponentStart,
   deleteComponentSuccess,
   deleteComponentError,
@@ -33,17 +30,12 @@ export const {
   updateInterfaceDetailsStart,
   updateInterfaceSuccess,
   updateInterfaceError,
-  getInterfaceDataByIdStart,
-  getInterfaceDataByIdSuccess,
-  getInterfaceDataByIdError,
   updateInterfaceActionStart,
   updateInterfaceActionSuccess,
   updateInterfaceActionError,
   updateInterfaceFrontendActionStart,
   updateInterfaceFrontendActionSuccess,
   updateInterfaceFrontendActionError,
-  setConfigSlider,
-  resetConfigModalState,
   addInterfaceContext,
   addDefaultContext,
   setThreadId,
