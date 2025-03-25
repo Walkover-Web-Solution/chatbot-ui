@@ -30,6 +30,7 @@ import { useDispatch } from "react-redux";
 import { ChatbotContext } from "../context";
 import { MessageContext } from "./InterfaceChatbot";
 import "./InterfaceChatbot.css";
+import { MessageContext } from "./InterfaceChatbot";
 
 interface ChatbotHeaderProps {
   setLoading: (loading: boolean) => void;
