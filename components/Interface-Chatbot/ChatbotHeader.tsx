@@ -511,6 +511,13 @@ function BridgeSwitchDropdown({ currentSelectedBridgeSlug, bridges }: { currentS
   if (!bridges?.some((bridge) => bridge.slugName === currentSelectedBridgeSlug)) {
     allBridges.push({ slugName: currentSelectedBridgeSlug, displayName: currentSelectedBridgeSlug, id: "defaultBridge", name: currentSelectedBridgeSlug })
   }
+
+  useEffect(()=>{
+    if(currentSelectedBridgeSlug){
+      emitEventToParent("BRIDGE_SWITCH", allBridges?.find(item => item?.slugName === currentSelectedBridgeSlug))
+    }
+  },[currentSelectedBridgeSlug])
+
   return <label className="form-control max-w-xs">
     <select
       value={currentSelectedBridgeSlug}
