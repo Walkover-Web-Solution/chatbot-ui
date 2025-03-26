@@ -565,6 +565,7 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
 
     public initWidget() {
         setTimeout(() => {
+          console.log(this.unique_id)
             if (this.unique_id) {
                 // this.client_uuid = this.unique_id;
 
@@ -575,6 +576,7 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
                 this.client_uuid =
                     this.getCookieValue('hello-widget-uuid') || this.getCookieValue('hello-widget-anonymous-uuid');
             }
+            console.log(this.client_uuid)
             this.store.dispatch(
                 actions.initWidget({
                     config: {
