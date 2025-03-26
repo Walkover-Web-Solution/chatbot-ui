@@ -34,7 +34,7 @@ function ChatbotTextField({
   setChatsLoading = () => { },
   images = [],
   setImages = () => { },
-}: ChatbotTextFieldType) {
+}: ChatbotTextFiweldType) {
   const [message, setMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const dispatch = useDispatch();

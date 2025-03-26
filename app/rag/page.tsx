@@ -292,16 +292,15 @@ function RagCompoonent() {
                 aria-describedby="alert-dialog-description"
                 sx={{
                     '& .MuiDialog-paper': {
-                        minHeight: '55vh',
                         height: 'auto',
                         display: 'flex',
-                        flexDirection: 'column'
+                        flexDirection: 'column',
                     }
                 }}
                 className="relative"
             >
                 {isLoading && <LinearProgress color="success" />}
-                <div className="flex justify-between items-center font-bold text-xl p-4" id="alert-dialog-title">
+                <div className="flex justify-between items-center font-bold text-xl px-4 pt-4" id="alert-dialog-title">
                     {showListPage
                         ? "Knowledge Base List"
                         : editingKnowledgeBase
@@ -333,7 +332,7 @@ function RagCompoonent() {
                                 flexDirection: "column",
                                 flexGrow: 1,
                                 overflow: "auto",
-                                paddingY: 1,
+                                paddingY: 2,
                                 gap: 1,
                             }}
                         >
@@ -346,7 +345,7 @@ function RagCompoonent() {
                                         <input
                                             name="name"
                                             type="text"
-                                            className="input input-bordered"
+                                            className="input input-bordered w-1/2"
                                             placeholder="Enter document name"
                                             required
                                         />
@@ -405,7 +404,7 @@ function RagCompoonent() {
 
                                             {fileType === "file" && (
                                                 <div
-                                                    className={`border-2 border-dashed rounded-lg p-4 mt-2 text-center ${file ? 'border-success' : 'border-base-300 hover:border-primary cursor-pointer'
+                                                    className={`border-2 border-dashed rounded-lg p-4 mt-2 text-center ${file ? 'border-success/50' : 'border-base-300 hover:border-primary cursor-pointer'
                                                         } ${editingKnowledgeBase ? 'opacity-50 pointer-events-none' : ''}`}
                                                     onDrop={(e) => {
                                                         e.preventDefault();
@@ -430,7 +429,7 @@ function RagCompoonent() {
                                                     </p>
                                                     {file ? (
                                                         <div className="mt-2 flex justify-center">
-                                                            <div className="badge badge-success gap-1 p-4">
+                                                            <div className="badge badge-success gap-1 p-4 bg-success/70 text-white">
                                                                 {file.name}
                                                                 <button
                                                                     className="btn btn-circle btn-ghost text-white"
@@ -473,7 +472,7 @@ function RagCompoonent() {
                                                 </label>
                                                 <select
                                                     name="chunking_type"
-                                                    className="select select-bordered w-full"
+                                                    className={`select select-bordered ${chunkingType === "semantic" || chunkingType === "auto" ? 'w-1/2' : 'w-full'}`}
                                                     required
                                                     disabled={isLoading}
                                                     value={chunkingType}
@@ -523,9 +522,9 @@ function RagCompoonent() {
                                     )}
                                 </>
                             }
-                            <div className="divider my-2"></div>
+                            {!configuration?.listpage && !showListPage && <div className="divider my-1"></div>}
                             {(configuration?.listPage ? showListPage : true) && (
-                                <div className="card bg-base-200 shadow-sm mb-2">
+                                <div className="card bg-base-200 shadow-sm my-1">
                                     <div className="card-body p-0">
                                         <div className="collapse collapse-arrow">
                                             <input type="checkbox" defaultChecked />
@@ -539,22 +538,22 @@ function RagCompoonent() {
                                                         No existing knowledge bases
                                                     </div>
                                                 ) : (
-                                                    <div className="flex flex-col gap-2 max-h-64 overflow-y-auto px-2">
+                                                    <div className="flex flex-col gap-2 h-auto overflow-y-auto px-2">
                                                         {KnowledgeBases.map((kb: KnowledgeBaseType) => (
                                                             <div
                                                                 key={kb._id || kb.id}
-                                                                className={`flex justify-between items-center p-3 rounded-lg transition-all duration-200 ${editingKnowledgeBase?._id === kb._id
+                                                                className={`flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 rounded-lg transition-all duration-200 ${editingKnowledgeBase?._id === kb._id
                                                                     ? 'bg-primary/10 border border-primary/20 shadow-sm'
                                                                     : 'bg-base-100 hover:bg-base-200'
                                                                     }`}
                                                             >
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-6 h-6 flex items-center justify-center">
+                                                                <div className="flex items-center gap-3 flex-1 min-w-0 w-full sm:w-auto">
+                                                                    <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
                                                                         {(() => {
                                                                             switch (
-                                                                            kb?.source?.fileFormat?.toUpperCase() ||
-                                                                            kb?.type?.toUpperCase()
-                                                                            ) {
+                                                                                kb?.source?.fileFormat?.toUpperCase() ||
+                                                                                kb?.type?.toUpperCase()
+                                                                                ) {
                                                                                 case "PDF":
                                                                                     return <Image src={PdfLogo} alt="PDF" width={20} height={20} className="opacity-80" />;
                                                                                 case "DOC":
@@ -568,28 +567,26 @@ function RagCompoonent() {
                                                                             }
                                                                         })()}
                                                                     </div>
-                                                                    <div className="flex flex-col">
-                                                                        <span className="text-sm font-medium text-base-content">{kb?.name}</span>
-                                                                        <span className="text-xs text-base-content/60 truncate max-w-[200px]">{kb?.description}</span>
+                                                                    <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+                                                                        <span className="text-sm font-medium text-base-content truncate w-full max-w-[200px] sm:max-w-[300px] md:max-w-[400px]">{kb?.name}</span>
+                                                                        <span className="text-xs text-base-content/60 truncate w-full max-w-[200px] sm:max-w-[300px] md:max-w-[400px]">{kb?.description}</span>
                                                                     </div>
                                                                 </div>
-                                                                <div className="flex gap-2">
+                                                                <div className="flex flex-row sm:flex-row gap-2 flex-shrink-0 mt-2 sm:mt-0 sm:ml-4 w-full sm:w-auto">
                                                                     <button
-                                                                        className={`btn btn-sm gap-1 transition-all duration-200 ${editingKnowledgeBase?._id === kb._id
+                                                                        className={`btn btn-sm gap-1 transition-all duration-200 w-1/2 sm:w-auto ${editingKnowledgeBase?._id === kb._id
                                                                                 ? 'btn-primary shadow-md'
                                                                                 : 'btn-outline btn-primary hover:bg-primary/10 hover:shadow-sm'
                                                                             }`}
                                                                         onClick={() => handleEdit(kb)}
                                                                     >
-                                                                        <Edit className="w-4 h-4" />
-                                                                        {editingKnowledgeBase?._id === kb._id ? 'Editing...' : 'Edit'}
+                                                                        <span className="flex gap-1 items-center font-medium"> <Edit className="w-4 h-4" /> {editingKnowledgeBase?._id === kb._id ? 'Editing...' : 'Edit'}</span>
                                                                     </button>
                                                                     <button
-                                                                        className="btn btn-sm btn-outline btn-error gap-1 hover:bg-error/10 hover:shadow-sm transition-all duration-200"
+                                                                        className="btn btn-sm btn-outline btn-error gap-1 hover:bg-error/10 hover:shadow-sm transition-all duration-200 w-1/2 sm:w-auto"
                                                                         onClick={() => handleDeleteKnowledgeBase(kb?._id)}
                                                                     >
-                                                                        <Trash2 className="w-4 h-4" />
-                                                                        Delete
+                                                                        <span className="flex gap-1 items-center font-medium"> <Trash2 className="w-4 h-4" />Delete</span>
                                                                     </button>
                                                                 </div>
                                                             </div>
