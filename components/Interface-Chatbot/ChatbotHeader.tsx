@@ -48,13 +48,14 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
   const shouldToggleScreenSize = `${width}${widthUnit}` !== '100%'
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
-  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug ,chatSubTitle} = useCustomSelector((state: $ReduxCoreType) => ({
+  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug ,chatSubTitle,allowBridgeSwitchViaProp} = useCustomSelector((state: $ReduxCoreType) => ({
     allowModalSwitch: state.Interface.allowModalSwitch || false,
     hideCloseButton: state.Interface.hideCloseButton || false,
     chatTitle: state.Interface.chatTitle || "",
     chatSubTitle : state.Interface.chatSubTitle || "",
     chatIcon: state.Interface.chatIcon || "",
-    currentSelectedBridgeSlug: state?.Interface?.bridgeName
+    currentSelectedBridgeSlug: state?.Interface?.bridgeName,
+    allowBridgeSwitchViaProp : state?.Interface?.allowBridgeSwitch
   }))
   const handleCreateNewSubThread = async () => {
     if (preview) return;
@@ -109,7 +110,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
           </p>}
         </div>
         <div className="sm:absolute right-0 flex justify-center items-center gap-1">
-          {allowBridgeSwitch && <BridgeSwitchDropdown currentSelectedBridgeSlug={currentSelectedBridgeSlug} bridges={bridges} />}
+          { allowBridgeSwitchViaProp && allowBridgeSwitch && <BridgeSwitchDropdown currentSelectedBridgeSlug={currentSelectedBridgeSlug} bridges={bridges} />}
           {allowModalSwitch && <AiServicesToSwitch />}
           {headerButtons?.map((item, index) => {
             return <React.Fragment key={`header-button-${index}`}>
