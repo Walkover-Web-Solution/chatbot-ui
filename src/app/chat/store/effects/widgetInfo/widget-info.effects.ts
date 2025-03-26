@@ -33,12 +33,15 @@ export class WidgetInfoEffects {
                         }
                         const anonymousUuid = getCookie('hello-widget-anonymous-uuid-bak');
                         removeCookie('hello-widget-anonymous-uuid-bak');
+                        console.log(config)
 
                         /// if mail or unique_id are passed
                         if (config.mail || config.unique_id || config.number) {
+                          console.log(config.unique_id)
                             // login case
                             // remove uuid from cookies
-                            // remove anonymous_client_uuid from payload 
+                            // remove anonymous_client_uuid from payload
+                            console.log(config.unique_id)
                             return [
                                 actions.setWidgetInfo({ widgetInfo: res[0] }),
                                 actions.setClientParam({ clientParam: res[1] }),
