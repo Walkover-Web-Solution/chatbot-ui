@@ -48,10 +48,11 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
   const shouldToggleScreenSize = `${width}${widthUnit}` !== '100%'
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
-  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug ,chatSubTitle} = useCustomSelector((state: $ReduxCoreType) => ({
     allowModalSwitch: state.Interface.allowModalSwitch || false,
     hideCloseButton: state.Interface.hideCloseButton || false,
     chatTitle: state.Interface.chatTitle || "",
+    chatSubTitle : state.Interface.chatSubTitle || "",
     chatIcon: state.Interface.chatIcon || "",
     currentSelectedBridgeSlug: state?.Interface?.bridgeName
   }))
@@ -104,7 +105,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
             />
           </div>
           {chatbotSubtitle && <p className="text-sm opacity-75 text-center whitespace-nowrap overflow-hidden overflow-ellipsis">
-            {chatbotSubtitle || "Do you have any questions? Ask us!"}
+            {chatSubTitle || chatbotSubtitle || "Do you have any questions? Ask us!"}
           </p>}
         </div>
         <div className="sm:absolute right-0 flex justify-center items-center gap-1">
