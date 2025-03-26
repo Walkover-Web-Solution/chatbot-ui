@@ -39,6 +39,7 @@ function ChatbotWrapper({ chatbotId, loadInterface = true }) {
             allowModalSwitch = false,
             hideCloseButton = false,
             chatTitle = "",
+            chatSubTitle="",
             chatIcon = ""
           } = receivedData;
 
@@ -76,7 +77,7 @@ function ChatbotWrapper({ chatbotId, loadInterface = true }) {
           if (modalConfig) {
             dispatch(setModalConfig(modalConfig))
           }
-          dispatch(setDataInInterfaceRedux({ allowModalSwitch, hideCloseButton, chatTitle, chatIcon }))
+          dispatch(setDataInInterfaceRedux({ allowModalSwitch, hideCloseButton, chatTitle, chatIcon ,chatSubTitle}))
         }
       }
     };
