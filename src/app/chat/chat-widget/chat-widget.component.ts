@@ -568,17 +568,18 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
 
     public initWidget() {
         setTimeout(() => {
+          console.log(this.unique_id)
             if (this.unique_id) {
                 // this.client_uuid = this.unique_id;
 
                 // Issue fixed related to this card
                 // https://app.clickup.com/t/86cu9eu1x
                 removeCookie('hello-widget-anonymous-uuid');
-
             } else {
                 this.client_uuid =
                     this.getCookieValue('hello-widget-uuid') || this.getCookieValue('hello-widget-anonymous-uuid');
             }
+            console.log(this.client_uuid)
             this.store.dispatch(
                 actions.initWidget({
                     config: {
