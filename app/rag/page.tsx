@@ -105,7 +105,6 @@ function RagCompoonent() {
         if (editingKnowledgeBase) {
             // Handle update logic here
             try {
-                // You'll need to implement the updateKnowledgeBaseEntry API
                 const response = await updateKnowBaseData({
                     id: editingKnowledgeBase._id,
                     data: payload,
@@ -122,7 +121,7 @@ function RagCompoonent() {
                         )
                     );
                 }
-            } catch (error) {
+            } catch (error: any) {
                 setAlert({
                     show: true,
                     message:
@@ -133,10 +132,20 @@ function RagCompoonent() {
                 setEditingKnowledgeBase(null);
                 setIsLoading(false);
                 setFile(null);
-                event.target.reset();
+                event.currentTarget.reset();
             }
         } else {
-            // Existing create logic
+            // Check if either file or URL is provided
+            if (!file && !formData.get("url")) {
+                setAlert({
+                    show: true,
+                    message: "Please upload a file or provide a URL",
+                    severity: "error",
+                });
+                setIsLoading(false);
+                return;
+            }
+
             // Convert payload to FormData
             const payloadFormData = new FormData();
             Object.entries(payload).forEach(([key, value]) => {
@@ -163,7 +172,7 @@ function RagCompoonent() {
                         message: "Document will be uploaded soon.",
                         severity: "success",
                     });
-                    setFile(null); // Reset file state after submission
+                    setFile(null);
                     window.parent.postMessage(
                         { type: "rag", status: "create", data: response.data },
                         "*"
@@ -175,7 +184,7 @@ function RagCompoonent() {
                 } else {
                     throw new Error("Failed to upload document");
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error("Error saving:", error);
                 setAlert({
                     show: true,
@@ -184,7 +193,7 @@ function RagCompoonent() {
                         "Failed to upload document. Please try again.",
                     severity: "error",
                 });
-                return; // Exit early on error
+                return;
             } finally {
                 setIsLoading(false);
                 setFile(null);
@@ -227,6 +236,7 @@ function RagCompoonent() {
     const handleReset = () => {
         setEditingKnowledgeBase(null);
         setFile(null);
+        setShowListPage(true)
         // Reset form fields
         const form = document.querySelector("form");
         if (form) {
@@ -306,11 +316,6 @@ function RagCompoonent() {
                         : editingKnowledgeBase
                             ? "Edit Knowledge Base"
                             : <div className="flex gap-3 items-center">{configuration?.listPage && !showListPage && <ArrowLeft className="cursor-pointer" onClick={() => { setShowListPage(true) }} />} Knowledge Base Configuration</div>}
-                    {editingKnowledgeBase && (
-                        <button className="btn btn-outline btn-sm btn-error" onClick={handleReset}>
-                            Reset
-                        </button>
-                    )}
                     {showListPage && (
                         <button
                             className="btn btn-primary"
@@ -404,7 +409,7 @@ function RagCompoonent() {
 
                                             {fileType === "file" && (
                                                 <div
-                                                    className={`border-2 border-dashed rounded-lg p-4 mt-2 text-center ${file ? 'border-success/50' : 'border-base-300 hover:border-primary cursor-pointer'
+                                                    className={`border-2 border-dashed rounded-lg p-4 mt-2 text-center ${file ? 'border-black' : 'border-base-300 hover:border-black cursor-pointer'
                                                         } ${editingKnowledgeBase ? 'opacity-50 pointer-events-none' : ''}`}
                                                     onDrop={(e) => {
                                                         e.preventDefault();
@@ -419,6 +424,7 @@ function RagCompoonent() {
                                                             const input = document.createElement("input");
                                                             input.type = "file";
                                                             input.accept = ".pdf,.doc,.docx,.csv";
+                                                            input.required = true;
                                                             input.onchange = handleFileChange;
                                                             input.click();
                                                         }
@@ -429,10 +435,11 @@ function RagCompoonent() {
                                                     </p>
                                                     {file ? (
                                                         <div className="mt-2 flex justify-center">
-                                                            <div className="badge badge-success gap-1 p-4 bg-success/70 text-white">
-                                                                {file.name}
+                                                            <div className="rounded-full px-2 py-1 bg-black text-white">
+                                                                <div className="flex items-center gap-2 justify-between w-full">
+                                                                <span>{file.name}</span>
                                                                 <button
-                                                                    className="btn btn-circle btn-ghost text-white"
+                                                                    className="rounded text-white"
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
                                                                         setFile(null);
@@ -440,10 +447,11 @@ function RagCompoonent() {
                                                                 >
                                                                     <CircleX size={18} />
                                                                 </button>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     ) : (
-                                                        <button 
+                                                        <button
                                                             className="btn btn-outline mt-2"
                                                             type="button"
                                                             onClick={(e) => {
@@ -451,6 +459,7 @@ function RagCompoonent() {
                                                                 const input = document.createElement("input");
                                                                 input.type = "file";
                                                                 input.accept = ".pdf,.doc,.docx,.csv";
+                                                                input.required = true;
                                                                 input.onchange = handleFileChange;
                                                                 input.click();
                                                             }}
@@ -472,7 +481,7 @@ function RagCompoonent() {
                                                 </label>
                                                 <select
                                                     name="chunking_type"
-                                                    className={`select select-bordered ${chunkingType === "semantic" || chunkingType === "auto" ? 'w-1/2' : 'w-full'}`}
+                                                    className={`select select-bordered ${chunkingType === "semantic" || chunkingType === "auto" ? 'w-1/3' : 'w-full'}`}
                                                     required
                                                     disabled={isLoading}
                                                     value={chunkingType}
@@ -551,9 +560,9 @@ function RagCompoonent() {
                                                                     <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
                                                                         {(() => {
                                                                             switch (
-                                                                                kb?.source?.fileFormat?.toUpperCase() ||
-                                                                                kb?.type?.toUpperCase()
-                                                                                ) {
+                                                                            kb?.source?.fileFormat?.toUpperCase() ||
+                                                                            kb?.type?.toUpperCase()
+                                                                            ) {
                                                                                 case "PDF":
                                                                                     return <Image src={PdfLogo} alt="PDF" width={20} height={20} className="opacity-80" />;
                                                                                 case "DOC":
@@ -575,8 +584,8 @@ function RagCompoonent() {
                                                                 <div className="flex flex-row sm:flex-row gap-2 flex-shrink-0 mt-2 sm:mt-0 sm:ml-4 w-full sm:w-auto">
                                                                     <button
                                                                         className={`btn btn-sm gap-1 transition-all duration-200 w-1/2 sm:w-auto ${editingKnowledgeBase?._id === kb._id
-                                                                                ? 'btn-primary shadow-md'
-                                                                                : 'btn-outline btn-primary hover:bg-primary/10 hover:shadow-sm'
+                                                                            ? 'btn-primary shadow-md'
+                                                                            : 'btn-outline btn-primary hover:bg-primary/10 hover:shadow-sm'
                                                                             }`}
                                                                         onClick={() => handleEdit(kb)}
                                                                     >
@@ -603,10 +612,10 @@ function RagCompoonent() {
                             <div className="sticky bottom-0 bg-base-100 border-t border-base-300 p-4 flex justify-end gap-2">
                                 <button
                                     className="btn btn-outline gap-2"
-                                    onClick={handleClose}
+                                    onClick={() =>editingKnowledgeBase ? handleReset() : handleClose()}
                                 >
                                     <X className="w-4 h-4" />
-                                    Cancel
+                                {editingKnowledgeBase ? "Cancel" : "Close"}
                                 </button>
                                 <button
                                     type="submit"
