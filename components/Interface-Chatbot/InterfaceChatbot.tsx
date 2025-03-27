@@ -20,7 +20,7 @@ import { $ReduxCoreType } from "@/types/reduxCore";
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ParamsEnums } from "@/utils/enums";
-import { lighten, useMediaQuery, useTheme } from "@mui/material";
+import { lighten, LinearProgress, useMediaQuery, useTheme } from "@mui/material";
 import axios from "axios";
 import Image from "next/image";
 import React, {
@@ -678,9 +678,10 @@ function InterfaceChatbot({
             headerButtons={headerButtons}
           />
           <ChatbotHeaderTab />
-
           {chatsLoading && (
-            <div className="h-[0.8] animate-pulse" style={{ backgroundColor: theme.palette.primary.main }} />
+            <div className="w-full">
+              <LinearProgress color="inherit" style={{ color: theme.palette.primary.main }} />
+            </div>
           )}
 
           {(IsHuman ? helloMessages?.length === 0 : messages?.length === 0) ? (
