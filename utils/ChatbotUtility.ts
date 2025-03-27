@@ -1,3 +1,5 @@
+import { emitEventToParent } from "./emitEventsToParent/emitEventsToParent";
+
 export const SetSessionStorage = (key: string, value: string) => {
   sessionStorage.setItem(key, value);
 };
@@ -24,12 +26,12 @@ export const isJSONString = (str: string) => {
 };
 
 export const perFormAction = (actionData: any) => {
-  const data = {
-    message: actionData?.variables || actionData?.variable || {},
-    type: "ChatbotResponse",
-  };
-  window?.parent?.postMessage(data, "*");
-
+  // const data = {
+  //   message: actionData?.variables || actionData?.variable || actionData?.data || actionData?.dataToSend || {},
+  //   type: "ChatbotResponse",
+  // };
+  // window?.parent?.postMessage(data, "*");
+  emitEventToParent('FRONT_END_ACTION',actionData?.variables || actionData?.variable || actionData?.data || actionData?.dataToSend || {})
   // switch (actionData?.type?.toLowerCase()) {
   //   case "senddatatofrontend":
   //     /* eslint-disable-next-line */
