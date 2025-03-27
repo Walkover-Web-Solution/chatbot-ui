@@ -48,14 +48,14 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
   const shouldToggleScreenSize = `${width}${widthUnit}` !== '100%'
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
-  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug ,chatSubTitle,allowBridgeSwitchViaProp} = useCustomSelector((state: $ReduxCoreType) => ({
+  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug, chatSubTitle, allowBridgeSwitchViaProp } = useCustomSelector((state: $ReduxCoreType) => ({
     allowModalSwitch: state.Interface.allowModalSwitch || false,
     hideCloseButton: state.Interface.hideCloseButton || false,
     chatTitle: state.Interface.chatTitle || "",
-    chatSubTitle : state.Interface.chatSubTitle || "",
+    chatSubTitle: state.Interface.chatSubTitle || "",
     chatIcon: state.Interface.chatIcon || "",
     currentSelectedBridgeSlug: state?.Interface?.bridgeName,
-    allowBridgeSwitchViaProp : state?.Interface?.allowBridgeSwitch
+    allowBridgeSwitchViaProp: state?.Interface?.allowBridgeSwitch
   }))
   const handleCreateNewSubThread = async () => {
     if (preview) return;
@@ -96,21 +96,21 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
 
         <div className="flex flex-col items-center mx-auto">
           <div className="flex items-center sm:gap-3 gap-1 justify-center">
-            {chatIcon ? <Image alt="headerIcon" width={24} height={24} src={chatIcon} className="rounded-full" /> : <ChatIcon height={20} width={20} />}
+            {chatIcon ? <Image alt="headerIcon" width={24} height={24} src={chatIcon} className="rounded-full" /> : null}
             <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis">
               {chatTitle || chatbotTitle || "AI Assistant"}
             </h1>
-            <ResetChatOption
+            {/* <ResetChatOption
               textColor={textColor}
               setChatsLoading={setChatsLoading}
-            />
+            /> */}
           </div>
           {chatbotSubtitle && <p className="text-sm opacity-75 text-center whitespace-nowrap overflow-hidden overflow-ellipsis">
             {chatSubTitle || chatbotSubtitle || "Do you have any questions? Ask us!"}
           </p>}
         </div>
         <div className="sm:absolute right-0 flex justify-center items-center gap-1">
-          { allowBridgeSwitchViaProp && allowBridgeSwitch && <BridgeSwitchDropdown currentSelectedBridgeSlug={currentSelectedBridgeSlug} bridges={bridges} />}
+          {allowBridgeSwitchViaProp && allowBridgeSwitch && <BridgeSwitchDropdown currentSelectedBridgeSlug={currentSelectedBridgeSlug} bridges={bridges} />}
           {allowModalSwitch && <AiServicesToSwitch />}
           {headerButtons?.map((item, index) => {
             return <React.Fragment key={`header-button-${index}`}>
@@ -512,11 +512,11 @@ function BridgeSwitchDropdown({ currentSelectedBridgeSlug, bridges }: { currentS
     allBridges.push({ slugName: currentSelectedBridgeSlug, displayName: currentSelectedBridgeSlug, id: "defaultBridge", name: currentSelectedBridgeSlug })
   }
 
-  useEffect(()=>{
-    if(currentSelectedBridgeSlug){
+  useEffect(() => {
+    if (currentSelectedBridgeSlug) {
       emitEventToParent("BRIDGE_SWITCH", allBridges?.find(item => item?.slugName === currentSelectedBridgeSlug))
     }
-  },[currentSelectedBridgeSlug])
+  }, [currentSelectedBridgeSlug])
 
   return <label className="form-control max-w-xs">
     <select

@@ -52,11 +52,11 @@ export const generateTheme = (colorHex) => {
         },
       },
       MuiLinearProgress: {
-        styleOverrides: {
-          colorPrimary: {
-            backgroundColor: colorHex,
-          },
-        },
+        // styleOverrides: {
+        //   colorPrimary: {
+        //     backgroundColor: colorHex,
+        //   },
+        // },
       },
     },
   });
