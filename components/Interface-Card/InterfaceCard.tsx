@@ -19,10 +19,10 @@ function InterfaceCard({ props, action }: any) {
   return (
     <Card
       sx={{ display: "flex", minWidth: "350px", maxWidth: "100%" }}
-      className="my-2 cursor-pointer"
+      className="mb-2 cursor-pointer"
     >
       <CardActionArea onClick={handleClickCard}>
-        <Box sx={{ display: "flex", flexDirection: "row" }} className="p-2">
+        <Box sx={{ display: "flex", flexDirection: "row" }} className="p-1 items-center">
           {props?.image ||
             (props?.imageURL && (
               <CardMedia
@@ -36,15 +36,15 @@ function InterfaceCard({ props, action }: any) {
                 alt="Card Image"
               />
             ))}
-          <CardContent>
-            <Typography variant="h5">
+          <CardContent className="!p-2 w-full">
+            <Typography>
               {props?.title ||
                 props?.heading ||
                 props?.children ||
                 "Card Title"}
             </Typography>
-            <Typography variant="subtitle2">
-              {props?.description || props?.subtitle || "Card Subtitle"}
+            <Typography variant="caption">
+              {props?.description || props?.subtitle || ""}
             </Typography>
           </CardContent>
         </Box>
