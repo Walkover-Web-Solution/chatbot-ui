@@ -1,5 +1,5 @@
 /* eslint-disable */
-import React from "react";
+import { supportsLookbehind } from "@/utils/appUtility.js";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Anchor, Code } from "./MarkdownUtitily.tsx";
@@ -7,7 +7,8 @@ import { Anchor, Code } from "./MarkdownUtitily.tsx";
 function InterfaceMarkdown({ props }: any) {
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
+      // remarkPlugins={[remarkGfm]}
+      {...(!supportsLookbehind() ? {} : { remarkPlugins: [remarkGfm] })}
       components={{
         code: Code,
         a: Anchor,

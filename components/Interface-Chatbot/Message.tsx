@@ -3,8 +3,12 @@
 import { AiIcon, UserAssistant } from "@/assests/assestsIndex";
 import InterfaceGrid from "@/components/Grid/Grid";
 import { Anchor, Code } from "@/components/Interface-Chatbot/Interface-Markdown/MarkdownUtitily";
+import { $ReduxCoreType } from "@/types/reduxCore";
+import { supportsLookbehind } from "@/utils/appUtility";
 import { isJSONString } from "@/utils/ChatbotUtility";
+import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
+import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import {
   Box,
@@ -15,15 +19,13 @@ import {
   useTheme
 } from "@mui/material";
 import copy from "copy-to-clipboard";
-import { AlertCircle, Check, ChevronDown, CircleCheckBig, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
+import { AlertCircle, Check, CircleCheckBig, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
+import dynamic from 'next/dynamic';
 import Image from "next/image";
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import "./Message.css";
-import { useCustomSelector } from "@/utils/deepCheckSelector";
-import { $ReduxCoreType } from "@/types/reduxCore";
-import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
+const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 const ResetHistoryLine = ({ text = "" }) => {
   return (
@@ -40,7 +42,7 @@ const ResetHistoryLine = ({ text = "" }) => {
 const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
   return (
     <>
-      <div className="flex flex-col gap-2.5 items-end w-full mb-2.5 animate-slide-left">
+      <div className="flex flex-col gap-2.5 items-end w-full mb-2.5 animate-slide-left mt-1">
         {Array.isArray(message?.urls) && message.urls.length > 0 && (
           <div className="flex flex-row-reverse flex-wrap gap-2.5 max-w-[80%] p-2.5 rounded-[10px_10px_1px_10px]">
             {message.urls.map((url: string, index: number) => (
@@ -58,7 +60,7 @@ const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
           </div>
         )}
         <div
-          className="p-2.5 min-w-[150px] max-w-[80%] rounded-[10px_10px_1px_10px] break-words"
+          className="p-2.5 min-w-[150px] sm:max-w-[80%] max-w-[90%] rounded-[10px_10px_1px_10px] break-words"
           style={{
             backgroundColor: theme.palette.primary.main,
             color: textColor
@@ -107,9 +109,9 @@ const AssistantMessageCard = React.memo(
 
     return (
       <div className="flex flex-col" onClick={handleMessageClick}>
-        <div className="flex items-end max-w-[90%] animate-slide-left">
+        <div className="flex items-end sm:max-w-[90%] max-w-[98%] animate-slide-left">
           <div className="flex flex-col items-center justify-end w-8 pb-3">
-            <div className="w-8 h8 rounded-full bg-primary/10 flex items-center justify-center">
+            <div className="sm:w-7 sm:h-7 w-6 h-6 rounded-full bg-primary/10 p-1 flex items-center justify-center">
               <Image
                 src={AiIcon}
                 width="28"
@@ -193,7 +195,8 @@ const AssistantMessageCard = React.memo(
                         parsedContent?.response ? (
                         <>
                           <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
+                            // remarkPlugins={[remarkGfm]}
+                            {...(!supportsLookbehind() ? {} : { remarkPlugins: [remarkGfm] })}
                             components={{
                               code: Code,
                               a: Anchor,
@@ -231,7 +234,7 @@ const AssistantMessageCard = React.memo(
                     }
                     return (
                       <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
+                        {...(!supportsLookbehind() ? {} : { remarkPlugins: [remarkGfm] })}
                         components={{
                           code: Code,
                           a: Anchor,
