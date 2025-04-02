@@ -37,20 +37,29 @@ function ChatbotWrapper({ chatbotId, loadInterface = true }) {
             eventsToSubscribe = [],
             modalConfig = {},
             allowModalSwitch = false,
-            hideCloseButton = false,
             chatTitle = "",
-            chatSubTitle="",
+            chatSubTitle = "",
             chatIcon = "",
             allowBridgeSwitch = true
           } = receivedData;
-
+          
+          // Create an object to store only the properties that are actually present in receivedData
+          const interfaceDataToUpdate: Record<string, any> = {};
+          
+          if ('allowModalSwitch' in receivedData) interfaceDataToUpdate.allowModalSwitch = allowModalSwitch;
+          if ('hideCloseButton' in receivedData) interfaceDataToUpdate.hideCloseButton = receivedData.hideCloseButton;
+          if ('chatTitle' in receivedData) interfaceDataToUpdate.chatTitle = chatTitle;
+          if ('chatIcon' in receivedData) interfaceDataToUpdate.chatIcon = chatIcon;
+          if ('chatSubTitle' in receivedData) interfaceDataToUpdate.chatSubTitle = chatSubTitle;
+          if ('allowBridgeSwitch' in receivedData) interfaceDataToUpdate.allowBridgeSwitch = allowBridgeSwitch;
+          
           if (threadId) {
             dispatch(setThreadId({ threadId: threadId }));
           }
           if (helloId) {
             dispatch(setThreadId({ helloId: helloId }));
           }
-          if (version_id === 'null' ||  version_id) {
+          if (version_id === 'null' || version_id) {
             dispatch(setThreadId({ version_id: version_id }));
           }
           if (bridgeName) {
@@ -78,7 +87,11 @@ function ChatbotWrapper({ chatbotId, loadInterface = true }) {
           if (modalConfig) {
             dispatch(setModalConfig(modalConfig))
           }
-          dispatch(setDataInInterfaceRedux({ allowModalSwitch, hideCloseButton, chatTitle, chatIcon ,chatSubTitle,allowBridgeSwitch}))
+          
+          // Only dispatch if there are properties to update
+          if (Object.keys(interfaceDataToUpdate).length > 0) {
+            dispatch(setDataInInterfaceRedux(interfaceDataToUpdate))
+          }
         }
       }
     };

@@ -74,6 +74,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
       setOptions([]);
     }
   };
+  
   return (
     <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-4 py-2 w-full">
       <div className="flex items-center w-full relative">
