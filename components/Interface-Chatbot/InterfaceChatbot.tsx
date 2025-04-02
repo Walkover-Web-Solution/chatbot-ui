@@ -729,7 +729,7 @@ function InterfaceChatbot({
               </div>
 
               {/* Text input at bottom */}
-              <div className="max-w-5xl mx-auto px-4 py-3 w-full">
+              <div className="max-w-5xl mx-auto px-4 pb-3 w-full">
                 <ChatbotTextField
                   loading={loading}
                   options={options}

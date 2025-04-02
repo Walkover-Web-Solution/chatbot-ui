@@ -2,7 +2,7 @@
 
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { ChevronUp, Send, Upload, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Send, Upload, X } from "lucide-react";
 import { Popover, TextField, useTheme } from "@mui/material";
 import { AiIcon, UserAssistant } from "@/assests/assestsIndex";
 import { errorToast } from "@/components/customToast";
@@ -137,18 +137,34 @@ function ChatbotTextField({
   };
 
   return (
-    <div className="relative w-full rounded-lg shadow-sm">
+    <div className="relative w-full rounded-lg shadow-sm ">
       {options && options.length > 0 && (
-        <div className="flex flex-wrap gap-2 p-2 animate-fadeIn">
-          {options?.slice(0, 3).map((option, index) => (
+        <div className="relative scrollbar-hide">
+          <div className="flex overflow-x-auto sm:flex-wrap gap-2 p-2 animate-fadeIn whitespace-nowrap no-scrollbar overflow-hidden">
+            {options?.slice(0, 3).map((option, index) => (
+              <button
+                key={index}
+                onClick={() => addMessage(option)}
+                className="flex-shrink-0 px-4 py-2 text-sm rounded-lg shadow-sm bg-white hover:bg-gray-50 border border-gray-200 transition-colors duration-200"
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+          {options.length > 1 && (
             <button
-              key={index}
-              onClick={() => addMessage(option)}
-              className="px-4 py-2 text-sm rounded-lg shadow-sm bg-white hover:bg-gray-50 border border-gray-200 transition-colors duration-200"
+              className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/100 rounded-full p-1 shadow-md sm:hidden"
+              onClick={(e) => {
+                e.stopPropagation();
+                const container = e.currentTarget.parentElement?.querySelector('.overflow-x-auto');
+                if (container) {
+                  container.scrollBy({ left: 150, behavior: 'smooth' });
+                }
+              }}
             >
-              {option}
+              <ChevronDown className="w-5 h-5" style={{ transform: 'rotate(-90deg)' }} />
             </button>
-          ))}
+          )}
         </div>
       )}
 

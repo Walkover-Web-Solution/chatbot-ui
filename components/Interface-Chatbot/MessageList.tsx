@@ -155,8 +155,8 @@ function MessageList({ containerRef }: MessageListProps) {
         overflowY: "auto",
         display: "flex",
         flexDirection: isInverse ? "column" : "column-reverse",
-        padding: 2,
       }}
+      className="p-2 sm:p-3"
     >
       <InfiniteScroll
         dataLength={messages.length}

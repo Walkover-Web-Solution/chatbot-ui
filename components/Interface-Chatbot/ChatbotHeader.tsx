@@ -1,6 +1,6 @@
 // MUI Icons
 import ChatIcon from "@mui/icons-material/Chat";
-import { AlignLeft, CircleX, EllipsisVertical, History, Maximize, PictureInPicture2, Settings, SquarePen } from "lucide-react";
+import { AlignLeft, EllipsisVertical, History, Maximize, PictureInPicture2, Settings, SquarePen, X } from "lucide-react";
 
 // MUI Components
 import { useTheme } from "@mui/material";
@@ -28,8 +28,8 @@ import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { useDispatch } from "react-redux";
 import { ChatbotContext } from "../context";
-import "./InterfaceChatbot.css";
 import { MessageContext } from "./InterfaceChatbot";
+import "./InterfaceChatbot.css";
 
 interface ChatbotHeaderProps {
   setLoading: (loading: boolean) => void;
@@ -45,7 +45,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
   const { setOptions } = useContext(MessageContext);
   const { chatbotConfig: { chatbotTitle, chatbotSubtitle, width = '', widthUnit = '', allowBridgeSwitch = false, bridges = [] } } = useContext<any>(ChatbotContext);
   const [fullScreen, setFullScreen] = useState(false)
-  const shouldToggleScreenSize = `${width}${widthUnit}` !== '100%'
+  const shouldToggleScreenSize = `${width}${widthUnit}` !== '1200%'
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
   const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug, chatSubTitle, allowBridgeSwitchViaProp } = useCustomSelector((state: $ReduxCoreType) => ({
@@ -77,19 +77,19 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
   return (
     <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-4 py-2 w-full">
       <div className="flex items-center w-full relative">
-        <div className="sm:absolute left-0 flex items-center gap-2">
+        <div className="sm:absolute left-0 flex items-center">
           <button
             className="p-2 hover:bg-gray-200 rounded-full transition-colors"
             onClick={() => setToggleDrawer(!isToggledrawer)}
           >
-            {isToggledrawer ? null : <AlignLeft color={textColor} />}
+            {isToggledrawer ? null : <AlignLeft size={22} color="#555555" />}
           </button>
           <div className={`tooltip tooltip-right ${isToggledrawer ? 'hidden' : ''}`} data-tip="Create new thread">
             <button
               className="p-2 hover:bg-gray-200 rounded-full transition-colors"
               onClick={handleCreateNewSubThread}
             >
-              <SquarePen className="h-6 w-6" color={textColor} />
+              <SquarePen size={22} color="#555555" />
             </button>
           </div>
         </div>
@@ -117,34 +117,46 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
               {renderIconsByType(item)}
             </React.Fragment>
           })}
-          {shouldToggleScreenSize ? <div>
-            {!fullScreen ? <div className="cursor-pointer p-1 rounded-full" onClick={() => {
-
-              if (window?.parent) {
-                setFullScreen(true)
-                window.parent.postMessage({ type: "ENTER_FULL_SCREEN_CHATBOT" }, "*")
-              }
-            }}>
-              <Maximize />
-            </div > :
-              <div className="cursor-pointer p-1 rounded-full" onClick={() => {
+          <div className="flex items-center">
+            {shouldToggleScreenSize ? (
+              <div>
+                {!fullScreen ? (
+                  <div
+                    className="cursor-pointer p-1 rounded-full"
+                    onClick={() => {
+                      if (window?.parent) {
+                        setFullScreen(true);
+                        window.parent.postMessage({ type: "ENTER_FULL_SCREEN_CHATBOT" }, "*");
+                      }
+                    }}
+                  >
+                    <Maximize size={22} color="#555555" />
+                  </div>
+                ) : (
+                  <div
+                    className="cursor-pointer p-1 rounded-full"
+                    onClick={() => {
+                      if (window?.parent) {
+                        setFullScreen(false);
+                        window.parent.postMessage({ type: "EXIT_FULL_SCREEN_CHATBOT" }, "*");
+                      }
+                    }}
+                  >
+                    <PictureInPicture2 size={22} color="#555555" />
+                  </div>
+                )}
+              </div>
+            ) : null}
+            {
+              !hideCloseButton && <div className="cursor-pointer p-1 py-3" onClick={() => {
                 if (window?.parent) {
-                  setFullScreen(false)
-
-                  window.parent.postMessage({ type: "EXIT_FULL_SCREEN_CHATBOT" }, "*")
+                  window.parent.postMessage({ type: "CLOSE_CHATBOT" }, "*")
                 }
               }}>
-                <PictureInPicture2 />
-              </div >}
-          </div> : null}
-          {
-            !hideCloseButton && <div className="cursor-pointer p-1 rounded-full" onClick={() => {
-              if (window?.parent) {
-                window.parent.postMessage({ type: "CLOSE_CHATBOT" }, "*")
-              }
-            }}>
-              <CircleX className="ml-1" />
-            </div>}
+                <X size={22} color="#555555" />
+              </div>
+            }
+          </div>
 
         </div>
       </div>
