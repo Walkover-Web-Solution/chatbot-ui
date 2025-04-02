@@ -148,7 +148,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
               </div>
             ) : null}
             {
-              !hideCloseButton && <div className="cursor-pointer p-1 py-3" onClick={() => {
+              (hideCloseButton !== true && hideCloseButton !== "true") && <div className="cursor-pointer p-1 py-3" onClick={() => {
                 if (window?.parent) {
                   window.parent.postMessage({ type: "CLOSE_CHATBOT" }, "*")
                 }
