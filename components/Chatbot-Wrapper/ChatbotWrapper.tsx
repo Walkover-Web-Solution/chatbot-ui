@@ -39,18 +39,18 @@ function ChatbotWrapper({ chatbotId, loadInterface = true }) {
             allowModalSwitch = false,
             hideCloseButton = false,
             chatTitle = "",
-            chatSubTitle="",
+            chatSubTitle = "",
             chatIcon = "",
             allowBridgeSwitch = true
           } = receivedData;
-
+          console.log(hideCloseButton, 'data', typeof hideCloseButton)
           if (threadId) {
             dispatch(setThreadId({ threadId: threadId }));
           }
           if (helloId) {
             dispatch(setThreadId({ helloId: helloId }));
           }
-          if (version_id === 'null' ||  version_id) {
+          if (version_id === 'null' || version_id) {
             dispatch(setThreadId({ version_id: version_id }));
           }
           if (bridgeName) {
@@ -78,7 +78,7 @@ function ChatbotWrapper({ chatbotId, loadInterface = true }) {
           if (modalConfig) {
             dispatch(setModalConfig(modalConfig))
           }
-          dispatch(setDataInInterfaceRedux({ allowModalSwitch, hideCloseButton, chatTitle, chatIcon ,chatSubTitle,allowBridgeSwitch}))
+          dispatch(setDataInInterfaceRedux({ allowModalSwitch, hideCloseButton, chatTitle, chatIcon, chatSubTitle, allowBridgeSwitch }))
         }
       }
     };
