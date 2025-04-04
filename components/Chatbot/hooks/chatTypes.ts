@@ -32,7 +32,7 @@ export interface MessageType {
     hasMoreMessages: boolean;
     isFetching: boolean;
     newMessage: boolean;
-    open: boolean;
+    openHelloForm: boolean;
     isToggledrawer: boolean;
   }
   
@@ -57,7 +57,7 @@ export interface MessageType {
     SET_HAS_MORE_MESSAGES = 'SET_HAS_MORE_MESSAGES',
     SET_IS_FETCHING = 'SET_IS_FETCHING',
     SET_NEW_MESSAGE = 'SET_NEW_MESSAGE',
-    SET_OPEN = 'SET_OPEN',
+    SET_OPEN_HELLO_FORM = 'SET_OPEN_HELLO_FORM',
     SET_TOGGLE_DRAWER = 'SET_TOGGLE_DRAWER',
     SET_HELLO_MESSAGES = 'SET_HELLO_MESSAGES',
     ADD_HELLO_MESSAGE = 'ADD_HELLO_MESSAGE',
@@ -86,7 +86,7 @@ export interface MessageType {
     | { type: ChatActionTypes.SET_HAS_MORE_MESSAGES; payload: boolean }
     | { type: ChatActionTypes.SET_IS_FETCHING; payload: boolean }
     | { type: ChatActionTypes.SET_NEW_MESSAGE; payload: boolean }
-    | { type: ChatActionTypes.SET_OPEN; payload: boolean }
+    | { type: ChatActionTypes.SET_OPEN_HELLO_FORM; payload: boolean }
     | { type: ChatActionTypes.SET_TOGGLE_DRAWER; payload: boolean }
     | { type: ChatActionTypes.SET_HELLO_MESSAGES; payload: any[] }
     | { type: ChatActionTypes.ADD_HELLO_MESSAGE; payload: any }

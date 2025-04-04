@@ -1,20 +1,13 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import axios from 'axios';
 import { getHelloChatsApi } from '@/config/api';
-import { MessageType } from '../types/chatTypes';
-import { useDispatch } from 'react-redux';
-import { setChannel } from '@/store/hello/helloSlice';
 import useSocket from '@/hooks/socket';
-import { GetSessionStorageData } from '@/utils/ChatbotUtility';
+import { getHelloDetailsStart, setChannel } from '@/store/hello/helloSlice';
+import axios from 'axios';
+import { useCallback, useEffect, useReducer, useRef } from 'react';
+import { chatReducer, initialChatState } from './chatReducer';
 import { ChatActionTypes } from './chatTypes';
+import { useReduxStateManagement } from './useReduxManagement';
 
 interface UseHelloIntegrationProps {
-  channelId: string | null;
-  uuid: string | null;
-  unique_id: string | null;
-  presence_channel: string | null;
-  team_id: string | null;
-  chat_id: string | null;
   setOpen: (open: boolean) => void;
 }
 
@@ -26,20 +19,20 @@ interface HelloMessage {
   id?: string;
 }
 
-const useHelloIntegration = ({
-  channelId,
-  uuid,
-  unique_id,
-  presence_channel,
-  team_id,
-  chat_id,
-  setOpen
-}: UseHelloIntegrationProps) => {
-  const [helloMessages, setHelloMessages] = useState<HelloMessage[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+const useHelloIntegration = () => {
+  const [state, dispatch] = useReducer(chatReducer, initialChatState)
+  const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId } = state;
+  const { uuid, unique_id, channelId, presence_channel, team_id, chat_id } = useReduxStateManagement();
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
-  const socket = useSocket();
-  const dispatch: ChatActionTypes = useDispatch();
+  const socket: any = useSocket();
+
+  const setLoading = (value: boolean) => {
+    dispatch({ type: ChatActionTypes.SET_LOADING, payload: value });
+  }
+
+  const setHelloMessages = (messages: HelloMessage[]) => {
+    dispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: messages });
+  }
 
   // Initialize socket listeners
   useEffect(() => {
@@ -50,15 +43,15 @@ const useHelloIntegration = ({
       const { message } = response || {};
       const { content, chat_id, from_name, sender_id } = message || {};
       const text = content?.text;
-      
+
       if (text && !chat_id) {
         setLoading(false);
         if (timeoutIdRef.current) {
           clearTimeout(timeoutIdRef.current);
         }
-        
-        setHelloMessages((prevMessages) => {
-          const lastMessageId = prevMessages[prevMessages.length - 1]?.id;
+
+        setHelloMessages((prevMessages: HelloMessage[]) => {
+          const lastMessageId = prevMessages.length > 0 ? prevMessages[prevMessages.length - 1]?.id : undefined;
           if (lastMessageId !== response?.id) {
             return [
               ...prevMessages,
@@ -76,13 +69,13 @@ const useHelloIntegration = ({
     };
 
     socket.on("NewPublish", handleNewPublish);
-    socket.on("message", (data) => {
-      // Handle any message events if needed
-    });
+    // socket.on("message", (data) => {
+    //   // Handle any message events if needed
+    // });
 
     return () => {
-      socket.off("NewPublish");
-      socket.off("message");
+      socket.on("NewPublish");
+      // socket.off("message");
     };
   }, [socket]);
 
@@ -92,7 +85,7 @@ const useHelloIntegration = ({
       try {
         const response = await getHelloChatsApi({ channelId });
         const helloChats = response?.data?.data;
-        
+
         if (Array.isArray(helloChats) && helloChats.length > 0) {
           const filterChats = helloChats
             .map((chat) => {
@@ -117,7 +110,7 @@ const useHelloIntegration = ({
               };
             })
             .reverse();
-            
+
           setHelloMessages(filterChats);
         }
       } catch (error) {
@@ -128,14 +121,29 @@ const useHelloIntegration = ({
 
   useEffect(() => {
     fetchHelloPreviousHistory();
-  }, [fetchHelloPreviousHistory]);
+  }, [fetchHelloPreviousHistory, channelId, uuid]);
+
+  const subscribeToChannel = () => {
+    if (bridgeName && threadId) {
+      dispatch(
+        getHelloDetailsStart({
+          slugName: bridgeName,
+          threadId: threadId,
+          helloId: helloId || null,
+          versionId: bridgeVersionId || null,
+        })
+      );
+    }
+  };
+
+  useEffect(() => {
+    subscribeToChannel();
+  }, [bridgeName, threadId, helloId]);
 
   // Send message to Hello
   const sendMessageToHello = useCallback(async (message: string) => {
     if (!message.trim()) return;
-    
-    setLoading(true);
-    
+
     try {
       const channelDetail = !channelId ? {
         call_enabled: null,
@@ -153,8 +161,8 @@ const useHelloIntegration = ({
         team_id,
         new: true,
       } : undefined;
-      
-      if (!channelId) setOpen(true);
+
+      if (!channelId) dispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true });
 
       const response = await axios.post(
         "https://api.phone91.com/v2/send/",
@@ -182,11 +190,10 @@ const useHelloIntegration = ({
       if (!channelId && response?.data?.data) {
         dispatch(setChannel({ Channel: response.data.data }));
       }
-      
+
       return response.data.data;
     } catch (error) {
       console.error("Error sending message to Hello:", error);
-      setLoading(false);
     }
   }, [channelId, uuid, unique_id, presence_channel, team_id, chat_id, setOpen, dispatch]);
 
@@ -194,21 +201,22 @@ const useHelloIntegration = ({
   const onSendHello = useCallback((message?: string, inputRef?: React.RefObject<HTMLInputElement | HTMLTextAreaElement>) => {
     const textMessage = message || (inputRef?.current?.value || '');
     if (!textMessage.trim()) return;
-    
+
     // Add user message to local state immediately
     setHelloMessages((prevMessages) => [
       ...prevMessages,
       { role: "user", content: textMessage },
     ]);
-    
+
     // Send message to API
     sendMessageToHello(textMessage);
-    
+    dispatch({ type: ChatActionTypes.SET_OPTIONS, payload: [] });
+
     // Clear input field
     if (inputRef?.current) {
       inputRef.current.value = '';
     }
-    
+
     return true;
   }, [sendMessageToHello]);
 
@@ -217,11 +225,11 @@ const useHelloIntegration = ({
     if (timeoutIdRef.current) {
       clearTimeout(timeoutIdRef.current);
     }
-    
+
     timeoutIdRef.current = setTimeout(() => {
       setLoading(false);
     }, 240000); // 4 minutes timeout
-    
+
     return () => {
       if (timeoutIdRef.current) {
         clearTimeout(timeoutIdRef.current);

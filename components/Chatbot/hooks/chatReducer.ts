@@ -13,7 +13,7 @@ export const initialChatState: ChatState = {
   isFetching: false,
 
   // UI States
-  open: false,
+  openHelloForm: false,
   isToggledrawer: true,
   headerButtons: [],
 
