@@ -13,6 +13,7 @@ import {
 import { ALLOWED_EVENTS_TO_SUBSCRIBE, ParamsEnums } from "@/utils/enums";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
+import Chatbot from "../Chatbot/Chatbot";
 
 interface InterfaceData {
   threadId?: string | null;
@@ -123,7 +124,8 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
     };
   }, [handleMessage, chatbotId]);
 
-  return <InterfaceChatbot />;
+  // return <InterfaceChatbot />;
+  return <Chatbot />
 }
 
 export default React.memo(

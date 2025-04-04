@@ -1,27 +1,24 @@
+import { getAllThreadsApi } from '@/config/api';
+import { getHelloDetailsStart } from '@/store/hello/helloSlice';
+import { setThreads } from '@/store/interface/interfaceSlice';
+import { $ReduxCoreType } from '@/types/reduxCore';
+import { GetSessionStorageData } from '@/utils/ChatbotUtility';
+import { useCustomSelector } from '@/utils/deepCheckSelector';
+import { useMediaQuery, useTheme } from '@mui/material';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { useChatContext } from './ChatContext';
-import { ChatActionTypes } from './chatTypes';
-import { useCustomSelector } from '@/utils/deepCheckSelector';
-import { $ReduxCoreType } from '@/types/reduxCore';
-import { getHelloDetailsStart, setChannel } from '@/store/hello/helloSlice';
-import { setThreads } from '@/store/interface/interfaceSlice';
-import { GetSessionStorageData } from '@/utils/ChatbotUtility';
-import { useMediaQuery, useTheme } from '@mui/material';
-import { getAllThreadsApi } from '@/config/api';
+import { ChatActionTypes, ChatState } from './chatTypes';
 
-export const useReduxStateManagement = (chatbotId: string) => {
+export const useReduxStateManagement = ({ chatbotId, state, dispatch }: { chatbotId: string, state: ChatState, dispatch: React.Dispatch<ChatActionTypes> }) => {
   const reduxDispatch = useDispatch();
   const theme = useTheme();
   const isLargeScreen = useMediaQuery('(max-width: 1024px)');
-
   const {
-    dispatch,
     threadId,
     bridgeName,
     helloId,
     subThreadId
-  } = useChatContext();
+  } = state;
 
   // Get Redux state
   const {

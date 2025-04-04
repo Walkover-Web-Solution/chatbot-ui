@@ -2,15 +2,9 @@ import { getHelloChatsApi } from '@/config/api';
 import useSocket from '@/hooks/socket';
 import { getHelloDetailsStart, setChannel } from '@/store/hello/helloSlice';
 import axios from 'axios';
-import { useCallback, useEffect, useReducer, useRef } from 'react';
-import { chatReducer, initialChatState } from './chatReducer';
-import { ChatActionTypes } from './chatTypes';
+import { useCallback, useEffect, useRef } from 'react';
+import { ChatActionTypes, ChatState } from './chatTypes';
 import { useReduxStateManagement } from './useReduxManagement';
-
-interface UseHelloIntegrationProps {
-  setOpen: (open: boolean) => void;
-}
-
 interface HelloMessage {
   role: string;
   message_id?: string;
@@ -19,10 +13,9 @@ interface HelloMessage {
   id?: string;
 }
 
-const useHelloIntegration = () => {
-  const [state, dispatch] = useReducer(chatReducer, initialChatState)
+const useHelloIntegration = ({ chatbotId, chatDispatch, chatState }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatActionTypes> }) => {
   const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId } = state;
-  const { uuid, unique_id, channelId, presence_channel, team_id, chat_id } = useReduxStateManagement();
+  const { uuid, unique_id, channelId, presence_channel, team_id, chat_id } = useReduxStateManagement({ chatbotId });
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
   const socket: any = useSocket();
 
@@ -195,7 +188,7 @@ const useHelloIntegration = () => {
     } catch (error) {
       console.error("Error sending message to Hello:", error);
     }
-  }, [channelId, uuid, unique_id, presence_channel, team_id, chat_id, setOpen, dispatch]);
+  }, [channelId, uuid, unique_id, presence_channel, team_id, chat_id, dispatch]);
 
   // Handle sending a message
   const onSendHello = useCallback((message?: string, inputRef?: React.RefObject<HTMLInputElement | HTMLTextAreaElement>) => {
