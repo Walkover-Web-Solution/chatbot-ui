@@ -30,6 +30,7 @@ import { useDispatch } from "react-redux";
 import { ChatbotContext } from "../context";
 import { MessageContext } from "./InterfaceChatbot";
 import "./InterfaceChatbot.css";
+import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 
 interface ChatbotHeaderProps {
   setLoading: (loading: boolean) => void;
@@ -59,11 +60,13 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
   }))
   const handleCreateNewSubThread = async () => {
     if (preview) return;
+    const subThreadId = createRandomId()
     const result = await createNewThreadApi({
       threadId: threadId,
-      subThreadId: createRandomId(),
+      subThreadId,
     });
     if (result?.success) {
+      dispatch(setDataInAppInfoReducer({ subThreadId }))
       dispatch(
         setThreads({
           newThreadData: result?.thread,
@@ -74,7 +77,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoadi
       setOptions([]);
     }
   };
-  
+
   return (
     <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-4 py-2 w-full">
       <div className="flex items-center w-full relative">

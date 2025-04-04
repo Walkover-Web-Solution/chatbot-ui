@@ -40,6 +40,7 @@ import ChatbotTextField from "./ChatbotTextField";
 import "./InterfaceChatbot.css";
 import MessageList from "./MessageList";
 import StarterQuestions from "./StarterQuestions";
+import { useChatActions } from "../Chatbot/hooks/useChatActions";
 
 const client = WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
 
@@ -126,6 +127,9 @@ function InterfaceChatbot({
     mode: state.Hello?.mode || [],
     selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null
   }));
+
+  const { fetchAllThreads , getChatHistory , sendMessage : sendMessageAction} = useChatActions()
+
 
   const [chatsLoading, setChatsLoading] = useState(false);
   const timeoutIdRef = useRef<any>(null);
@@ -255,7 +259,7 @@ function InterfaceChatbot({
   const handleMessage = useCallback(
     (event: MessageEvent) => {
       if (event?.data?.type === "refresh") {
-        getallPreviousHistory();
+        getChatHistory();
       }
       if (event?.data?.type === "askAi") {
         if (!loading) {
@@ -341,37 +345,37 @@ function InterfaceChatbot({
     }, 240000);
   };
 
-  const getallPreviousHistory = async () => {
-    if (threadId && chatbotId) {
-      setChatsLoading(true);
-      try {
-        const { previousChats, starterQuestion } = await getPreviousMessage(
-          threadId,
-          bridgeName,
-          1,
-          subThreadId
-        );
-        if (Array.isArray(previousChats)) {
-          setMessages(previousChats?.length === 0 ? [] : [...previousChats]);
-          setCurrentPage(1);
-          setHasMoreMessages(previousChats?.length >= 40);
-        } else {
-          setMessages([]);
-          setHasMoreMessages(false);
-          console.warn("previousChats is not an array");
-        }
-        if (Array.isArray(starterQuestion)) {
-          setStarterQuestions(starterQuestion.slice(0, 4));
-        }
-      } catch (error) {
-        console.warn("Error fetching previous chats:", error);
-        setMessages([]);
-        setHasMoreMessages(false);
-      } finally {
-        setChatsLoading(false);
-      }
-    }
-  };
+  // const get = async () => {
+  //   if (threadId && chatbotId) {
+  //     setChatsLoading(true);
+  //     try {
+  //       const { previousChats, starterQuestion } = await getPreviousMessage(
+  //         threadId,
+  //         bridgeName,
+  //         1,
+  //         subThreadId
+  //       );
+  //       if (Array.isArray(previousChats)) {
+  //         setMessages(previousChats?.length === 0 ? [] : [...previousChats]);
+  //         setCurrentPage(1);
+  //         setHasMoreMessages(previousChats?.length >= 40);
+  //       } else {
+  //         setMessages([]);
+  //         setHasMoreMessages(false);
+  //         console.warn("previousChats is not an array");
+  //       }
+  //       if (Array.isArray(starterQuestion)) {
+  //         setStarterQuestions(starterQuestion.slice(0, 4));
+  //       }
+  //     } catch (error) {
+  //       console.warn("Error fetching previous chats:", error);
+  //       setMessages([]);
+  //       setHasMoreMessages(false);
+  //     } finally {
+  //       setChatsLoading(false);
+  //     }
+  //   }
+  // };
 
   const getHelloPreviousHistory = async () => {
     if (channelId && uuid) {
@@ -419,17 +423,8 @@ function InterfaceChatbot({
     }
   };
 
-  const fetchAllThreads = async () => {
-    const result = await getAllThreadsApi({ threadId });
-    if (result?.success) {
-      dispatch(
-        setThreads({ bridgeName, threadId, threadList: result?.threads })
-      );
-    }
-  };
-
   useEffect(() => {
-    fetchAllThreads();
+    fetchAllThreads()
   }, [threadId, bridgeName]);
 
   useEffect(() => {
@@ -437,7 +432,7 @@ function InterfaceChatbot({
   }, [bridgeName, threadId, helloId]);
 
   useEffect(() => {
-    getallPreviousHistory();
+    getChatHistory();
   }, [threadId, bridgeName, subThreadId]);
 
   useEffect(() => {
@@ -535,7 +530,7 @@ function InterfaceChatbot({
     thread = "",
     bridge = ""
   ) => {
-    const response = await sendDataToAction({
+    sendMessageAction({
       message,
       images: imageUrls, // Send image URLs
       userId,
@@ -549,11 +544,7 @@ function InterfaceChatbot({
         configuration: { model: selectedAiServiceAndModal?.modal },
         service: selectedAiServiceAndModal?.service
       } : {})
-    });
-    if (!response?.success) {
-      setMessages((prevMessages) => prevMessages.slice(0, -1));
-      setLoading(false);
-    }
+    })
   };
 
   const onSend = async (msg?: string, apiCall: boolean = true) => {
