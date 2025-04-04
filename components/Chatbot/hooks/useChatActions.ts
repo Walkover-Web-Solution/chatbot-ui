@@ -90,15 +90,12 @@ import { $ReduxCoreType } from '@/types/reduxCore';
 
 export const useChatActions = ({ chatDispatch, chatState }: { chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState }) => {
 
-    console.log(chatState?.messages)
-
     const { threadId, subThreadId, bridgeName } = useCustomSelector((state: $ReduxCoreType) => ({
         threadId: state.appInfo.threadId,
         subThreadId: state.appInfo.subThreadId,
         bridgeName: state.appInfo.bridgeName,
     }))
 
-    // Fetch all threads whenever threadId or bridgeName changes
     useEffect(() => {
         fetchAllThreads()
     }, [threadId, bridgeName]);
@@ -162,6 +159,9 @@ export const useChatActions = ({ chatDispatch, chatState }: { chatDispatch: Reac
     return {
         fetchAllThreads,
         getChatHistory,
-        sendMessage
+        sendMessage,
+        setToggleDrawer: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_TOGGLE_DRAWER, payload }),
+        setLoading : (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_LOADING, payload }),
+        setChatsLoading : (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_CHATS_LOADING, payload })
     };
 }

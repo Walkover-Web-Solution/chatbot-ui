@@ -23,7 +23,11 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
     const { onSendHello } = useHelloIntegration({ chatbotId, chatDispatch, chatState });
     const { IsHuman } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
-    const { } = useChatActions({ chatDispatch, chatState })
+    const { 
+        setToggleDrawer ,
+        setLoading , 
+        setChatsLoading
+    } = useChatActions({ chatDispatch, chatState })
     const theme = useTheme();
 
     // refs
@@ -38,20 +42,18 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
 
     return (
         <MessageContext.Provider value={{ ...chatState }}>
-
-            <div>Chatbot</div>
-            <FormComponent open={openHelloForm} setOpen={() => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM , payload:true})} />
+            <FormComponent open={openHelloForm} setOpen={() => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true })} />
             <div className="flex h-screen w-full overflow-hidden relative">
                 {/* Sidebar - always visible on large screens */}
-                {/* <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? ' w-64' : 'w-0'}`}>
+                <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? ' w-64' : 'w-0'}`}>
                     <ChatbotDrawer setToggleDrawer={setToggleDrawer} isToggledrawer={isToggledrawer} />
-                </div> */}
+                </div>
 
                 {/* Main content area */}
 
                 <div className="flex flex-col flex-1 w-full">
                     {/* Mobile header - hidden on large screens */}
-                    {/* <ChatbotHeader
+                    <ChatbotHeader
                         setLoading={setLoading}
                         setChatsLoading={setChatsLoading}
                         setToggleDrawer={setToggleDrawer}
@@ -59,7 +61,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                         threadId={threadId}
                         reduxBridgeName={bridgeName}
                         headerButtons={headerButtons}
-                    /> */}
+                    />
                     <ChatbotHeaderTab />
                     {chatsLoading && (
                         <div className="w-full">
