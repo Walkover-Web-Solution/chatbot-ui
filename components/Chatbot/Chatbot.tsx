@@ -19,27 +19,26 @@ import MessageList from '../Interface-Chatbot/MessageList';
 
 function Chatbot({ chatbotId }: { chatbotId: string }) {
     // hooks
-    const [state, dispatch] = useReducer(chatReducer, initialChatState);
-    const { onSendHello } = useHelloIntegration({ chatbotId, chatDispatch: dispatch, chatState: state });
-    const { IsHuman } = useReduxStateManagement({ chatbotId, chatDispatch: dispatch, chatState: state });
+    const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
+    const { onSendHello } = useHelloIntegration({ chatbotId, chatDispatch, chatState });
+    const { IsHuman } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
     const theme = useTheme();
-
 
     // refs
     const containerRef = React.useRef<HTMLDivElement>(null);
     const messageRef = React.useRef<HTMLDivElement>(null);
-    const { openHelloForm, isToggledrawer, threadId, bridgeName, headerButtons, chatsLoading, helloMessages, messages, loading, options, starterQuestions, images } = state;
+    const { openHelloForm, isToggledrawer, threadId, bridgeName, headerButtons, chatsLoading, helloMessages, messages, loading, options, starterQuestions, images } = chatState;
 
 
     const handleChatsLoading = (loading: boolean) => {
-        dispatch({ type: ChatActionTypes.SET_CHATS_LOADING, payload: loading })
+        chatDispatch({ type: ChatActionTypes.SET_CHATS_LOADING, payload: loading })
     }
 
     return (
-        <MessageContext.Provider value={{ ...state }}>
+        <MessageContext.Provider value={{ ...chatState }}>
 
             <div>Chatbot</div>
-            <FormComponent open={openHelloForm} setOpen={() => dispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM })} />
+            <FormComponent open={openHelloForm} setOpen={() => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM })} />
             <div className="flex h-screen w-full overflow-hidden relative">
                 {/* Sidebar - always visible on large screens */}
                 <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? ' w-64' : 'w-0'}`}>
@@ -90,7 +89,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                                         IsHuman ? onSendHello() : null;
                                     }}
                                     messageRef={messageRef}
-                                    setImages={(images) => dispatch({ type: ChatActionTypes.SET_IMAGES, payload: images })}
+                                    setImages={(images) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload: images })}
                                     images={images}
                                 />
                             </div>
@@ -119,7 +118,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                                         IsHuman ? onSendHello() : null;
                                     }}
                                     messageRef={messageRef}
-                                    setImages={(images) => dispatch({ type: ChatActionTypes.SET_IMAGES, payload: images })}
+                                    setImages={(images) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload: images })}
                                     images={images}
                                 />
                             </div>

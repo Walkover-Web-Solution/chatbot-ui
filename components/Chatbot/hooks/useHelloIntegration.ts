@@ -3,8 +3,9 @@ import useSocket from '@/hooks/socket';
 import { getHelloDetailsStart, setChannel } from '@/store/hello/helloSlice';
 import axios from 'axios';
 import { useCallback, useEffect, useRef } from 'react';
-import { ChatActionTypes, ChatState } from './chatTypes';
+import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { useReduxStateManagement } from './useReduxManagement';
+import { useDispatch } from 'react-redux';
 interface HelloMessage {
   role: string;
   message_id?: string;
@@ -13,18 +14,19 @@ interface HelloMessage {
   id?: string;
 }
 
-const useHelloIntegration = ({ chatbotId, chatDispatch, chatState }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatActionTypes> }) => {
-  const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId } = state;
-  const { uuid, unique_id, channelId, presence_channel, team_id, chat_id } = useReduxStateManagement({ chatbotId });
+const useHelloIntegration = ({ chatbotId, chatDispatch, chatState }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction> }) => {
+  const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId } = chatState;
+  const { uuid, unique_id, channelId, presence_channel, team_id, chat_id } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
   const socket: any = useSocket();
+  const dispatch = useDispatch();
 
   const setLoading = (value: boolean) => {
-    dispatch({ type: ChatActionTypes.SET_LOADING, payload: value });
+    chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: value });
   }
 
   const setHelloMessages = (messages: HelloMessage[]) => {
-    dispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: messages });
+    chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: messages });
   }
 
   // Initialize socket listeners
@@ -155,7 +157,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState }: { chatbotId
         new: true,
       } : undefined;
 
-      if (!channelId) dispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true });
+      if (!channelId) chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true });
 
       const response = await axios.post(
         "https://api.phone91.com/v2/send/",
@@ -188,7 +190,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState }: { chatbotId
     } catch (error) {
       console.error("Error sending message to Hello:", error);
     }
-  }, [channelId, uuid, unique_id, presence_channel, team_id, chat_id, dispatch]);
+  }, [channelId, uuid, unique_id, presence_channel, team_id, chat_id, chatDispatch]);
 
   // Handle sending a message
   const onSendHello = useCallback((message?: string, inputRef?: React.RefObject<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -203,7 +205,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState }: { chatbotId
 
     // Send message to API
     sendMessageToHello(textMessage);
-    dispatch({ type: ChatActionTypes.SET_OPTIONS, payload: [] });
+    chatDispatch({ type: ChatActionTypes.SET_OPTIONS, payload: [] });
 
     // Clear input field
     if (inputRef?.current) {
