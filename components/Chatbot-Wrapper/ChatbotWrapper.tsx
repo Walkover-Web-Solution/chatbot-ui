@@ -1,6 +1,7 @@
 'use client';
 import InterfaceChatbot from "@/components/Interface-Chatbot/InterfaceChatbot";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
+import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import {
   addDefaultContext,
   setConfig,
@@ -54,6 +55,7 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
     // Process thread-related data
     if (receivedData.threadId) {
       dispatch(setThreadId({ threadId: receivedData.threadId }));
+      dispatch(setDataInAppInfoReducer({ threadId: receivedData.threadId }))
     }
 
     if (receivedData.helloId) {
@@ -66,6 +68,7 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
 
     // Process bridge data
     if (receivedData.bridgeName) {
+      dispatch(setDataInAppInfoReducer({ bridgeName: receivedData.bridgeName }))
       dispatch(setThreadId({ bridgeName: receivedData.bridgeName || "root" }));
       dispatch(
         addDefaultContext({

@@ -91,6 +91,7 @@ export const reducers: ValidateSliceCaseReducers<
   },
 
   setThreads(state, action) {
+    debugger
     const { chatbotId } = action?.urlData || {};
     const bridgeName = action.payload?.bridgeName || state.bridgeName || "root";
     const threadId = action.payload?.threadId || state.threadId;
