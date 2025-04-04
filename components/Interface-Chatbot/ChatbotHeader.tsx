@@ -36,7 +36,7 @@ interface ChatbotHeaderProps {
   setChatsLoading: (loading: boolean) => void;
   setToggleDrawer: (isOpen: boolean) => void;
   isToggledrawer: boolean;
-  headerButtons: HeaderButtonType
+  headerButtons?: HeaderButtonType
 }
 
 const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoading, setToggleDrawer, isToggledrawer, threadId, reduxBridgeName, headerButtons, preview = false }) => {

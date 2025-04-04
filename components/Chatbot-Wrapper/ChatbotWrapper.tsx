@@ -11,100 +11,117 @@ import {
   setThreadId
 } from "@/store/interface/interfaceSlice";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE, ParamsEnums } from "@/utils/enums";
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 
-function ChatbotWrapper({ chatbotId, loadInterface = true }) {
+interface InterfaceData {
+  threadId?: string | null;
+  bridgeName?: string | null;
+  vision?: any;
+  helloId?: string | null;
+  version_id?: string | null;
+  headerButtons?: Array<any>;
+  eventsToSubscribe?: Array<string>;
+  modalConfig?: Record<string, any>;
+  allowModalSwitch?: boolean;
+  chatTitle?: string;
+  chatSubTitle?: string;
+  chatIcon?: string;
+  allowBridgeSwitch?: boolean;
+  hideCloseButton?: boolean;
+  variables?: Record<string, any>;
+  [key: string]: any; // Allow for other properties
+}
+
+interface ChatbotWrapperProps {
+  chatbotId?: string;
+}
+
+function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
   const dispatch = useDispatch();
 
+  // Notify parent when interface is loaded
   useEffect(() => {
     window?.parent?.postMessage({ type: "interfaceLoaded" }, "*");
   }, []);
 
-  useEffect(() => {
+  // Handle messages from parent window
+  const handleMessage = useCallback((event: MessageEvent) => {
+    if (event?.data?.type !== "interfaceData" || !event?.data?.data) return;
 
-    const handleMessage = (event: MessageEvent) => {
-      if (event?.data?.type === "interfaceData") {
-        const receivedData = event?.data?.data;
-        if (receivedData) {
-          const {
-            threadId = null,
-            bridgeName = null,
-            vision = null,
-            helloId = null,
-            version_id = null,
-            headerButtons = [],
-            eventsToSubscribe = [],
-            modalConfig = {},
-            allowModalSwitch = false,
-            chatTitle = "",
-            chatSubTitle = "",
-            chatIcon = "",
-            allowBridgeSwitch = true
-          } = receivedData;
-          
-          // Create an object to store only the properties that are actually present in receivedData
-          const interfaceDataToUpdate: Record<string, any> = {};
-          
-          if ('allowModalSwitch' in receivedData) interfaceDataToUpdate.allowModalSwitch = allowModalSwitch;
-          if ('hideCloseButton' in receivedData) interfaceDataToUpdate.hideCloseButton = receivedData.hideCloseButton;
-          if ('chatTitle' in receivedData) interfaceDataToUpdate.chatTitle = chatTitle;
-          if ('chatIcon' in receivedData) interfaceDataToUpdate.chatIcon = chatIcon;
-          if ('chatSubTitle' in receivedData) interfaceDataToUpdate.chatSubTitle = chatSubTitle;
-          if ('allowBridgeSwitch' in receivedData) interfaceDataToUpdate.allowBridgeSwitch = allowBridgeSwitch;
-          
-          if (threadId) {
-            dispatch(setThreadId({ threadId: threadId }));
-          }
-          if (helloId) {
-            dispatch(setThreadId({ helloId: helloId }));
-          }
-          if (version_id === 'null' || version_id) {
-            dispatch(setThreadId({ version_id: version_id }));
-          }
-          if (bridgeName) {
-            dispatch(setThreadId({ bridgeName: bridgeName || "root" }));
-            dispatch(
-              addDefaultContext({
-                variables: { ...receivedData?.variables },
-                bridgeName: bridgeName,
-              })
-            );
-          }
-          if (vision) {
-            dispatch(setConfig({ vision: vision }));
-          } else {
-            dispatch(
-              addDefaultContext({ variables: { ...receivedData?.variables } })
-            );
-          }
-          if (Array.isArray(headerButtons)) {
-            dispatch(setHeaderActionButtons(headerButtons))
-          }
-          if (Array.isArray(eventsToSubscribe) && eventsToSubscribe?.length) {
-            dispatch(setEventsSubsribedByParent(eventsToSubscribe?.filter((item) => Object.values(ALLOWED_EVENTS_TO_SUBSCRIBE)?.includes(item))))
-          }
-          if (modalConfig) {
-            dispatch(setModalConfig(modalConfig))
-          }
-          
-          // Only dispatch if there are properties to update
-          if (Object.keys(interfaceDataToUpdate).length > 0) {
-            dispatch(setDataInInterfaceRedux(interfaceDataToUpdate))
-          }
-        }
-      }
-    };
+    const receivedData: InterfaceData = event.data.data;
 
-    if (loadInterface) {
-      window.addEventListener("message", handleMessage);
+    // Process thread-related data
+    if (receivedData.threadId) {
+      dispatch(setThreadId({ threadId: receivedData.threadId }));
     }
-    return () => {
-      if (loadInterface) {
-        window.removeEventListener("message", handleMessage);
+
+    if (receivedData.helloId) {
+      dispatch(setThreadId({ helloId: receivedData.helloId }));
+    }
+
+    if (receivedData.version_id === 'null' || receivedData.version_id) {
+      dispatch(setThreadId({ version_id: receivedData.version_id }));
+    }
+
+    // Process bridge data
+    if (receivedData.bridgeName) {
+      dispatch(setThreadId({ bridgeName: receivedData.bridgeName || "root" }));
+      dispatch(
+        addDefaultContext({
+          variables: { ...receivedData.variables },
+          bridgeName: receivedData.bridgeName,
+        })
+      );
+    } else if (receivedData.variables) {
+      dispatch(addDefaultContext({ variables: { ...receivedData.variables } }));
+    }
+
+    // Process vision config
+    if (receivedData.vision) {
+      dispatch(setConfig({ vision: receivedData.vision }));
+    }
+
+    // Process UI-related data
+    if (Array.isArray(receivedData.headerButtons)) {
+      dispatch(setHeaderActionButtons(receivedData.headerButtons));
+    }
+
+    if (Array.isArray(receivedData.eventsToSubscribe) && receivedData.eventsToSubscribe.length > 0) {
+      const validEvents = receivedData.eventsToSubscribe.filter(
+        (item) => Object.values(ALLOWED_EVENTS_TO_SUBSCRIBE).includes(item)
+      );
+      dispatch(setEventsSubsribedByParent(validEvents));
+    }
+
+    if (receivedData.modalConfig) {
+      dispatch(setModalConfig(receivedData.modalConfig));
+    }
+
+    // Extract and process interface data properties
+    const interfaceProperties = [
+      'allowModalSwitch', 'hideCloseButton', 'chatTitle',
+      'chatIcon', 'chatSubTitle', 'allowBridgeSwitch'
+    ];
+
+    const interfaceDataToUpdate = interfaceProperties.reduce((acc, prop) => {
+      if (prop in receivedData) {
+        acc[prop] = receivedData[prop];
       }
+      return acc;
+    }, {} as Record<string, any>);
+
+    if (Object.keys(interfaceDataToUpdate).length > 0) {
+      dispatch(setDataInInterfaceRedux(interfaceDataToUpdate));
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    window.addEventListener("message", handleMessage);
+    return () => {
+      window.removeEventListener("message", handleMessage);
     };
-  }, [dispatch, chatbotId, loadInterface]);
+  }, [handleMessage, chatbotId]);
 
   return <InterfaceChatbot />;
 }
