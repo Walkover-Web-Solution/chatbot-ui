@@ -128,7 +128,7 @@ function InterfaceChatbot({
     selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null
   }));
 
-  const { fetchAllThreads , getChatHistory , sendMessage : sendMessageAction} = useChatActions()
+  const { getChatHistory , sendMessage : sendMessageAction} = useChatActions()
 
 
   const [chatsLoading, setChatsLoading] = useState(false);
@@ -423,17 +423,17 @@ function InterfaceChatbot({
     }
   };
 
-  useEffect(() => {
-    fetchAllThreads()
-  }, [threadId, bridgeName]);
+  // useEffect(() => {
+  //   fetchAllThreads()
+  // }, [threadId, bridgeName]);
 
   useEffect(() => {
     subscribeToChannel();
   }, [bridgeName, threadId, helloId]);
 
-  useEffect(() => {
-    getChatHistory();
-  }, [threadId, bridgeName, subThreadId]);
+  // useEffect(() => {
+  //   getChatHistory();
+  // }, [threadId, bridgeName, subThreadId]);
 
   useEffect(() => {
     const newChannelId = (

@@ -1,7 +1,7 @@
 // hooks/useChatActions.ts
 import { getAllThreadsApi, getPreviousMessage, sendDataToAction } from '@/config/api';
 import { GetSessionStorageData } from '@/utils/ChatbotUtility';
-import { Dispatch, useReducer } from 'react';
+import { Dispatch, useEffect, useReducer } from 'react';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { useReduxStateManagement } from './useReduxManagement';
 import { chatReducer, initialChatState } from './chatReducer';
@@ -88,14 +88,25 @@ import { $ReduxCoreType } from '@/types/reduxCore';
 // };
 
 
-export const useChatActions = () => {
-    const [state, dispatch] = useReducer(chatReducer, initialChatState);
+export const useChatActions = ({ chatDispatch, chatState }: { chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState }) => {
+
+    console.log(chatState?.messages)
 
     const { threadId, subThreadId, bridgeName } = useCustomSelector((state: $ReduxCoreType) => ({
         threadId: state.appInfo.threadId,
         subThreadId: state.appInfo.subThreadId,
         bridgeName: state.appInfo.bridgeName,
     }))
+
+    // Fetch all threads whenever threadId or bridgeName changes
+    useEffect(() => {
+        fetchAllThreads()
+    }, [threadId, bridgeName]);
+
+    useEffect(() => {
+        getChatHistory();
+    }, [threadId, bridgeName, subThreadId]);
+
     const globalDispatch = useDispatch()
 
     const fetchAllThreads = async () => {
@@ -119,7 +130,7 @@ export const useChatActions = () => {
                     subThreadId
                 );
                 if (Array.isArray(previousChats)) {
-                    dispatch({ type: ChatActionTypes.SET_MESSAGES, payload: previousChats })
+                    chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload: previousChats })
                     // setMessages(previousChats?.length === 0 ? [] : [...previousChats]);
                     // setCurrentPage(1);
                     // setHasMoreMessages(previousChats?.length >= 40);

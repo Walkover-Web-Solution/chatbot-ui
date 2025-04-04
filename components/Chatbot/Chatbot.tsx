@@ -16,12 +16,14 @@ import ChatbotHeaderTab from '../Interface-Chatbot/ChatbotHeaderTab';
 import ChatbotHeader from '../Interface-Chatbot/ChatbotHeader';
 import StarterQuestions from '../Interface-Chatbot/StarterQuestions';
 import MessageList from '../Interface-Chatbot/MessageList';
+import { useChatActions } from './hooks/useChatActions';
 
 function Chatbot({ chatbotId }: { chatbotId: string }) {
     // hooks
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
     const { onSendHello } = useHelloIntegration({ chatbotId, chatDispatch, chatState });
     const { IsHuman } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
+    const { } = useChatActions({ chatDispatch, chatState })
     const theme = useTheme();
 
     // refs
