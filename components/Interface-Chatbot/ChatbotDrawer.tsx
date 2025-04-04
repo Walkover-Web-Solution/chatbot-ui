@@ -12,6 +12,7 @@ import { AlignLeft, SquarePen } from "lucide-react";
 import React, { useContext } from "react";
 import { useDispatch } from "react-redux";
 import { MessageContext } from "./InterfaceChatbot";
+import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 
 
 const createRandomId = () => {
@@ -72,6 +73,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   const handleChangeSubThread = (sub_thread_id: string) => {
     setLoading(false);
     dispatch(setThreadId({ subThreadId: sub_thread_id }));
+    dispatch(setDataInAppInfoReducer({subThreadId: sub_thread_id}))
     setOptions([]);
     if (isSmallScreen) {
       setToggleDrawer(false);

@@ -22,14 +22,16 @@ import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { MessageContext } from "./InterfaceChatbot";
 import Message from "./Message";
 import MoveToDownButton from "./MoveToDownButton";
+import { useChatActions } from "../Chatbot/hooks/useChatActions";
 
 interface MessageListProps {
   containerRef: React.RefObject<HTMLDivElement>;
 }
 
 function MessageList({ containerRef }: MessageListProps) {
+  const { getChatHistory } = useChatActions()
   const {
-    fetchMoreData,
+    // fetchMoreData,
     hasMoreMessages = false,
     setNewMessage,
     newMessage,
@@ -107,9 +109,9 @@ function MessageList({ containerRef }: MessageListProps) {
 
     // Trigger fetchMoreData when scrolled to top
     if (scrollPosition === 0 && hasMoreMessages) {
-      fetchMoreData?.();
+      getChatHistory();
     }
-  }, [containerRef, hasMoreMessages, fetchMoreData]);
+  }, [containerRef, hasMoreMessages, getChatHistory]);
 
   useEffect(() => {
 
@@ -160,7 +162,7 @@ function MessageList({ containerRef }: MessageListProps) {
     >
       <InfiniteScroll
         dataLength={messages.length}
-        next={fetchMoreData}
+        next={()=>getChatHistory()}
         hasMore={hasMoreMessages}
         inverse={!isInverse}
         loader={
