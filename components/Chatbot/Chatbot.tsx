@@ -3,6 +3,7 @@ import { ParamsEnums } from '@/utils/enums';
 import React from 'react'
 
 function Chatbot({ chatbotId }: { chatbotId: string }) {
+    
     return (
         <div>Chatbot</div>
     )
