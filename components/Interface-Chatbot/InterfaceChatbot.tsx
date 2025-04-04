@@ -136,12 +136,7 @@ function InterfaceChatbot({
   const [options, setOptions] = useState<any>([]);
   const [images, setImages] = useState<string[]>([]); // Ensure images are string URLs
   const socket = useSocket();
-  const channelIdRef = useRef<string | null>(null);
-  const listenerRef = useRef<string | null>(null);
   const containerRef = useRef<any>(null);
-  const themePalette = {
-    "--primary-main": lighten(theme.palette.secondary.main, 0.4),
-  };
 
   const isLargeScreen = useMediaQuery('(max-width: 1024px)')
   const [isToggledrawer, setToggleDrawer] = useState<boolean>(!isLargeScreen);

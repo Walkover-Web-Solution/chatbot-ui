@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import { setChannel } from '@/store/hello/helloSlice';
 import useSocket from '@/hooks/socket';
 import { GetSessionStorageData } from '@/utils/ChatbotUtility';
+import { ChatActionTypes } from './chatTypes';
 
 interface UseHelloIntegrationProps {
   channelId: string | null;
@@ -38,7 +39,7 @@ const useHelloIntegration = ({
   const [loading, setLoading] = useState<boolean>(false);
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
   const socket = useSocket();
-  const dispatch = useDispatch();
+  const dispatch: ChatActionTypes = useDispatch();
 
   // Initialize socket listeners
   useEffect(() => {

@@ -2,25 +2,36 @@ import { ChatAction, ChatActionTypes, ChatState, MessageType } from './chatTypes
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 
 export const initialChatState: ChatState = {
+  // Messages and Conversations
   messages: [],
   helloMessages: [],
+  starterQuestions: [],
+
+  // Loading States
   loading: false,
   chatsLoading: false,
-  options: [],
-  images: [],
+  isFetching: false,
+
+  // UI States
+  open: false,
+  isToggledrawer: true,
+  headerButtons: [],
+
+  // Chat Metadata
   threadId: GetSessionStorageData("threadId") || "",
   subThreadId: "",
   bridgeName: GetSessionStorageData("bridgeName") || "root",
   helloId: GetSessionStorageData("helloId") || null,
   bridgeVersionId: GetSessionStorageData("version_id") || null,
-  headerButtons: JSON.parse(GetSessionStorageData("headerButtons") || '[]') || [],
-  starterQuestions: [],
+
+  // Pagination & Message Handling
   currentPage: 1,
   hasMoreMessages: true,
-  isFetching: false,
   newMessage: false,
-  open: false,
-  isToggledrawer: true
+
+  // Options & Media
+  options: [],
+  images: [],
 };
 
 export const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
@@ -35,10 +46,10 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         ...state,
         messages: [
           ...state.messages,
-          { 
-            role: "user", 
-            content: action.payload.content, 
-            urls: action.payload.urls || [] 
+          {
+            role: "user",
+            content: action.payload.content,
+            urls: action.payload.urls || []
           }
         ]
       };
@@ -47,10 +58,10 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         ...state,
         messages: [
           ...state.messages,
-          { 
-            role: "assistant", 
-            wait: true, 
-            content: action.payload?.content || "Talking with AI" 
+          {
+            role: "assistant",
+            wait: true,
+            content: action.payload?.content || "Talking with AI"
           }
         ]
       };
@@ -59,9 +70,9 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         ...state,
         messages: [
           ...state.messages.slice(0, -1),
-          { 
-            role: action.payload.role || "assistant", 
-            ...action.payload 
+          {
+            role: action.payload.role || "assistant",
+            ...action.payload
           }
         ]
       };
