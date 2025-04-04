@@ -35,11 +35,6 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     const messageRef = React.useRef<HTMLDivElement>(null);
     const { openHelloForm, isToggledrawer, threadId, bridgeName, headerButtons, chatsLoading, helloMessages, messages, loading, options, starterQuestions, images } = chatState;
 
-
-    const handleChatsLoading = (loading: boolean) => {
-        chatDispatch({ type: ChatActionTypes.SET_CHATS_LOADING, payload: loading })
-    }
-
     return (
         <MessageContext.Provider value={{ ...chatState }}>
             <FormComponent open={openHelloForm} setOpen={() => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true })} />
@@ -88,7 +83,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                                 <ChatbotTextField
                                     loading={loading}
                                     options={options}
-                                    setChatsLoading={handleChatsLoading}
+                                    setChatsLoading={setChatsLoading}
                                     onSend={() => {
                                         IsHuman ? onSendHello() : null;
                                     }}
@@ -117,7 +112,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                                 <ChatbotTextField
                                     loading={loading}
                                     options={options}
-                                    setChatsLoading={handleChatsLoading}
+                                    setChatsLoading={setChatsLoading}
                                     onSend={() => {
                                         IsHuman ? onSendHello() : null;
                                     }}
