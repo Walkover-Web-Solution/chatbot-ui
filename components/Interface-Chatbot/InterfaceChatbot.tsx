@@ -79,6 +79,7 @@ export const MessageContext = createContext<{
   starterQuestions?: string[];
   headerButtons?: HeaderButtonType;
   setOptions?: React.Dispatch<React.SetStateAction<any[]>>
+  sendMessage?:(message:string) => void;
 }>({
   messages: [],
   helloMessages: [],

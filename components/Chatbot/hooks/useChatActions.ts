@@ -1,7 +1,7 @@
 // hooks/useChatActions.ts
 import { getAllThreadsApi, getPreviousMessage, sendDataToAction } from '@/config/api';
 import { GetSessionStorageData } from '@/utils/ChatbotUtility';
-import { Dispatch, useEffect, useReducer } from 'react';
+import React, { Dispatch, useEffect, useReducer } from 'react';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { useReduxStateManagement } from './useReduxManagement';
 import { chatReducer, initialChatState } from './chatReducer';
@@ -96,6 +96,9 @@ export const useChatActions = ({ chatDispatch, chatState }: { chatDispatch: Reac
         bridgeName: state.appInfo.bridgeName,
     }))
 
+    const messageRef = React.useRef<HTMLDivElement>(null);
+
+
     useEffect(() => {
         fetchAllThreads()
     }, [threadId, bridgeName]);
@@ -103,6 +106,7 @@ export const useChatActions = ({ chatDispatch, chatState }: { chatDispatch: Reac
     useEffect(() => {
         getChatHistory();
     }, [threadId, bridgeName, subThreadId]);
+
 
     const globalDispatch = useDispatch()
 
@@ -162,6 +166,7 @@ export const useChatActions = ({ chatDispatch, chatState }: { chatDispatch: Reac
         sendMessage,
         setToggleDrawer: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_TOGGLE_DRAWER, payload }),
         setLoading : (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_LOADING, payload }),
-        setChatsLoading : (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_CHATS_LOADING, payload })
+        setChatsLoading : (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_CHATS_LOADING, payload }),
+        messageRef
     };
 }

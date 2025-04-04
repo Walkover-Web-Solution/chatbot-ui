@@ -26,7 +26,8 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     const { 
         setToggleDrawer ,
         setLoading , 
-        setChatsLoading
+        setChatsLoading,
+        sendMessage
     } = useChatActions({ chatDispatch, chatState })
     const theme = useTheme();
 
@@ -36,7 +37,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     const { openHelloForm, isToggledrawer, threadId, bridgeName, headerButtons, chatsLoading, helloMessages, messages, loading, options, starterQuestions, images } = chatState;
 
     return (
-        <MessageContext.Provider value={{ ...chatState }}>
+        <MessageContext.Provider value={{ ...chatState , sendMessage }}>
             <FormComponent open={openHelloForm} setOpen={() => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true })} />
             <div className="flex h-screen w-full overflow-hidden relative">
                 {/* Sidebar - always visible on large screens */}
