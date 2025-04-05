@@ -36,7 +36,9 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
         sendMessage,
         setImages,
         setOptions,
-        getMoreChats
+        getMoreChats,
+        setNewMessage,
+        setMessages
     } = useChatActions({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef });
 
     const theme = useTheme();
@@ -44,7 +46,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     // RTLayer Event Listiner
     useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef })
     const { openHelloForm, isToggledrawer, chatsLoading, helloMessages, messages } = chatState;
-    console.log(chatState?.currentPage, chatState?.hasMoreMessages)
+
     return (
         <MessageContext.Provider value={{
             ...chatState,
@@ -57,7 +59,9 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
             messageRef,
             setOptions,
             chatDispatch,
-            getMoreChats
+            getMoreChats,
+            setNewMessage,
+            setMessages
         }}>
             <FormComponent open={openHelloForm} setOpen={() => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true })} />
             <div className="flex h-screen w-full overflow-hidden relative">

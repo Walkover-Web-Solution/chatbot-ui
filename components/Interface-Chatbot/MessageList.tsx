@@ -35,15 +35,10 @@ function MessageList({ containerRef }: MessageListProps) {
     setNewMessage,
     newMessage,
     currentPage = 1,
-    getMoreChats
-  } = useContext(MessageContext);
-  const MessagesList = useContext(MessageContext);
-  const {
+    getMoreChats,
     messages = [],
-    setMessages,
-    addMessage,
-    helloMessages = [],
-  } = MessagesList;
+    setMessages, addMessage, helloMessages = [],
+  } = useContext(MessageContext);
   const [showScrollButton, setShowScrollButton] = useState(false)
   const [isInverse, setIsInverse] = useState(false);
   const [shouldScroll, setShouldScroll] = useState(true);
@@ -111,7 +106,7 @@ function MessageList({ containerRef }: MessageListProps) {
     if (scrollPosition === 0 && hasMoreMessages) {
       getMoreChats()
     }
-  }, [containerRef, hasMoreMessages,currentPage]);
+  }, [containerRef, hasMoreMessages, currentPage]);
 
   useEffect(() => {
 
@@ -162,7 +157,7 @@ function MessageList({ containerRef }: MessageListProps) {
     >
       <InfiniteScroll
         dataLength={messages.length}
-        next={()=>getMoreChats()}
+        next={() => getMoreChats()}
         hasMore={hasMoreMessages}
         inverse={!isInverse}
         loader={

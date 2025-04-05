@@ -50,7 +50,6 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                 type: ChatActionTypes.SET_CHATS_LOADING, payload: true
             })
             try {
-                if (chatState?.isFetching || !chatState?.hasMoreMessages) return;
                 const { previousChats, starterQuestion } = await getPreviousMessage(
                     threadId,
                     bridgeName,
@@ -192,6 +191,8 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         setLoading: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_LOADING, payload }),
         setChatsLoading: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_CHATS_LOADING, payload }),
         setImages: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload }),
-        setOptions: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_OPTIONS, payload })
+        setOptions: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_OPTIONS, payload }),
+        setNewMessage: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload }),
+        setMessages: (payload: any) => chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload }),
     };
 }
