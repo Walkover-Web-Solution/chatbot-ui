@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes'
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { $ReduxCoreType } from '@/types/reduxCore';
@@ -9,10 +9,15 @@ const client = WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
 function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) {
   const { threadId, subThreadId } = chatState
   const { userId } = useCustomSelector((state: $ReduxCoreType) => ({ userId: state.appInfo.userId }))
+  const messagesRef = useRef(chatState.messages);
+
+  useEffect(() => {
+    messagesRef.current = chatState.messages;
+  }, [chatState.messages]);
+
   const handleMessageRTLayer = useCallback((message: string) => {
     // Parse the incoming message string into an object
-    const messages = chatState.messages;
-    console.log(messages)
+    const messages = messagesRef.current;
 
     const parsedMessage = JSON.parse(message || "{}");
     // Check if the status is "connected"
@@ -110,7 +115,7 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
       default:
         console.warn("Some error occurred in the message", parsedMessage);
     }
-  }, [chatDispatch, chatState.messages.length, timeoutIdRef]);
+  },[]);
 
   useEffect(() => {
     const newChannelId = (
