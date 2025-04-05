@@ -17,11 +17,13 @@ import ChatbotHeader from '../Interface-Chatbot/ChatbotHeader';
 import StarterQuestions from '../Interface-Chatbot/StarterQuestions';
 import MessageList from '../Interface-Chatbot/MessageList';
 import { useChatActions } from './hooks/useChatActions';
+import useRtlayerEventManager from './hooks/useRtlayerEventManager';
 
 function Chatbot({ chatbotId }: { chatbotId: string }) {
     // refs
     const containerRef = React.useRef<HTMLDivElement>(null);
     const messageRef = React.useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
+    const timeoutIdRef = React.useRef<NodeJS.Timeout | null>(null);
 
     // hooks
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
@@ -34,10 +36,12 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
         sendMessage,
         setImages,
         setOptions
-    } = useChatActions({ chatbotId, chatDispatch, chatState, messageRef });
+    } = useChatActions({ chatbotId, chatDispatch, chatState, messageRef , timeoutIdRef });
+
     const theme = useTheme();
 
-
+    // RTLayer Event Listiner
+    useRtlayerEventManager({chatbotId, chatDispatch, chatState, messageRef , timeoutIdRef})
     const { openHelloForm, isToggledrawer, chatsLoading, helloMessages, messages } = chatState;
 
     return (

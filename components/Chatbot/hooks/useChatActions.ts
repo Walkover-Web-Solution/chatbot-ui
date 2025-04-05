@@ -7,11 +7,9 @@ import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState, SendMessagePayloadType } from './chatTypes';
 
-export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null> }) => {
+export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef ,timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null> ,timeoutIdRef:React.RefObject<NodeJS.Timeout|null> }) => {
 
     const globalDispatch = useDispatch()
-    // const messageRef = React.useRef<HTMLDivElement>(null);
-    const timeoutIdRef = React.useRef<any>(null);
     const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId } = useCustomSelector((state: $ReduxCoreType) => ({
         threadId: state.appInfo.threadId,
         subThreadId: state.appInfo.subThreadId,
@@ -20,7 +18,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef 
         selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null,
         userId: state.appInfo.userId || null,
     }))
-    const messages = chatState?.messages || []
+    
     useEffect(() => {
         fetchAllThreads()
     }, [threadId, bridgeName]);
@@ -30,6 +28,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef 
     }, [threadId, bridgeName, subThreadId]);
 
     const startTimeoutTimer = () => {
+        const messages = chatState?.messages || []
         timeoutIdRef.current = setTimeout(() => {
             chatDispatch({
                 type: ChatActionTypes.SET_DATA, payload: {
@@ -86,6 +85,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef 
         }
     };
     const sendMessage = async ({ message = '', customVariables = {}, customThreadId = '', customBridgeSlug = '', apiCall = true }: SendMessagePayloadType) => {
+        const messages = chatState?.messages || []
         const textMessage = message || (messageRef?.current as HTMLInputElement)?.value;
         const imageUrls = Array.isArray(chatState.images) && chatState?.images?.length ? chatState?.images : []; // Assuming imageUrls is an empty array or you can replace it with the actual value
         if (!textMessage && imageUrls.length === 0) return;
