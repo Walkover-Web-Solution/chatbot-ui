@@ -120,6 +120,8 @@ export type ChatAction =
 
 export interface ChatContextType extends ChatState {
   dispatch: React.Dispatch<ChatAction>;
-  addMessage: (message: string) => void;
+  sendMessage: (message: SendMessagePayloadType) => void;
   fetchMoreData: () => Promise<void>;
 }
+
+export interface SendMessagePayloadType { message?: string, customVariables?: Record<string, unknown>, customThreadId?: string, customBridgeSlug?: string, apiCall?: boolean }

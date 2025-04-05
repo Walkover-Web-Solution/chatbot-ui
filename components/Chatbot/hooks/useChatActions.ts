@@ -2,7 +2,7 @@
 import { getAllThreadsApi, getPreviousMessage, sendDataToAction } from '@/config/api';
 import { GetSessionStorageData } from '@/utils/ChatbotUtility';
 import React, { Dispatch, useEffect, useReducer } from 'react';
-import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
+import { ChatAction, ChatActionTypes, ChatState, SendMessagePayloadType } from './chatTypes';
 import { useReduxStateManagement } from './useReduxManagement';
 import { chatReducer, initialChatState } from './chatReducer';
 import { setThreads } from '@/store/interface/interfaceSlice';
@@ -166,7 +166,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState }: { chatbot
             }
         }
     };
-    const sendMessage = async ({ message = '', customVariables = {}, customThreadId = '', customBridgeSlug = '', apiCall = true }: { message?: string, customVariables?: Record<string, unknown>, customThreadId?: string, customBridgeSlug?: string, apiCall?: boolean }) => {
+    const sendMessage = async ({ message = '', customVariables = {}, customThreadId = '', customBridgeSlug = '', apiCall = true }: SendMessagePayloadType) => {
         const textMessage = message || (messageRef?.current as HTMLInputElement)?.value;
         const imageUrls = Array.isArray(chatState.images) && chatState?.images?.length ? chatState?.images : []; // Assuming imageUrls is an empty array or you can replace it with the actual value
         if (!textMessage && imageUrls.length === 0) return;

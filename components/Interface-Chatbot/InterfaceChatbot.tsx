@@ -79,11 +79,12 @@ export const MessageContext = createContext<{
   starterQuestions?: string[];
   headerButtons?: HeaderButtonType;
   setOptions?: React.Dispatch<React.SetStateAction<any[]>>
-  sendMessage?:({message}:{message?:string}) => void;
+  sendMessage: ({ message }: { message?: string }) => void;
 }>({
   messages: [],
   helloMessages: [],
-  headerButtons: []
+  headerButtons: [],
+  sendMessage:()=>{}
 });
 
 function InterfaceChatbot({
@@ -129,7 +130,7 @@ function InterfaceChatbot({
     selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null
   }));
 
-  const { getChatHistory , sendMessage : sendMessageAction} = useChatActions()
+  const { getChatHistory, sendMessage: sendMessageAction } = useChatActions()
 
 
   const [chatsLoading, setChatsLoading] = useState(false);

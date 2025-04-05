@@ -13,9 +13,10 @@ import { isColorLight } from "@/utils/themeUtility";
 import { uploadImage } from "@/config/api";
 import { MessageContext } from "./InterfaceChatbot";
 import Image from "next/image";
+import { SendMessagePayloadType } from "../Chatbot/hooks/chatTypes";
 
 interface ChatbotTextFieldType {
-  onSend?: any;
+  onSend?: (data:SendMessagePayloadType) => void;
   loading?: boolean;
   messageRef?: any;
   disabled?: boolean;
@@ -52,13 +53,13 @@ function ChatbotTextField({
   const reduxIsVision = useCustomSelector(
     (state: $ReduxCoreType) => state.Interface?.isVision || ""
   );
-  const MessagesList: any = useContext(MessageContext);
-  const { addMessage } = MessagesList;
+  const { sendMessage } = useContext(MessageContext);
+
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey && !loading && !isUploading) {
       event.preventDefault();
-      onSend({ Message: message, images: images });
+      onSend({ message,  ,images: images });
     }
   };
 
@@ -144,7 +145,7 @@ function ChatbotTextField({
             {options?.slice(0, 3).map((option, index) => (
               <button
                 key={index}
-                onClick={() => addMessage(option)}
+                onClick={()=>sendMessage({ message:option})}
                 className="flex-shrink-0 px-4 py-2 text-sm rounded-lg shadow-sm bg-white hover:bg-gray-50 border border-gray-200 transition-colors duration-200"
               >
                 {option}

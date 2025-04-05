@@ -93,7 +93,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                                     images={images}
                                 />
                             </div>
-                            <StarterQuestions starterQuestions={starterQuestions} addMessage={() => null} />
+                            <StarterQuestions starterQuestions={starterQuestions} sendMessage={sendMessage} />
                         </div>
                     ) : (
                         <>
@@ -115,11 +115,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                                     options={options}
                                     setChatsLoading={setChatsLoading}
                                     onSend={() => {
-<<<<<<< Updated upstream
-                                        IsHuman ? onSendHello() : sendMessage("Hello");
-=======
                                         IsHuman ? onSendHello() : sendMessage({});
->>>>>>> Stashed changes
                                     }}
                                     messageRef={messageRef}
                                     setImages={(images) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload: images })}

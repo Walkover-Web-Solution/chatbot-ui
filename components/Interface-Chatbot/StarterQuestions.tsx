@@ -1,6 +1,7 @@
 import { TrendingUp } from 'lucide-react';
+import { SendMessagePayloadType } from '../Chatbot/hooks/chatTypes';
 
-function StarterQuestions({ starterQuestions = [], addMessage }: { starterQuestions: string[]; addMessage: (message: string) => void }) {
+function StarterQuestions({ starterQuestions = [], sendMessage }: { starterQuestions: string[]; sendMessage: (data: SendMessagePayloadType) => void }) {
     if (starterQuestions.length === 0) return null;
 
     return (
@@ -8,7 +9,7 @@ function StarterQuestions({ starterQuestions = [], addMessage }: { starterQuesti
             {starterQuestions.map((question: string, index: number) => (
                 <div
                     key={index}
-                    onClick={() => addMessage(question)}
+                    onClick={() => sendMessage({ message: question })}
                     className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md hover:scale-[1.01] cursor-pointer"
                 >
                     <div className="p-3">
