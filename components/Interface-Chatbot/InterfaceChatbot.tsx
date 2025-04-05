@@ -41,6 +41,7 @@ import "./InterfaceChatbot.css";
 import MessageList from "./MessageList";
 import StarterQuestions from "./StarterQuestions";
 import { useChatActions } from "../Chatbot/hooks/useChatActions";
+import { ChatAction } from "../Chatbot/hooks/chatTypes";
 
 const client = WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
 
@@ -90,7 +91,8 @@ export const MessageContext = createContext<{
   setImages: (data: string[]) => void;
   setToggleDrawer: (data: boolean) => void;
   setLoading: (data: boolean) => void,
-  isToggledrawer: boolean
+  isToggledrawer: boolean,
+  chatDispatch?: React.Dispatch<ChatAction>;
 }>({
   starterQuestions: [],
   messages: [],
