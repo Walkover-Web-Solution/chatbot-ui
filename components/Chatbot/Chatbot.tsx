@@ -21,7 +21,7 @@ import { useChatActions } from './hooks/useChatActions';
 function Chatbot({ chatbotId }: { chatbotId: string }) {
     // refs
     const containerRef = React.useRef<HTMLDivElement>(null);
-    const messageRef = React.useRef<HTMLDivElement>(null);
+    const messageRef = React.useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
 
     // hooks
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
@@ -32,14 +32,25 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
         setLoading,
         setChatsLoading,
         sendMessage,
+        setImages,
+        setOptions
     } = useChatActions({ chatbotId, chatDispatch, chatState, messageRef });
     const theme = useTheme();
 
 
-    const { openHelloForm, isToggledrawer, threadId, bridgeName, headerButtons, chatsLoading, helloMessages, messages, loading, options, starterQuestions, images } = chatState;
+    const { openHelloForm, isToggledrawer, chatsLoading, helloMessages, messages } = chatState;
 
     return (
-        <MessageContext.Provider value={{ ...chatState, sendMessage }}>
+        <MessageContext.Provider value={{
+            ...chatState,
+            sendMessage,
+            setImages,
+            setToggleDrawer,
+            setLoading,
+            setChatsLoading,
+            messageRef,
+            setOptions
+        }}>
             <FormComponent open={openHelloForm} setOpen={() => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true })} />
             <div className="flex h-screen w-full overflow-hidden relative">
                 {/* Sidebar - always visible on large screens */}
@@ -51,15 +62,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
 
                 <div className="flex flex-col flex-1 w-full">
                     {/* Mobile header - hidden on large screens */}
-                    <ChatbotHeader
-                        setLoading={setLoading}
-                        setChatsLoading={setChatsLoading}
-                        setToggleDrawer={setToggleDrawer}
-                        isToggledrawer={isToggledrawer}
-                        threadId={threadId}
-                        reduxBridgeName={bridgeName}
-                        headerButtons={headerButtons}
-                    />
+                    <ChatbotHeader />
                     <ChatbotHeaderTab />
                     {chatsLoading && (
                         <div className="w-full">
@@ -83,19 +86,9 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                                 </h2>
                             </div>
                             <div className="max-w-5xl w-full mt-8">
-                                <ChatbotTextField
-                                    loading={loading}
-                                    options={options}
-                                    setChatsLoading={setChatsLoading}
-                                    onSend={() => {
-                                        IsHuman ? onSendHello() : null;
-                                    }}
-                                    messageRef={messageRef}
-                                    setImages={(images: string[]) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload: images })}
-                                    images={images}
-                                />
+                                <ChatbotTextField />
                             </div>
-                            <StarterQuestions starterQuestions={starterQuestions} sendMessage={sendMessage} />
+                            <StarterQuestions />
                         </div>
                     ) : (
                         <>
@@ -112,17 +105,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
 
                             {/* Text input at bottom */}
                             <div className="max-w-5xl mx-auto px-4 pb-3 w-full">
-                                <ChatbotTextField
-                                    loading={loading}
-                                    options={options}
-                                    setChatsLoading={setChatsLoading}
-                                    onSend={() => {
-                                        IsHuman ? onSendHello() : sendMessage({});
-                                    }}
-                                    messageRef={messageRef}
-                                    setImages={(images) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload: images })}
-                                    images={images}
-                                />
+                                <ChatbotTextField />
                             </div>
                         </>
                     )}

@@ -7,7 +7,7 @@ import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState, SendMessagePayloadType } from './chatTypes';
 
-export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement> }) => {
+export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null> }) => {
 
     const globalDispatch = useDispatch()
     // const messageRef = React.useRef<HTMLDivElement>(null);
@@ -89,6 +89,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef 
         const textMessage = message || (messageRef?.current as HTMLInputElement)?.value;
         const imageUrls = Array.isArray(chatState.images) && chatState?.images?.length ? chatState?.images : []; // Assuming imageUrls is an empty array or you can replace it with the actual value
         if (!textMessage && imageUrls.length === 0) return;
+        chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: true })
         chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload: true })
 
         startTimeoutTimer();
@@ -113,12 +114,12 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef 
             const updatedMessages = messages.slice(0, -1);
             chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload: updatedMessages });
             chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: false })
+            return
         }
 
         chatDispatch({
             type: ChatActionTypes.SET_DATA,
             payload: {
-                loading: false,
                 options: [],
                 messages: [
                     ...messages,
@@ -139,6 +140,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef 
         setToggleDrawer: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_TOGGLE_DRAWER, payload }),
         setLoading: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_LOADING, payload }),
         setChatsLoading: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_CHATS_LOADING, payload }),
-        messageRef
+        setImages: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload }),
+        setOptions:(payload:string[]) => chatDispatch({ type: ChatActionTypes.SET_OPTIONS,payload})
     };
 }

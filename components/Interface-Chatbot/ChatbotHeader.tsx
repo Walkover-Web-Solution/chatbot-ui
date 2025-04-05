@@ -33,17 +33,23 @@ import "./InterfaceChatbot.css";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 
 interface ChatbotHeaderProps {
-  setLoading: (loading: boolean) => void;
-  setChatsLoading: (loading: boolean) => void;
-  setToggleDrawer: (isOpen: boolean) => void;
-  isToggledrawer: boolean;
-  headerButtons?: HeaderButtonType
+
+  preview?:boolean
 }
 
-const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ setLoading, setChatsLoading, setToggleDrawer, isToggledrawer, threadId, reduxBridgeName, headerButtons, preview = false }) => {
+const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({preview = false }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const { setOptions } = useContext(MessageContext);
+  const { 
+    setOptions,
+    setLoading,
+    setChatsLoading,
+    setToggleDrawer,
+    isToggledrawer,
+    threadId,
+    bridgeName : reduxBridgeName,
+    headerButtons,
+   } = useContext(MessageContext);
   const { chatbotConfig: { chatbotTitle, chatbotSubtitle, width = '', widthUnit = '', allowBridgeSwitch = false, bridges = [] } } = useContext<any>(ChatbotContext);
   const [fullScreen, setFullScreen] = useState(false)
   const shouldToggleScreenSize = `${width}${widthUnit}` !== '1200%'

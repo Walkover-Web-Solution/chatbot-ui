@@ -13,30 +13,8 @@ import { isColorLight } from "@/utils/themeUtility";
 import { uploadImage } from "@/config/api";
 import { MessageContext } from "./InterfaceChatbot";
 import Image from "next/image";
-import { SendMessagePayloadType } from "../Chatbot/hooks/chatTypes";
 
-interface ChatbotTextFieldType {
-  onSend?: (data: SendMessagePayloadType) => void;
-  loading?: boolean;
-  messageRef?: any;
-  disabled?: boolean;
-  options?: any[];
-  setChatsLoading?: any;
-  images?: String[];
-  setImages?: React.Dispatch<React.SetStateAction<string[]>>;
-}
-
-function ChatbotTextField({
-  onSend = () => { },
-  loading,
-  messageRef,
-  disabled = false,
-  options = [],
-  setChatsLoading = () => { },
-  images = [],
-  setImages = () => { },
-}: ChatbotTextFieldType) {
-  const [message, setMessage] = useState("");
+function ChatbotTextField() {
   const [isUploading, setIsUploading] = useState(false);
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -53,13 +31,21 @@ function ChatbotTextField({
   const reduxIsVision = useCustomSelector(
     (state: $ReduxCoreType) => state.Interface?.isVision || ""
   );
-  const { sendMessage } = useContext(MessageContext);
-
-
+  const {
+    sendMessage,
+    loading,
+    messageRef,
+    disabled,
+    options,
+    setChatsLoading,
+    images,
+    setImages
+  } = useContext(MessageContext)
+  const [message,setMessage] = useState('')
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey && !loading && !isUploading) {
       event.preventDefault();
-      onSend({ message, images: images });
+      sendMessage({});
     }
   };
 
@@ -113,7 +99,7 @@ function ChatbotTextField({
           formData.append("image", file);
           const response = await uploadImage({ formData });
           if (response.success) {
-            setImages((prev) => [...prev, response.image_url]);
+            setImages([...images, response.image_url]);
           }
         }
         if (filesArray.length > 4) {
@@ -128,12 +114,12 @@ function ChatbotTextField({
   };
 
   const handleRemoveImage = (index: number) => {
-    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+    setImages(images?.filter((_, i) => i !== index));
   };
 
   const focusTextField = () => {
-    if (messageRef.current) {
-      messageRef.current.focus();
+    if (messageRef?.current) {
+      messageRef?.current.focus();
     }
   };
 
@@ -203,6 +189,7 @@ function ChatbotTextField({
             inputRef={messageRef}
             onChange={(e) => {
               setMessage(e.target.value);
+              messageRef.current.value = e.target.value;
             }}
             multiline
             fullWidth
@@ -277,11 +264,11 @@ function ChatbotTextField({
             </div>
 
             <button
-              onClick={() => !loading && !isUploading ? onSend({ Message: message, images: images }) : null}
+              onClick={() => !loading && !isUploading ? sendMessage({}) : null}
               className="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:scale-105 transition-transform duration-200"
-              disabled={loading || isUploading || !message.trim()}
+              disabled={loading || isUploading || !message?.trim()}
               style={{
-                backgroundColor: (loading || isUploading || !message.trim()) ? '#d1d5db' : theme.palette.primary.main
+                backgroundColor: (loading || isUploading || !message?.trim()) ? '#d1d5db' : theme.palette.primary.main
               }}
             >
               <Send className={`w-3 h-3 md:w-4 md:h-4 ${isLight ? 'text-black' : 'text-white'}`} />

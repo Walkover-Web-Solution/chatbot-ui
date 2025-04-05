@@ -76,15 +76,32 @@ export const MessageContext = createContext<{
   setNewMessage?: (newMessage: boolean) => void;
   newMessage?: boolean;
   currentPage?: Number;
-  starterQuestions?: string[];
+  starterQuestions: string[];
   headerButtons?: HeaderButtonType;
-  setOptions?: React.Dispatch<React.SetStateAction<any[]>>
+  setOptions: (data:string[]) => void;
   sendMessage: ({ message }: { message?: string }) => void;
+  loading?: boolean;
+  messageRef?: any;
+  disabled?: boolean;
+  options?: any[];
+  setChatsLoading?: any;
+  images: string[];
+  setImages: (data:string[]) => void;
+  setToggleDrawer:(data:boolean) => void;
+  setLoading:(data:boolean) => void,
+  isToggledrawer:boolean
 }>({
+  starterQuestions:[],
   messages: [],
   helloMessages: [],
   headerButtons: [],
-  sendMessage:()=>{}
+  sendMessage:()=>{},
+  images:[],
+  setImages: () => {},
+  setToggleDrawer: () => {},
+  setLoading: () => {},
+  isToggledrawer:false,
+  setOptions:()=>{}
 });
 
 function InterfaceChatbot({

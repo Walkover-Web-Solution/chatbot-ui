@@ -1,12 +1,19 @@
 import { TrendingUp } from 'lucide-react';
 import { SendMessagePayloadType } from '../Chatbot/hooks/chatTypes';
+import { useContext } from 'react';
+import { MessageContext } from './InterfaceChatbot';
 
-function StarterQuestions({ starterQuestions = [], sendMessage }: { starterQuestions: string[]; sendMessage: (data: SendMessagePayloadType) => void }) {
-    if (starterQuestions.length === 0) return null;
+function StarterQuestions() {
+    const {
+        starterQuestions,
+        sendMessage
+    } = useContext(MessageContext)
+    
+    if (starterQuestions?.length === 0) return null;
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 mt-4 w-full max-5xl">
-            {starterQuestions.map((question: string, index: number) => (
+            {starterQuestions?.map((question: string, index: number) => (
                 <div
                     key={index}
                     onClick={() => sendMessage({ message: question })}
