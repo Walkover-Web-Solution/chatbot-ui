@@ -125,7 +125,7 @@ export async function getPreviousMessage(
     bridgeName: string | null,
     pageNo: number | null,
     subThreadId: string | null = threadId,
-    limit = 40
+    limit = 20
 ): Promise<{ previousChats: any; starterQuestion: string[] }> {
     if (currentController) {
         currentController.abort();
