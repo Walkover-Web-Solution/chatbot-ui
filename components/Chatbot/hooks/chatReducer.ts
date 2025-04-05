@@ -185,6 +185,11 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         ],
         loading: false
       };
+    case ChatActionTypes.SET_DATA:
+        return {
+          ...state,
+          ...action.payload
+        }; 
     case ChatActionTypes.RESET_STATE:
       return {
         ...initialChatState,

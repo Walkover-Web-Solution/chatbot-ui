@@ -169,7 +169,7 @@ export async function sendDataToAction(data: any): Promise<any> {
             error?.response?.data?.detail ||
             "Something went wrong!"
         );
-        return { success: false };
+        return { success: false};
     }
 }
 

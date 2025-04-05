@@ -4,7 +4,10 @@ import { PayloadAction } from "@reduxjs/toolkit";
 export const initialState: $AppInfoReduxType = {
     threadId: '',
     bridgeName:'',
-    subThreadId:''
+    subThreadId:'',
+    userId: '',
+    chatBotId: '',
+    config:{}
 };
 
 export const reducers = {

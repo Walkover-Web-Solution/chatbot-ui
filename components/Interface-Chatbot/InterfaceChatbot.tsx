@@ -79,7 +79,7 @@ export const MessageContext = createContext<{
   starterQuestions?: string[];
   headerButtons?: HeaderButtonType;
   setOptions?: React.Dispatch<React.SetStateAction<any[]>>
-  sendMessage?:(message:string) => void;
+  sendMessage?:({message}:{message?:string}) => void;
 }>({
   messages: [],
   helloMessages: [],
@@ -305,7 +305,7 @@ function InterfaceChatbot({
       const text = content?.text;
       if (text && !chat_id) {
         setLoading(false);
-        clearTimeout(timeoutIdRef.current);
+        // clearTimeout(timeoutIdRef.current);
         setHelloMessages((prevMessages) => {
           const lastMessageId = prevMessages[prevMessages.length - 1]?.id;
           if (lastMessageId !== response?.id) {

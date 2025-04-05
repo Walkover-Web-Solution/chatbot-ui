@@ -27,13 +27,13 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
         setToggleDrawer,
         setLoading,
         setChatsLoading,
-        sendMessage
-    } = useChatActions({ chatDispatch, chatState })
+        sendMessage,
+        messageRef
+    } = useChatActions({ chatbotId, chatDispatch, chatState })
     const theme = useTheme();
 
     // refs
     const containerRef = React.useRef<HTMLDivElement>(null);
-    const messageRef = React.useRef<HTMLDivElement>(null);
     const { openHelloForm, isToggledrawer, threadId, bridgeName, headerButtons, chatsLoading, helloMessages, messages, loading, options, starterQuestions, images } = chatState;
 
     return (
@@ -89,7 +89,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                                         IsHuman ? onSendHello() : null;
                                     }}
                                     messageRef={messageRef}
-                                    setImages={(images) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload: images })}
+                                    setImages={(images: string[]) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload: images })}
                                     images={images}
                                 />
                             </div>
@@ -115,7 +115,11 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                                     options={options}
                                     setChatsLoading={setChatsLoading}
                                     onSend={() => {
+<<<<<<< Updated upstream
                                         IsHuman ? onSendHello() : sendMessage("Hello");
+=======
+                                        IsHuman ? onSendHello() : sendMessage({});
+>>>>>>> Stashed changes
                                     }}
                                     messageRef={messageRef}
                                     setImages={(images) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload: images })}

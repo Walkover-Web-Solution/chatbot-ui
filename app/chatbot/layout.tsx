@@ -1,26 +1,40 @@
 'use client';
 import { ThemeContext } from '@/components/AppWrapper';
 import { ChatbotContext } from '@/components/context';
+import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useContext, useEffect, useState, useMemo } from 'react';
+import { useDispatch } from 'react-redux';
 
 export default function ChatbotLayout({ children }: { children: React.ReactNode }) {
     const search = useSearchParams();
     const [chatbotConfig, setChatbotConfig] = useState({});
     const { themeColor, handleThemeChange } = useContext(ThemeContext);
-    
+    const dispatch = useDispatch();
     // Use useMemo to parse interfaceDetails once and avoid repeated parsing
     const { chatbot_id, userId, token, config } = useMemo(() => {
         const interfaceDetails = search.get("interfaceDetails");
         try {
-            return interfaceDetails 
+            const parsedDetails = interfaceDetails 
                 ? JSON.parse(interfaceDetails) 
                 : { chatbot_id: null, userId: null, token: null, config: null };
+            return parsedDetails;
         } catch (e) {
             console.error("Error parsing interfaceDetails:", e);
             return { chatbot_id: null, userId: null, token: null, config: null };
         }
     }, [search]);
+    
+    useEffect(() => {
+        if (chatbot_id && userId) {
+            dispatch(setDataInAppInfoReducer({
+                chatBotId: chatbot_id,
+                userId: userId,
+                config: config
+            }));
+        }
+    }, [chatbot_id, userId, config]);
+
     
     const onConfigChange = useCallback((config: any) => {
         if (!config) return;

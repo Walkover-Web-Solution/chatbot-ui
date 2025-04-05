@@ -88,17 +88,20 @@ import { $ReduxCoreType } from '@/types/reduxCore';
 // };
 
 
-export const useChatActions = ({ chatDispatch, chatState }: { chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState }) => {
+export const useChatActions = ({ chatbotId, chatDispatch, chatState }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState }) => {
 
-    const { threadId, subThreadId, bridgeName } = useCustomSelector((state: $ReduxCoreType) => ({
+    const globalDispatch = useDispatch()
+    const messageRef = React.useRef<HTMLDivElement>(null);
+    const timeoutIdRef = React.useRef<any>(null);
+    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId } = useCustomSelector((state: $ReduxCoreType) => ({
         threadId: state.appInfo.threadId,
         subThreadId: state.appInfo.subThreadId,
         bridgeName: state.appInfo.bridgeName,
+        variables: state.Interface?.interfaceContext?.[chatbotId]?.variables,
+        selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null,
+        userId: state.appInfo.userId || null,
     }))
-
-    const messageRef = React.useRef<HTMLDivElement>(null);
-
-
+    const messages = chatState?.messages || []
     useEffect(() => {
         fetchAllThreads()
     }, [threadId, bridgeName]);
@@ -107,8 +110,19 @@ export const useChatActions = ({ chatDispatch, chatState }: { chatDispatch: Reac
         getChatHistory();
     }, [threadId, bridgeName, subThreadId]);
 
-
-    const globalDispatch = useDispatch()
+    const startTimeoutTimer = () => {
+        timeoutIdRef.current = setTimeout(() => {
+            chatDispatch({
+                type: ChatActionTypes.SET_DATA, payload: {
+                    messages: [
+                        ...messages.slice(0, -1),
+                        { role: "assistant", wait: false, timeOut: true },
+                    ],
+                    loading: false
+                }
+            })
+        }, 240000);
+    };
 
     const fetchAllThreads = async () => {
         const result = await getAllThreadsApi({ threadId });
@@ -152,21 +166,60 @@ export const useChatActions = ({ chatDispatch, chatState }: { chatDispatch: Reac
             }
         }
     };
+    const sendMessage = async ({ message = '', customVariables = {}, customThreadId = '', customBridgeSlug = '', apiCall = true }: { message?: string, customVariables?: Record<string, unknown>, customThreadId?: string, customBridgeSlug?: string, apiCall?: boolean }) => {
+        const textMessage = message || (messageRef?.current as HTMLInputElement)?.value;
+        const imageUrls = Array.isArray(chatState.images) && chatState?.images?.length ? chatState?.images : []; // Assuming imageUrls is an empty array or you can replace it with the actual value
+        if (!textMessage && imageUrls.length === 0) return;
+        chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload: true })
 
-    const sendMessage = async (payload: any) => {
+        startTimeoutTimer();
+
+        const payload = {
+            message: textMessage,
+            images: imageUrls, // Send image URLs
+            userId,
+            interfaceContextData: { ...variables, ...customVariables } || {},
+            threadId: customThreadId || threadId,
+            subThreadId: subThreadId,
+            slugName: customBridgeSlug || bridgeName,
+            chatBotId: chatbotId,
+            version_id: chatState.bridgeVersionId === "null" ? null : chatState.bridgeVersionId,
+            ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {
+                configuration: { model: selectedAiServiceAndModal?.modal },
+                service: selectedAiServiceAndModal?.service
+            } : {})
+        }
         const response = await sendDataToAction(payload);
         if (!response?.success) {
-            // setMessages((prevMessages) => prevMessages.slice(0, -1));
-            // setLoading(false);
+            const updatedMessages = messages.slice(0, -1);
+            chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload: updatedMessages });
+            chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: false })
         }
+
+        chatDispatch({
+            type: ChatActionTypes.SET_DATA,
+            payload: {
+                loading: false,
+                options: [],
+                messages: [
+                    ...messages,
+                    { role: "user", content: textMessage, urls: imageUrls },
+                    { role: "assistant", wait: true, content: "Talking with AI" },
+                ],
+                images: []
+            }
+        });
+
+        messageRef.current.value = "";
     }
+
     return {
         fetchAllThreads,
         getChatHistory,
         sendMessage,
         setToggleDrawer: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_TOGGLE_DRAWER, payload }),
-        setLoading : (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_LOADING, payload }),
-        setChatsLoading : (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_CHATS_LOADING, payload }),
+        setLoading: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_LOADING, payload }),
+        setChatsLoading: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_CHATS_LOADING, payload }),
         messageRef
     };
 }
