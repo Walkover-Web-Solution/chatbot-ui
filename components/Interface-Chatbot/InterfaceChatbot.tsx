@@ -69,6 +69,7 @@ export const MessageContext = createContext<{
   helloMessages: any;
   addMessage?: (message: string) => void;
   setMessages?: (message: MessageType[]) => void;
+  sendMessageToHello?: (() => void) | undefined
   threadId?: string;
   bridgeName?: string;
   fetchMoreData?: () => void;
@@ -78,7 +79,7 @@ export const MessageContext = createContext<{
   currentPage?: Number;
   starterQuestions: string[];
   headerButtons?: HeaderButtonType;
-  setOptions: (data:string[]) => void;
+  setOptions: (data: string[]) => void;
   sendMessage: ({ message }: { message?: string }) => void;
   loading?: boolean;
   messageRef?: any;
@@ -86,22 +87,22 @@ export const MessageContext = createContext<{
   options?: any[];
   setChatsLoading?: any;
   images: string[];
-  setImages: (data:string[]) => void;
-  setToggleDrawer:(data:boolean) => void;
-  setLoading:(data:boolean) => void,
-  isToggledrawer:boolean
+  setImages: (data: string[]) => void;
+  setToggleDrawer: (data: boolean) => void;
+  setLoading: (data: boolean) => void,
+  isToggledrawer: boolean
 }>({
-  starterQuestions:[],
+  starterQuestions: [],
   messages: [],
   helloMessages: [],
   headerButtons: [],
-  sendMessage:()=>{},
-  images:[],
-  setImages: () => {},
-  setToggleDrawer: () => {},
-  setLoading: () => {},
-  isToggledrawer:false,
-  setOptions:()=>{}
+  sendMessage: () => { },
+  images: [],
+  setImages: () => { },
+  setToggleDrawer: () => { },
+  setLoading: () => { },
+  isToggledrawer: false,
+  setOptions: () => { }
 });
 
 function InterfaceChatbot({

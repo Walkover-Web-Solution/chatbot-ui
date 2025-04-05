@@ -33,6 +33,7 @@ function ChatbotTextField() {
   );
   const {
     sendMessage,
+    sendMessageToHello,
     loading,
     messageRef,
     disabled,
@@ -41,13 +42,17 @@ function ChatbotTextField() {
     images,
     setImages
   } = useContext(MessageContext)
-  const [message,setMessage] = useState('')
+  const [message, setMessage] = useState('')
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey && !loading && !isUploading) {
       event.preventDefault();
-      sendMessage({});
+      handleSendMessage();
     }
   };
+
+  const handleSendMessage = (messageObj: { message?: string } = {}) => {
+    IsHuman ? sendMessageToHello?.() : sendMessage(messageObj);
+  }
 
   const handleMessage = useCallback((event: MessageEvent) => {
     if (event?.data?.type === "open") {
@@ -131,7 +136,7 @@ function ChatbotTextField() {
             {options?.slice(0, 3).map((option, index) => (
               <button
                 key={index}
-                onClick={() => sendMessage({ message: option })}
+                onClick={() => handleSendMessage({ message: option })}
                 className="flex-shrink-0 px-4 py-2 text-sm rounded-lg shadow-sm bg-white hover:bg-gray-50 border border-gray-200 transition-colors duration-200"
               >
                 {option}
@@ -264,7 +269,7 @@ function ChatbotTextField() {
             </div>
 
             <button
-              onClick={() => !loading && !isUploading ? sendMessage({}) : null}
+              onClick={() => !loading && !isUploading ? handleSendMessage() : null}
               className="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:scale-105 transition-transform duration-200"
               disabled={loading || isUploading || !message?.trim()}
               style={{

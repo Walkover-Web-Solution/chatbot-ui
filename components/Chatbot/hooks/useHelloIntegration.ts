@@ -131,7 +131,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [bridgeName, threadId, helloId]);
 
   // Send message to Hello
-  const sendMessageToHello = useCallback(async (message: string) => {
+  const onSendHello = useCallback(async (message: string) => {
     if (!message.trim()) return;
 
     try {
@@ -188,8 +188,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [channelId, uuid, unique_id, presence_channel, team_id, chat_id, chatDispatch]);
 
   // Handle sending a message
-  const onSendHello = useCallback((params: { message?: string; }) => {
-    const textMessage = params?.message || (messageRef?.current?.value || '');
+  const sendMessageToHello = useCallback(() => {
+    const textMessage = (messageRef?.current?.value || '');
     if (!textMessage.trim()) return;
 
     addHelloMessage({
@@ -198,7 +198,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     });
 
     // Send message to API
-    sendMessageToHello(textMessage);
+    onSendHello(textMessage);
 
     // Clear input field
     if (messageRef?.current) {
@@ -206,7 +206,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     }
 
     return true;
-  }, [sendMessageToHello]);
+  }, [onSendHello]);
 
   // Start timeout timer for response waiting
   const startTimeoutTimer = useCallback(() => {
@@ -229,7 +229,6 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     helloMessages,
     loading,
     setLoading,
-    onSendHello,
     sendMessageToHello,
     startTimeoutTimer,
     fetchHelloPreviousHistory

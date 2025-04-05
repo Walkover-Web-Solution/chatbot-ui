@@ -25,7 +25,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
 
     // hooks
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
-    const { onSendHello } = useHelloIntegration({ chatbotId, chatDispatch, chatState, messageRef });
+    const { sendMessageToHello } = useHelloIntegration({ chatbotId, chatDispatch, chatState, messageRef });
     const { IsHuman } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
     const {
         setToggleDrawer,
@@ -43,6 +43,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     return (
         <MessageContext.Provider value={{
             ...chatState,
+            sendMessageToHello,
             sendMessage,
             setImages,
             setToggleDrawer,
