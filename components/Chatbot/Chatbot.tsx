@@ -19,21 +19,23 @@ import MessageList from '../Interface-Chatbot/MessageList';
 import { useChatActions } from './hooks/useChatActions';
 
 function Chatbot({ chatbotId }: { chatbotId: string }) {
+    // refs
+    const containerRef = React.useRef<HTMLDivElement>(null);
+    const messageRef = React.useRef<HTMLDivElement>(null);
+
     // hooks
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
-    const { onSendHello } = useHelloIntegration({ chatbotId, chatDispatch, chatState });
+    const { onSendHello } = useHelloIntegration({ chatbotId, chatDispatch, chatState, messageRef });
     const { IsHuman } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
     const {
         setToggleDrawer,
         setLoading,
         setChatsLoading,
         sendMessage,
-        messageRef
-    } = useChatActions({ chatbotId, chatDispatch, chatState })
+    } = useChatActions({ chatbotId, chatDispatch, chatState, messageRef });
     const theme = useTheme();
 
-    // refs
-    const containerRef = React.useRef<HTMLDivElement>(null);
+
     const { openHelloForm, isToggledrawer, threadId, bridgeName, headerButtons, chatsLoading, helloMessages, messages, loading, options, starterQuestions, images } = chatState;
 
     return (

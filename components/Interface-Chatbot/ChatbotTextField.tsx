@@ -16,7 +16,7 @@ import Image from "next/image";
 import { SendMessagePayloadType } from "../Chatbot/hooks/chatTypes";
 
 interface ChatbotTextFieldType {
-  onSend?: (data:SendMessagePayloadType) => void;
+  onSend?: (data: SendMessagePayloadType) => void;
   loading?: boolean;
   messageRef?: any;
   disabled?: boolean;
@@ -59,7 +59,7 @@ function ChatbotTextField({
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey && !loading && !isUploading) {
       event.preventDefault();
-      onSend({ message,  ,images: images });
+      onSend({ message, images: images });
     }
   };
 
@@ -145,7 +145,7 @@ function ChatbotTextField({
             {options?.slice(0, 3).map((option, index) => (
               <button
                 key={index}
-                onClick={()=>sendMessage({ message:option})}
+                onClick={() => sendMessage({ message: option })}
                 className="flex-shrink-0 px-4 py-2 text-sm rounded-lg shadow-sm bg-white hover:bg-gray-50 border border-gray-200 transition-colors duration-200"
               >
                 {option}

@@ -14,9 +14,8 @@ interface HelloMessage {
   id?: string;
 }
 
-const useHelloIntegration = ({ chatbotId, chatDispatch, chatState }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction> }) => {
+const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction>, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement> }) => {
   const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId } = chatState;
-  console.log(helloId, 'helloId')
   const { uuid, unique_id, channelId, presence_channel, team_id, chat_id } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
   const socket: any = useSocket();
@@ -26,8 +25,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState }: { chatbotId
     chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: value });
   }
 
-  const setHelloMessages = (messages: HelloMessage[]) => {
-    chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: messages });
+  const setHelloMessages = (message: HelloMessage) => {
+    chatDispatch({ type: ChatActionTypes.ADD_HELLO_MESSAGE, payload: {}});
   }
 
   // Initialize socket listeners
@@ -45,7 +44,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState }: { chatbotId
         if (timeoutIdRef.current) {
           clearTimeout(timeoutIdRef.current);
         }
-
+        
         setHelloMessages((prevMessages: HelloMessage[]) => {
           const lastMessageId = prevMessages.length > 0 ? prevMessages[prevMessages.length - 1]?.id : undefined;
           if (lastMessageId !== response?.id) {
@@ -194,8 +193,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState }: { chatbotId
   }, [channelId, uuid, unique_id, presence_channel, team_id, chat_id, chatDispatch]);
 
   // Handle sending a message
-  const onSendHello = useCallback((message?: string, inputRef?: React.RefObject<HTMLInputElement | HTMLTextAreaElement>) => {
-    const textMessage = message || (inputRef?.current?.value || '');
+  const onSendHello = useCallback((params: { message?: string; }) => {
+    const textMessage = params?.message || (messageRef?.current?.value || '');
     if (!textMessage.trim()) return;
 
     // Add user message to local state immediately
