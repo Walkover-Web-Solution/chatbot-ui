@@ -16,6 +16,7 @@ interface HelloMessage {
 
 const useHelloIntegration = ({ chatbotId, chatDispatch, chatState }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction> }) => {
   const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId } = chatState;
+  console.log(helloId, 'helloId')
   const { uuid, unique_id, channelId, presence_channel, team_id, chat_id } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
   const socket: any = useSocket();

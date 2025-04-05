@@ -27,6 +27,7 @@ export function* getHelloDetailsSaga(
       helloId,
       versionId,
     });
+    console.log("Hello details response", response);
     const receivedHelloId = response?.widgetInfo?.helloId;
     const anonymousClientId = response?.ChannelList?.uuid;
     if (receivedHelloId && anonymousClientId) {

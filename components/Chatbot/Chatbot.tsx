@@ -23,9 +23,9 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
     const { onSendHello } = useHelloIntegration({ chatbotId, chatDispatch, chatState });
     const { IsHuman } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
-    const { 
-        setToggleDrawer ,
-        setLoading , 
+    const {
+        setToggleDrawer,
+        setLoading,
         setChatsLoading,
         sendMessage
     } = useChatActions({ chatDispatch, chatState })
@@ -37,7 +37,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     const { openHelloForm, isToggledrawer, threadId, bridgeName, headerButtons, chatsLoading, helloMessages, messages, loading, options, starterQuestions, images } = chatState;
 
     return (
-        <MessageContext.Provider value={{ ...chatState , sendMessage }}>
+        <MessageContext.Provider value={{ ...chatState, sendMessage }}>
             <FormComponent open={openHelloForm} setOpen={() => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true })} />
             <div className="flex h-screen w-full overflow-hidden relative">
                 {/* Sidebar - always visible on large screens */}
@@ -115,7 +115,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                                     options={options}
                                     setChatsLoading={setChatsLoading}
                                     onSend={() => {
-                                        IsHuman ? onSendHello() : null;
+                                        IsHuman ? onSendHello() : sendMessage("Hello");
                                     }}
                                     messageRef={messageRef}
                                     setImages={(images) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload: images })}

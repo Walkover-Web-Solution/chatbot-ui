@@ -1,24 +1,13 @@
-import { getAllThreadsApi } from '@/config/api';
-import { getHelloDetailsStart } from '@/store/hello/helloSlice';
-import { setThreads } from '@/store/interface/interfaceSlice';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { GetSessionStorageData } from '@/utils/ChatbotUtility';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 
 export const useReduxStateManagement = ({ chatbotId, chatDispatch, chatState }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction> }) => {
-  const reduxDispatch = useDispatch();
   const theme = useTheme();
   const isLargeScreen = useMediaQuery('(max-width: 1024px)');
-  const {
-    threadId,
-    bridgeName,
-    helloId,
-    subThreadId
-  } = chatState;
 
   // Get Redux state
   const {
@@ -118,44 +107,6 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch, chatState }: 
       payload: !isLargeScreen
     });
   }, [isLargeScreen, chatDispatch]);
-
-  // Subscribe to Hello Channel
-  const subscribeToChannel = () => {
-    if (bridgeName && threadId) {
-      reduxDispatch(
-        getHelloDetailsStart({
-          slugName: bridgeName,
-          threadId: threadId,
-          helloId: helloId || null,
-          versionId: reduxBridgeVersionId || null,
-        })
-      );
-    }
-  };
-
-  // Fetch all threads
-  const fetchAllThreads = async () => {
-    try {
-      const result = await getAllThreadsApi({ threadId });
-      if (result?.success) {
-        reduxDispatch(
-          setThreads({ bridgeName, threadId, threadList: result?.threads })
-        );
-      }
-    } catch (error) {
-      console.warn("Error fetching all threads:", error);
-    }
-  };
-
-  // Subscribe to channel on bridge or thread change
-  useEffect(() => {
-    subscribeToChannel();
-  }, [bridgeName, threadId, helloId]);
-
-  // Fetch all threads on thread or bridge change
-  useEffect(() => {
-    fetchAllThreads();
-  }, [threadId, bridgeName]);
 
   return {
     interfaceContextData,
