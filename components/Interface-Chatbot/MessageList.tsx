@@ -29,13 +29,13 @@ interface MessageListProps {
 }
 
 function MessageList({ containerRef }: MessageListProps) {
-  // const { getChatHistory } = useChatActions()
   const {
     // fetchMoreData,
     hasMoreMessages = false,
     setNewMessage,
     newMessage,
     currentPage = 1,
+    getMoreChats
   } = useContext(MessageContext);
   const MessagesList = useContext(MessageContext);
   const {
@@ -109,9 +109,9 @@ function MessageList({ containerRef }: MessageListProps) {
 
     // Trigger fetchMoreData when scrolled to top
     if (scrollPosition === 0 && hasMoreMessages) {
-      // getChatHistory();
+      getMoreChats()
     }
-  }, [containerRef, hasMoreMessages]);
+  }, [containerRef, hasMoreMessages,currentPage]);
 
   useEffect(() => {
 
@@ -162,7 +162,7 @@ function MessageList({ containerRef }: MessageListProps) {
     >
       <InfiniteScroll
         dataLength={messages.length}
-        // next={()=>getChatHistory()}
+        next={()=>getMoreChats()}
         hasMore={hasMoreMessages}
         inverse={!isInverse}
         loader={

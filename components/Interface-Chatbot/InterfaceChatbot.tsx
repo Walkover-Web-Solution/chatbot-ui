@@ -93,6 +93,7 @@ export const MessageContext = createContext<{
   setLoading: (data: boolean) => void,
   isToggledrawer: boolean,
   chatDispatch?: React.Dispatch<ChatAction>;
+  getMoreChats: () => void;
 }>({
   starterQuestions: [],
   messages: [],
@@ -104,7 +105,8 @@ export const MessageContext = createContext<{
   setToggleDrawer: () => { },
   setLoading: () => { },
   isToggledrawer: false,
-  setOptions: () => { }
+  setOptions: () => { },
+  getMoreChats: () => {}
 });
 
 function InterfaceChatbot({
@@ -457,93 +459,93 @@ function InterfaceChatbot({
   //   getChatHistory();
   // }, [threadId, bridgeName, subThreadId]);
 
-  useEffect(() => {
-    const newChannelId = (
-      chatbotId +
-      (threadId || userId) +
-      (subThreadId || userId)
-    )?.replace(/ /g, "_");
+  // useEffect(() => {
+  //   const newChannelId = (
+  //     chatbotId +
+  //     (threadId || userId) +
+  //     (subThreadId || userId)
+  //   )?.replace(/ /g, "_");
 
-    const handleMessageRTLayer = (message: string) => {
-      // Parse the incoming message string into an object
-      const parsedMessage = JSON.parse(message || "{}");
-      // Check if the status is "connected"
-      if (parsedMessage?.status === "connected") {
-        return;
-      }
-      // Check if the function call is present
-      if (
-        parsedMessage?.response?.function_call &&
-        !parsedMessage?.response?.message
-      ) {
-        setMessages((prevMessages) => [
-          ...prevMessages.slice(0, -1),
-          { role: "assistant", wait: true, content: "Function Calling", Name: parsedMessage?.response?.Name || [] },
-        ]);
-      } else if (
-        parsedMessage?.response?.function_call &&
-        parsedMessage?.response?.message
-      ) {
-        // Check if the function call is false and no response is provided
-        setMessages((prevMessages) => [
-          ...prevMessages.slice(0, -1),
-          { role: "assistant", wait: true, content: "Talking with AI" },
-        ]);
-      } else if (!parsedMessage?.response?.data && parsedMessage?.error) {
-        // Check if there is an error and no response data
-        setMessages((prevMessages) => [
-          ...prevMessages.slice(0, -1),
-          {
-            role: "assistant",
-            content: `${parsedMessage?.error || "Error in AI"}`,
-          },
-        ]);
-        setLoading(false);
-        clearTimeout(timeoutIdRef.current);
-      } else if (
-        parsedMessage?.response?.data?.role === "reset" &&
-        !parsedMessage?.response?.data?.mode
-      ) {
-        // all previous message and new object inserted
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            role: "reset",
-            mode: parsedMessage?.response?.data?.mode,
-            content: "Resetting the chat",
-          },
-        ]);
-      } else if (parsedMessage?.response?.data?.suggestions !== undefined) {
-        setOptions(parsedMessage.response?.data?.suggestions || []);
-      } else if (parsedMessage?.response?.data) {
-        // Handle the new structure with response data
-        // const content = parsedMessage.response.data.content;
-        setLoading(false);
-        setMessages((prevMessages) => [
-          ...prevMessages.slice(0, -1),
-          {
-            role: parsedMessage.response?.data?.role || "assistant",
-            ...(parsedMessage.response.data || {}),
-          },
-        ]);
-        clearTimeout(timeoutIdRef.current);
-      } else {
-        console.warn("Some error occurred in the message", parsedMessage);
-      }
-    };
+  //   const handleMessageRTLayer = (message: string) => {
+  //     // Parse the incoming message string into an object
+  //     const parsedMessage = JSON.parse(message || "{}");
+  //     // Check if the status is "connected"
+  //     if (parsedMessage?.status === "connected") {
+  //       return;
+  //     }
+  //     // Check if the function call is present
+  //     if (
+  //       parsedMessage?.response?.function_call &&
+  //       !parsedMessage?.response?.message
+  //     ) {
+  //       setMessages((prevMessages) => [
+  //         ...prevMessages.slice(0, -1),
+  //         { role: "assistant", wait: true, content: "Function Calling", Name: parsedMessage?.response?.Name || [] },
+  //       ]);
+  //     } else if (
+  //       parsedMessage?.response?.function_call &&
+  //       parsedMessage?.response?.message
+  //     ) {
+  //       // Check if the function call is false and no response is provided
+  //       setMessages((prevMessages) => [
+  //         ...prevMessages.slice(0, -1),
+  //         { role: "assistant", wait: true, content: "Talking with AI" },
+  //       ]);
+  //     } else if (!parsedMessage?.response?.data && parsedMessage?.error) {
+  //       // Check if there is an error and no response data
+  //       setMessages((prevMessages) => [
+  //         ...prevMessages.slice(0, -1),
+  //         {
+  //           role: "assistant",
+  //           content: `${parsedMessage?.error || "Error in AI"}`,
+  //         },
+  //       ]);
+  //       setLoading(false);
+  //       clearTimeout(timeoutIdRef.current);
+  //     } else if (
+  //       parsedMessage?.response?.data?.role === "reset" &&
+  //       !parsedMessage?.response?.data?.mode
+  //     ) {
+  //       // all previous message and new object inserted
+  //       setMessages((prevMessages) => [
+  //         ...prevMessages,
+  //         {
+  //           role: "reset",
+  //           mode: parsedMessage?.response?.data?.mode,
+  //           content: "Resetting the chat",
+  //         },
+  //       ]);
+  //     } else if (parsedMessage?.response?.data?.suggestions !== undefined) {
+  //       setOptions(parsedMessage.response?.data?.suggestions || []);
+  //     } else if (parsedMessage?.response?.data) {
+  //       // Handle the new structure with response data
+  //       // const content = parsedMessage.response.data.content;
+  //       setLoading(false);
+  //       setMessages((prevMessages) => [
+  //         ...prevMessages.slice(0, -1),
+  //         {
+  //           role: parsedMessage.response?.data?.role || "assistant",
+  //           ...(parsedMessage.response.data || {}),
+  //         },
+  //       ]);
+  //       clearTimeout(timeoutIdRef.current);
+  //     } else {
+  //       console.warn("Some error occurred in the message", parsedMessage);
+  //     }
+  //   };
 
-    // if (newChannelId !== channelIdRef.current) {
-    //   channelIdRef.current = newChannelId;
+  //   // if (newChannelId !== channelIdRef.current) {
+  //   //   channelIdRef.current = newChannelId;
 
-    const listener = client.on(newChannelId, handleMessageRTLayer);
+  //   const listener = client.on(newChannelId, handleMessageRTLayer);
 
-    // Cleanup on effect re-run or unmount
-    return () => {
-      listener.remove();
-      clearTimeout(timeoutIdRef.current);
-    };
-    // }
-  }, [chatbotId, userId, threadId, subThreadId]);
+  //   // Cleanup on effect re-run or unmount
+  //   return () => {
+  //     listener.remove();
+  //     clearTimeout(timeoutIdRef.current);
+  //   };
+  //   // }
+  // }, [chatbotId, userId, threadId, subThreadId]);
 
   const sendMessage = async (
     message: string,
