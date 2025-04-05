@@ -41,15 +41,13 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         ...state,
         messages: action.payload
       };
-    case ChatActionTypes.ADD_USER_MESSAGE:
+    case ChatActionTypes.ADD_MESSAGE:
       return {
         ...state,
         messages: [
           ...state.messages,
           {
-            role: "user",
-            content: action.payload.content,
-            urls: action.payload.urls || []
+            ...action.payload
           }
         ]
       };

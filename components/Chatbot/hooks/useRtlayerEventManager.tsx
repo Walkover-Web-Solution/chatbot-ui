@@ -1,28 +1,21 @@
-import React, { useCallback, useEffect, useRef } from 'react'
-import { ChatAction, ChatActionTypes, ChatState } from './chatTypes'
-import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { $ReduxCoreType } from '@/types/reduxCore';
-import WebSocketClient from 'rtlayer-client'
+import { useCustomSelector } from '@/utils/deepCheckSelector';
+import React, { useCallback, useEffect } from 'react';
+import WebSocketClient from 'rtlayer-client';
+import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 
 const client = WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
 
 function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) {
   const { threadId, subThreadId } = chatState
   const { userId } = useCustomSelector((state: $ReduxCoreType) => ({ userId: state.appInfo.userId }))
-  const messagesRef = useRef(chatState.messages);
-
-  useEffect(() => {
-    messagesRef.current = chatState.messages;
-  }, [chatState.messages]);
 
   const handleMessageRTLayer = useCallback((message: string) => {
     // Parse the incoming message string into an object
-    const messages = messagesRef.current;
 
     const parsedMessage = JSON.parse(message || "{}");
     // Check if the status is "connected"
     if (parsedMessage?.status === "connected") {
-      console.log("SOCKET CONNECTED");
       return;
     }
 
@@ -31,53 +24,30 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
     switch (true) {
       // Case: Function call is present without a message
       case function_call && !responseMessage:
-        chatDispatch({
-          type: ChatActionTypes.SET_MESSAGES, payload: [
-            ...messages?.slice(0, -1),
-            { role: "assistant", wait: true, content: "Function Calling", Name: parsedMessage?.response?.Name || [] },
-          ]
-        });
+        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Function Calling", Name: parsedMessage?.response?.Name || [] } });
         break;
 
       // Case: Function call is present with a message
-      case function_call && responseMessage:
-        chatDispatch({
-          type: ChatActionTypes.SET_MESSAGES, payload: [
-            ...messages?.slice(0, -1),
-            { role: "assistant", wait: true, content: "Talking with AI" },
-          ]
-        });
+      case function_call && !!responseMessage:
+        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Talking with AI" } });
         break;
 
       // Case: Error is present without response data
       case !data && error:
-        chatDispatch({
-          type: ChatActionTypes.SET_MESSAGES, payload: [
-            ...messages?.slice(0, -1),
-            {
-              role: "assistant",
-              content: `${error || "Error in AI"}`,
-            },
-          ]
-        });
-        chatDispatch({
-          type: ChatActionTypes.SET_LOADING, payload: false
-        });
+        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", content: `${parsedMessage?.error || error || "Error while talking to AI"}` } });
+        chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: false });
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
         break;
 
       // Case: Reset role is present without mode
       case data?.role === "reset" && !data?.mode:
         chatDispatch({
-          type: ChatActionTypes.SET_MESSAGES, payload: [
-            ...messages,
-            {
-              role: "reset",
-              mode: data?.mode,
-              content: "Resetting the chat",
-            },
-          ]
-        });
+          type: ChatActionTypes.ADD_MESSAGE, payload: {
+            role: "reset",
+            mode: data?.mode,
+            content: "Resetting the chat",
+          }
+        })
         break;
 
       // Case: Suggestions are present
@@ -89,25 +59,13 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
 
       // Case: Response data is present
       case !!data:
-        console.log("chatDispatch", messages, [
-          ...messages?.slice(0, -1),
-          {
-            role: data?.role || "assistant",
-            ...(data || {}),
-          },
-        ]);
         chatDispatch({
-          type: ChatActionTypes.SET_MESSAGES, payload: [
-            ...messages?.slice(0, -1),
-            {
-              role: data?.role || "assistant",
-              ...(data || {}),
-            },
-          ]
+          type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: {
+            role: parsedMessage.response?.data?.role || "assistant",
+            ...(parsedMessage.response.data || {}),
+          }
         });
-        chatDispatch({
-          type: ChatActionTypes.SET_LOADING, payload: false
-        });
+        chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: false });
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
         break;
 
@@ -115,7 +73,7 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
       default:
         console.warn("Some error occurred in the message", parsedMessage);
     }
-  },[]);
+  }, []);
 
   useEffect(() => {
     const newChannelId = (

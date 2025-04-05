@@ -62,6 +62,7 @@ export interface ReduxSetterActionType {
 export enum ChatActionTypes {
   SET_MESSAGES = 'SET_MESSAGES',
   ADD_USER_MESSAGE = 'ADD_USER_MESSAGE',
+  ADD_MESSAGE = 'ADD_MESSAGE',
   ADD_ASSISTANT_WAITING_MESSAGE = 'ADD_ASSISTANT_WAITING_MESSAGE',
   UPDATE_LAST_ASSISTANT_MESSAGE = 'UPDATE_LAST_ASSISTANT_MESSAGE',
   SET_LOADING = 'SET_LOADING',
@@ -92,6 +93,7 @@ export enum ChatActionTypes {
 export type ChatAction =
   | { type: ChatActionTypes.SET_MESSAGES; payload: MessageType[] }
   | { type: ChatActionTypes.ADD_USER_MESSAGE; payload: { content: string; urls?: string[] } }
+  | { type: ChatActionTypes.ADD_MESSAGE; payload: MessageType }
   | { type: ChatActionTypes.ADD_ASSISTANT_WAITING_MESSAGE; payload?: { content?: string } }
   | { type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE; payload: Partial<MessageType> }
   | { type: ChatActionTypes.SET_LOADING; payload: boolean }

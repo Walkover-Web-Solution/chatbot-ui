@@ -29,17 +29,9 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
     }, [threadId, bridgeName, subThreadId]);
 
     const startTimeoutTimer = () => {
-        const messages = chatState?.messages || []
         timeoutIdRef.current = setTimeout(() => {
-            chatDispatch({
-                type: ChatActionTypes.SET_DATA, payload: {
-                    messages: [
-                        ...messages.slice(0, -1),
-                        { role: "assistant", wait: false, timeOut: true },
-                    ],
-                    loading: false
-                }
-            })
+            chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: false, timeOut: true } })
+            chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: false })
         }, 240000);
     };
 
@@ -153,6 +145,19 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
 
         startTimeoutTimer();
 
+        chatDispatch({
+            type: ChatActionTypes.SET_DATA,
+            payload: {
+                options: [],
+                messages: [
+                    ...messages,
+                    { role: "user", content: textMessage, urls: imageUrls },
+                    { role: "assistant", wait: true, content: "Talking with AI" },
+                ],
+                images: []
+            }
+        });
+
         const payload = {
             message: textMessage,
             images: imageUrls, // Send image URLs
@@ -175,20 +180,6 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: false })
             return
         }
-
-        chatDispatch({
-            type: ChatActionTypes.SET_DATA,
-            payload: {
-                options: [],
-                messages: [
-                    ...messages,
-                    { role: "user", content: textMessage, urls: imageUrls },
-                    { role: "assistant", wait: true, content: "Talking with AI" },
-                ],
-                images: []
-            }
-        });
-
         messageRef.current.value = "";
     }
 
