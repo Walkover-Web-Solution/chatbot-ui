@@ -44,7 +44,6 @@ function MessageList({ containerRef }: MessageListProps) {
     addMessage,
     helloMessages = [],
   } = MessagesList;
-  console.log(helloMessages)
   const [showScrollButton, setShowScrollButton] = useState(false)
   const [isInverse, setIsInverse] = useState(false);
   const [shouldScroll, setShouldScroll] = useState(true);

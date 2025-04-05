@@ -113,10 +113,10 @@ export type ChatAction =
   | { type: ChatActionTypes.SET_OPEN_HELLO_FORM; payload: boolean }
   | { type: ChatActionTypes.SET_TOGGLE_DRAWER; payload: boolean }
   | { type: ChatActionTypes.SET_HELLO_MESSAGES; payload: any[] }
-  | { type: ChatActionTypes.ADD_HELLO_MESSAGE; payload: any }
+  | { type: ChatActionTypes.ADD_HELLO_MESSAGE; payload: any, reponseType?: 'assistant' | null }
   | { type: ChatActionTypes.SET_MESSAGE_TIMEOUT }
   | { type: ChatActionTypes.RESET_STATE }
-  | { type: ChatActionTypes.SET_DATA; payload: ReduxSetterActionType}
+  | { type: ChatActionTypes.SET_DATA; payload: ReduxSetterActionType }
 
 export interface ChatContextType extends ChatState {
   dispatch: React.Dispatch<ChatAction>;

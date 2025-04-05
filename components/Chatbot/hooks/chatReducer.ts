@@ -172,9 +172,26 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         helloMessages: action.payload
       };
     case ChatActionTypes.ADD_HELLO_MESSAGE:
+      // If the last message ID is the same, we don't add a new message
+      if (action.payload?.reponseType === 'assistant') {
+        const lastMessageId = state.helloMessages.length > 0 ? state.helloMessages[state.helloMessages.length - 1]?.id : undefined;
+        if (lastMessageId !== action.payload?.message?.id) {
+          return {
+            ...state,
+            helloMessages: [
+              ...state.helloMessages,
+              {
+                role: action.payload.role || "assistant",
+                ...action.payload.message,
+              }
+            ]
+          };
+        }
+        return state
+      }
       return {
         ...state,
-        helloMessages: [...state.helloMessages, action.payload]
+        helloMessages: [...state.helloMessages, action.payload.message]
       };
     case ChatActionTypes.SET_MESSAGE_TIMEOUT:
       return {
@@ -186,10 +203,10 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         loading: false
       };
     case ChatActionTypes.SET_DATA:
-        return {
-          ...state,
-          ...action.payload
-        }; 
+      return {
+        ...state,
+        ...action.payload
+      };
     case ChatActionTypes.RESET_STATE:
       return {
         ...initialChatState,

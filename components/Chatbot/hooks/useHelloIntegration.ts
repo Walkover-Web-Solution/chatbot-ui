@@ -25,8 +25,12 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: value });
   }
 
-  const setHelloMessages = (message: HelloMessage) => {
-    chatDispatch({ type: ChatActionTypes.ADD_HELLO_MESSAGE, payload: {}});
+  const setHelloMessages = (messages: HelloMessage[]) => {
+    chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: messages });
+  }
+
+  const addHelloMessage = (message: HelloMessage, reponseType: any = '') => {
+    chatDispatch({ type: ChatActionTypes.ADD_HELLO_MESSAGE, payload: { message, reponseType } });
   }
 
   // Initialize socket listeners
@@ -44,22 +48,13 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         if (timeoutIdRef.current) {
           clearTimeout(timeoutIdRef.current);
         }
-        
-        setHelloMessages((prevMessages: HelloMessage[]) => {
-          const lastMessageId = prevMessages.length > 0 ? prevMessages[prevMessages.length - 1]?.id : undefined;
-          if (lastMessageId !== response?.id) {
-            return [
-              ...prevMessages,
-              {
-                role: sender_id === "bot" ? "Bot" : "Human",
-                from_name,
-                content: text,
-                id: response?.id,
-              },
-            ];
-          }
-          return prevMessages;
-        });
+
+        addHelloMessage({
+          role: sender_id === "bot" ? "Bot" : "Human",
+          from_name,
+          content: text,
+          id: response?.id,
+        }, 'assistant');
       }
     };
 
@@ -197,19 +192,17 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     const textMessage = params?.message || (messageRef?.current?.value || '');
     if (!textMessage.trim()) return;
 
-    // Add user message to local state immediately
-    setHelloMessages((prevMessages) => [
-      ...prevMessages,
-      { role: "user", content: textMessage },
-    ]);
+    addHelloMessage({
+      role: "user",
+      content: textMessage,
+    });
 
     // Send message to API
     sendMessageToHello(textMessage);
-    chatDispatch({ type: ChatActionTypes.SET_OPTIONS, payload: [] });
 
     // Clear input field
-    if (inputRef?.current) {
-      inputRef.current.value = '';
+    if (messageRef?.current) {
+      messageRef.current.value = '';
     }
 
     return true;
