@@ -134,7 +134,7 @@
 .meet-btn {
     min-height: 26px;
     line-height: 30px !important;
-    background-color: var(--msg-primaryColor);
+    background-color: var(--msg-primaryColor) !important;
     &.mat-button-disabled {
         color: #00000042 !important;
         background-color: #0000001f !important;

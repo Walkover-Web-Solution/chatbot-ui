@@ -47,7 +47,10 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
         }
         
         let content = this.messages.content;
-        content.text = this.linkifyPipe.transform(content.text);
+        let message_type = this.messages.message_type;
+        if (message_type !== 'video_call') {
+            content.text = this.linkifyPipe.transform(content.text);
+        }
         content.text = this.WhatsappInlineStyleFormat.transform(content.text)      
         this.rawHtml = this.sanitizer.bypassSecurityTrustHtml(content.text)
         if (content?.expiration_time) {
