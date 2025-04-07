@@ -1,6 +1,9 @@
 import { ModuleWithProviders, NgModule, Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'getHashCode' })
+@Pipe({
+    name: 'getHashCode',
+    standalone: false
+})
 export class GetHashCodePipe implements PipeTransform {
     transform(str: string): string {
         if (str) {

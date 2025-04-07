@@ -68,6 +68,7 @@ import { removeCookie } from '../utils';
     styleUrls: ['./chat-widget.component.scss', '../css2.css', '../icon.css'],
     animations: [fadeInOut, fadeIn],
     encapsulation: ViewEncapsulation.ShadowDom,
+    standalone: false
 })
 export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() public additionalData: IAdditionalData;
@@ -245,6 +246,8 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
     }
 
     ngOnInit() {
+      //remove website cookie hello-widget-uuid
+        removeCookie('hello-widget-uuid')
         let storedWidgetToken = this.getValueFromObservable(this.store.pipe(select(selectWidgetToken)));
         if (storedWidgetToken && storedWidgetToken !== this.widgetToken) {
             this.store.dispatch(actions.resetState());

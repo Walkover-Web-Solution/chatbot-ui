@@ -32,7 +32,7 @@ export class WidgetInfoEffects {
                             }
                         }
                         const anonymousUuid = getCookie('hello-widget-anonymous-uuid-bak');
-                        removeCookie('hello-widget-anonymous-uuid-bak');
+                        removeCookie('hello-widget-anonymous-uuid-bak')
 
                         /// if mail or unique_id are passed
                         if (config.mail || config.unique_id || config.number) {

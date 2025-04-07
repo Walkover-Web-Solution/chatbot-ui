@@ -26,6 +26,7 @@ import { isEqual } from 'lodash-es';
     selector: 'msg91-message-input',
     templateUrl: './message-input.component.html',
     styleUrls: ['./message-input.component.scss'],
+    standalone: false
 })
 export class MessageInputComponent extends BaseComponent implements OnInit, OnChanges, OnDestroy {
     @Input() fileUploadPercentage = 0;
@@ -231,6 +232,8 @@ export class MessageInputComponent extends BaseComponent implements OnInit, OnCh
             event.key === 'Enter' &&
             !event.shiftKey
         ) {
+            event.preventDefault();
+        } else if (event.key === 'Enter') {
             event.preventDefault();
         }
     }

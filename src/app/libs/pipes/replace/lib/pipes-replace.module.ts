@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 
 @Pipe({
     name: 'replace',
+    standalone: false
 })
 export class ReplacePipe implements PipeTransform {
     transform(value: string, expression: any, replaceWith: string, replaceAll: boolean = true): string {

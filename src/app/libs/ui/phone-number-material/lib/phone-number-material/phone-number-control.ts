@@ -37,6 +37,7 @@ export class PhoneNumber {
         '[id]': 'id',
         '(blur)': 'onTouched()',
     },
+    standalone: false
 })
 export class PhoneNumberControl implements ControlValueAccessor, MatFormFieldControl<PhoneNumber>, OnDestroy, OnInit {
     isOpen: boolean = false;

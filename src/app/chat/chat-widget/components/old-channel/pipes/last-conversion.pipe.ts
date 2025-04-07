@@ -12,6 +12,7 @@ import { extractContent } from '../../../../utils/messages';
 
 @Pipe({
     name: 'lastConversion',
+    standalone: false
 })
 export class LastConversionPipe implements PipeTransform {
     transform(value: IMessage, maxCharacter: number = 20): string {

@@ -1,10 +1,13 @@
 import { ModuleWithProviders, NgModule, Pipe, PipeTransform } from '@angular/core';
-import * as dayjs from 'dayjs';
-import * as objectSupport from 'dayjs/plugin/objectSupport';
+import dayjs from 'dayjs';
+import objectSupport from 'dayjs/plugin/objectSupport';
 import { ConvertToDigitTimeToken } from '@msg91/utils';
 
 dayjs.extend(objectSupport);
-@Pipe({ name: 'timeToken' })
+@Pipe({
+    name: 'timeToken',
+    standalone: false
+})
 export class TimeTokenPipe implements PipeTransform {
     constructor() {}
 

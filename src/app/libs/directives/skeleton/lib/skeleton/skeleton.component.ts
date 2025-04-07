@@ -16,6 +16,7 @@ import { Component, ElementRef } from '@angular/core';
             }
         `,
     ],
+    standalone: false
 })
 export class SkeletonComponent {
     width: string;

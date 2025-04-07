@@ -5,8 +5,10 @@
 */
 @import './theme-colors';
 @import 'src/assets/scss/theme/_typography.scss';
+@import './theme_theme-colors';
 @include mat.all-component-typographies($custom-typography);
-@include mat.core();
+@include mat.elevation-classes();
+@include mat.app-background();
 $dark-primary-text: rgba(black, 0.87);
 $dark-secondary-text: rgba(black, 0.54);
 $dark-disabled-text: rgba(black, 0.38);

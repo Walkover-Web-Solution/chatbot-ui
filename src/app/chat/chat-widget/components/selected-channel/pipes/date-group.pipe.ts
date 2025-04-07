@@ -1,9 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { IMessage } from '../../../../model';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 
 @Pipe({
     name: 'DateGroup',
+    standalone: false
 })
 export class DateGroupPipe implements PipeTransform {
     transform(value: IMessage[]): IMessage[][] {

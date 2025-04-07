@@ -17,7 +17,7 @@ import {
 import { getCookie, removeCookie, setCookie } from '../../../utils';
 import { AfterMessagePublishOperation, MessageTypes } from '../../../model';
 import { IAppState, SET_PRESENCE_OF_AGENT } from '../../index';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { SocketService } from '../../../service/socket.service';
 import { environment } from 'src/environments/environment';
 

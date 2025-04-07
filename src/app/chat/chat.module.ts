@@ -42,7 +42,7 @@ import { PipesSanitizeHtmlPipeModule } from '@msg91/pipes/SanitizeHtmlPipe';
 import { StoreModule } from '@ngrx/store';
 import { reducers, metaReducers } from './store';
 import { environment } from '../../environments/environment';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { LastConversionPipe } from './chat-widget/components/old-channel/pipes';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { UiPhoneNumberMaterialModule } from '@msg91/ui/phone-number-material';
@@ -50,7 +50,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ProfileNameComponent } from './chat-widget/components/profile-name/profile-name.component';
 import { PipesGetHashCodePipeModule } from '@msg91/pipes/GetHashCodePipe';
 import { PipesGetShortNamePipeModule } from '@msg91/pipes/GetShortNamePipe';
-import { PipesLinkifyPipeModule } from '@msg91/pipes/LinkifyPipe';
+import { LinkifyPipe, PipesLinkifyPipeModule } from '@msg91/pipes/LinkifyPipe';
 import { SocketService, ChatService, WidgetDataService } from './service';
 import { PipesTimeConversionPipeModule } from '@msg91/pipes/TimeConversionPipe';
 import { ProxyBaseUrls } from '@msg91/models/root-models';
@@ -63,7 +63,7 @@ import { UiInteractiveMessageModule } from '@msg91/ui/interactive-message';
 import { IdentityVerificationService } from './service/identity-verification.service';
 import { DirectivesSkeletonModule } from '@msg91/directives/skeleton';
 import { PipesTypeofModule } from '@msg91/pipes/typeof';
-import { PipesWhatsappInlineStyleFormatModule } from '@msg91/pipes/whatsapp-inline-style-format';
+import { PipesWhatsappInlineStyleFormatModule, WhatsappInlineStyleFormat } from '@msg91/pipes/whatsapp-inline-style-format';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ENVIRONMENT_TOKEN } from '@msg91/constant';
 import { MatListModule } from '@angular/material/list';
@@ -89,10 +89,8 @@ export const CHAT_COMPONENTS: any[] = [
     LastConversionPipe,
 ];
 
-@NgModule({
-    imports: [
-        CommonModule,
-        HttpClientModule,
+@NgModule({ declarations: [...CHAT_COMPONENTS, ProfileNameComponent],
+    exports: [ChatWidgetComponent, UiPhoneNumberMaterialModule], imports: [CommonModule,
         PipesSanitizeHtmlPipeModule,
         FormsModule,
         EffectsModule.forRoot([
@@ -136,15 +134,14 @@ export const CHAT_COMPONENTS: any[] = [
         DirectivesSkeletonModule,
         PipesTypeofModule,
         PipesWhatsappInlineStyleFormatModule,
-        MatListModule
-    ],
-    declarations: [...CHAT_COMPONENTS, ProfileNameComponent],
-    providers: [
+        MatListModule], providers: [
         ChatService,
         IdentityVerificationService,
         ArticlePopupService,
         SocketService,
         WidgetDataService,
+        LinkifyPipe,
+        WhatsappInlineStyleFormat,
         { provide: ProxyBaseUrls.Env, useValue: environment.env },
         { provide: ProxyBaseUrls.ProxyURL, useValue: null },
         {
@@ -152,7 +149,6 @@ export const CHAT_COMPONENTS: any[] = [
             useValue: environment.apiUrl,
         },
         { provide: ENVIRONMENT_TOKEN, useValue: environment },
-    ],
-    exports: [ChatWidgetComponent, UiPhoneNumberMaterialModule],
-})
+        provideHttpClient(withInterceptorsFromDi()),
+    ] })
 export class ChatModule {}

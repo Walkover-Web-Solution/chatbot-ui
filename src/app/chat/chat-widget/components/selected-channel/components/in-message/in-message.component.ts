@@ -5,6 +5,9 @@ import { DOCUMENT } from '@angular/common';
 import { ajax } from 'rxjs/ajax';
 import { fileNotSupportAtUI } from '@msg91/utils';
 import { environment } from '../../../../../../../environments/environment';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { LinkifyPipe } from '@msg91/pipes/LinkifyPipe';
+import { WhatsappInlineStyleFormat } from '@msg91/pipes/whatsapp-inline-style-format';
 
 const IMAGE_PLACEHOLDER = `${environment.appUrl}assets/images/image-placeholder.png`;
 
@@ -12,6 +15,7 @@ const IMAGE_PLACEHOLDER = `${environment.appUrl}assets/images/image-placeholder.
     selector: 'msg91-in-message',
     templateUrl: './in-message.component.html',
     styleUrls: ['./in-message.component.scss'],
+    standalone: false
 })
 export class InMessageComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() fromName: string;
@@ -27,8 +31,9 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
     public linkExpire: boolean = false;
     public currentTime: number;
     private timerInterval: any;
+    public rawHtml: SafeHtml;
 
-    constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef) {
+    constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef, private sanitizer: DomSanitizer, private linkifyPipe: LinkifyPipe, private WhatsappInlineStyleFormat: WhatsappInlineStyleFormat ) {
         super();
     }
     ngOnInit() {
@@ -37,12 +42,17 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
                 this.supportedFiles[attachment.name] = !fileNotSupportAtUI(attachment.path);
             }
         }
-
         if (this.messages.sender_id !== 'bot') {
             this.assignee = this.agentDetails.find((e) => e.id === this.messages.sender_id);
         }
-
+        
         let content = this.messages.content;
+        let message_type = this.messages.message_type;
+        if (message_type !== 'video_call') {
+            content.text = this.linkifyPipe.transform(content.text);
+        }
+        content.text = this.WhatsappInlineStyleFormat.transform(content.text)      
+        this.rawHtml = this.sanitizer.bypassSecurityTrustHtml(content.text)
         if (content?.expiration_time) {
             const currentTimeToken = new Date().getTime();
             this.currentTime = currentTimeToken;

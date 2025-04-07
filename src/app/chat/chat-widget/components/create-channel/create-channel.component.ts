@@ -5,6 +5,7 @@ import { BaseComponent } from '@msg91/ui/base-component';
     selector: 'msg91-create-channel',
     templateUrl: './create-channel.component.html',
     styleUrls: ['./create-channel.component.scss'],
+    standalone: false
 })
 export class CreateChannelComponent extends BaseComponent implements OnDestroy {
     @Input() isClientBlocked: boolean = false;

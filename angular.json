@@ -40,9 +40,7 @@
                 "input": "src/styles.scss",
                 "inject": true,
                 "bundleName": "styles"
-              },
-              "node_modules/primeng/resources/themes/md-light-indigo/theme.css",
-              "node_modules/primeng/resources/primeng.min.css"
+              }
             ],
             "scripts": []
           },
@@ -100,18 +98,18 @@
           },
           "configurations": {
             "production": {
-              "browserTarget": "chat-widget:build:production"
+              "buildTarget": "chat-widget:build:production"
             },
             "development": {
-              "browserTarget": "chat-widget:build:development"
+              "buildTarget": "chat-widget:build:development"
             }
           },
           "defaultConfiguration": "development"
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "builder": "@angular/build:extract-i18n",
           "options": {
-            "browserTarget": "chat-widget:build"
+            "buildTarget": "chat-widget:build"
           }
         }
       }

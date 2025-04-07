@@ -1,7 +1,10 @@
 import { ModuleWithProviders, NgModule, Pipe, PipeTransform } from '@angular/core';
 import { ALPHANUMERIC_WITH_SPACE_REGEX } from '@msg91/regex';
 
-@Pipe({ name: 'getShortName' })
+@Pipe({
+    name: 'getShortName',
+    standalone: false
+})
 export class GetShortNamePipe implements PipeTransform {
     transform(fullName: string, returnBackgroundColor: boolean = false): string {
         if (!new RegExp(ALPHANUMERIC_WITH_SPACE_REGEX).test(fullName)) {

@@ -1,8 +1,9 @@
+@use '../../../../../assets/styles/component/global' as  global;
+
 ::ng-deep {
     display: flex;
     flex-direction: column;
 }
-@import '../../../../../assets/styles/component/global';
 
 
 .mat-button {

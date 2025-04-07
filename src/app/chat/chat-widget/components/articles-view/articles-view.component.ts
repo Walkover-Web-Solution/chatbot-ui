@@ -7,6 +7,7 @@ import { environment } from '../../../../../environments/environment';
     selector: 'msg91-articles-view',
     templateUrl: './articles-view.component.html',
     styleUrls: ['./articles-view.component.scss'],
+    standalone: false
 })
 export class ArticlesViewComponent extends BaseComponent implements OnDestroy {
     @Input() currentArticle: IArticle;

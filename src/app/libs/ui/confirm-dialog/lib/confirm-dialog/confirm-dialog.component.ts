@@ -5,6 +5,7 @@ import { MatDialogRef } from '@angular/material/dialog';
     selector: 'msg91-confirm-dialog',
     templateUrl: './confirm-dialog.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ConfirmDialogComponent {
     /** Title of dialog */

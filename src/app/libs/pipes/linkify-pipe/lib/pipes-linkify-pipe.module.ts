@@ -1,7 +1,10 @@
 import { ModuleWithProviders, NgModule, Pipe, PipeTransform } from '@angular/core';
 import linkifyHtml from 'linkifyjs/html';
 
-@Pipe({ name: 'linkify' })
+@Pipe({
+    name: 'linkify',
+    standalone: false
+})
 export class LinkifyPipe implements PipeTransform {
     transform(str: string): string {
         return str

@@ -220,7 +220,7 @@ export interface IOutboundMessageModel extends IMessageModel {
     is_auto_response?: boolean;
 }
 
-export type TMessageType = 'text' | 'attachment' | 'text-attachment';
+export type TMessageType = 'text' | 'attachment' | 'text-attachment' | 'video_call';
 
 export type TDisplayMessageType = 'note' | 'chat' | 'email' | 'mail' | 'whatsapp' | 'rcs' | 'fb';
 

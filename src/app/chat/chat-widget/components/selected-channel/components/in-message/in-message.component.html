@@ -1,6 +1,6 @@
 <div style="display: flex; align-items: flex-end" *ngIf="messages?.message_type !== 'activity'">
     <div class="input-msg-box font-14" [ngClass]="{ 'if-attachment': messages.content?.attachment?.length > 0 }">
-        <h6 class="my-0 fw-bold agent-name text-dotted font-10 mb-0 fw-bold" *ngIf="messages.firstAgentMsg">
+        <h6 class="mt-0 fw-bold agent-name text-dotted font-10 mb-0 fw-bold mb-1" *ngIf="messages.firstAgentMsg">
             {{
                 fromName
                     ? fromName
@@ -201,8 +201,8 @@
                 messages?.message_type !== 'interactive' &&
                 messages?.content?.text
             "
-            [innerHTML]="messages.content.text | whatsAppInlineStyleFormat | linkify"
-            class="input-msg-break "
+            [innerHtml]="rawHtml"
+            class="input-msg-break"
         ></p>
 
         <ng-container *ngIf="messages?.message_type === 'video_call'">
@@ -215,7 +215,7 @@
                     Click Here to Join Hello Meet
                 </button>
             </a>
-            <p *ngIf="!linkExpire && messages?.content?.expiration_time" class="font-12">
+            <p *ngIf="!linkExpire && messages?.content?.expiration_time" class="font-12 mt-1">
                 <strong class="text-dark">Note: </strong
                 ><span class="text-light"
                     >Meet will expire in next
