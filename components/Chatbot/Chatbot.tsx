@@ -1,22 +1,22 @@
+import { ChatBotGif } from '@/assests/assestsIndex';
 import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { ParamsEnums } from '@/utils/enums';
-import React, { useReducer } from 'react'
-import useHelloIntegration from './hooks/useHelloIntegration';
-import { chatReducer, initialChatState } from './hooks/chatReducer';
-import { MessageContext } from '../Interface-Chatbot/InterfaceChatbot';
-import FormComponent from '../FormComponent';
-import { ChatActionTypes } from './hooks/chatTypes';
-import ChatbotDrawer from '../Interface-Chatbot/ChatbotDrawer';
 import { LinearProgress, useTheme } from '@mui/material';
-import { ChatBotGif } from '@/assests/assestsIndex';
 import Image from 'next/image';
-import { useReduxStateManagement } from './hooks/useReduxManagement';
-import ChatbotTextField from '../Interface-Chatbot/ChatbotTextField';
-import ChatbotHeaderTab from '../Interface-Chatbot/ChatbotHeaderTab';
+import React, { useReducer } from 'react';
+import FormComponent from '../FormComponent';
+import ChatbotDrawer from '../Interface-Chatbot/ChatbotDrawer';
 import ChatbotHeader from '../Interface-Chatbot/ChatbotHeader';
-import StarterQuestions from '../Interface-Chatbot/StarterQuestions';
+import ChatbotHeaderTab from '../Interface-Chatbot/ChatbotHeaderTab';
+import ChatbotTextField from '../Interface-Chatbot/ChatbotTextField';
+import { MessageContext } from '../Interface-Chatbot/InterfaceChatbot';
 import MessageList from '../Interface-Chatbot/MessageList';
+import StarterQuestions from '../Interface-Chatbot/StarterQuestions';
+import { chatReducer, initialChatState } from './hooks/chatReducer';
+import { ChatActionTypes } from './hooks/chatTypes';
 import { useChatActions } from './hooks/useChatActions';
+import useHelloIntegration from './hooks/useHelloIntegration';
+import { useReduxStateManagement } from './hooks/useReduxManagement';
 import useRtlayerEventManager from './hooks/useRtlayerEventManager';
 
 function Chatbot({ chatbotId }: { chatbotId: string }) {

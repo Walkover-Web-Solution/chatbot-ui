@@ -1,5 +1,5 @@
-import { ChatAction, ChatActionTypes, ChatState, MessageType } from './chatTypes';
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
+import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 
 export const initialChatState: ChatState = {
   // Messages and Conversations
@@ -73,6 +73,13 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
             ...action.payload
           }
         ]
+      };
+    case ChatActionTypes.REMOVE_MESSAGES:
+      const { numberOfMessages } = action.payload;
+      const newMessages = state.messages.slice(0, -numberOfMessages);
+      return {
+        ...state,
+        messages: newMessages
       };
     case ChatActionTypes.SET_LOADING:
       return {

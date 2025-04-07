@@ -1,16 +1,16 @@
 // hooks/useChatActions.ts
+import { errorToast } from '@/components/customToast';
 import { getAllThreadsApi, getPreviousMessage, sendDataToAction } from '@/config/api';
 import { setThreads } from '@/store/interface/interfaceSlice';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState, SendMessagePayloadType } from './chatTypes';
-import { errorToast } from '@/components/customToast';
 
 export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) => {
 
-    const globalDispatch = useDispatch()
+    const globalDispatch = useDispatch();
     const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId } = useCustomSelector((state: $ReduxCoreType) => ({
         threadId: state.appInfo.threadId,
         subThreadId: state.appInfo.subThreadId,
@@ -135,7 +135,6 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
     }
 
     const sendMessage = async ({ message = '', customVariables = {}, customThreadId = '', customBridgeSlug = '', apiCall = true }: SendMessagePayloadType) => {
-        const messages = chatState?.messages || []
         const textMessage = message || (messageRef?.current as HTMLInputElement)?.value;
         const imageUrls = Array.isArray(chatState.images) && chatState?.images?.length ? chatState?.images : []; // Assuming imageUrls is an empty array or you can replace it with the actual value
         if (!textMessage && imageUrls.length === 0) return;
@@ -148,14 +147,11 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             type: ChatActionTypes.SET_DATA,
             payload: {
                 options: [],
-                messages: [
-                    ...messages,
-                    { role: "user", content: textMessage, urls: imageUrls },
-                    { role: "assistant", wait: true, content: "Talking with AI" },
-                ],
                 images: []
             }
         });
+        chatDispatch({ type: ChatActionTypes.ADD_MESSAGE, payload: { role: "user", content: textMessage, urls: imageUrls } });
+        chatDispatch({ type: ChatActionTypes.ADD_ASSISTANT_WAITING_MESSAGE, payload: { content: "Talking with AI" } });
 
         const payload = {
             message: textMessage,
@@ -174,13 +170,46 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         }
         const response = await sendDataToAction(payload);
         if (!response?.success) {
-            const updatedMessages = messages.slice(0, -1);
-            chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload: updatedMessages });
+            chatDispatch({ type: ChatActionTypes.REMOVE_MESSAGES, payload: { numberOfMessages: 1 } })
             chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: false })
             return
         }
         messageRef.current.value = "";
     }
+
+    const handleMessage = useCallback(
+        (event: MessageEvent) => {
+            if (event?.data?.type === "refresh") {
+                getIntialChatHistory();
+            }
+            if (event?.data?.type === "askAi") {
+                if (!chatState?.loading) {
+                    const data = event?.data?.data;
+                    if (typeof data === "string") {
+                        // this is for when direct sending message through window.askAi("hello")
+                        sendMessage({ message: data });
+                    } else {
+                        // this is for when sending from SendDataToChatbot method window.SendDataToChatbot({bridgeName: 'asdlfj', askAi: "hello"})
+                        setTimeout(() => {
+                            sendMessage({ message: data.askAi || data?.message || "", customVariables: data?.variables || {}, customThreadId: data?.threadId || null, customBridgeSlug: data?.bridgeName || null });
+                        }, 500);
+
+                    }
+                } else {
+                    errorToast("Please wait for the response from AI");
+                    return;
+                }
+            }
+        },
+        []
+    );
+
+    useEffect(() => {
+        window.addEventListener("message", handleMessage);
+        return () => {
+            window.removeEventListener("message", handleMessage);
+        };
+    }, [handleMessage]);
 
     return {
         fetchAllThreads,

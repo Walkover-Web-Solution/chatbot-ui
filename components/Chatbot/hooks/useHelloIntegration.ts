@@ -3,9 +3,10 @@ import useSocket from '@/hooks/socket';
 import { getHelloDetailsStart, setChannel } from '@/store/hello/helloSlice';
 import axios from 'axios';
 import { useCallback, useEffect, useRef } from 'react';
+import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { useReduxStateManagement } from './useReduxManagement';
-import { useDispatch } from 'react-redux';
+
 interface HelloMessage {
   role: string;
   message_id?: string;
