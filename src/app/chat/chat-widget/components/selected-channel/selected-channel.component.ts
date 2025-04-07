@@ -316,7 +316,6 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
         );
         this.store.pipe(select(selectWidgetInfo), distinctUntilChanged(isEqual), take(1)).subscribe((res) => {
             this.widgetInfo = res;
-            console.log(this.widgetInfo);
             if (res.chatbot_enable) {
                 this.getFirstMessage();
             }

@@ -202,7 +202,6 @@ export class ChatService {
 
     public getWidgetInfo(token: string): Observable<IWidgetInfo> {
         this.options.headers.Authorization = token;
-        console.log(this.apiUrl)
         return this.http.post<IWidgetInfo>(
             URLS.CHAT.WIDGET_INFO.replace(':URL', this.apiUrl),
             this.identityVerificationService.getUserData(),
