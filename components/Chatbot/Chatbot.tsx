@@ -45,9 +45,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
 
     // RTLayer Event Listiner
     useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef })
-    const { openHelloForm, isToggledrawer, chatsLoading, helloMessages, messages, messageIds, msgIdAndDataMap, subThreadId } = chatState;
-
-
+    const { openHelloForm, isToggledrawer, chatsLoading, helloMessages, messages, messageIds, msgIdAndDataMap, subThreadId , helloMsgIds , helloMsgIdAndDataMap } = chatState;
     return (
         <MessageContext.Provider value={{
             ...chatState,
@@ -63,8 +61,11 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
             getMoreChats,
             setNewMessage,
             setMessages,
-            messageIds: messageIds[subThreadId],
-            msgIdAndDataMap: msgIdAndDataMap[subThreadId]
+            messageIds: messageIds?.[subThreadId] || [],
+            msgIdAndDataMap: msgIdAndDataMap[subThreadId],
+            helloMessages,
+            helloMsgIdAndDataMap: helloMsgIdAndDataMap?.[subThreadId],
+            helloMsgIds : helloMsgIds?.[subThreadId]
         }}>
             <FormComponent open={openHelloForm} setOpen={() => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true })} />
             <div className="flex h-screen w-full overflow-hidden relative">
@@ -85,7 +86,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                         </div>
                     )}
 
-                    {(IsHuman ? helloMessages?.length === 0 : messages?.length === 0) ? (
+                    {(IsHuman ? helloMsgIds[subThreadId]?.length === 0 : messageIds[subThreadId]?.length === 0) ? (
                         <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-70px] p-5">
                             <div className="flex flex-col items-center w-full">
                                 <Image

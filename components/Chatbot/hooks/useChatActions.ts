@@ -177,7 +177,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         messageRef.current.value = "";
     }
 
-    const setMessages =  (payload: any) => chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload })
+    const setMessages = (payload: any) => chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload })
 
     const handleMessage = useCallback(
         (event: MessageEvent) => {

@@ -4,8 +4,10 @@ import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 export const initialChatState: ChatState = {
   // Messages and Conversations
   messages: [],
-  messageIds: [],
+  messageIds: {},
   msgIdAndDataMap: {},
+  helloMsgIds: {},
+  helloMsgIdAndDataMap: {},
   helloMessages: [],
   starterQuestions: [],
 
@@ -36,68 +38,109 @@ export const initialChatState: ChatState = {
   images: [],
 };
 
-export const chatReducer = (state: ChatStsetate, action: ChatAction): ChatState => {
+export const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
   switch (action.type) {
-    case ChatActionTypes.SET_MESSAGES:
+    case ChatActionTypes.SET_MESSAGES: {
       const subThreadId = state.subThreadId
       return {
         ...state,
         messages: action.payload,
         messageIds: {
           ...state.messageIds,
-          [subThreadId]: Array.from(new Set(action.payload.map((item) => item?.id))) as string[]
+          [subThreadId]: Array.from(new Set(action.payload?.map((item) => item?.Id))) as string[]
         },
         msgIdAndDataMap: {
           ...state.msgIdAndDataMap,
           [subThreadId]: {
             ...state.msgIdAndDataMap[subThreadId],
-            ...action.payload.reduce((acc, item) => {
-              acc[item?.id] = item
+            ...action.payload?.reduce((acc, item) => {
+              acc[item?.Id] = item
               return acc
             }, {})
           }
         }
       };
-    case ChatActionTypes.ADD_MESSAGE:
+    }
+    case ChatActionTypes.ADD_MESSAGE: {
+      const subThreadId = state.subThreadId
       return {
         ...state,
-        messages: [
-          ...state.messages,
-          {
-            ...action.payload
+        messageIds: {
+          ...state.messageIds,
+          [subThreadId]: [...state.messageIds[subThreadId], "userMessage"]
+        },
+        msgIdAndDataMap: {
+          ...state.msgIdAndDataMap,
+          [subThreadId]: {
+            ...state.msgIdAndDataMap[subThreadId],
+            "userMessage": action.payload
           }
-        ]
+        }
       };
-    case ChatActionTypes.ADD_ASSISTANT_WAITING_MESSAGE:
+    }
+    case ChatActionTypes.ADD_ASSISTANT_WAITING_MESSAGE: {
+      const subThreadId = state.subThreadId
       return {
         ...state,
-        messages: [
-          ...state.messages,
-          {
-            role: "assistant",
-            wait: true,
-            content: action.payload?.content || "Talking with AI"
+        messageIds: {
+          ...state.messageIds,
+          [subThreadId]: [...state.messageIds[subThreadId], "assistantMessage"]
+        },
+        msgIdAndDataMap: {
+          ...state.msgIdAndDataMap,
+          [subThreadId]: {
+            ...state.msgIdAndDataMap[subThreadId],
+            "assistantMessage": {
+              role: "assistant",
+              wait: true,
+              content: action.payload?.content || "Talking with AI"
+            }
           }
-        ]
+        }
       };
-    case ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE:
+    }
+    case ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE: {
+      const subThreadId = state.subThreadId
+      const updatedMapping = { ...state.msgIdAndDataMap[subThreadId] }
+      delete updatedMapping["assistantMessage"]
+      updatedMapping[action.payload.Id] = action.payload
       return {
         ...state,
-        messages: [
-          ...state.messages.slice(0, -1),
-          {
-            role: action.payload.role || "assistant",
-            ...action.payload
-          }
-        ]
-      };
-    case ChatActionTypes.REMOVE_MESSAGES:
+        messageIds: {
+          ...state.messageIds,
+          [subThreadId]: [...state.messageIds?.[subThreadId].slice(0, -1), action?.payload?.Id]
+        },
+        msgIdAndDataMap: {
+          ...state.msgIdAndDataMap,
+          [subThreadId]: updatedMapping
+        }
+      }
+    }
+    case ChatActionTypes.REMOVE_MESSAGES: {
       const { numberOfMessages } = action.payload;
-      const newMessages = state.messages.slice(0, -numberOfMessages);
+      const subThreadId = state.subThreadId;
+      const updatedMapping = { ...state.msgIdAndDataMap[subThreadId] };
+
+      // Get the message IDs that will be removed
+      const messageIdsToRemove = state.messageIds?.[subThreadId].slice(-numberOfMessages);
+
+      // Remove these message IDs from the mapping
+      messageIdsToRemove.forEach(msgId => {
+        delete updatedMapping[msgId];
+      });
+
       return {
         ...state,
-        messages: newMessages
-      };
+        messageIds: {
+          ...state.messageIds,
+          [subThreadId]: state.messageIds[subThreadId].slice(0, -numberOfMessages)
+        },
+        msgIdAndDataMap: {
+          ...state.msgIdAndDataMap,
+          [subThreadId]: updatedMapping
+        }
+      }
+    }
     case ChatActionTypes.SET_LOADING:
       return {
         ...state,
@@ -188,33 +231,62 @@ export const chatReducer = (state: ChatStsetate, action: ChatAction): ChatState 
         ...state,
         isToggledrawer: action.payload
       };
-    case ChatActionTypes.SET_HELLO_MESSAGES:
+    case ChatActionTypes.SET_HELLO_MESSAGES: {
+      const subThreadId = state.subThreadId
       return {
         ...state,
-        helloMessages: action.payload
+        helloMsgIds: {
+          ...state.helloMsgIds,
+          [subThreadId]: Array.from(new Set(action.payload?.map((item) => item?.message_id))) as string[]
+        },
+        helloMsgIdAndDataMap: {
+          ...state.helloMsgIdAndDataMap,
+          [subThreadId]: {
+            ...state.helloMsgIdAndDataMap?.[subThreadId],
+            ...action.payload?.reduce((acc, item) => {
+              if (item.message_id) {
+                acc[item?.message_id] = item
+                return acc
+              }
+            }, {})
+          }
+        }
       };
-    case ChatActionTypes.ADD_HELLO_MESSAGE:
+    }
+    case ChatActionTypes.ADD_HELLO_MESSAGE: {
+      const subThreadId = state.subThreadId
       // If the last message ID is the same, we don't add a new message
       if (action.payload?.reponseType === 'assistant') {
-        const lastMessageId = state.helloMessages.length > 0 ? state.helloMessages[state.helloMessages.length - 1]?.id : undefined;
-        if (lastMessageId !== action.payload?.message?.id) {
-          return {
-            ...state,
-            helloMessages: [
-              ...state.helloMessages,
-              {
-                role: action.payload.role || "assistant",
-                ...action.payload.message,
-              }
-            ]
-          };
+        return {
+          ...state,
+          helloMsgIds: {
+            ...state.helloMsgIds,
+            [subThreadId]: Array.from(new Set([...state.helloMsgIds?.[subThreadId], action.payload?.message?.id])) as string[]
+          },
+          helloMsgIdAndDataMap: {
+            ...state.helloMsgIdAndDataMap,
+            [subThreadId]: {
+              ...state.helloMsgIdAndDataMap?.[subThreadId],
+              [action.payload?.message?.id]: action?.payload?.message
+            }
+          }
         }
-        return state
       }
       return {
         ...state,
-        helloMessages: [...state.helloMessages, action.payload.message]
+        helloMsgIds: {
+          ...state.helloMsgIds,
+          [subThreadId]: [...state.helloMsgIds?.[subThreadId], action.payload?.message?.id]
+        },
+        helloMsgIdAndDataMap: {
+          ...state.helloMsgIdAndDataMap,
+          [subThreadId]: {
+            ...state.helloMsgIdAndDataMap?.[subThreadId],
+            [action.payload.message?.id]: action?.payload?.message
+          }
+        }
       };
+    }
     case ChatActionTypes.SET_MESSAGE_TIMEOUT:
       return {
         ...state,

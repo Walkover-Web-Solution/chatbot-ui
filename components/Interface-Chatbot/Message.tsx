@@ -408,7 +408,8 @@ const HumanOrBotMessageCard = React.memo(
     );
   }
 );
-function Message({ message, handleFeedback, addMessage }: any) {
+function Message({ testKey, message, handleFeedback, addMessage }: any) {
+  console.log(testKey)
   const theme = useTheme();
   const backgroundColor = theme.palette.primary.main;
   const textColor = isColorLight(backgroundColor) ? "black" : "white";

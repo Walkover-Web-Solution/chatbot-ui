@@ -39,13 +39,15 @@ function MessageList({ containerRef }: MessageListProps) {
     messages = [],
     setMessages, addMessage, helloMessages = [],
     messageIds,
-    msgIdAndDataMap
+    msgIdAndDataMap,
+    helloMsgIdAndDataMap,
+    helloMsgIds
   } = useContext(MessageContext);
   const [showScrollButton, setShowScrollButton] = useState(false)
   const [isInverse, setIsInverse] = useState(false);
   const [shouldScroll, setShouldScroll] = useState(true);
   const scrollPositionRef = useRef<number>(0);
-  const prevMessagesLengthRef = useRef<number>(messages.length);
+  const prevMessagesLengthRef = useRef<number>(messageIds?.length);
   const { IsHuman } = useCustomSelector((state: $ReduxCoreType) => ({
     IsHuman: state.Hello?.isHuman,
   }));
@@ -79,7 +81,7 @@ function MessageList({ containerRef }: MessageListProps) {
         }
       }
     },
-    [messages, setMessages, sendFeedbackAction]
+    [messageIds]
   );
 
   const movetoDown = useCallback(() => {
@@ -135,18 +137,16 @@ function MessageList({ containerRef }: MessageListProps) {
   }, [containerRef, handleScroll]);
 
   const RenderMessages = useMemo(() => {
-    const targetMessages = IsHuman ? helloMessages : messageIds;
-    
-    return targetMessages.map((msgId, index) => {
-      console.log(msgIdAndDataMap[msgId])
-   return   <Message
+    const targetMessages = IsHuman ? helloMsgIds : messageIds;
+    const data = IsHuman ? helloMsgIdAndDataMap : msgIdAndDataMap;
+    return targetMessages?.map((msgId, index) => {
+      return <Message
+        testKey={`${msgId}-${index}`}
         key={`${msgId}-${index}`}
-        message={msgIdAndDataMap[msgId]}
-        handleFeedback={handleFeedback}
-        addMessage={addMessage}
+        message={data[msgId]}
       />
-  });
-  }, [messages, handleFeedback, addMessage, helloMessages, IsHuman]);
+    });
+  }, [messageIds, helloMsgIds, IsHuman]);
 
   return (
     <Box
@@ -160,7 +160,7 @@ function MessageList({ containerRef }: MessageListProps) {
       className="p-2 sm:p-3"
     >
       <InfiniteScroll
-        dataLength={messageIds.length}
+        dataLength={messageIds?.length}
         next={() => getMoreChats()}
         hasMore={hasMoreMessages}
         inverse={!isInverse}

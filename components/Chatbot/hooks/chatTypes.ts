@@ -1,5 +1,6 @@
 // types for the chat reducer and actions
 export interface MessageType {
+  Id:string
   content: string;
   role: string;
   responseId?: string;
@@ -19,6 +20,8 @@ export interface ChatState {
   messageIds: { [subThreadId:string] : string[] };
   msgIdAndDataMap: { [subThreadId: string]: { [msgId: string]: MessageType } }
   helloMessages: any[];
+  helloMsgIds:{ [subThreadId:string] : string[] };
+  helloMsgIdAndDataMap: { [subThreadId: string]: { [msgId: string]: any } }
   loading: boolean;
   chatsLoading: boolean;
   options: any[];

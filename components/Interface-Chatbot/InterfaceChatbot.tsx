@@ -69,6 +69,8 @@ export const MessageContext = createContext<{
   messages: MessageType[] | [];
   messageIds: string[] ,
   msgIdAndDataMap: {  [msgId: string]: MessageType } ,
+  helloMsgIds: string[] ,
+  helloMsgIdAndDataMap: {  [msgId: string]: any } ,
   helloMessages: any;
   addMessage?: (message: string) => void;
   setMessages?: (message: MessageType[]) => void;

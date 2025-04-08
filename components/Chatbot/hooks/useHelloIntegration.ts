@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { useReduxStateManagement } from './useReduxManagement';
+import { generateNewId } from '@/utils/utilities';
 
 interface HelloMessage {
   role: string;
@@ -194,6 +195,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     if (!textMessage.trim()) return;
 
     addHelloMessage({
+      id: generateNewId(),
       role: "user",
       content: textMessage,
     });
