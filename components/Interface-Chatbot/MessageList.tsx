@@ -38,6 +38,8 @@ function MessageList({ containerRef }: MessageListProps) {
     getMoreChats,
     messages = [],
     setMessages, addMessage, helloMessages = [],
+    messageIds,
+    msgIdAndDataMap
   } = useContext(MessageContext);
   const [showScrollButton, setShowScrollButton] = useState(false)
   const [isInverse, setIsInverse] = useState(false);
@@ -133,15 +135,17 @@ function MessageList({ containerRef }: MessageListProps) {
   }, [containerRef, handleScroll]);
 
   const RenderMessages = useMemo(() => {
-    const targetMessages = IsHuman ? helloMessages : messages;
-    return targetMessages.map((message, index) => (
-      <Message
-        key={`${message?.message_id}-${index}`}
-        message={message}
+    const targetMessages = IsHuman ? helloMessages : messageIds;
+    
+    return targetMessages.map((msgId, index) => {
+      console.log(msgIdAndDataMap[msgId])
+   return   <Message
+        key={`${msgId}-${index}`}
+        message={msgIdAndDataMap[msgId]}
         handleFeedback={handleFeedback}
         addMessage={addMessage}
       />
-    ));
+  });
   }, [messages, handleFeedback, addMessage, helloMessages, IsHuman]);
 
   return (
@@ -156,7 +160,7 @@ function MessageList({ containerRef }: MessageListProps) {
       className="p-2 sm:p-3"
     >
       <InfiniteScroll
-        dataLength={messages.length}
+        dataLength={messageIds.length}
         next={() => getMoreChats()}
         hasMore={hasMoreMessages}
         inverse={!isInverse}

@@ -67,8 +67,8 @@ interface MessageType {
 }
 export const MessageContext = createContext<{
   messages: MessageType[] | [];
-  messageIds: string[],
-  msgIdAndDataMap: { [subThreadId: string]: { [msgId: string]: MessageType } },
+  messageIds: string[] ,
+  msgIdAndDataMap: {  [msgId: string]: MessageType } ,
   helloMessages: any;
   addMessage?: (message: string) => void;
   setMessages?: (message: MessageType[]) => void;
@@ -99,7 +99,7 @@ export const MessageContext = createContext<{
 }>({
   starterQuestions: [],
   messages: [],
-  messageIds: [],
+  messageIds: {},
   msgIdAndDataMap: {},
   helloMessages: [],
   headerButtons: [],

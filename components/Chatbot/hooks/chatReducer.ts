@@ -36,14 +36,17 @@ export const initialChatState: ChatState = {
   images: [],
 };
 
-export const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
+export const chatReducer = (state: ChatStsetate, action: ChatAction): ChatState => {
   switch (action.type) {
     case ChatActionTypes.SET_MESSAGES:
       const subThreadId = state.subThreadId
       return {
         ...state,
         messages: action.payload,
-        messageIds: Array.from(new Set(action.payload.map((item) => item?.id).filter(id => id !== undefined))) as string[],
+        messageIds: {
+          ...state.messageIds,
+          [subThreadId]: Array.from(new Set(action.payload.map((item) => item?.id))) as string[]
+        },
         msgIdAndDataMap: {
           ...state.msgIdAndDataMap,
           [subThreadId]: {

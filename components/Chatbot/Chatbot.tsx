@@ -45,7 +45,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
 
     // RTLayer Event Listiner
     useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef })
-    const { openHelloForm, isToggledrawer, chatsLoading, helloMessages, messages , messageIds , msgIdAndDataMap} = chatState;
+    const { openHelloForm, isToggledrawer, chatsLoading, helloMessages, messages, messageIds, msgIdAndDataMap, subThreadId } = chatState;
 
 
     return (
@@ -63,8 +63,8 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
             getMoreChats,
             setNewMessage,
             setMessages,
-            messageIds,
-            msgIdAndDataMap
+            messageIds: messageIds[subThreadId],
+            msgIdAndDataMap: msgIdAndDataMap[subThreadId]
         }}>
             <FormComponent open={openHelloForm} setOpen={() => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true })} />
             <div className="flex h-screen w-full overflow-hidden relative">
