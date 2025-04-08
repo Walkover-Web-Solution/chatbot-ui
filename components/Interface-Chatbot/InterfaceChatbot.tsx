@@ -98,10 +98,11 @@ export const MessageContext = createContext<{
   isToggledrawer: boolean,
   chatDispatch?: React.Dispatch<ChatAction>;
   getMoreChats: () => void;
+  handleMessageFeedback:(data:any)=>void
 }>({
   starterQuestions: [],
   messages: [],
-  messageIds: {},
+  messageIds: [],
   msgIdAndDataMap: {},
   helloMessages: [],
   headerButtons: [],
@@ -112,7 +113,10 @@ export const MessageContext = createContext<{
   setLoading: () => { },
   isToggledrawer: false,
   setOptions: () => { },
-  getMoreChats: () => { }
+  getMoreChats: () => { },
+  handleMessageFeedback: () => { },
+  helloMsgIds: [],
+  helloMsgIdAndDataMap: {},
 });
 
 function InterfaceChatbot({

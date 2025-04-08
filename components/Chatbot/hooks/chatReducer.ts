@@ -301,6 +301,25 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         ...state,
         ...action.payload
       };
+    
+    case ChatActionTypes.UPDATE_SINGLE_MESSAGE:{
+      const subThreadId = state.subThreadId
+      const {messageId,data} = action.payload
+      return {
+        ...state,
+        msgIdAndDataMap: {
+          ...state.msgIdAndDataMap,
+          [subThreadId]: {
+            ...state.msgIdAndDataMap[subThreadId],
+            [messageId]: {
+              ...state.msgIdAndDataMap[subThreadId][messageId],
+              ...data
+            }
+          }
+        }
+      }
+    }
+      
     case ChatActionTypes.RESET_STATE:
       return {
         ...initialChatState,

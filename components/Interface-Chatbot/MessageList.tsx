@@ -52,37 +52,6 @@ function MessageList({ containerRef }: MessageListProps) {
     IsHuman: state.Hello?.isHuman,
   }));
 
-  const handleFeedback = useCallback(
-    async (
-      messageId: string,
-      feedbackStatus: number,
-      currentStatus: number
-    ) => {
-      if (messageId && feedbackStatus && currentStatus !== feedbackStatus) {
-        setShouldScroll(false);
-        const response: any = await sendFeedbackAction({
-          messageId,
-          feedbackStatus,
-        });
-        if (response?.success) {
-          const messageId = response?.result?.[0]?.message_id;
-          // Iterate over messages and update the feedback status of the message whose role is assistant
-          for (let i = messages?.length - 1; i >= 0; i--) {
-            const message = messages[i];
-            if (
-              message?.role === "assistant" &&
-              message?.message_id === messageId
-            ) {
-              message.user_feedback = feedbackStatus;
-              break; // Assuming only one message needs to be updated
-            }
-          }
-          setMessages([...messages]);
-        }
-      }
-    },
-    [messageIds]
-  );
 
   const movetoDown = useCallback(() => {
     containerRef?.current?.scrollTo({

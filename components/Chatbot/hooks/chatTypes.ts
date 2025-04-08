@@ -96,6 +96,8 @@ export enum ChatActionTypes {
   SET_MESSAGE_TIMEOUT = 'SET_MESSAGE_TIMEOUT',
   RESET_STATE = 'RESET_STATE',
   SET_DATA = 'SET_DATA',
+  SET_MESSAGE_FEEDBACK = 'SET_MESSAGE_FEEDBACK',
+  UPDATE_SINGLE_MESSAGE = 'UPDATE_SINGLE_MESSAGE',
 }
 
 export type ChatAction =
@@ -128,6 +130,8 @@ export type ChatAction =
   | { type: ChatActionTypes.SET_MESSAGE_TIMEOUT }
   | { type: ChatActionTypes.RESET_STATE }
   | { type: ChatActionTypes.SET_DATA; payload: ReduxSetterActionType }
+  | { type:ChatActionTypes.SET_MESSAGE_FEEDBACK;payload:any}
+  | { type: ChatActionTypes.UPDATE_SINGLE_MESSAGE; payload: any }
 
 export interface ChatContextType extends ChatState {
   dispatch: React.Dispatch<ChatAction>;

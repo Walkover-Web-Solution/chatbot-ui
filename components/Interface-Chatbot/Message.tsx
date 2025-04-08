@@ -22,9 +22,10 @@ import copy from "copy-to-clipboard";
 import { AlertCircle, Check, CircleCheckBig, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
 import dynamic from 'next/dynamic';
 import Image from "next/image";
-import React from "react";
+import React, { useContext } from "react";
 import ReactMarkdown from "react-markdown";
 import "./Message.css";
+import { MessageContext } from "./InterfaceChatbot";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 const ResetHistoryLine = ({ text = "" }) => {
@@ -84,7 +85,6 @@ const AssistantMessageCard = React.memo(
     message,
     theme,
     isError = false,
-    handleFeedback = () => { },
     addMessage = () => { },
     sendEventToParentOnMessageClick
   }: any) => {
@@ -268,37 +268,7 @@ const AssistantMessageCard = React.memo(
               </button>
 
               {message?.message_id && (
-                <>
-                  <button
-                    className={`btn btn-ghost btn-xs tooltip ${message?.user_feedback === 1 ? "text-success" : ""
-                      }`}
-                    data-tip="Good response"
-                    onClick={() =>
-                      handleFeedback(
-                        message?.message_id,
-                        1,
-                        message?.user_feedback
-                      )
-                    }
-                  >
-                    <ThumbsUp className="w-4 h-4" />
-                  </button>
-
-                  <button
-                    className={`btn btn-ghost btn-xs tooltip ${message?.user_feedback === 2 ? "text-error" : ""
-                      }`}
-                    data-tip="Bad response"
-                    onClick={() =>
-                      handleFeedback(
-                        message?.message_id,
-                        2,
-                        message?.user_feedback
-                      )
-                    }
-                  >
-                    <ThumbsDown className="w-4 h-4" />
-                  </button>
-                </>
+                <FeedBackButtons msgId={message?.Id} />
               )}
             </div>
           )}
@@ -408,8 +378,7 @@ const HumanOrBotMessageCard = React.memo(
     );
   }
 );
-function Message({ testKey, message, handleFeedback, addMessage }: any) {
-  console.log(testKey)
+function Message({ testKey, message, addMessage }: any) {
   const theme = useTheme();
   const backgroundColor = theme.palette.primary.main;
   const textColor = isColorLight(backgroundColor) ? "black" : "white";
@@ -431,7 +400,6 @@ function Message({ testKey, message, handleFeedback, addMessage }: any) {
               isError={true}
               theme={theme}
               textColor={textColor}
-              handleFeedback={handleFeedback}
               addMessage={addMessage}
             />
           )}
@@ -441,7 +409,6 @@ function Message({ testKey, message, handleFeedback, addMessage }: any) {
           message={message}
           theme={theme}
           textColor={textColor}
-          handleFeedback={handleFeedback}
           addMessage={addMessage}
           sendEventToParentOnMessageClick={sendEventToParentOnMessageClick}
         />
@@ -450,7 +417,6 @@ function Message({ testKey, message, handleFeedback, addMessage }: any) {
           message={message}
           theme={theme}
           textColor={textColor}
-          handleFeedback={handleFeedback}
           addMessage={addMessage}
         />
       ) : message?.role === "Bot" ? (
@@ -459,7 +425,6 @@ function Message({ testKey, message, handleFeedback, addMessage }: any) {
           theme={theme}
           isBot={true}
           textColor={textColor}
-          handleFeedback={handleFeedback}
           addMessage={addMessage}
         />
       ) : message?.role === "tools_call" && Object.keys(message?.function) ? (
@@ -501,5 +466,44 @@ function Message({ testKey, message, handleFeedback, addMessage }: any) {
     </Box>
   );
 }
+
+
+
+function FeedBackButtons({ msgId }) {
+  const { handleMessageFeedback, msgIdAndDataMap } = useContext(MessageContext)
+  return <>
+    <button
+      className={`btn btn-ghost btn-xs tooltip ${msgIdAndDataMap?.[msgId]?.user_feedback === 1 ? "text-success" : ""
+        }`}
+      data-tip="Good response"
+      onClick={() =>
+        handleMessageFeedback({
+          msgId: msgIdAndDataMap?.[msgId]?.message_id,
+          reduxMsgId:msgIdAndDataMap?.[msgId]?.Id,
+          feedback: 1,
+        })
+      }
+    >
+      <ThumbsUp className="w-4 h-4" />
+    </button>
+
+    <button
+      className={`btn btn-ghost btn-xs tooltip ${msgIdAndDataMap?.[msgId]?.user_feedback === 2 ? "text-error" : ""
+        }`}
+      data-tip="Bad response"
+      onClick={() =>
+        handleMessageFeedback({
+          msgId: msgIdAndDataMap?.[msgId]?.message_id,
+          reduxMsgId:msgIdAndDataMap?.[msgId]?.Id,
+          feedback: 2
+        }
+        )
+      }
+    >
+      <ThumbsDown className="w-4 h-4" />
+    </button>
+  </>
+}
+
 
 export default React.memo(Message);

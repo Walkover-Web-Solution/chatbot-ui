@@ -38,7 +38,8 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
         setOptions,
         getMoreChats,
         setNewMessage,
-        setMessages
+        setMessages,
+        handleMessageFeedback
     } = useChatActions({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef });
 
     const theme = useTheme();
@@ -65,7 +66,8 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
             msgIdAndDataMap: msgIdAndDataMap[subThreadId],
             helloMessages,
             helloMsgIdAndDataMap: helloMsgIdAndDataMap?.[subThreadId],
-            helloMsgIds : helloMsgIds?.[subThreadId]
+            helloMsgIds : helloMsgIds?.[subThreadId],
+            handleMessageFeedback
         }}>
             <FormComponent open={openHelloForm} setOpen={() => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true })} />
             <div className="flex h-screen w-full overflow-hidden relative">

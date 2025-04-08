@@ -1,6 +1,6 @@
 // hooks/useChatActions.ts
 import { errorToast } from '@/components/customToast';
-import { getAllThreadsApi, getPreviousMessage, sendDataToAction } from '@/config/api';
+import { getAllThreadsApi, getPreviousMessage, sendDataToAction, sendFeedbackAction } from '@/config/api';
 import { setThreads } from '@/store/interface/interfaceSlice';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
@@ -179,6 +179,26 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
 
     const setMessages = (payload: any) => chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload })
 
+    const handleMessageFeedback = async (payload:{ msgId: string, feedback: number , reduxMsgId:string }) =>{
+        const { msgId, feedback ,reduxMsgId} = payload;
+        const currentStatus = chatState.msgIdAndDataMap?.[subThreadId]?.[reduxMsgId]?.user_feedback;
+        if (msgId && feedback && currentStatus !== feedback) {
+            const response: any = await sendFeedbackAction({
+              messageId: msgId,
+              feedbackStatus:feedback,
+            });
+            if (response?.success) {
+                chatDispatch({
+                    type: ChatActionTypes.UPDATE_SINGLE_MESSAGE,
+                    payload: {
+                        messageId: reduxMsgId,
+                        data: { user_feedback: feedback }
+                    }
+                })
+            }
+          }
+    }
+
     const handleMessage = useCallback(
         (event: MessageEvent) => {
             if (event?.data?.type === "refresh") {
@@ -224,6 +244,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         setImages: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload }),
         setOptions: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_OPTIONS, payload }),
         setNewMessage: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload }),
-        setMessages
+        setMessages,
+        handleMessageFeedback,
     };
 }
