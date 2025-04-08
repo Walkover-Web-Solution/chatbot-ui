@@ -61,7 +61,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                         type: ChatActionTypes.SET_DATA, payload: {
                             messages: previousChats,
                             currentPage: 1,
-                            hasMoreMessages: previousChats?.length >= 40
+                            hasMoreMessages: previousChats?.length >= 20
                         }
                     })
                 } else {
@@ -114,7 +114,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                     type: ChatActionTypes.SET_DATA, payload: {
                         messages: [...previousChats, ...messages],
                         currentPage: nextPage,
-                        hasMoreMessages: previousChats?.length < 40 ? false : true
+                        hasMoreMessages: previousChats?.length < 20 ? false : true
                     }
                 })
             } else {
