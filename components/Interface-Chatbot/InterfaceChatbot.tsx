@@ -67,6 +67,8 @@ interface MessageType {
 }
 export const MessageContext = createContext<{
   messages: MessageType[] | [];
+  messageIds: string[],
+  msgIdAndDataMap: { [subThreadId: string]: { [msgId: string]: MessageType } },
   helloMessages: any;
   addMessage?: (message: string) => void;
   setMessages?: (message: MessageType[]) => void;
@@ -97,6 +99,8 @@ export const MessageContext = createContext<{
 }>({
   starterQuestions: [],
   messages: [],
+  messageIds: [],
+  msgIdAndDataMap: {},
   helloMessages: [],
   headerButtons: [],
   sendMessage: () => { },
@@ -106,7 +110,7 @@ export const MessageContext = createContext<{
   setLoading: () => { },
   isToggledrawer: false,
   setOptions: () => { },
-  getMoreChats: () => {}
+  getMoreChats: () => { }
 });
 
 function InterfaceChatbot({

@@ -16,6 +16,8 @@ export interface MessageType {
 
 export interface ChatState {
   messages: MessageType[];
+  messageIds: string[];
+  msgIdAndDataMap: { [threadId: string]: { [msgId: string]: MessageType } }
   helloMessages: any[];
   loading: boolean;
   chatsLoading: boolean;
@@ -39,6 +41,8 @@ export interface ChatState {
 
 export interface ReduxSetterActionType {
   messages?: MessageType[];
+  messageIds?: string[];
+  msgIdAndDataMap?: { [threadId: string]: { [msgId: string]: MessageType } }
   helloMessages?: any[];
   loading?: boolean;
   chatsLoading?: boolean;

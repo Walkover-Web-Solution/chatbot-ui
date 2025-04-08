@@ -4,6 +4,8 @@ import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 export const initialChatState: ChatState = {
   // Messages and Conversations
   messages: [],
+  messageIds: [],
+  msgIdAndDataMap: {},
   helloMessages: [],
   starterQuestions: [],
 
@@ -37,9 +39,21 @@ export const initialChatState: ChatState = {
 export const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
   switch (action.type) {
     case ChatActionTypes.SET_MESSAGES:
+      const subThreadId = state.subThreadId
       return {
         ...state,
-        messages: action.payload
+        messages: action.payload,
+        messageIds: Array.from(new Set(action.payload.map((item) => item?.id).filter(id => id !== undefined))) as string[],
+        msgIdAndDataMap: {
+          ...state.msgIdAndDataMap,
+          [subThreadId]: {
+            ...state.msgIdAndDataMap[subThreadId],
+            ...action.payload.reduce((acc, item) => {
+              acc[item?.id] = item
+              return acc
+            }, {})
+          }
+        }
       };
     case ChatActionTypes.ADD_MESSAGE:
       return {

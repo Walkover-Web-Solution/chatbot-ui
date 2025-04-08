@@ -57,17 +57,17 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                     subThreadId
                 );
                 if (Array.isArray(previousChats)) {
+                    setMessages(previousChats)
                     chatDispatch({
                         type: ChatActionTypes.SET_DATA, payload: {
-                            messages: previousChats,
                             currentPage: 1,
                             hasMoreMessages: previousChats?.length >= 20
                         }
                     })
                 } else {
+                    setMessages([])
                     chatDispatch({
                         type: ChatActionTypes.SET_DATA, payload: {
-                            messages: [],
                             hasMoreMessages: false
                         }
                     })
@@ -78,9 +78,9 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                 }
             } catch (error) {
                 console.warn("Error fetching previous chats:", error);
+                setMessages([])
                 chatDispatch({
                     type: ChatActionTypes.SET_DATA, payload: {
-                        messages: [],
                         hasMoreMessages: false
                     }
                 })
@@ -110,9 +110,9 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             );
 
             if (Array.isArray(previousChats) && previousChats.length > 0) {
+                setMessages([...previousChats, ...messages])
                 chatDispatch({
                     type: ChatActionTypes.SET_DATA, payload: {
-                        messages: [...previousChats, ...messages],
                         currentPage: nextPage,
                         hasMoreMessages: previousChats?.length < 20 ? false : true
                     }
@@ -177,6 +177,8 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         messageRef.current.value = "";
     }
 
+    const setMessages =  (payload: any) => chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload })
+
     const handleMessage = useCallback(
         (event: MessageEvent) => {
             if (event?.data?.type === "refresh") {
@@ -222,6 +224,6 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         setImages: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload }),
         setOptions: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_OPTIONS, payload }),
         setNewMessage: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload }),
-        setMessages: (payload: any) => chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload }),
+        setMessages
     };
 }
