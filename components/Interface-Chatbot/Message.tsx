@@ -19,7 +19,7 @@ import {
   useTheme
 } from "@mui/material";
 import copy from "copy-to-clipboard";
-import { AlertCircle, Check, CircleCheckBig, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
+import { AlertCircle, Check, CircleCheckBig, Copy, Maximize2, RotateCcw, ThumbsDown, ThumbsUp } from "lucide-react";
 import dynamic from 'next/dynamic';
 import Image from "next/image";
 import React from "react";
@@ -169,6 +169,14 @@ const AssistantMessageCard = React.memo(
                       <CircleCheckBig color="green" size={20} />
                       <p className="text-base text-green-900">
                         {Object.keys(message?.tools_data || {}).length} Functions executed
+                      </p>
+                    </Box>
+                  )}
+                  {message?.fallback && (
+                    <Box className="flex items-center gap-2 mb-2">
+                      <RotateCcw color="orange" size={16} />
+                      <p className="text-orange-600 text-sm">
+                        Retried with {message?.model}
                       </p>
                     </Box>
                   )}
