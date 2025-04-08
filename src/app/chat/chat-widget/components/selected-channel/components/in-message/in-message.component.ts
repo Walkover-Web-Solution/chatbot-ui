@@ -37,6 +37,11 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
         super();
     }
     ngOnInit() {
+        this.channelMessage();
+        console.log('message', this.channelMessage());
+    }
+
+    public channelMessage(): void {
         if (this.messages.content?.attachment?.length) {
             for (let attachment of this.messages.content?.attachment) {
                 this.supportedFiles[attachment.name] = !fileNotSupportAtUI(attachment.path);
