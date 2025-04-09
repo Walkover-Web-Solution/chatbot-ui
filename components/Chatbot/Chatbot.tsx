@@ -81,12 +81,12 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                 <div className="flex flex-col flex-1 w-full">
                     {/* Mobile header - hidden on large screens */}
                     <ChatbotHeader />
-                    <ChatbotHeaderTab />
                     {chatsLoading && (
                         <div className="w-full">
                             <LinearProgress color="inherit" style={{ color: theme.palette.primary.main }} />
                         </div>
                     )}
+                    <ChatbotHeaderTab />
 
                     {(IsHuman ? helloMsgIds[subThreadId]?.length === 0 : messageIds[subThreadId]?.length === 0) ? (
                         <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-70px] p-5">

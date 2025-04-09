@@ -7,7 +7,7 @@ import { useTheme } from "@mui/material";
 
 // Third-party libraries
 import axios from "axios";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 
 // App imports
 import { successToast } from "@/components/customToast";
@@ -33,37 +33,52 @@ import "./InterfaceChatbot.css";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 
 interface ChatbotHeaderProps {
-
-  preview?:boolean
+  chatbotId: string
+  preview?: boolean
 }
 
-const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({preview = false }) => {
+const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotId }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const { 
+  const {
     setOptions,
     setLoading,
     setChatsLoading,
     setToggleDrawer,
     isToggledrawer,
     threadId,
-    bridgeName : reduxBridgeName,
+    bridgeName: reduxBridgeName,
     headerButtons,
-   } = useContext(MessageContext);
+    messageIds
+  } = useContext(MessageContext);
   const { chatbotConfig: { chatbotTitle, chatbotSubtitle, width = '', widthUnit = '', allowBridgeSwitch = false, bridges = [] } } = useContext<any>(ChatbotContext);
   const [fullScreen, setFullScreen] = useState(false)
   const shouldToggleScreenSize = `${width}${widthUnit}` !== '1200%'
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
-  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug, chatSubTitle, allowBridgeSwitchViaProp } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug, chatSubTitle, allowBridgeSwitchViaProp, subThreadList, subThreadId } = useCustomSelector((state: $ReduxCoreType) => ({
     allowModalSwitch: state.Interface.allowModalSwitch || false,
     hideCloseButton: state.Interface.hideCloseButton || false,
     chatTitle: state.Interface.chatTitle || "",
     chatSubTitle: state.Interface.chatSubTitle || "",
     chatIcon: state.Interface.chatIcon || "",
     currentSelectedBridgeSlug: state?.Interface?.bridgeName,
-    allowBridgeSwitchViaProp: state?.Interface?.allowBridgeSwitch
+    allowBridgeSwitchViaProp: state?.Interface?.allowBridgeSwitch,
+    subThreadId: state.appInfo?.subThreadId,
+    subThreadList:
+      state.Interface?.interfaceContext?.[chatbotId]?.[
+        GetSessionStorageData("bridgeName") ||
+        state.appInfo?.bridgeName ||
+        "root"
+      ]?.threadList?.[
+      GetSessionStorageData("threadId") || state.appInfo?.threadId
+      ] || [],
   }))
+  const showCreateThreadButton = useMemo(() => {
+    // Show icon unless subThreadList length is less than 2 AND messageIds array is empty
+    return !(subThreadList?.length < 2 && (!messageIds || messageIds.length === 0));
+  }, [subThreadList?.length, messageIds])
+
   const handleCreateNewSubThread = async () => {
     if (preview) return;
     const subThreadId = createRandomId()
@@ -88,20 +103,20 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({preview = false }) => {
     <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-4 py-2 w-full">
       <div className="flex items-center w-full relative">
         <div className="sm:absolute left-0 flex items-center">
-          <button
+          {subThreadList?.length > 1 && <button
             className="p-2 hover:bg-gray-200 rounded-full transition-colors"
             onClick={() => setToggleDrawer(!isToggledrawer)}
           >
             {isToggledrawer ? null : <AlignLeft size={22} color="#555555" />}
-          </button>
-          <div className={`tooltip tooltip-right ${isToggledrawer ? 'hidden' : ''}`} data-tip="Create new thread">
+          </button>}
+          {showCreateThreadButton && <div className={`tooltip tooltip-right ${isToggledrawer ? 'hidden' : ''}`} data-tip="Create new thread">
             <button
               className="p-2 hover:bg-gray-200 rounded-full transition-colors"
               onClick={handleCreateNewSubThread}
             >
               <SquarePen size={22} color="#555555" />
             </button>
-          </div>
+          </div>}
         </div>
 
         <div className="flex flex-col items-center mx-auto">
@@ -183,7 +198,9 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({preview = false }) => {
   );
 };
 
-export default ChatbotHeader;
+export default React.memo(
+  addUrlDataHoc(React.memo(ChatbotHeader), [ParamsEnums.chatbotId])
+);
 
 const ResetChatOption = React.memo(
   addUrlDataHoc(
