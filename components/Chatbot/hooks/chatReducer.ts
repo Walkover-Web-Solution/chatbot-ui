@@ -1,5 +1,6 @@
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
+import { generateNewId } from "@/utils/utilities";
 
 export const initialChatState: ChatState = {
   // Messages and Conversations
@@ -62,35 +63,37 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
       };
     }
     case ChatActionTypes.ADD_MESSAGE: {
-      const subThreadId = state.subThreadId
+      const subThreadId = state.subThreadId;
+      const id = generateNewId();
       return {
         ...state,
         messageIds: {
           ...state.messageIds,
-          [subThreadId]: [...state.messageIds[subThreadId], "userMessage"]
+          [subThreadId]: [...state.messageIds[subThreadId], id]
         },
         msgIdAndDataMap: {
           ...state.msgIdAndDataMap,
           [subThreadId]: {
             ...state.msgIdAndDataMap[subThreadId],
-            "userMessage": action.payload
+            [id]: action.payload
           }
         }
       };
     }
     case ChatActionTypes.ADD_ASSISTANT_WAITING_MESSAGE: {
-      const subThreadId = state.subThreadId
+      const subThreadId = state.subThreadId;
+      const id = generateNewId();
       return {
         ...state,
         messageIds: {
           ...state.messageIds,
-          [subThreadId]: [...state.messageIds[subThreadId], "assistantMessage"]
+          [subThreadId]: [...state.messageIds[subThreadId], id]
         },
         msgIdAndDataMap: {
           ...state.msgIdAndDataMap,
           [subThreadId]: {
             ...state.msgIdAndDataMap[subThreadId],
-            "assistantMessage": {
+            [id]: {
               role: "assistant",
               wait: true,
               content: action.payload?.content || "Talking with AI"
@@ -101,18 +104,18 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
     }
     case ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE: {
       const subThreadId = state.subThreadId
-      const updatedMapping = { ...state.msgIdAndDataMap[subThreadId] }
-      delete updatedMapping["assistantMessage"]
-      updatedMapping[action.payload.Id] = action.payload
       return {
         ...state,
         messageIds: {
           ...state.messageIds,
-          [subThreadId]: [...state.messageIds?.[subThreadId].slice(0, -1), action?.payload?.Id]
+          [subThreadId]: [...state.messageIds?.[subThreadId].slice(0, -1), action?.payload?.id]
         },
         msgIdAndDataMap: {
           ...state.msgIdAndDataMap,
-          [subThreadId]: updatedMapping
+          [subThreadId]: {
+            ...state.msgIdAndDataMap?.[subThreadId],
+            [action.payload.id]: action.payload
+          }
         }
       }
     }

@@ -46,7 +46,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
 
     // RTLayer Event Listiner
     useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef })
-    const { openHelloForm, isToggledrawer, chatsLoading, helloMessages, messages, messageIds, msgIdAndDataMap, subThreadId , helloMsgIds , helloMsgIdAndDataMap } = chatState;
+    const { openHelloForm, isToggledrawer, chatsLoading, helloMessages, messageIds, msgIdAndDataMap, subThreadId, helloMsgIds, helloMsgIdAndDataMap } = chatState;
     return (
         <MessageContext.Provider value={{
             ...chatState,
@@ -66,7 +66,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
             msgIdAndDataMap: msgIdAndDataMap[subThreadId],
             helloMessages,
             helloMsgIdAndDataMap: helloMsgIdAndDataMap?.[subThreadId],
-            helloMsgIds : helloMsgIds?.[subThreadId],
+            helloMsgIds: helloMsgIds?.[subThreadId],
             handleMessageFeedback
         }}>
             <FormComponent open={openHelloForm} setOpen={() => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true })} />
@@ -112,7 +112,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                         <>
                             {/* Messages container with flex layout */}
                             <div
-                                className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1 ${messages.length === 0 ? 'flex items-center justify-center' : 'pb-10'}`}
+                                className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1 ${messageIds?.[subThreadId]?.length === 0 ? 'flex items-center justify-center' : 'pb-10'}`}
                                 id="message-container"
                                 ref={containerRef}
                             >

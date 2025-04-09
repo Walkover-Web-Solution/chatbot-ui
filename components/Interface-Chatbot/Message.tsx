@@ -268,7 +268,7 @@ const AssistantMessageCard = React.memo(
               </button>
 
               {message?.message_id && (
-                <FeedBackButtons msgId={message?.Id} />
+                <FeedBackButtons msgId={message?.Id || message?.id} />
               )}
             </div>
           )}
@@ -385,6 +385,8 @@ function Message({ testKey, message, addMessage }: any) {
   const { sendEventToParentOnMessageClick } = useCustomSelector((state: $ReduxCoreType) => ({
     sendEventToParentOnMessageClick: state.Interface.eventsSubscribedByParent?.includes(ALLOWED_EVENTS_TO_SUBSCRIBE.MESSAGE_CLICK) || false
   }))
+
+  console.log('hello')
   return (
     <Box className="w-100">
       {message?.role === "user" ? (
@@ -479,7 +481,7 @@ function FeedBackButtons({ msgId }) {
       onClick={() =>
         handleMessageFeedback({
           msgId: msgIdAndDataMap?.[msgId]?.message_id,
-          reduxMsgId:msgIdAndDataMap?.[msgId]?.Id,
+          reduxMsgId:msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
           feedback: 1,
         })
       }
@@ -494,7 +496,7 @@ function FeedBackButtons({ msgId }) {
       onClick={() =>
         handleMessageFeedback({
           msgId: msgIdAndDataMap?.[msgId]?.message_id,
-          reduxMsgId:msgIdAndDataMap?.[msgId]?.Id,
+          reduxMsgId:msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
           feedback: 2
         }
         )
@@ -503,6 +505,8 @@ function FeedBackButtons({ msgId }) {
       <ThumbsDown className="w-4 h-4" />
     </button>
   </>
+
+  return null
 }
 
 

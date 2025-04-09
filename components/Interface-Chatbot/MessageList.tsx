@@ -16,13 +16,11 @@ import InfiniteScroll from "react-infinite-scroll-component";
 
 // App imports
 
-import { sendFeedbackAction } from "@/config/api";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { MessageContext } from "./InterfaceChatbot";
 import Message from "./Message";
 import MoveToDownButton from "./MoveToDownButton";
-import { useChatActions } from "../Chatbot/hooks/useChatActions";
 
 interface MessageListProps {
   containerRef: React.RefObject<HTMLDivElement>;
@@ -110,7 +108,7 @@ function MessageList({ containerRef }: MessageListProps) {
     const data = IsHuman ? helloMsgIdAndDataMap : msgIdAndDataMap;
     return targetMessages?.map((msgId, index) => {
       return <Message
-        testKey={`${msgId}-${index}`}
+        // testKey={`${msgId}-${index}`}
         key={`${msgId}-${index}`}
         message={data[msgId]}
       />
@@ -126,7 +124,7 @@ function MessageList({ containerRef }: MessageListProps) {
         display: "flex",
         flexDirection: isInverse ? "column" : "column-reverse",
       }}
-      className="p-2 sm:p-3"
+      className="p-2 sm:p-3 w-full"
     >
       <InfiniteScroll
         dataLength={messageIds?.length}
