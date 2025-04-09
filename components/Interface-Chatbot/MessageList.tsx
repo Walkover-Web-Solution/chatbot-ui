@@ -30,12 +30,9 @@ function MessageList({ containerRef }: MessageListProps) {
   const {
     // fetchMoreData,
     hasMoreMessages = false,
-    setNewMessage,
     newMessage,
     currentPage = 1,
     getMoreChats,
-    messages = [],
-    setMessages, addMessage, helloMessages = [],
     messageIds,
     msgIdAndDataMap,
     helloMsgIdAndDataMap,
@@ -43,13 +40,11 @@ function MessageList({ containerRef }: MessageListProps) {
   } = useContext(MessageContext);
   const [showScrollButton, setShowScrollButton] = useState(false)
   const [isInverse, setIsInverse] = useState(false);
-  const [shouldScroll, setShouldScroll] = useState(true);
   const scrollPositionRef = useRef<number>(0);
   const prevMessagesLengthRef = useRef<number>(messageIds?.length);
   const { IsHuman } = useCustomSelector((state: $ReduxCoreType) => ({
     IsHuman: state.Hello?.isHuman,
   }));
-
 
   const movetoDown = useCallback(() => {
     containerRef?.current?.scrollTo({
@@ -81,19 +76,16 @@ function MessageList({ containerRef }: MessageListProps) {
 
   useEffect(() => {
 
-    if (messages.length === prevMessagesLengthRef.current) {
-      // New messages added at bottom
-      if (shouldScroll || newMessage) {
-        movetoDown();
-      }
-    } else if (messages.length > 0 && containerRef.current) {
-      // Messages added at top (pagination)
+    if (messageIds.length === prevMessagesLengthRef.current) {
+      // New messageIds added at bottom
+      movetoDown();
+    } else if (messageIds.length > 0 && containerRef.current) {
+      // messageIds added at top (pagination)
       const heightDiff = containerRef.current.scrollHeight - containerRef.current.clientHeight;
       containerRef.current.scrollTop = heightDiff - scrollPositionRef.current;
     }
-    prevMessagesLengthRef.current = messages.length;
-    setNewMessage?.(false);
-  }, [messages, IsHuman, newMessage, shouldScroll]);
+    prevMessagesLengthRef.current = messageIds.length;
+  }, [messageIds, IsHuman, newMessage]);
 
   useEffect(() => {
     const currentContainer = containerRef?.current;

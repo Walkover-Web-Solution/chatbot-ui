@@ -139,7 +139,6 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         const imageUrls = Array.isArray(chatState.images) && chatState?.images?.length ? chatState?.images : []; // Assuming imageUrls is an empty array or you can replace it with the actual value
         if (!textMessage && imageUrls.length === 0) return;
         messageRef.current.value = "";
-        chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload: true })
         chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: true })
         chatDispatch({ type: ChatActionTypes.SET_OPTIONS, payload: [] })
 
