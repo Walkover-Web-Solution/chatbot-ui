@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Inject, Input, Output, OnDestroy, OnInit, EventEmitter } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, Input, Output, OnDestroy, OnInit, EventEmitter, SimpleChanges, OnChanges } from '@angular/core';
 import { BaseComponent } from '@msg91/ui/base-component';
 import { AgentResponse, IMessageModel } from '../../../../../model';
 import { DOCUMENT } from '@angular/common';
@@ -17,7 +17,7 @@ const IMAGE_PLACEHOLDER = `${environment.appUrl}assets/images/image-placeholder.
     styleUrls: ['./in-message.component.scss'],
     standalone: false
 })
-export class InMessageComponent extends BaseComponent implements OnInit, OnDestroy {
+export class InMessageComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges {
     @Input() fromName: string;
     @Input() messages: IMessageModel;
     @Input() agentDetails: AgentResponse[];
@@ -78,6 +78,16 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
                 } else {
                     this.linkExpire = true;
                 }
+            }
+        }
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if(changes?.messages){
+            let content = this.messages.content;
+            let message_type = this.messages.message_type;
+            if (message_type !== 'video_call') {
+                content.text = this.linkifyPipe.transform(content.text);
             }
         }
     }
