@@ -195,15 +195,18 @@
                 </div>
             </div>
         </ng-container>
-        <p
-            *ngIf="
-                messages?.message_type !== 'video_call' &&
-                messages?.message_type !== 'interactive' &&
-                messages?.content?.text
-            "
-            [innerHtml]="rawHtml"
-            class="input-msg-break"
-        ></p>
+        <ng-container *ngIf="
+            messages?.message_type !== 'video_call' &&
+            messages?.message_type !== 'interactive' &&
+            messages?.content?.text
+        ">
+            <p
+                
+                [innerHtml]="rawHtml"
+                class="input-msg-break"
+            ></p>
+        </ng-container>
+        
 
         <ng-container *ngIf="messages?.message_type === 'video_call'">
             <a [href]="messages?.content?.text" target="_blank" [ngClass]="{ 'pointer-event-none': linkExpire }">
