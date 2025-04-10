@@ -32,7 +32,6 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
     public currentTime: number;
     private timerInterval: any;
     public rawHtml: SafeHtml;
-    public isInitialized = false;
 
     constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef, private sanitizer: DomSanitizer, private linkifyPipe: LinkifyPipe, private WhatsappInlineStyleFormat: WhatsappInlineStyleFormat ) {
         super();
@@ -47,8 +46,8 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
             this.assignee = this.agentDetails.find((e) => e.id === this.messages.sender_id);
         }
         
-        const content = this.messages.content;
-        const message_type = this.messages.message_type;
+        let content = this.messages.content;
+        let message_type = this.messages.message_type;
         if (message_type !== 'video_call') {
             content.text = this.linkifyPipe.transform(content.text);
         }
@@ -81,8 +80,6 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
                 }
             }
         }
-        this.isInitialized = true;
-        this.cdr.detectChanges();
     }
 
     ngOnDestroy() {
