@@ -386,7 +386,6 @@ function Message({ testKey, message, addMessage }: any) {
     sendEventToParentOnMessageClick: state.Interface.eventsSubscribedByParent?.includes(ALLOWED_EVENTS_TO_SUBSCRIBE.MESSAGE_CLICK) || false
   }))
 
-  console.log('hello')
   return (
     <Box className="w-100">
       {message?.role === "user" ? (
