@@ -100,7 +100,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   };
 
   return (
-    <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-4 py-2 w-full">
+    <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-2 py-1 w-full">
       <div className="flex items-center w-full relative">
         <div className="sm:absolute left-0 flex items-center">
           {subThreadList?.length > 1 && <button
