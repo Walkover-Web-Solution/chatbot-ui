@@ -30,10 +30,10 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch, chatState }: 
   } = useCustomSelector((state: $ReduxCoreType) => ({
     interfaceContextData:
       state.Interface?.interfaceContext?.[chatbotId]?.variables,
-    reduxThreadId: state.Interface?.threadId || "",
-    reduxSubThreadId: state.Interface?.subThreadId || "",
+    reduxThreadId: state.appInfo?.threadId || "",
+    reduxSubThreadId: state.appInfo?.subThreadId || "",
     reduxHeaderButtons: state.Interface?.headerButtons || [],
-    reduxBridgeName: state.Interface?.bridgeName || "root",
+    reduxBridgeName: state.appInfo?.bridgeName || "root",
     reduxHelloId: state.Interface?.helloId || null,
     reduxBridgeVersionId: state.Interface?.version_id || null,
     IsHuman: state.Hello?.isHuman || false,

@@ -48,7 +48,10 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         messages: action.payload,
         messageIds: {
           ...state.messageIds,
-          [subThreadId]: Array.from(new Set(action.payload?.map((item) => item?.Id))) as string[]
+          [subThreadId]: Array.from(new Set([
+            ...action.payload?.map((item) => item?.Id),
+            ...(state.messageIds[subThreadId] || []),
+          ])) as string[]
         },
         msgIdAndDataMap: {
           ...state.msgIdAndDataMap,
