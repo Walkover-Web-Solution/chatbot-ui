@@ -105,7 +105,7 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
     // Extract and process interface data properties
     const interfaceProperties = [
       'allowModalSwitch', 'hideCloseButton', 'chatTitle',
-      'chatIcon', 'chatSubTitle', 'allowBridgeSwitch'
+      'chatIcon', 'chatSubTitle', 'allowBridgeSwitch', 'hideFullScreenButton'
     ];
 
     const interfaceDataToUpdate = interfaceProperties.reduce((acc, prop) => {

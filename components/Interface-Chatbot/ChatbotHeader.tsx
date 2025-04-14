@@ -56,9 +56,10 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   const shouldToggleScreenSize = `${width}${widthUnit}` !== '1200%'
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
-  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug, chatSubTitle, allowBridgeSwitchViaProp, subThreadList, subThreadId } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug, chatSubTitle, allowBridgeSwitchViaProp, subThreadList, subThreadId, hideFullScreenButton } = useCustomSelector((state: $ReduxCoreType) => ({
     allowModalSwitch: state.Interface.allowModalSwitch || false,
     hideCloseButton: state.Interface.hideCloseButton || false,
+    hideFullScreenButton: state.Interface.hideFullScreenButton || false,
     chatTitle: state.Interface.chatTitle || "",
     chatSubTitle: state.Interface.chatSubTitle || "",
     chatIcon: state.Interface.chatIcon || "",
@@ -143,7 +144,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
             </React.Fragment>
           })}
           <div className="flex items-center">
-            {shouldToggleScreenSize ? (
+            {shouldToggleScreenSize && (hideFullScreenButton !== true && hideFullScreenButton !== "true") ? (
               <div>
                 {!fullScreen ? (
                   <div

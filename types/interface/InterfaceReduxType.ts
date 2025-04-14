@@ -4,6 +4,7 @@ export type SelectedAiServicesType = { service: "string", modal: "string" }
 export interface $InterfaceReduxType {
   allowModalSwitch: boolean
   hideCloseButton: boolean
+  hideFullScreenButton: boolean
   allowBridgeSwitch?:boolean
   chatSubTitle?:string
   chatTitle?: string
