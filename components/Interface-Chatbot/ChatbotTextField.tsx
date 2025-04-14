@@ -80,14 +80,15 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
 
     setIsUploading(true);
     try {
-      for (const file of filesArray) {
+      const uploadPromises = filesArray.map(async (file) => {
         const formData = new FormData();
         formData.append("image", file);
         const response = await uploadImage({ formData });
-        if (response.success) {
-          setImages([...images, response.image_url]);
-        }
-      }
+        return response.success ? response.image_url : null;
+      });
+
+      const uploadedUrls = (await Promise.all(uploadPromises)).filter((url): url is string => url !== null);
+      setImages([...images, ...uploadedUrls]);
     } catch (error) {
       console.error("Error uploading images:", error);
       errorToast("Failed to upload images. Please try again.");
@@ -107,12 +108,12 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
     messageRef?.current?.focus();
   }, [messageRef]);
 
-  const isVisionEnabled = useMemo(() => 
+  const isVisionEnabled = useMemo(() =>
     (reduxIsVision?.vision || mode?.includes("vision")) && !IsHuman,
     [reduxIsVision, mode, IsHuman]
   );
 
-  const buttonDisabled = useMemo(() => 
+  const buttonDisabled = useMemo(() =>
     loading || isUploading || !message?.trim(),
     [loading, isUploading, message]
   );
