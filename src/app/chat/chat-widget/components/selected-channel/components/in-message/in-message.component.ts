@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Inject, Input, Output, OnDestroy, OnInit, EventEmitter } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, Input, Output, OnDestroy, OnInit, EventEmitter, SimpleChanges, OnChanges } from '@angular/core';
 import { BaseComponent } from '@msg91/ui/base-component';
 import { AgentResponse, IMessageModel } from '../../../../../model';
 import { DOCUMENT } from '@angular/common';
@@ -17,7 +17,7 @@ const IMAGE_PLACEHOLDER = `${environment.appUrl}assets/images/image-placeholder.
     styleUrls: ['./in-message.component.scss'],
     standalone: false
 })
-export class InMessageComponent extends BaseComponent implements OnInit, OnDestroy {
+export class InMessageComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges {
     @Input() fromName: string;
     @Input() messages: IMessageModel;
     @Input() agentDetails: AgentResponse[];
@@ -32,6 +32,7 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
     public currentTime: number;
     private timerInterval: any;
     public rawHtml: SafeHtml;
+    public isInitialized: boolean = false;
 
     constructor(@Inject(DOCUMENT) private document: Document, private cdr: ChangeDetectorRef, private sanitizer: DomSanitizer, private linkifyPipe: LinkifyPipe, private WhatsappInlineStyleFormat: WhatsappInlineStyleFormat ) {
         super();
@@ -48,11 +49,32 @@ export class InMessageComponent extends BaseComponent implements OnInit, OnDestr
         
         let content = this.messages.content;
         let message_type = this.messages.message_type;
-        if (message_type !== 'video_call') {
-            content.text = this.linkifyPipe.transform(content.text);
+        if (message_type === 'video_call') {
+            this.rawHtml = ''; // optional, just to be safe
+            this.handleExpire(content); // handle expiration separately
+            this.cdr.detectChanges();
+            return;
         }
+        content.text = this.linkifyPipe.transform(content.text);
         content.text = this.WhatsappInlineStyleFormat.transform(content.text)      
         this.rawHtml = this.sanitizer.bypassSecurityTrustHtml(content.text)
+        this.handleExpire(content);
+        this.isInitialized = true;
+        this.cdr.detectChanges();
+        
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if(changes?.messages){
+            let content = this.messages.content;
+            let message_type = this.messages.message_type;
+            if (message_type !== 'video_call') {
+                content.text = this.linkifyPipe.transform(content.text);
+            }
+        }
+    }
+
+    public handleExpire(content: any): void {
         if (content?.expiration_time) {
             const currentTimeToken = new Date().getTime();
             this.currentTime = currentTimeToken;
