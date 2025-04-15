@@ -40,6 +40,8 @@ import ChatbotTextField from "./ChatbotTextField";
 import "./InterfaceChatbot.css";
 import MessageList from "./MessageList";
 import StarterQuestions from "./StarterQuestions";
+import { useChatActions } from "../Chatbot/hooks/useChatActions";
+import { ChatAction } from "../Chatbot/hooks/chatTypes";
 
 const client = WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
 
@@ -65,9 +67,14 @@ interface MessageType {
 }
 export const MessageContext = createContext<{
   messages: MessageType[] | [];
+  messageIds: string[] ,
+  msgIdAndDataMap: {  [msgId: string]: MessageType } ,
+  helloMsgIds: string[] ,
+  helloMsgIdAndDataMap: {  [msgId: string]: any } ,
   helloMessages: any;
   addMessage?: (message: string) => void;
   setMessages?: (message: MessageType[]) => void;
+  sendMessageToHello?: (() => void) | undefined
   threadId?: string;
   bridgeName?: string;
   fetchMoreData?: () => void;
@@ -75,13 +82,41 @@ export const MessageContext = createContext<{
   setNewMessage?: (newMessage: boolean) => void;
   newMessage?: boolean;
   currentPage?: Number;
-  starterQuestions?: string[];
+  starterQuestions: string[];
   headerButtons?: HeaderButtonType;
-  setOptions?: React.Dispatch<React.SetStateAction<any[]>>
+  setOptions: (data: string[]) => void;
+  sendMessage: ({ message }: { message?: string }) => void;
+  loading?: boolean;
+  messageRef?: any;
+  disabled?: boolean;
+  options?: any[];
+  setChatsLoading?: any;
+  images: string[];
+  setImages: (data: string[]) => void;
+  setToggleDrawer: (data: boolean) => void;
+  setLoading: (data: boolean) => void,
+  isToggledrawer: boolean,
+  chatDispatch?: React.Dispatch<ChatAction>;
+  getMoreChats: () => void;
+  handleMessageFeedback:(data:any)=>void
 }>({
+  starterQuestions: [],
   messages: [],
+  messageIds: [],
+  msgIdAndDataMap: {},
   helloMessages: [],
-  headerButtons: []
+  headerButtons: [],
+  sendMessage: () => { },
+  images: [],
+  setImages: () => { },
+  setToggleDrawer: () => { },
+  setLoading: () => { },
+  isToggledrawer: false,
+  setOptions: () => { },
+  getMoreChats: () => { },
+  handleMessageFeedback: () => { },
+  helloMsgIds: [],
+  helloMsgIdAndDataMap: {},
 });
 
 function InterfaceChatbot({
@@ -127,6 +162,9 @@ function InterfaceChatbot({
     selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null
   }));
 
+  const { getChatHistory, sendMessage: sendMessageAction } = useChatActions()
+
+
   const [chatsLoading, setChatsLoading] = useState(false);
   const timeoutIdRef = useRef<any>(null);
   const userId = GetSessionStorageData("interfaceUserId");
@@ -136,12 +174,7 @@ function InterfaceChatbot({
   const [options, setOptions] = useState<any>([]);
   const [images, setImages] = useState<string[]>([]); // Ensure images are string URLs
   const socket = useSocket();
-  const channelIdRef = useRef<string | null>(null);
-  const listenerRef = useRef<string | null>(null);
   const containerRef = useRef<any>(null);
-  const themePalette = {
-    "--primary-main": lighten(theme.palette.secondary.main, 0.4),
-  };
 
   const isLargeScreen = useMediaQuery('(max-width: 1024px)')
   const [isToggledrawer, setToggleDrawer] = useState<boolean>(!isLargeScreen);
@@ -260,7 +293,7 @@ function InterfaceChatbot({
   const handleMessage = useCallback(
     (event: MessageEvent) => {
       if (event?.data?.type === "refresh") {
-        getallPreviousHistory();
+        getChatHistory();
       }
       if (event?.data?.type === "askAi") {
         if (!loading) {
@@ -305,7 +338,7 @@ function InterfaceChatbot({
       const text = content?.text;
       if (text && !chat_id) {
         setLoading(false);
-        clearTimeout(timeoutIdRef.current);
+        // clearTimeout(timeoutIdRef.current);
         setHelloMessages((prevMessages) => {
           const lastMessageId = prevMessages[prevMessages.length - 1]?.id;
           if (lastMessageId !== response?.id) {
@@ -346,37 +379,37 @@ function InterfaceChatbot({
     }, 240000);
   };
 
-  const getallPreviousHistory = async () => {
-    if (threadId && chatbotId) {
-      setChatsLoading(true);
-      try {
-        const { previousChats, starterQuestion } = await getPreviousMessage(
-          threadId,
-          bridgeName,
-          1,
-          subThreadId
-        );
-        if (Array.isArray(previousChats)) {
-          setMessages(previousChats?.length === 0 ? [] : [...previousChats]);
-          setCurrentPage(1);
-          setHasMoreMessages(previousChats?.length >= 40);
-        } else {
-          setMessages([]);
-          setHasMoreMessages(false);
-          console.warn("previousChats is not an array");
-        }
-        if (Array.isArray(starterQuestion)) {
-          setStarterQuestions(starterQuestion.slice(0, 4));
-        }
-      } catch (error) {
-        console.warn("Error fetching previous chats:", error);
-        setMessages([]);
-        setHasMoreMessages(false);
-      } finally {
-        setChatsLoading(false);
-      }
-    }
-  };
+  // const get = async () => {
+  //   if (threadId && chatbotId) {
+  //     setChatsLoading(true);
+  //     try {
+  //       const { previousChats, starterQuestion } = await getPreviousMessage(
+  //         threadId,
+  //         bridgeName,
+  //         1,
+  //         subThreadId
+  //       );
+  //       if (Array.isArray(previousChats)) {
+  //         setMessages(previousChats?.length === 0 ? [] : [...previousChats]);
+  //         setCurrentPage(1);
+  //         setHasMoreMessages(previousChats?.length >= 40);
+  //       } else {
+  //         setMessages([]);
+  //         setHasMoreMessages(false);
+  //         console.warn("previousChats is not an array");
+  //       }
+  //       if (Array.isArray(starterQuestion)) {
+  //         setStarterQuestions(starterQuestion.slice(0, 4));
+  //       }
+  //     } catch (error) {
+  //       console.warn("Error fetching previous chats:", error);
+  //       setMessages([]);
+  //       setHasMoreMessages(false);
+  //     } finally {
+  //       setChatsLoading(false);
+  //     }
+  //   }
+  // };
 
   const getHelloPreviousHistory = async () => {
     if (channelId && uuid) {
@@ -424,114 +457,105 @@ function InterfaceChatbot({
     }
   };
 
-  const fetchAllThreads = async () => {
-    const result = await getAllThreadsApi({ threadId });
-    if (result?.success) {
-      dispatch(
-        setThreads({ bridgeName, threadId, threadList: result?.threads })
-      );
-    }
-  };
-
-  useEffect(() => {
-    fetchAllThreads();
-  }, [threadId, bridgeName]);
+  // useEffect(() => {
+  //   fetchAllThreads()
+  // }, [threadId, bridgeName]);
 
   useEffect(() => {
     subscribeToChannel();
   }, [bridgeName, threadId, helloId]);
 
-  useEffect(() => {
-    getallPreviousHistory();
-  }, [threadId, bridgeName, subThreadId]);
+  // useEffect(() => {
+  //   getChatHistory();
+  // }, [threadId, bridgeName, subThreadId]);
 
-  useEffect(() => {
-    const newChannelId = (
-      chatbotId +
-      (threadId || userId) +
-      (subThreadId || userId)
-    )?.replace(/ /g, "_");
+  // useEffect(() => {
+  //   const newChannelId = (
+  //     chatbotId +
+  //     (threadId || userId) +
+  //     (subThreadId || userId)
+  //   )?.replace(/ /g, "_");
 
-    const handleMessageRTLayer = (message: string) => {
-      // Parse the incoming message string into an object
-      const parsedMessage = JSON.parse(message || "{}");
-      // Check if the status is "connected"
-      if (parsedMessage?.status === "connected") {
-        return;
-      }
-      // Check if the function call is present
-      if (
-        parsedMessage?.response?.function_call &&
-        !parsedMessage?.response?.message
-      ) {
-        setMessages((prevMessages) => [
-          ...prevMessages.slice(0, -1),
-          { role: "assistant", wait: true, content: "Function Calling", Name: parsedMessage?.response?.Name || [] },
-        ]);
-      } else if (
-        parsedMessage?.response?.function_call &&
-        parsedMessage?.response?.message
-      ) {
-        // Check if the function call is false and no response is provided
-        setMessages((prevMessages) => [
-          ...prevMessages.slice(0, -1),
-          { role: "assistant", wait: true, content: "Talking with AI" },
-        ]);
-      } else if (!parsedMessage?.response?.data && parsedMessage?.error) {
-        // Check if there is an error and no response data
-        setMessages((prevMessages) => [
-          ...prevMessages.slice(0, -1),
-          {
-            role: "assistant",
-            content: `${parsedMessage?.error || "Error in AI"}`,
-          },
-        ]);
-        setLoading(false);
-        clearTimeout(timeoutIdRef.current);
-      } else if (
-        parsedMessage?.response?.data?.role === "reset" &&
-        !parsedMessage?.response?.data?.mode
-      ) {
-        // all previous message and new object inserted
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            role: "reset",
-            mode: parsedMessage?.response?.data?.mode,
-            content: "Resetting the chat",
-          },
-        ]);
-      } else if (parsedMessage?.response?.data?.suggestions !== undefined) {
-        setOptions(parsedMessage.response?.data?.suggestions || []);
-      } else if (parsedMessage?.response?.data) {
-        // Handle the new structure with response data
-        // const content = parsedMessage.response.data.content;
-        setLoading(false);
-        setMessages((prevMessages) => [
-          ...prevMessages.slice(0, -1),
-          {
-            role: parsedMessage.response?.data?.role || "assistant",
-            ...(parsedMessage.response.data || {}),
-          },
-        ]);
-        clearTimeout(timeoutIdRef.current);
-      } else {
-        console.warn("Some error occurred in the message", parsedMessage);
-      }
-    };
+  //   const handleMessageRTLayer = (message: string) => {
+  //     // Parse the incoming message string into an object
+  //     const parsedMessage = JSON.parse(message || "{}");
+  //     // Check if the status is "connected"
+  //     if (parsedMessage?.status === "connected") {
+  //       return;
+  //     }
+  //     // Check if the function call is present
+  //     if (
+  //       parsedMessage?.response?.function_call &&
+  //       !parsedMessage?.response?.message
+  //     ) {
+  //       setMessages((prevMessages) => [
+  //         ...prevMessages.slice(0, -1),
+  //         { role: "assistant", wait: true, content: "Function Calling", Name: parsedMessage?.response?.Name || [] },
+  //       ]);
+  //     } else if (
+  //       parsedMessage?.response?.function_call &&
+  //       parsedMessage?.response?.message
+  //     ) {
+  //       // Check if the function call is false and no response is provided
+  //       setMessages((prevMessages) => [
+  //         ...prevMessages.slice(0, -1),
+  //         { role: "assistant", wait: true, content: "Talking with AI" },
+  //       ]);
+  //     } else if (!parsedMessage?.response?.data && parsedMessage?.error) {
+  //       // Check if there is an error and no response data
+  //       setMessages((prevMessages) => [
+  //         ...prevMessages.slice(0, -1),
+  //         {
+  //           role: "assistant",
+  //           content: `${parsedMessage?.error || "Error in AI"}`,
+  //         },
+  //       ]);
+  //       setLoading(false);
+  //       clearTimeout(timeoutIdRef.current);
+  //     } else if (
+  //       parsedMessage?.response?.data?.role === "reset" &&
+  //       !parsedMessage?.response?.data?.mode
+  //     ) {
+  //       // all previous message and new object inserted
+  //       setMessages((prevMessages) => [
+  //         ...prevMessages,
+  //         {
+  //           role: "reset",
+  //           mode: parsedMessage?.response?.data?.mode,
+  //           content: "Resetting the chat",
+  //         },
+  //       ]);
+  //     } else if (parsedMessage?.response?.data?.suggestions !== undefined) {
+  //       setOptions(parsedMessage.response?.data?.suggestions || []);
+  //     } else if (parsedMessage?.response?.data) {
+  //       // Handle the new structure with response data
+  //       // const content = parsedMessage.response.data.content;
+  //       setLoading(false);
+  //       setMessages((prevMessages) => [
+  //         ...prevMessages.slice(0, -1),
+  //         {
+  //           role: parsedMessage.response?.data?.role || "assistant",
+  //           ...(parsedMessage.response.data || {}),
+  //         },
+  //       ]);
+  //       clearTimeout(timeoutIdRef.current);
+  //     } else {
+  //       console.warn("Some error occurred in the message", parsedMessage);
+  //     }
+  //   };
 
-    // if (newChannelId !== channelIdRef.current) {
-    //   channelIdRef.current = newChannelId;
+  //   // if (newChannelId !== channelIdRef.current) {
+  //   //   channelIdRef.current = newChannelId;
 
-    const listener = client.on(newChannelId, handleMessageRTLayer);
+  //   const listener = client.on(newChannelId, handleMessageRTLayer);
 
-    // Cleanup on effect re-run or unmount
-    return () => {
-      listener.remove();
-      clearTimeout(timeoutIdRef.current);
-    };
-    // }
-  }, [chatbotId, userId, threadId, subThreadId]);
+  //   // Cleanup on effect re-run or unmount
+  //   return () => {
+  //     listener.remove();
+  //     clearTimeout(timeoutIdRef.current);
+  //   };
+  //   // }
+  // }, [chatbotId, userId, threadId, subThreadId]);
 
   const sendMessage = async (
     message: string,
@@ -540,7 +564,7 @@ function InterfaceChatbot({
     thread = "",
     bridge = ""
   ) => {
-    const response = await sendDataToAction({
+    sendMessageAction({
       message,
       images: imageUrls, // Send image URLs
       userId,
@@ -554,11 +578,7 @@ function InterfaceChatbot({
         configuration: { model: selectedAiServiceAndModal?.modal },
         service: selectedAiServiceAndModal?.service
       } : {})
-    });
-    if (!response?.success) {
-      setMessages((prevMessages) => prevMessages.slice(0, -1));
-      setLoading(false);
-    }
+    })
   };
 
   const onSend = async (msg?: string, apiCall: boolean = true) => {

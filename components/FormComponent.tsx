@@ -8,7 +8,7 @@ import {
 import axios from "axios";
 import React, { useState } from "react";
 
-function FormComponent({ open, setOpen }) {
+function FormComponent({ open, setOpen }: any) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",

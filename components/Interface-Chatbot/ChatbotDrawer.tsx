@@ -12,6 +12,7 @@ import { AlignLeft, SquarePen } from "lucide-react";
 import React, { useContext } from "react";
 import { useDispatch } from "react-redux";
 import { MessageContext } from "./InterfaceChatbot";
+import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 
 
 const createRandomId = () => {
@@ -32,29 +33,28 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
 
   const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName } =
     useCustomSelector((state: $ReduxCoreType) => ({
-      reduxThreadId: state.Interface?.threadId || "",
-      reduxSubThreadId: state.Interface?.subThreadId || "",
+      reduxThreadId: GetSessionStorageData("threadId") || state.appInfo?.threadId || "",
+      reduxSubThreadId: state.appInfo?.subThreadId || "",
       reduxBridgeName:
         GetSessionStorageData("bridgeName") ||
-        state.Interface?.bridgeName ||
+        state.appInfo?.bridgeName ||
         "root",
       subThreadList:
         state.Interface?.interfaceContext?.[chatbotId]?.[
           GetSessionStorageData("bridgeName") ||
-          state.Interface?.bridgeName ||
+          state.appInfo?.bridgeName ||
           "root"
         ]?.threadList?.[
-        GetSessionStorageData("threadId") || state.Interface?.threadId
+        GetSessionStorageData("threadId") || state.appInfo?.threadId
         ] || [],
     }));
 
-  const thread_id = GetSessionStorageData("threadId") || reduxThreadId;
   const selectedSubThreadId = reduxSubThreadId;
 
   const handleCreateNewSubThread = async () => {
     if (preview) return;
     const result = await createNewThreadApi({
-      threadId: thread_id,
+      threadId: reduxThreadId,
       subThreadId: createRandomId(),
     });
     if (result?.success) {
@@ -62,7 +62,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         setThreads({
           newThreadData: result?.thread,
           bridgeName: GetSessionStorageData("bridgeName") || reduxBridgeName,
-          threadId: thread_id,
+          threadId: reduxThreadId,
         })
       );
       setOptions([]);
@@ -72,6 +72,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   const handleChangeSubThread = (sub_thread_id: string) => {
     setLoading(false);
     dispatch(setThreadId({ subThreadId: sub_thread_id }));
+    dispatch(setDataInAppInfoReducer({subThreadId: sub_thread_id}))
     setOptions([]);
     if (isSmallScreen) {
       setToggleDrawer(false);

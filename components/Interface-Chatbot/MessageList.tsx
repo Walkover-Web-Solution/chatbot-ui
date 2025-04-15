@@ -16,7 +16,6 @@ import InfiniteScroll from "react-infinite-scroll-component";
 
 // App imports
 
-import { sendFeedbackAction } from "@/config/api";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { MessageContext } from "./InterfaceChatbot";
@@ -29,59 +28,23 @@ interface MessageListProps {
 
 function MessageList({ containerRef }: MessageListProps) {
   const {
-    fetchMoreData,
+    // fetchMoreData,
     hasMoreMessages = false,
-    setNewMessage,
     newMessage,
     currentPage = 1,
+    getMoreChats,
+    messageIds,
+    msgIdAndDataMap,
+    helloMsgIdAndDataMap,
+    helloMsgIds
   } = useContext(MessageContext);
-  const MessagesList = useContext(MessageContext);
-  const {
-    messages = [],
-    setMessages,
-    addMessage,
-    helloMessages = [],
-  } = MessagesList;
   const [showScrollButton, setShowScrollButton] = useState(false)
   const [isInverse, setIsInverse] = useState(false);
-  const [shouldScroll, setShouldScroll] = useState(true);
   const scrollPositionRef = useRef<number>(0);
-  const prevMessagesLengthRef = useRef<number>(messages.length);
+  const prevMessagesLengthRef = useRef<number>(messageIds?.length);
   const { IsHuman } = useCustomSelector((state: $ReduxCoreType) => ({
     IsHuman: state.Hello?.isHuman,
   }));
-
-  const handleFeedback = useCallback(
-    async (
-      messageId: string,
-      feedbackStatus: number,
-      currentStatus: number
-    ) => {
-      if (messageId && feedbackStatus && currentStatus !== feedbackStatus) {
-        setShouldScroll(false);
-        const response: any = await sendFeedbackAction({
-          messageId,
-          feedbackStatus,
-        });
-        if (response?.success) {
-          const messageId = response?.result?.[0]?.message_id;
-          // Iterate over messages and update the feedback status of the message whose role is assistant
-          for (let i = messages?.length - 1; i >= 0; i--) {
-            const message = messages[i];
-            if (
-              message?.role === "assistant" &&
-              message?.message_id === messageId
-            ) {
-              message.user_feedback = feedbackStatus;
-              break; // Assuming only one message needs to be updated
-            }
-          }
-          setMessages([...messages]);
-        }
-      }
-    },
-    [messages, setMessages, sendFeedbackAction]
-  );
 
   const movetoDown = useCallback(() => {
     containerRef?.current?.scrollTo({
@@ -107,25 +70,22 @@ function MessageList({ containerRef }: MessageListProps) {
 
     // Trigger fetchMoreData when scrolled to top
     if (scrollPosition === 0 && hasMoreMessages) {
-      fetchMoreData?.();
+      getMoreChats()
     }
-  }, [containerRef, hasMoreMessages, fetchMoreData]);
+  }, [containerRef, hasMoreMessages, currentPage]);
 
   useEffect(() => {
 
-    if (messages.length === prevMessagesLengthRef.current) {
-      // New messages added at bottom
-      if (shouldScroll || newMessage) {
-        movetoDown();
-      }
-    } else if (messages.length > 0 && containerRef.current) {
-      // Messages added at top (pagination)
+    if (messageIds.length === prevMessagesLengthRef.current) {
+      // New messageIds added at bottom
+      movetoDown();
+    } else if (messageIds.length > 0 && containerRef.current) {
+      // messageIds added at top (pagination)
       const heightDiff = containerRef.current.scrollHeight - containerRef.current.clientHeight;
       containerRef.current.scrollTop = heightDiff - scrollPositionRef.current;
     }
-    prevMessagesLengthRef.current = messages.length;
-    setNewMessage?.(false);
-  }, [messages, IsHuman, newMessage, shouldScroll]);
+    prevMessagesLengthRef.current = messageIds.length;
+  }, [messageIds, IsHuman, newMessage]);
 
   useEffect(() => {
     const currentContainer = containerRef?.current;
@@ -136,16 +96,16 @@ function MessageList({ containerRef }: MessageListProps) {
   }, [containerRef, handleScroll]);
 
   const RenderMessages = useMemo(() => {
-    const targetMessages = IsHuman ? helloMessages : messages;
-    return targetMessages.map((message, index) => (
-      <Message
-        key={`${message?.message_id}-${index}`}
-        message={message}
-        handleFeedback={handleFeedback}
-        addMessage={addMessage}
+    const targetMessages = IsHuman ? helloMsgIds : messageIds;
+    const data = IsHuman ? helloMsgIdAndDataMap : msgIdAndDataMap;
+    return targetMessages?.map((msgId, index) => {
+      return <Message
+        // testKey={`${msgId}-${index}`}
+        key={`${msgId}-${index}`}
+        message={data[msgId]}
       />
-    ));
-  }, [messages, handleFeedback, addMessage, helloMessages, IsHuman]);
+    });
+  }, [messageIds, helloMsgIds, IsHuman]);
 
   return (
     <Box
@@ -156,11 +116,11 @@ function MessageList({ containerRef }: MessageListProps) {
         display: "flex",
         flexDirection: isInverse ? "column" : "column-reverse",
       }}
-      className="p-2 sm:p-3"
+      className="p-2 sm:p-3 w-full"
     >
       <InfiniteScroll
-        dataLength={messages.length}
-        next={fetchMoreData}
+        dataLength={messageIds?.length}
+        next={() => getMoreChats()}
         hasMore={hasMoreMessages}
         inverse={!isInverse}
         loader={
