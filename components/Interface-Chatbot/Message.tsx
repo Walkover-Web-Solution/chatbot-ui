@@ -163,7 +163,7 @@ const AssistantMessageCard = React.memo(
                   </a>
                 </div>
               ) : (
-                <div className="prose dark:prose-invert break-words whitespace-break-spaces">
+                <div className="prose dark:prose-invert break-words">
                   {Object.keys(message?.tools_data || {})?.length > 0 && (
                     <Box className="flex items-center gap-2 mb-2">
                       <CircleCheckBig color="green" size={20} />
