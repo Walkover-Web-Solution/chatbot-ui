@@ -43,17 +43,17 @@ export async function getJwtToken(isAnonymous: boolean): Promise<string | null> 
 }
 
 // Get all channels for registered user
-export async function getAllChannels(uuid: string, uniqueId: string, isAnonymous: boolean): Promise<any> {
+export async function getAllChannels(uniqueId?: string): Promise<any> {
   try {
     const response = await axios.post(
       `${HELLO_HOST_URL}/pubnub-channels/list/`,
       {
-        uuid: uuid,
-        user_data: isAnonymous ? {} : {
+        uuid: localStorage.getItem("HelloClientId"),
+        user_data: !uniqueId ? {} : {
           "unique_id": uniqueId
         },
-        is_anon: isAnonymous,
-        anonymous_client_uuid: ""
+        is_anon: !localStorage.getItem("HelloClientId"),
+        anonymous_client_uuid: localStorage.getItem("HelloClientId")
       },
       {
         headers: {
