@@ -4,11 +4,9 @@ import { errorToast } from "@/components/customToast";
 const HELLO_HOST_URL = process.env.NEXT_PUBLIC_MSG91_HOST_URL;
 
 // Register anonymous user
-export async function registerAnonymousUser(widgetId: string): Promise<any> {
+export async function registerAnonymousUser(): Promise<any> {
   try {
-    const response = await axios.post(`${HELLO_HOST_URL}/anonymous-client-details/`, {
-      widget_id: widgetId
-    },      {
+    const response = await axios.get(`${HELLO_HOST_URL}/anonymous-client-details/`,      {
       headers: {
         authorization: localStorage.getItem("WidgetId"),
       },
