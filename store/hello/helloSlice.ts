@@ -14,6 +14,8 @@ export const {
   setHuman,
   setIsVision,
   setHelloConfig,
-  setWidgetInfo
+  setWidgetInfo,
+  setChannelListData,
+  setJwtToken
 } = interfaceSlice.actions;
 export default interfaceSlice.reducer;

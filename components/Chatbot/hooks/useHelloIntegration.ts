@@ -1,6 +1,6 @@
 import { getHelloChatsApi } from '@/config/api';
 import useSocket from '@/hooks/socket';
-import { getHelloDetailsStart, setChannel, setWidgetInfo } from '@/store/hello/helloSlice';
+import { getHelloDetailsStart, setChannel, setChannelListData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
 import axios from 'axios';
 import { useCallback, useContext, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
@@ -8,7 +8,7 @@ import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { useReduxStateManagement } from './useReduxManagement';
 import { generateNewId } from '@/utils/utilities';
 import { ChatbotContext } from '@/components/context';
-import { initializeHelloChat, registerAnonymousUser } from '@/config/helloApi';
+import { getAllChannels, getJwtToken, initializeHelloChat, registerAnonymousUser } from '@/config/helloApi';
 
 interface HelloMessage {
   role: string;
@@ -118,7 +118,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     fetchHelloPreviousHistory();
   }, [fetchHelloPreviousHistory, channelId, uuid]);
 
-  const subscribeToChannel = async () => {
+  const getWidgetInfo = async () => {
     if (isHelloUser && widgetToken) {
       initializeHelloChat(unique_id_hello).then(data => dispatch(setWidgetInfo(data)));
     }
@@ -137,16 +137,32 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   const createAnonymousUser = async () => {
     registerAnonymousUser()
   }
+  
+  useEffect(() => {
+    getWidgetInfo();
+  }, [bridgeName, threadId, helloId, isHelloUser, widgetToken]);
 
   useEffect(() => {
-    subscribeToChannel();
-  }, [bridgeName, threadId, helloId, isHelloUser, widgetToken]);
+    if (isHelloUser) {
+      getJwtToken().then((data) => {
+        if (data !== null) {
+          dispatch(setJwtToken(data));
+        }
+      });
+    }
+  }, [isHelloUser])
 
   useEffect(() => {
     if (!localStorage.getItem("HelloClientId") && !unique_id_hello && widgetToken && isHelloUser) {
       createAnonymousUser();
     }
   }, [isHelloUser, unique_id_hello, widgetToken])
+
+  useEffect(() => {
+    if (isHelloUser && localStorage.getItem("HelloClientId")) {
+      getAllChannels(unique_id_hello).then(data => dispatch(setChannelListData(data)));
+    }
+  }, [isHelloUser, unique_id_hello])
 
   // Send message to Hello
   const onSendHello = useCallback(async (message: string) => {

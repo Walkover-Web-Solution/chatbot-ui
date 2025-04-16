@@ -35,10 +35,11 @@ export async function getJwtToken(): Promise<string | null> {
         authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
       },
     });
-    if (response?.data?.data?.token) {
-      localStorage.setItem("JwtTokenForSocket", response?.data?.data?.token);
+    const token = response?.data?.data?.jwt_token;
+    if (token) {
+      localStorage.setItem("JwtTokenForSocket", token);
     }
-    return response?.data?.data?.token || null;
+    return token || null;
   } catch (error: any) {
     errorToast(error?.response?.data?.message || "Failed to get JWT token");
     return null;
@@ -67,7 +68,7 @@ export async function getAllChannels(uniqueId?: string): Promise<any> {
     if (!localStorage.getItem("HelloClientId")) {
       localStorage.setItem("HelloClientId", response?.data?.uuid);
     }
-    return response?.data?.data || [];
+    return response?.data || [];
   } catch (error: any) {
     errorToast(error?.response?.data?.message || "Failed to get channels");
     return [];
