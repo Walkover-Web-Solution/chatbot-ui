@@ -6,11 +6,15 @@ const HELLO_HOST_URL = process.env.NEXT_PUBLIC_MSG91_HOST_URL;
 // Register anonymous user
 export async function registerAnonymousUser(): Promise<any> {
   try {
-    const response = await axios.post(`${HELLO_HOST_URL}/anonymous-client-details/`,      {
-      headers: {
-        authorization: localStorage.getItem("WidgetId"),
-      },
-    });
+    const response = await axios.post(
+      `${HELLO_HOST_URL}/anonymous-client-details/`,
+      {},
+      {
+        headers: {
+          authorization: localStorage.getItem("WidgetId"),
+        },
+      }
+    );
 
     if (response?.data?.data?.uuid) {
       localStorage.setItem("HelloClientId", response.data.data.uuid);
