@@ -13,6 +13,7 @@ export const {
   getHelloDetailsSuccess,
   setHuman,
   setIsVision,
-  setHelloConfig
+  setHelloConfig,
+  setWidgetInfo
 } = interfaceSlice.actions;
 export default interfaceSlice.reducer;

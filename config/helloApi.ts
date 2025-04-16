@@ -1,4 +1,4 @@
-import axios from "@/utils/interceptor";
+import axios from "axios";
 import { errorToast } from "@/components/customToast";
 
 const HELLO_HOST_URL = process.env.NEXT_PUBLIC_MSG91_HOST_URL;
@@ -11,11 +11,11 @@ export async function registerAnonymousUser(): Promise<any> {
         authorization: localStorage.getItem("WidgetId"),
       },
     });
-    
+
     if (response?.data?.data?.uuid) {
       localStorage.setItem("HelloClientId", response.data.data.uuid);
     }
-    
+
     return response?.data?.data;
   } catch (error: any) {
     errorToast(error?.response?.data?.message || "Failed to register anonymous user");
@@ -26,7 +26,7 @@ export async function registerAnonymousUser(): Promise<any> {
 // Get JWT token for socket subscription
 export async function getJwtToken(isAnonymous: boolean): Promise<string | null> {
   try {
-    const response = await axios.get(`${HELLO_HOST_URL}/jwt-token/?is_anon=${isAnonymous}`,{
+    const response = await axios.get(`${HELLO_HOST_URL}/jwt-token/?is_anon=${isAnonymous}`, {
       headers: {
         authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
       },
@@ -70,7 +70,7 @@ export async function getAllChannels(uuid: string, uniqueId: string, isAnonymous
 // Get agent team list
 export async function getAgentTeam(): Promise<any> {
   try {
-    const response = await axios.get(`${HELLO_HOST_URL}/agent-team/`,{
+    const response = await axios.get(`${HELLO_HOST_URL}/agent-team/`, {
       headers: {
         authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
       },
@@ -86,7 +86,7 @@ export async function getAgentTeam(): Promise<any> {
 export async function getGreetingQuestions(companyId: string, botId: string, isAnonymous: boolean): Promise<any> {
   try {
     const response = await axios.get(
-      `${HELLO_HOST_URL}/chat-gpt/greeting/?company_id=${companyId}&bot_id=${botId}&is_anon=${isAnonymous}`,{
+      `${HELLO_HOST_URL}/chat-gpt/greeting/?company_id=${companyId}&bot_id=${botId}&is_anon=${isAnonymous}`, {
       headers: {
         authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
       },
@@ -101,7 +101,7 @@ export async function getGreetingQuestions(companyId: string, botId: string, isA
 // Save client details
 export async function saveClientDetails(clientData: any): Promise<any> {
   try {
-    const response = await axios.post(`${HELLO_HOST_URL}/client/`, clientData,{
+    const response = await axios.post(`${HELLO_HOST_URL}/client/`, clientData, {
       headers: {
         authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
       },
@@ -172,7 +172,7 @@ export async function sendMessageToHello(message: string, attachment: object | n
       `${HELLO_HOST_URL}/v2/send/`,
       {
         type: "widget",
-        message_type: "text", 
+        message_type: "text",
         content: {
           text: message,
           attachment: attachment ? [attachment] : [],

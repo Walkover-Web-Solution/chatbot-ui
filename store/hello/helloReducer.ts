@@ -10,6 +10,7 @@ export const initialState: $HelloReduxType = {
   socketJwt: {},
   isLoading: false,
   mode: [],
+  helloConfig: {} as HelloData
 };
 
 export const reducers: ValidateSliceCaseReducers<
@@ -39,7 +40,11 @@ export const reducers: ValidateSliceCaseReducers<
     state.isHuman = action.payload?.isHuman ?? true;
   },
 
-  setHelloConfig(state, action: actionType<{ helloConfig: HelloData }>) {
-    state.helloConfig = action.payload?.helloConfig;
+  setHelloConfig(state, action: actionType<HelloData>) {
+    state.helloConfig = action.payload;
   },
+
+  setWidgetInfo(state, action: actionType<HelloData>) {
+    state.widgetInfo = action.payload;
+  }
 };

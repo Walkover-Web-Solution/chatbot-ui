@@ -7,23 +7,27 @@ import { useContext, useEffect, useState } from "react";
 export const runtime = "edge";
 
 export default function InterfaceEmbed() {
-    const { chatbot_id, userId, token, helloConfig } = useContext(ChatbotContext);
+    const { chatbot_id, userId, token, isHelloUser } = useContext(ChatbotContext);
     const router = useRouter();
     const [verifiedState, setVerifiedState] = useState(EmbedVerificationStatus.VERIFYING);
-    
     useEffect(() => {
         if (token) {
             SetSessionStorage("interfaceToken", token);
             SetSessionStorage("interfaceUserId", userId);
             setVerifiedState(EmbedVerificationStatus.VERIFIED);
+        } else if (isHelloUser) {
+            setVerifiedState(EmbedVerificationStatus.VERIFIED);
         }
-    }, [token, userId]);
+    }, [token, userId, isHelloUser]);
 
     useEffect(() => {
         if (verifiedState === EmbedVerificationStatus.VERIFIED && chatbot_id) {
             router.replace(`/chatbot/${chatbot_id}`);
         }
-    }, [verifiedState, chatbot_id, router]);
+        if (isHelloUser && verifiedState === EmbedVerificationStatus.VERIFIED) {
+            router.replace(`/chatbot/hello`);
+        }
+    }, [verifiedState, chatbot_id, router, isHelloUser]);
 
     return (
         <div className="h-screen w-full flex items-center justify-center">
