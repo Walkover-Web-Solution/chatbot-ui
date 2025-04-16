@@ -92,6 +92,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { SocketPresenceEvent } from '../../../model/socket';
 import { DEBOUNCE_TIME } from '@msg91/constant';
 import { MessageInputComponent } from './components/message-input/message-input.component';
+import WebRTC from "msg91-webrtc-call";
 
 @Component({
     selector: 'msg91-selected-channel',
@@ -101,6 +102,7 @@ import { MessageInputComponent } from './components/message-input/message-input.
     standalone: false
 })
 export class SelectedChannelComponent extends BaseComponent implements OnInit, OnDestroy {
+    @ViewChild('webRTCAudio') webRTCAudioRef: ElementRef<HTMLAudioElement>;
     @ViewChild('container') messageContainer: ElementRef<HTMLDivElement>;
     @ViewChild(MessageInputComponent) messageInput: MessageInputComponent;
     @Input() isMobileSDK: boolean;
@@ -166,13 +168,14 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
     public chatStatusEnums = CHAT_STATUS;
 
     public pushNotificationChannel: IChannel;
+    public webrtc: any;
 
     constructor(
         private store: Store<IAppState>,
         @Inject(DOCUMENT) private document: Document,
         private sanitizer: DomSanitizer,
         private cdr: ChangeDetectorRef,
-        private ngZone: NgZone
+        private ngZone: NgZone,        
     ) {
         super();
     }
@@ -472,6 +475,24 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
                     }, 100);
                 }
             });
+            
+        this.webrtc = WebRTC('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ5OHNkN2Y5ODdhczhkZjhhczdkZjciLCJuYW1lIjoiQXNoaXNoIFlhZGF2In0.Fm7H-TLfhH2_VukqmfrbpNwgGUHnc67SP55JT-oP-DE');
+        
+        this.webrtc.on("call", (call) => {
+            const isOutgoing = call.type === "outgoing-call";
+            if (isOutgoing){
+                console.log("call info", call);
+                const mediaStream = call.getMediaStream();
+                if (this.webRTCAudioRef && this.webRTCAudioRef.nativeElement) {
+                    this.webRTCAudioRef.nativeElement.srcObject = mediaStream;
+                }
+            };                      
+        });
+    }
+        
+    public call() {
+        let callToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InN0cmluZyIsImZyb20iOnsiaWQiOiJkOThzZDdmOTg3YXM4ZGY4YXM3ZGY3IiwibmFtZSI6IkFzaGlzaCBZYWRhdiJ9LCJ0byI6W3siaWQiOiI2N2ZlNGM0ZjcyNzY5ODQ4ZjU0ODg2NWYiLCJuYW1lIjoiSGVsbG8gUGFuZWwifV19.DOFSi_9uQK13t7kZi_AKB-fOYfqu2gazqdyXjAUujyE';
+        this.webrtc.call(callToken);
     }
 
     public getFirstMessage() {
@@ -776,6 +797,7 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
                 teamId = team;
             });
         this.selectedClient$.pipe(take(1)).subscribe((cl) => {
+            console.log("🚀 ➽ file: selected client ⏩" , cl)
             client = cl;
         });
         let otherConfigDetails = {};

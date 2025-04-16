@@ -1,3 +1,5 @@
+<audio #remoteAudio autoplay controls></audio>
+  
 <div class="selected-channel-main-container min-h-100 d-flex flex-column">
     <div
         class="semples-header"
@@ -108,6 +110,10 @@
                 </div>
                 <span class="assigneeName text-dotted fw-bolder font-18" [style.color]="textColor">Conversation</span>
             </ng-template>
+            
+            <button mat-button class="mat-faqs-btn font-16 fw-bolder ml-auto py-0 pr-1 pl-2 flex-row-reverse gap-1" (click)="call()">
+                Call                
+            </button>
             <button mat-button class="mat-faqs-btn font-16 fw-bolder ml-auto py-0 pr-1 pl-2 flex-row-reverse gap-1" (click)="enableChatView(false)" *ngIf="widgetShowFaq$ | async">
                 FAQs
                 <mat-icon class="material-symbols-outlined mat-icon-20" aria-hidden="false" aria-label="chevron right icon" fontIcon="chevron_right"></mat-icon>
