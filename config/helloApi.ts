@@ -28,13 +28,16 @@ export async function registerAnonymousUser(): Promise<any> {
 }
 
 // Get JWT token for socket subscription
-export async function getJwtToken(isAnonymous: boolean): Promise<string | null> {
+export async function getJwtToken(): Promise<string | null> {
   try {
-    const response = await axios.get(`${HELLO_HOST_URL}/jwt-token/?is_anon=${isAnonymous}`, {
+    const response = await axios.get(`${HELLO_HOST_URL}/jwt-token/?is_anon=${!(localStorage.getItem("HelloClientId") && localStorage.getItem("client"))}`, {
       headers: {
         authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
       },
     });
+    if (response?.data?.data?.token) {
+      localStorage.setItem("JwtTokenForSocket", response?.data?.data?.token);
+    }
     return response?.data?.data?.token || null;
   } catch (error: any) {
     errorToast(error?.response?.data?.message || "Failed to get JWT token");
