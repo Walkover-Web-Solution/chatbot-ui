@@ -29,18 +29,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
     const { sendMessageToHello } = useHelloIntegration({ chatbotId, chatDispatch, chatState, messageRef });
     const { IsHuman } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
-    const {
-        setToggleDrawer,
-        setLoading,
-        setChatsLoading,
-        sendMessage,
-        setImages,
-        setOptions,
-        getMoreChats,
-        setNewMessage,
-        setMessages,
-        handleMessageFeedback
-    } = useChatActions({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef });
+    const chatActions = useChatActions({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef });
 
     const theme = useTheme();
 
@@ -51,29 +40,20 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
         <MessageContext.Provider value={{
             ...chatState,
             sendMessageToHello,
-            sendMessage,
-            setImages,
-            setToggleDrawer,
-            setLoading,
-            setChatsLoading,
             messageRef,
-            setOptions,
             chatDispatch,
-            getMoreChats,
-            setNewMessage,
-            setMessages,
             messageIds: messageIds?.[subThreadId] || [],
             msgIdAndDataMap: msgIdAndDataMap[subThreadId],
             helloMessages,
             helloMsgIdAndDataMap: helloMsgIdAndDataMap?.[subThreadId],
             helloMsgIds: helloMsgIds?.[subThreadId],
-            handleMessageFeedback
+            ...chatActions
         }}>
             <FormComponent open={openHelloForm} setOpen={() => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true })} />
             <div className="flex h-screen w-full overflow-hidden relative">
                 {/* Sidebar - always visible on large screens */}
                 <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? ' w-64' : 'w-0'}`}>
-                    <ChatbotDrawer setToggleDrawer={setToggleDrawer} isToggledrawer={isToggledrawer} />
+                    <ChatbotDrawer setToggleDrawer={chatActions.setToggleDrawer} isToggledrawer={isToggledrawer} />
                 </div>
 
                 {/* Main content area */}

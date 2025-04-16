@@ -26,7 +26,9 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch, chatState }: 
     chat_id,
     channelId,
     mode,
-    selectedAiServiceAndModal
+    selectedAiServiceAndModal,
+    unique_id_hello,
+    widgetToken
   } = useCustomSelector((state: $ReduxCoreType) => ({
     interfaceContextData:
       state.Interface?.interfaceContext?.[chatbotId]?.variables,
@@ -44,7 +46,9 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch, chatState }: 
     chat_id: state.Hello?.Channel?.id,
     channelId: state.Hello?.Channel?.channel || null,
     mode: state.Hello?.mode || [],
-    selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null
+    selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null,
+    unique_id_hello: state?.Hello?.helloConfig?.unique_id,
+    widgetToken: state?.Hello?.helloConfig?.widgetToken
   }));
 
   // Sync Redux threadId with local state
@@ -119,6 +123,8 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch, chatState }: 
     channelId,
     mode,
     selectedAiServiceAndModal,
-    theme
+    theme,
+    unique_id_hello,
+    widgetToken
   };
 };

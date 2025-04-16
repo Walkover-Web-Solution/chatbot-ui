@@ -16,6 +16,7 @@ import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Chatbot from "../Chatbot/Chatbot";
 import { HelloData } from "@/types/hello/HelloReduxType";
+import { setHelloConfig } from "@/store/hello/helloSlice";
 
 interface InterfaceData {
   threadId?: string | null;
@@ -43,22 +44,18 @@ interface ChatbotWrapperProps {
 function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
   const dispatch = useDispatch();
 
-  // Notify parent when interface is loaded
-  useEffect(() => {
-    window?.parent?.postMessage({ type: "interfaceLoaded" }, "*");
-  }, []);
-
   // Handle messages from parent window
   const handleMessage = useCallback((event: MessageEvent) => {
-    if (event?.data?.type !== "interfaceData" || event?.data?.type !== "helloData" || !event?.data?.data) return;
-
+    if (event?.data?.type !== "interfaceData" && event?.data?.type !== "helloData") return;
     if (event?.data?.type === "helloData") {
       const receivedHelloData: HelloData = event.data.data;
+      localStorage.setItem('WidgetId', receivedHelloData?.widgetToken)
       dispatch(setHelloConfig(receivedHelloData));
+      return;
     }
 
     const receivedData: InterfaceData = event.data.data;
-
+    if (Object.keys(receivedData || {}).length === 0) return;
     // Process thread-related data
     if (receivedData.threadId) {
       dispatch(setThreadId({ threadId: receivedData.threadId }));
@@ -132,6 +129,13 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
       window.removeEventListener("message", handleMessage);
     };
   }, [handleMessage, chatbotId]);
+
+  // Notify parent when interface is loaded
+  useEffect(() => {
+    setTimeout(() => {
+      window?.parent?.postMessage({ type: "interfaceLoaded" }, "*");
+    }, 0);
+  }, []);
 
   // return <InterfaceChatbot />;
   return <Chatbot />

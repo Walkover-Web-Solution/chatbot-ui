@@ -1,12 +1,14 @@
 import { getHelloChatsApi } from '@/config/api';
 import useSocket from '@/hooks/socket';
-import { getHelloDetailsStart, setChannel } from '@/store/hello/helloSlice';
+import { getHelloDetailsStart, setChannel, setWidgetInfo } from '@/store/hello/helloSlice';
 import axios from 'axios';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useContext, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { useReduxStateManagement } from './useReduxManagement';
 import { generateNewId } from '@/utils/utilities';
+import { ChatbotContext } from '@/components/context';
+import { initializeHelloChat, registerAnonymousUser } from '@/config/helloApi';
 
 interface HelloMessage {
   role: string;
@@ -18,10 +20,11 @@ interface HelloMessage {
 
 const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction>, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement> }) => {
   const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId } = chatState;
-  const { uuid, unique_id, channelId, presence_channel, team_id, chat_id } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
+  const { uuid, unique_id, channelId, presence_channel, team_id, chat_id, unique_id_hello = "", widgetToken } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
   const socket: any = useSocket();
   const dispatch = useDispatch();
+  const { isHelloUser } = useContext(ChatbotContext);
 
   const setLoading = (value: boolean) => {
     chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: value });
@@ -115,8 +118,11 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     fetchHelloPreviousHistory();
   }, [fetchHelloPreviousHistory, channelId, uuid]);
 
-  const subscribeToChannel = () => {
-    if (bridgeName && threadId) {
+  const subscribeToChannel = async () => {
+    if (isHelloUser && widgetToken) {
+      initializeHelloChat(unique_id_hello).then(data => dispatch(setWidgetInfo(data)));
+    }
+    else if (bridgeName && threadId) {
       dispatch(
         getHelloDetailsStart({
           slugName: bridgeName,
@@ -128,9 +134,21 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     }
   };
 
+  const createAnonymousUser = async () => {
+    if (isHelloUser) {
+      registerAnonymousUser().then(data => dispatch(setWidgetInfo(data)));
+    }
+  }
+
   useEffect(() => {
     subscribeToChannel();
-  }, [bridgeName, threadId, helloId]);
+  }, [bridgeName, threadId, helloId, isHelloUser, widgetToken]);
+
+  useEffect(() => {
+    if (!localStorage.getItem("helloClientId") && !unique_id_hello) {
+      createAnonymousUser();
+    }
+  }, [isHelloUser, unique_id_hello])
 
   // Send message to Hello
   const onSendHello = useCallback(async (message: string) => {

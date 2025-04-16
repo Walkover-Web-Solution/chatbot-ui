@@ -9,7 +9,13 @@ import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState, SendMessagePayloadType } from './chatTypes';
 
 export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) => {
-
+    if (chatbotId === 'hello') {
+        return {
+            fetchAllThreads: () => { },
+            getIntialChatHistory: () => { },
+            getMoreChats: () => { },
+        }
+    }
     const globalDispatch = useDispatch();
     const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId } = useCustomSelector((state: $ReduxCoreType) => ({
         threadId: state.appInfo.threadId,
@@ -179,13 +185,13 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
 
     const setMessages = (payload: any) => chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload })
 
-    const handleMessageFeedback = async (payload:{ msgId: string, feedback: number , reduxMsgId:string }) =>{
-        const { msgId, feedback ,reduxMsgId} = payload;
+    const handleMessageFeedback = async (payload: { msgId: string, feedback: number, reduxMsgId: string }) => {
+        const { msgId, feedback, reduxMsgId } = payload;
         const currentStatus = chatState.msgIdAndDataMap?.[subThreadId]?.[reduxMsgId]?.user_feedback;
         if (msgId && feedback && currentStatus !== feedback) {
             const response: any = await sendFeedbackAction({
-              messageId: msgId,
-              feedbackStatus:feedback,
+                messageId: msgId,
+                feedbackStatus: feedback,
             });
             if (response?.success) {
                 chatDispatch({
@@ -196,7 +202,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                     }
                 })
             }
-          }
+        }
     }
 
     const handleMessage = useCallback(
