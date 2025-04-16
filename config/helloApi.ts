@@ -151,11 +151,11 @@ export async function initializeHelloChat(isAnonymous: boolean = true, uniqueId:
         "user_data": isAnonymous ? {} : {
           "unique_id": uniqueId
         },
-        "is_anon": isAnonymous
+        "is_anon": localStorage.getItem("HelloClientId") ? false : true
       },
       {
         headers: {
-          authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          authorization: `${localStorage.getItem("WidgetId")}${localStorage.getItem("HelloClientId") ? `:${localStorage.getItem("HelloClientId")}` : ''}`,
           "content-type": "application/json",
         },
       }
