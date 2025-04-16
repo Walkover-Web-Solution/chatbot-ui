@@ -6,7 +6,7 @@ const HELLO_HOST_URL = process.env.NEXT_PUBLIC_MSG91_HOST_URL;
 // Register anonymous user
 export async function registerAnonymousUser(): Promise<any> {
   try {
-    const response = await axios.get(`${HELLO_HOST_URL}/anonymous-client-details/`,      {
+    const response = await axios.post(`${HELLO_HOST_URL}/anonymous-client-details/`,      {
       headers: {
         authorization: localStorage.getItem("WidgetId"),
       },
@@ -153,7 +153,7 @@ export async function initializeHelloChat(uniqueId: string | null = null): Promi
       },
       {
         headers: {
-          authorization: `${localStorage.getItem("WidgetId")}${localStorage.getItem("HelloClientId") ? `:${localStorage.getItem("HelloClientId")}` : ''}`,
+          authorization: `${localStorage.getItem("WidgetId")}`,
           "content-type": "application/json",
         },
       }
