@@ -19,7 +19,7 @@ const useSocket = () => {
     const socketUrl = "https://chat.phone91.com/";
     const socketInstance = io(socketUrl, {
       auth: { token: jwtToken.jwt_token },
-      transports: ["websocket"],
+      transports: ['websocket', 'polling'],
       reconnection: true,
       timeout: 20000,
       autoConnect: true,

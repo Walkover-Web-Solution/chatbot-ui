@@ -15,6 +15,7 @@ import { ALLOWED_EVENTS_TO_SUBSCRIBE, ParamsEnums } from "@/utils/enums";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Chatbot from "../Chatbot/Chatbot";
+import { HelloData } from "@/types/hello/HelloReduxType";
 
 interface InterfaceData {
   threadId?: string | null;
@@ -49,7 +50,12 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
 
   // Handle messages from parent window
   const handleMessage = useCallback((event: MessageEvent) => {
-    if (event?.data?.type !== "interfaceData" || !event?.data?.data) return;
+    if (event?.data?.type !== "interfaceData" || event?.data?.type !== "helloData" || !event?.data?.data) return;
+
+    if (event?.data?.type === "helloData") {
+      const receivedHelloData: HelloData = event.data.data;
+      dispatch(setHelloConfig(receivedHelloData));
+    }
 
     const receivedData: InterfaceData = event.data.data;
 

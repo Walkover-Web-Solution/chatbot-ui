@@ -1,6 +1,6 @@
 // MUI Icons
 import ChatIcon from "@mui/icons-material/Chat";
-import { AlignLeft, EllipsisVertical, History, Maximize, PictureInPicture2, Settings, SquarePen, X } from "lucide-react";
+import { AlignLeft, EllipsisVertical, History, Maximize, PhoneOutgoing, PictureInPicture2, Settings, SquarePen, X } from "lucide-react";
 
 // MUI Components
 import { useTheme } from "@mui/material";
@@ -56,7 +56,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   const shouldToggleScreenSize = `${width}${widthUnit}` !== '1200%'
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
-  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug, chatSubTitle, allowBridgeSwitchViaProp, subThreadList, subThreadId, hideFullScreenButton } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug, chatSubTitle, allowBridgeSwitchViaProp, subThreadList, subThreadId, hideFullScreenButton, isHuman, mode } = useCustomSelector((state: $ReduxCoreType) => ({
     allowModalSwitch: state.Interface.allowModalSwitch || false,
     hideCloseButton: state.Interface.hideCloseButton || false,
     hideFullScreenButton: state.Interface.hideFullScreenButton || false,
@@ -74,6 +74,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
       ]?.threadList?.[
       GetSessionStorageData("threadId") || state.appInfo?.threadId
       ] || [],
+    isHuman: state.Hello?.isHuman || false,
+    mode: state.Hello?.mode || [],
   }))
   const showCreateThreadButton = useMemo(() => {
     // Show icon unless subThreadList length is less than 2 AND messageIds array is empty
@@ -99,6 +101,10 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
       setOptions([]);
     }
   };
+
+  const handleVoiceCall = () => {
+    console.log("handleVoiceCall");
+  }
 
   return (
     <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-2 py-1 w-full">
@@ -144,6 +150,11 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
             </React.Fragment>
           })}
           <div className="flex items-center">
+            {mode?.includes("human") && isHuman && (
+              <div className="cursor-pointer p-1 mx-2 rounded-full" onClick={() => { handleVoiceCall() }}>
+                <PhoneOutgoing size={22} color="#555555" />
+              </div>
+            )}
             {shouldToggleScreenSize && (hideFullScreenButton !== true && hideFullScreenButton !== "true") ? (
               <div>
                 {!fullScreen ? (

@@ -1,5 +1,5 @@
 import { SliceCaseReducers, ValidateSliceCaseReducers } from "@reduxjs/toolkit";
-import { $HelloReduxType } from "../../types/hello/HelloReduxType.ts";
+import { $HelloReduxType, HelloData } from "../../types/hello/HelloReduxType";
 import actionType from "@/types/utility.js";
 
 export const initialState: $HelloReduxType = {
@@ -20,8 +20,7 @@ export const reducers: ValidateSliceCaseReducers<
     return { ...state, isLoading: true };
   },
   getHelloDetailsSuccess(state, action) {
-    const { widgetInfo, ChannelList, Jwt, anonymousClientId, mode, vision } =
-      action.payload;
+    const { widgetInfo, ChannelList, Jwt, anonymousClientId, mode, vision } = action.payload;
     state.widgetInfo = widgetInfo;
     state.anonymousClientId = anonymousClientId;
     state.socketJwt = { jwt: Jwt };
@@ -38,5 +37,9 @@ export const reducers: ValidateSliceCaseReducers<
   },
   setHuman(state, action: actionType<{ isHuman: boolean }>) {
     state.isHuman = action.payload?.isHuman ?? true;
+  },
+
+  setHelloConfig(state, action: actionType<{ helloConfig: HelloData }>) {
+    state.helloConfig = action.payload?.helloConfig;
   },
 };

@@ -7,7 +7,7 @@ import { useContext, useEffect, useState } from "react";
 export const runtime = "edge";
 
 export default function InterfaceEmbed() {
-    const { chatbot_id, userId, token } = useContext(ChatbotContext);
+    const { chatbot_id, userId, token, helloConfig } = useContext(ChatbotContext);
     const router = useRouter();
     const [verifiedState, setVerifiedState] = useState(EmbedVerificationStatus.VERIFYING);
     
