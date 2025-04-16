@@ -119,7 +119,7 @@ export async function saveClientDetails(clientData: any): Promise<any> {
 export async function getChatHistory(channelId: string): Promise<any> {
   try {
     const response = await axios.post(
-      "https://testapi.phone91.com/get-history/",
+      `${HELLO_HOST_URL}/get-history/`,
       {
         channel: channelId,
         origin: "chat",
@@ -143,10 +143,10 @@ export async function getChatHistory(channelId: string): Promise<any> {
 }
 
 // Main function to initialize Hello chat
-export async function initializeHelloChat( isAnonymous: boolean = true, uniqueId: string): Promise<any> {
+export async function initializeHelloChat(isAnonymous: boolean = true, uniqueId: string): Promise<any> {
   try {
-    const response =await axios.post(
-      "https://testapi.phone91.com/widget-info/",
+    const response = await axios.post(
+      `${HELLO_HOST_URL}/widget-info/`,
       {
         "user_data": isAnonymous ? {} : {
           "unique_id": uniqueId
@@ -166,3 +166,60 @@ export async function initializeHelloChat( isAnonymous: boolean = true, uniqueId
     return null;
   }
 } 
+
+// Function to send message to Hello chat
+export async function sendMessageToHello(message: string, attachment: object | null = null, channelDetail?: any, channelId?: string, chat_id?: string): Promise<any> {
+  try {
+    const response = await axios.post(
+      `${HELLO_HOST_URL}/v2/send/`,
+      {
+        type: "widget",
+        message_type: "text", 
+        content: {
+          text: message,
+          attachment: attachment ? [attachment] : [],
+        },
+        ...(channelDetail ? { channelDetail } : {}),
+        chat_id: !channelId ? null : chat_id,
+        session_id: null,
+        user_data: {},
+        is_anon: true,
+      },
+      {
+        headers: {
+          authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          "content-type": "application/json",
+        },
+      }
+    );
+    return response?.data;
+  } catch (error: any) {
+    errorToast(error?.message || "Failed to send message");
+    return null;
+  }
+}
+
+
+// Function to upload attachment to Hello chat
+export async function uploadAttachmentToHello(file: File, inboxId: string): Promise<any> {
+  try {
+    const formData = new FormData();
+    formData.append('attachment', file);
+
+    const response = await axios.post(
+      `${HELLO_HOST_URL}/v2/upload/?type=chat&inbox_id=${inboxId}`,
+      formData,
+      {
+        headers: {
+          'authorization': `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          'content-type': 'multipart/form-data',
+        }
+      }
+    );
+    return response?.data;
+  } catch (error: any) {
+    errorToast(error?.message || "Failed to upload attachment");
+    return null;
+  }
+}
+
