@@ -135,9 +135,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   };
 
   const createAnonymousUser = async () => {
-    if (isHelloUser) {
-      registerAnonymousUser().then(data => dispatch(setWidgetInfo(data)));
-    }
+    registerAnonymousUser()
   }
 
   useEffect(() => {
@@ -145,10 +143,10 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [bridgeName, threadId, helloId, isHelloUser, widgetToken]);
 
   useEffect(() => {
-    if (!localStorage.getItem("helloClientId") && !unique_id_hello) {
+    if (!localStorage.getItem("HelloClientId") && !unique_id_hello && widgetToken && isHelloUser) {
       createAnonymousUser();
     }
-  }, [isHelloUser, unique_id_hello])
+  }, [isHelloUser, unique_id_hello, widgetToken])
 
   // Send message to Hello
   const onSendHello = useCallback(async (message: string) => {

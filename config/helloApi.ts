@@ -53,7 +53,7 @@ export async function getAllChannels(uuid: string, uniqueId: string, isAnonymous
           "unique_id": uniqueId
         },
         is_anon: isAnonymous,
-        anonymous_client_uuid: ""
+        anonymous_client_uuid: uuid
       },
       {
         headers: {
