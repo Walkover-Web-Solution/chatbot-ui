@@ -143,14 +143,14 @@ export async function getChatHistory(channelId: string): Promise<any> {
 }
 
 // Main function to initialize Hello chat
-export async function initializeHelloChat(isAnonymous: boolean = true, uniqueId: string): Promise<any> {
+export async function initializeHelloChat(uniqueId: string | null = null): Promise<any> {
   try {
     const response = await axios.post(
       `${HELLO_HOST_URL}/widget-info/`,
       {
-        "user_data": isAnonymous ? {} : {
+        "user_data": uniqueId ? {
           "unique_id": uniqueId
-        },
+        } : {},
         "is_anon": localStorage.getItem("HelloClientId") ? false : true
       },
       {
@@ -165,7 +165,7 @@ export async function initializeHelloChat(isAnonymous: boolean = true, uniqueId:
     errorToast(error?.message || "Failed to initialize Hello chat");
     return null;
   }
-} 
+}
 
 // Function to send message to Hello chat
 export async function sendMessageToHello(message: string, attachment: object | null = null, channelDetail?: any, channelId?: string, chat_id?: string): Promise<any> {
