@@ -52,8 +52,13 @@ export async function getAllChannels(uniqueId?: string): Promise<any> {
         user_data: !uniqueId ? {} : {
           "unique_id": uniqueId
         },
+<<<<<<< HEAD
         is_anon: !localStorage.getItem("HelloClientId"),
         anonymous_client_uuid: localStorage.getItem("HelloClientId")
+=======
+        is_anon: isAnonymous,
+        anonymous_client_uuid: uuid
+>>>>>>> 513e4a3197d9ad3c8cb61235b8effc9fd8b74a4b
       },
       {
         headers: {
