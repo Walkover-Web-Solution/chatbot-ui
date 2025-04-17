@@ -101,7 +101,7 @@ export enum ChatActionTypes {
 }
 
 export type ChatAction =
-  | { type: ChatActionTypes.SET_MESSAGES; payload: MessageType[] }
+  | { type: ChatActionTypes.SET_MESSAGES; payload: { messages: MessageType[], initial?: boolean } }
   | { type: ChatActionTypes.ADD_USER_MESSAGE; payload: { content: string; urls?: string[] } }
   | { type: ChatActionTypes.ADD_MESSAGE; payload: MessageType }
   | { type: ChatActionTypes.REMOVE_MESSAGES; payload: { numberOfMessages: number } }
