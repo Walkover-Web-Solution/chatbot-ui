@@ -175,8 +175,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
   // Send message to Hello
   const onSendHello = useCallback(async (message: string) => {
-    debugger
-    if (!message.trim() && images.length ===0) return;
+    if (!message.trim() && images.length === 0) return;
 
     try {
       const channelDetail = !currentChatId ? {
@@ -197,7 +196,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       } : undefined;
 
       if (!currentChatId) chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true });
-      const attchments = Array.isArray(images) && images?.length ? images : null
+      const attchments = Array.isArray(images) && images?.length ? images : null;
+      if (attchments) chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload: [] })
       sendMessageToHelloApi(message, attchments, channelDetail, currentChatId).then((data) => {
         if (data && !currentChatId) {
           dispatch(setHelloKeysData({ currentChatId: data?.['id'], currentChannelId: data?.['channel'] }));
@@ -206,7 +206,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     } catch (error) {
       console.error("Error sending message to Hello:", error);
     }
-  }, [currentChatId, currentTeamId, uuid, unique_id, presence_channel, chatDispatch]);
+  }, [currentChatId, currentTeamId, uuid, unique_id, presence_channel, chatDispatch, images]);
 
   // Handle sending a message
   const sendMessageToHello = useCallback(() => {
