@@ -84,6 +84,8 @@ import {
     selectWidgetChatStatus,
     selectPushMessage,
     getChannelMessages,
+    selectGetCallToken,
+    selectGetClientToken,
 } from '../../../store/selectors';
 import { IAppState } from '../../../store';
 import { fadeInLeft, fadeInOut, fadeInRight } from '../../../animations';
@@ -169,6 +171,8 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
 
     public pushNotificationChannel: IChannel;
     public webrtc: any;
+    public CallToken$: Observable<string>;
+    public ClientToken$: Observable<string>;
 
     constructor(
         private store: Store<IAppState>,
@@ -181,6 +185,16 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
     }
 
     ngOnInit() {
+        this.CallToken$ = this.store.pipe(
+            select(selectGetCallToken), 
+            takeUntil(this.destroy$), 
+            distinctUntilChanged(isEqual)
+        );        
+        this.ClientToken$ = this.store.pipe(
+            select(selectGetClientToken), 
+            takeUntil(this.destroy$), 
+            distinctUntilChanged(isEqual)
+        );        
         this.widgetTagline$ = this.store.pipe(
             select(selectWidgetTagline),
             distinctUntilChanged(isEqual),
@@ -475,23 +489,34 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
                     }, 100);
                 }
             });
-            
-        this.webrtc = WebRTC('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ5OHNkN2Y5ODdhczhkZjhhczdkZjciLCJuYW1lIjoiQXNoaXNoIFlhZGF2In0.Fm7H-TLfhH2_VukqmfrbpNwgGUHnc67SP55JT-oP-DE');
         
-        this.webrtc.on("call", (call) => {
-            const isOutgoing = call.type === "outgoing-call";
-            if (isOutgoing){
-                console.log("call info", call);
-                const mediaStream = call.getMediaStream();
-                if (this.webRTCAudioRef && this.webRTCAudioRef.nativeElement) {
-                    this.webRTCAudioRef.nativeElement.srcObject = mediaStream;
-                }
-            };                      
-        });
+        let authToken;
+        this.store.pipe(select(getAuthToken), take(1)).subscribe((res) => (authToken = res));
+        this.store.dispatch(actions.getClientToken({token: authToken, uuid: this.widgetUUID}));
+        this.store.dispatch(actions.getCallToken({token: authToken, uuid: this.widgetUUID}));
+
+        this.ClientToken$.subscribe((token) => {
+            if (token) {                
+                this.webrtc = WebRTC(token);
+                this.webrtc.on("call", (call) => {
+                    const isOutgoing = call.type === "outgoing-call";
+                    if (isOutgoing){                
+                        const mediaStream = call.getMediaStream();                
+                        if (this.webRTCAudioRef && this.webRTCAudioRef.nativeElement) {
+                            this.webRTCAudioRef.nativeElement.srcObject = mediaStream;
+                        }
+                    };
+                    call.on("connected", (mediaStream)=>{
+                        console.log("🚀  ➽ connected ⏩" , mediaStream)                
+                    });                      
+                });
+            }
+        });        
+        
     }
         
     public call() {
-        let callToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InN0cmluZyIsImZyb20iOnsiaWQiOiJkOThzZDdmOTg3YXM4ZGY4YXM3ZGY3IiwibmFtZSI6IkFzaGlzaCBZYWRhdiJ9LCJ0byI6W3siaWQiOiI2N2ZlNGM0ZjcyNzY5ODQ4ZjU0ODg2NWYiLCJuYW1lIjoiSGVsbG8gUGFuZWwifV19.DOFSi_9uQK13t7kZi_AKB-fOYfqu2gazqdyXjAUujyE';
+        let callToken = this.getValueFromObservable(this.store.pipe(select(selectGetCallToken)));        
         this.webrtc.call(callToken);
     }
 

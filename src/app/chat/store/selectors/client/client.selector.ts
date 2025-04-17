@@ -8,3 +8,5 @@ export const selectClientUUID = createSelector(selectClient, (state) => state.uu
 export const selectPresenceChannel = createSelector(selectClient, (state) => state.presence_channel);
 export const selectChatInputSubmitted = createSelector(selectClient, (state) => state.chatInputSubmitted);
 export const selectIsClientBlocked = createSelector(selectClient, (state) => state.is_blocked);
+export const selectGetClientToken = createSelector(selectClient, (state) => state.getClientToken);
+export const selectGetCallToken = createSelector(selectClient, (state) => state.getCallToken);

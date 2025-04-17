@@ -4,6 +4,8 @@ import * as actions from './../../actions';
 
 export interface IClientState extends IClient {
     chatInputSubmitted: boolean;
+    getClientToken: string;
+    getCallToken: string;
 }
 
 export const initialState: IClientState = {
@@ -19,6 +21,8 @@ export const initialState: IClientState = {
     country_iso2: null,
     chatInputSubmitted: false,
     is_blocked: false,
+    getClientToken: null,
+    getCallToken: null,
 };
 
 const _clientReducer = createReducer(
@@ -29,7 +33,9 @@ const _clientReducer = createReducer(
     on(actions.updateClientComplete, (state, { client }) => ({ ...state, ...client })),
     on(actions.setCallStatus, (state, { callStatusChanged }) => ({ ...state, call_enabled: callStatusChanged })),
     on(actions.chatInputSubmitted, (state) => ({ ...state, chatInputSubmitted: true })),
-    on(actions.setClientStatus, (state, { status }) => ({ ...state, is_blocked: status }))
+    on(actions.setClientStatus, (state, { status }) => ({ ...state, is_blocked: status })),
+    on(actions.getClientTokenSuccess, (state, { token }) => ({ ...state, getClientToken: token })),
+    on(actions.getCallTokenSuccess, (state, { token }) => ({ ...state, getCallToken: token }))
 );
 export function clientReducer(state: IClientState = initialState, action: Action) {
     return _clientReducer(state, action);

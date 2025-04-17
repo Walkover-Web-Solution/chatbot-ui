@@ -7,8 +7,14 @@ import {
     updateClientComplete,
     updateClientError,
     UpdateFormMessage,
+    getClientToken,
+    getClientTokenSuccess,
+    getClientTokenFailure,
+    getCallToken,
+    getCallTokenSuccess,
+    getCallTokenFailure
 } from '../../actions';
-import { catchError, switchMap, take } from 'rxjs/operators';
+import { catchError, switchMap, take, map } from 'rxjs/operators';
 import { select, Store } from '@ngrx/store';
 import { IAppState } from '../../index';
 import { getAuthToken, selectDefaultClientParams } from '../../selectors';
@@ -68,6 +74,32 @@ export class ClientEffects {
             })
         )
     );
+
+    getClientToken$ = createEffect(() =>
+        this.actions.pipe(
+            ofType(getClientToken),
+            switchMap(({token, uuid}) => {
+                return this.service.getClientToken(token, uuid).pipe(
+                    map((res) => getClientTokenSuccess({ token: res?.data?.jwt_token })),
+                    catchError((error) => of(getClientTokenFailure({ error })))
+                );
+            })
+        )
+    );
+
+    getCallToken$ = createEffect(() =>
+        this.actions.pipe(
+            ofType(getCallToken),
+            switchMap(({token, uuid}) => {
+                return this.service.getCallToken(token, uuid).pipe(
+                    map((res) => getCallTokenSuccess({ token: res?.data?.jwt_token })),
+                    catchError((error) => of(getCallTokenFailure({ error })))
+                );
+            })
+        )
+    );
+
+    
 
     constructor(private service: ChatService, private store: Store<IAppState>, private actions: Actions) {}
 }
