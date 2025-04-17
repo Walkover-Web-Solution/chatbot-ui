@@ -28,6 +28,7 @@ interface ChatbotDrawerProps {
 
 const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, setToggleDrawer, isToggledrawer, preview = false }) => {
   const dispatch = useDispatch();
+  const { setNewMessage } = useContext(MessageContext);
   const isSmallScreen = useMediaQuery('(max-width:1023px)');
   const { setOptions } = useContext(MessageContext);
 
@@ -73,6 +74,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
     setLoading(false);
     dispatch(setThreadId({ subThreadId: sub_thread_id }));
     dispatch(setDataInAppInfoReducer({subThreadId: sub_thread_id}))
+    setNewMessage(true);
     setOptions([]);
     if (isSmallScreen) {
       setToggleDrawer(false);

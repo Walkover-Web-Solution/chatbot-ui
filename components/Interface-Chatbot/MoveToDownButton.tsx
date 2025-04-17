@@ -3,7 +3,7 @@ import { IconButton } from "@mui/material";
 import React from "react";
 import "./InterfaceChatbot.css";
 
-function MoveToDownButton({ movetoDown, showScrollButton }: any) {
+function MoveToDownButton({ movetoDown, showScrollButton }: { movetoDown: () => void, showScrollButton: boolean }) {
   if (!showScrollButton) return null;
   return (
     <IconButton
