@@ -5,12 +5,13 @@ import actionType from "@/types/utility.js";
 export const initialState: $HelloReduxType = {
   isHuman: false,
   widgetInfo: {},
-  ChannelList: {},
+  ChannelList: [],
   anonymousClientId: {},
-  socketJwt: {},
+  socketJwt: { jwt: "" },
   isLoading: false,
   mode: [],
-  helloConfig: {} as HelloData
+  helloConfig: {} as HelloData,
+  channelListData: {}
 };
 
 export const reducers: ValidateSliceCaseReducers<
@@ -46,5 +47,12 @@ export const reducers: ValidateSliceCaseReducers<
 
   setWidgetInfo(state, action: actionType<HelloData>) {
     state.widgetInfo = action.payload;
-  }
+  }, 
+  setChannelListData(state, action: actionType<any>) {
+    state.channelListData = action.payload;
+    state.Channel = action.payload?.channels?.[0];
+  },
+  setJwtToken(state, action: actionType<string>) {
+    state.socketJwt = { jwt: action.payload };
+  },
 };

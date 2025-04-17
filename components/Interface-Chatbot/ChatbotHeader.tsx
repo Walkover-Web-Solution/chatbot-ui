@@ -56,6 +56,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   const shouldToggleScreenSize = `${width}${widthUnit}` !== '1200%'
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
+  const { isHelloUser } = useContext(ChatbotContext);
+
   const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug, chatSubTitle, allowBridgeSwitchViaProp, subThreadList, subThreadId, hideFullScreenButton, isHuman, mode } = useCustomSelector((state: $ReduxCoreType) => ({
     allowModalSwitch: state.Interface.allowModalSwitch || false,
     hideCloseButton: state.Interface.hideCloseButton || false,
@@ -110,7 +112,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
     <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-2 py-1 w-full">
       <div className="flex items-center w-full relative">
         <div className="sm:absolute left-0 flex items-center">
-          {subThreadList?.length > 1 && <button
+          {(subThreadList?.length > 1 || isHelloUser)  && <button
             className="p-2 hover:bg-gray-200 rounded-full transition-colors"
             onClick={() => setToggleDrawer(!isToggledrawer)}
           >
@@ -132,10 +134,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
             <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis">
               {chatTitle || chatbotTitle || "AI Assistant"}
             </h1>
-            {/* <ResetChatOption
-              textColor={textColor}
-              setChatsLoading={setChatsLoading}
-            /> */}
           </div>
           {chatbotSubtitle && <p className="text-sm opacity-75 text-center whitespace-nowrap overflow-hidden overflow-ellipsis">
             {chatSubTitle || chatbotSubtitle || "Do you have any questions? Ask us!"}

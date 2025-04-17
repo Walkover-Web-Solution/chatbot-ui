@@ -2,13 +2,14 @@ export interface $HelloReduxType {
   isHuman: boolean;
   widgetInfo: any;
   anonymousClientId: any;
-  socketJwt: any;
+  socketJwt: { jwt: string };
   ChannelList: any;
   Channel?: any;
   isLoading?: boolean;
   mode?: Array<string | null>;
   helloConfig?: HelloData;
   vision?: boolean;
+  channelListData: any;
 }
 
 
