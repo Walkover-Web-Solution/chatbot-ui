@@ -97,25 +97,25 @@ function MessageList({ containerRef }: MessageListProps) {
   }, [containerRef, handleScroll]);
 
   const RenderMessages = useMemo(() => {
-    if (IsHuman) {
-      return helloMessages?.map((msg, index) => {
-        return <Message
-          // testKey={`${msgId}-${index}`}
-          key={`${msg?.id}-${index}`}
-          message={msg}
-        />
-      });
-    } else {
-      return messageIds?.map((msgId, index) => {
-        return <Message
-          // testKey={`${msgId}-${index}`}
-          key={`${msgId}-${index}`}
-          message={msgIdAndDataMap[msgId]}
-        />
-      });
-    }
+    // if (IsHuman) {
+    //   return helloMessages?.map((msg, index) => {
+    //     return <Message
+    //       // testKey={`${msgId}-${index}`}
+    //       key={`${msg?.id}-${index}`}
+    //       message={msg}
+    //     />
+    //   });
+    // } else {
+    //   return messageIds?.map((msgId, index) => {
+    //     return <Message
+    //       // testKey={`${msgId}-${index}`}
+    //       key={`${msgId}-${index}`}
+    //       message={msgIdAndDataMap[msgId]}
+    //     />
+    //   });
+    // }
 
-    const targetMessages = IsHuman ? helloMessages : messageIds;
+    const targetMessages = IsHuman ? helloMsgIds : messageIds;
     const data = IsHuman ? helloMsgIdAndDataMap : msgIdAndDataMap;
     return targetMessages?.map((msgId, index) => {
       return <Message

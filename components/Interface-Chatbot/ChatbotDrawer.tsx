@@ -16,6 +16,7 @@ import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { ChatbotContext } from "../context";
 import { setHelloKeysData } from "@/store/hello/helloSlice";
 import { useReduxStateManagement } from "../Chatbot/hooks/useReduxManagement";
+import { ChatActionTypes } from "../Chatbot/hooks/chatTypes";
 
 
 const createRandomId = () => {
@@ -34,7 +35,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   const isSmallScreen = useMediaQuery('(max-width:1023px)');
   const { setOptions, chatDispatch } = useContext(MessageContext);
   const { currentChannelId, currentChatId, currentTeamId, } = useReduxStateManagement({ chatbotId, chatDispatch })
-  const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName, teamsList, channelList, isHuman} =
+  const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName, teamsList, channelList, isHuman } =
     useCustomSelector((state: $ReduxCoreType) => ({
       reduxThreadId: GetSessionStorageData("threadId") || state.appInfo?.threadId || "",
       reduxSubThreadId: state.appInfo?.subThreadId || "",
@@ -108,18 +109,22 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
     </div>
   );
 
-  const handleChangeChannel = (channelId: string, chatId: string, teamId: string) => {
-    dispatch(setHelloKeysData({ currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
+  const handleChangeChannel = (channelId: string, chatId: string) => {
+    dispatch(setHelloKeysData({ currentChannelId: channelId, currentChatId: chatId }));
+    dispatch(setDataInAppInfoReducer({ subThreadId: chatId }));
+    isSmallScreen && setToggleDrawer(false)
   }
   const handleChangeTeam = (teamId: string) => {
     dispatch(setHelloKeysData({ currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
-    setToggleDrawer(false)
+    dispatch(setDataInAppInfoReducer({ subThreadId: teamId }));
+    chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: [] });
+    isSmallScreen && setToggleDrawer(false)
   }
 
   const closeToggleDrawer = (isOpen: boolean) => {
-    if(isHuman) {
-      if (currentTeamId )
-      setToggleDrawer(isOpen)
+    if (isHuman) {
+      if (currentTeamId)
+        setToggleDrawer(isOpen)
     }
     else {
       setToggleDrawer(isOpen)
@@ -140,7 +145,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
               .map((thread: any, index: number) => (
                 <div
                   key={`${thread?._id}-${index}`}
-                  className={`conversation-card overflow-hidden text-ellipsis p-3 ${thread?.sub_thread_id === selectedSubThreadId ? 'bg-primary/10' : 'bg-white'} rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-between`}
+                  className={`conversation-card overflow-hidden text-ellipsis p-3 ${thread?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-between`}
                   onClick={() => handleChangeChannel(thread?.channel, thread?.id, thread?.team_id)}
                 >
                   <div className="conversation-info w-full">
@@ -175,7 +180,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
           {teamsList.map((team: any, index: number) => (
             <div
               key={`${team?.id}-${index}`}
-              className={`team-card overflow-hidden text-ellipsis p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start ${currentTeamId === team?.id ? 'border-2 border-primary' : ''}`}
+              className={`team-card overflow-hidden text-ellipsis p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start ${currentTeamId === team?.id ? '' : ''}`}
               onClick={() => handleChangeTeam(team?.id)}
             >
               <div className="team-avatar mr-3 bg-primary/10 p-2 rounded-full flex-shrink-0">
