@@ -145,10 +145,10 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
               .map((thread: any, index: number) => (
                 <div
                   key={`${thread?._id}-${index}`}
-                  className={`conversation-card overflow-hidden text-ellipsis p-3 ${thread?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-between`}
+                  className={`conversation-card overflow-hidden text-ellipsis p-3 ${thread?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center`}
                   onClick={() => handleChangeChannel(thread?.channel, thread?.id, thread?.team_id)}
                 >
-                  <div className="conversation-info w-full">
+                  <div className="conversation-info flex-1 min-w-0 pr-2">
                     <div className="conversation-name text-xs text-gray-400 break-words">
                       Conversation
                     </div>
@@ -161,7 +161,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center">
+                  <div className="flex-shrink-0">
                     <ChevronRight size={16} className="text-gray-800" />
                   </div>
                 </div>

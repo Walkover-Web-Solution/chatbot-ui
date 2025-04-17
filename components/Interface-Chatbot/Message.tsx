@@ -299,85 +299,65 @@ const HumanOrBotMessageCard = React.memo(
     };
 
     return (
-      <Box className="assistant_message_card">
-        <Stack
-          className="assistant-message-slide"
-          sx={{
-            alignItems: "flex-end",
-            gap: "10px",
-            maxWidth: "90%",
-            "@media(max-width:479px)": {
-              height: "fit-content",
-              columnGap: "5px",
-            },
-            marginBottom: "10px",
-          }}
-          direction="row"
-        >
-          <Stack
-            sx={{
-              alignItems: "center",
-              width: "30px",
-              justifyContent: "flex-end",
-              "@media(max-width:479px)": { width: "30px" },
-            }}
-            spacing="5px"
-          >
-            {!isBot ? (
-              <Image
-                src={UserAssistant}
-                width={28}
-                height={28}
-                alt="AI"
-                style={{ color: "red" }}
-              />
-            ) : (
-              <Image
-                width={24}
-                height={24}
-                src="https://img.icons8.com/ios/50/message-bot.png"
-                alt="message-bot"
-              />
-            )}
-          </Stack>
+      <div className="w-full mb-4 animate-fade-in">
+        <div className="flex items-start gap-3 max-w-[90%]">
+          <div className="avatar">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-base-200">
+              {!isBot ? (
+                <Image
+                  src={UserAssistant}
+                  width={28}
+                  height={28}
+                  alt="Human"
+                  className="rounded-full"
+                />
+              ) : (
+                <div className="bg-primary/10 rounded-full p-1 shadow-inner transform active:scale-95 transition-transform active:bg-primary/20">
+                  <Image
+                    width={24}
+                    height={24}
+                    src="https://img.icons8.com/ios/50/message-bot.png"
+                    alt="Bot"
+                    className="opacity-70"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
 
-          <Box
-            className="assistant-message-slide"
-            sx={{
-              backgroundColor: theme.palette.background.default,
-              padding: "2px 10px",
-              boxSizing: "border-box",
-              height: "fit-content",
-              minWidth: "150px",
-              borderRadius: "10px 10px 10px 1px",
-              boxShadow: "0 2px 1px rgba(0, 0, 0, 0.1)",
-              wordBreak: "break-word",
-              overflowWrap: "break-word",
-              maxWidth: "100%",
-              color: "black",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            <Box className="assistant-message-slide">
-              <div dangerouslySetInnerHTML={{ __html: message?.content }}></div>
-            </Box>
-          </Box>
-        </Stack>
-        <Box className="flex flex-row">
-          <Box
-            sx={{
-              alignItems: "center",
-              width: "30px",
-              justifyContent: "flex-end",
-              "@media(max-width:479px)": { width: "30px" },
-            }}
-          ></Box>
-        </Box>
-        {message?.is_reset && <ResetHistoryLine />}
-      </Box>
+          <div className="flex-1">
+            <div className="text-base-content p-1">
+              <div className="prose max-w-none">
+                <div dangerouslySetInnerHTML={{ __html: message?.content }}></div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2 mt-1 ml-1">
+              <button
+                className="btn btn-ghost btn-xs tooltip tooltip-top"
+                data-tip={isCopied ? "Copied!" : "Copy message"}
+                onClick={handleCopy}
+              >
+                {isCopied ? (
+                  <Check className="w-3.5 h-3.5 text-success" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5 text-base-content/70" />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        {message?.is_reset && (
+          <div className="divider my-3">
+            <div className="badge badge-warning badge-sm">Chat history cleared</div>
+          </div>
+        )}
+      </div>
     );
   }
 );
+
 function Message({ testKey, message, addMessage }: any) {
   const theme = useTheme();
   const backgroundColor = theme.palette.primary.main;
