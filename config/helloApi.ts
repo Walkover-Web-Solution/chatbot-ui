@@ -176,7 +176,7 @@ export async function initializeHelloChat(uniqueId: string | null = null): Promi
 }
 
 // Function to send message to Hello chat
-export async function sendMessageToHello(message: string, attachment: object | null = null, channelDetail?: any, channelId?: string, chat_id?: string): Promise<any> {
+export async function sendMessageToHello(message: string, attachment: object | null = null, channelDetail?: any, chat_id?: string): Promise<any> {
   try {
     const response = await axios.post(
       `${HELLO_HOST_URL}/v2/send/`,
@@ -187,8 +187,8 @@ export async function sendMessageToHello(message: string, attachment: object | n
           text: message,
           attachment: attachment ? [attachment] : [],
         },
-        ...(channelDetail ? { channelDetail } : {}),
-        chat_id: !channelId ? null : chat_id,
+        ...(chat_id ? { channelDetail } : {}),
+        chat_id: chat_id,
         session_id: null,
         user_data: {},
         is_anon: true,
