@@ -11,7 +11,10 @@ export const initialState: $HelloReduxType = {
   isLoading: false,
   mode: [],
   helloConfig: {} as HelloData,
-  channelListData: {}
+  channelListData: {},
+  currentChannelId: '',
+  currentChatId: '',
+  currentTeamId: ''
 };
 
 export const reducers: ValidateSliceCaseReducers<
@@ -51,8 +54,18 @@ export const reducers: ValidateSliceCaseReducers<
   setChannelListData(state, action: actionType<any>) {
     state.channelListData = action.payload;
     state.Channel = action.payload?.channels?.[0];
+    state.currentChannelId = action.payload?.channels?.[0];
   },
   setJwtToken(state, action: actionType<string>) {
     state.socketJwt = { jwt: action.payload };
   },
+
+  setHelloKeysData(state, action: actionType<Record<string, any>>) {
+    const payload = action.payload;
+    if (payload && typeof payload === 'object') {
+      Object.keys(payload).forEach(key => {
+        (state as any)[key] = payload[key];
+      });
+    }
+  }
 };

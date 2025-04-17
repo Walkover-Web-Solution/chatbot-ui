@@ -10,6 +10,9 @@ export interface $HelloReduxType {
   helloConfig?: HelloData;
   vision?: boolean;
   channelListData: any;
+  currentChannelId?: string;
+  currentTeamId?: string;
+  currentChatId?: string;
 }
 
 

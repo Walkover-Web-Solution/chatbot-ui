@@ -16,6 +16,7 @@ export const {
   setHelloConfig,
   setWidgetInfo,
   setChannelListData,
-  setJwtToken
+  setJwtToken,
+  setHelloKeysData
 } = interfaceSlice.actions;
 export default interfaceSlice.reducer;

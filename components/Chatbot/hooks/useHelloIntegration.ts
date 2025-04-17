@@ -8,7 +8,7 @@ import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { useReduxStateManagement } from './useReduxManagement';
 import { generateNewId } from '@/utils/utilities';
 import { ChatbotContext } from '@/components/context';
-import { getAllChannels, getJwtToken, initializeHelloChat, registerAnonymousUser } from '@/config/helloApi';
+import { getAllChannels, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
 
 interface HelloMessage {
   role: string;
@@ -189,7 +189,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       if (!channelId) chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true });
 
       const response = await axios.post(
-        "https://api.phone91.com/v2/send/",
+        `${process.env.NEXT_PUBLIC_MSG91_HOST_URL}/v2/send/`,
         {
           type: "widget",
           message_type: "text",
@@ -206,10 +206,13 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         {
           headers: {
             accept: "application/json",
-            authorization: localStorage.getItem("HelloAgentAuth"),
+            // authorization: localStorage.getItem("HelloAgentAuth"),
+            authorization: localStorage.getItem("HelloClientId") ? `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}` : localStorage.getItem("WidgetId"),
           },
         }
       );
+
+      sendMessageToHelloApi(message, null, channelDetail, channelId, chat_id);
 
       if (!channelId && response?.data?.data) {
         dispatch(setChannel({ Channel: response.data.data }));

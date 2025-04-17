@@ -8,7 +8,7 @@ import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ParamsEnums } from "@/utils/enums";
 import { useMediaQuery } from "@mui/material";
-import { AlignLeft, SquarePen, Users } from "lucide-react";
+import { AlignLeft, ChevronRight, SquarePen, Users } from "lucide-react";
 import React, { useContext } from "react";
 import { useDispatch } from "react-redux";
 import { MessageContext } from "./InterfaceChatbot";
@@ -107,35 +107,44 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   );
 
   const TeamsList = (
-    <div className="teams-container p-2">
+    <div className="teams-container p-2 relative">
       {/* Conversations Section */}
-      <div className="conversations-section mb-4">
-        <div className="conversations-header mb-3 border-b pb-2">
-          <h3 className="text-md font-semibold">Recent Conversations</h3>
-        </div>
-        <div className="conversations-list space-y-2">
-          {(channelList || []).length === 0 ? (
-            <div className="flex justify-center items-center py-2">
-              <span className="text-sm text-gray-500">No Conversations</span>
-            </div>
-          ) : (
-            channelList.map((thread: any, index: number) => (
-              <div 
-                key={`${thread?._id}-${index}`} 
-                className={`conversation-card overflow-hidden text-ellipsis p-3 ${thread?.sub_thread_id === selectedSubThreadId ? 'bg-primary/10' : 'bg-white'} rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start`}
-                onClick={() => handleChangeSubThread(thread?.sub_thread_id)}
-              >
-                <div className="conversation-info">
-                  <div className="conversation-name font-medium break-words">
-                    {thread?.display_name || thread?.name || thread?.sub_thread_id}
+      {(channelList || []).length > 0 && channelList.some((thread: any) => thread?.id) && (
+        <div className="conversations-section mb-4 border-b">
+          <div className="conversations-header mb-3 pb-2">
+            <h3 className="text-md font-semibold">Recent Conversations</h3>
+          </div>
+          <div className="conversations-list space-y-2">
+            {channelList
+              .filter((thread: any) => thread?.id)
+              .map((thread: any, index: number) => (
+                <div
+                  key={`${thread?._id}-${index}`}
+                  className={`conversation-card overflow-hidden text-ellipsis p-3 ${thread?.sub_thread_id === selectedSubThreadId ? 'bg-primary/10' : 'bg-white'} rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-between`}
+                  onClick={() => handleChangeSubThread(thread?.sub_thread_id)}
+                >
+                  <div className="conversation-info w-full">
+                    <div className="conversation-name text-xs text-gray-400 break-words">
+                      Conversation
+                    </div>
+                    {thread?.last_message && (
+                      <div className="last-message text-sm text-black font-medium mt-1 truncate">
+                        {!thread.last_message.sender_id ? "You: " : "Sender: "}
+                        {thread.last_message.message?.content?.text ||
+                          thread.last_message.message?.message_type ||
+                          "New conversation"}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center">
+                    <ChevronRight size={16} className="text-gray-800" />
                   </div>
                 </div>
-              </div>
-            ))
-          )}
+              ))}
+          </div>
         </div>
-      </div>
-      
+      )}
+
       {/* Teams Section */}
       <div className="teams-section">
         <div className="teams-header mb-3 border-b pb-2">
@@ -144,8 +153,8 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         </div>
         <div className="teams-list space-y-2">
           {teamsList.map((team: any, index: number) => (
-            <div 
-              key={`${team?.id}-${index}`} 
+            <div
+              key={`${team?.id}-${index}`}
               className="team-card overflow-hidden text-ellipsis p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start"
               onClick={() => handleChangeSubThread(team?.sub_thread_id || team?._id)}
             >
@@ -159,7 +168,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
           ))}
         </div>
       </div>
-      
+
       <div className="marketing-banner mt-4 p-3 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg">
         <p className="text-sm font-medium">Need specialized help?</p>
         <p className="text-xs">Our teams are ready to assist you with any questions</p>

@@ -2,6 +2,7 @@
 import { ThemeContext } from '@/components/AppWrapper';
 import { ChatbotContext } from '@/components/context';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
+import { setHuman } from '@/store/hello/helloSlice';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useContext, useEffect, useState, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
@@ -15,8 +16,8 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
     const { chatbot_id, userId, token, config, isHelloUser } = useMemo(() => {
         const interfaceDetails = search.get("interfaceDetails");
         try {
-            const parsedDetails = interfaceDetails 
-                ? JSON.parse(interfaceDetails) 
+            const parsedDetails = interfaceDetails
+                ? JSON.parse(interfaceDetails)
                 : { chatbot_id: null, userId: null, token: null, config: null, isHelloUser: false };
             return parsedDetails;
         } catch (e) {
@@ -34,7 +35,7 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
         }
     }, [chatbot_id, userId, config]);
 
-    
+
     const onConfigChange = useCallback((config: any) => {
         if (!config) return;
         handleThemeChange(config.themeColor || "#000000");
@@ -42,10 +43,10 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
             // Avoid unnecessary string conversion for deep comparison
             const configChanged = JSON.stringify(prev) !== JSON.stringify(config);
             if (configChanged) {
-                return { 
-                    ...prev, 
-                    ...config, 
-                    hideCloseButton: config?.hideCloseButton ?? prev?.hideCloseButton 
+                return {
+                    ...prev,
+                    ...config,
+                    hideCloseButton: config?.hideCloseButton ?? prev?.hideCloseButton
                 };
             }
             return prev;
@@ -62,6 +63,12 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
             hideCloseButton: !prev.hideCloseButton,
         }));
     }, []);
+
+    useEffect(() => {
+        if (isHelloUser) {
+            dispatch(setHuman({ isHuman: true }));
+        }
+    }, [isHelloUser])
 
     // Create context value with useMemo to prevent unnecessary re-renders
     const contextValue = useMemo(() => ({
