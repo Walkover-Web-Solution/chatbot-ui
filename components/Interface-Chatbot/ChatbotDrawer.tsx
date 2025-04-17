@@ -13,6 +13,7 @@ import React, { useContext } from "react";
 import { useDispatch } from "react-redux";
 import { MessageContext } from "./InterfaceChatbot";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
+import { ChatbotContext } from "../context";
 
 
 const createRandomId = () => {
@@ -48,6 +49,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         GetSessionStorageData("threadId") || state.appInfo?.threadId
         ] || [],
     }));
+    const { isHelloUser } = useContext(ChatbotContext);
 
   const selectedSubThreadId = reduxSubThreadId;
 
@@ -83,7 +85,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
     <div className="menu p-0 w-full h-full bg-base-200 text-base-content">
       {(subThreadList || []).length === 0 ? (
         <div className="flex justify-center items-center mt-5">
-          <span>No Threads</span>
+          <span>No Conversations</span>
         </div>
       ) : (
         <ul>
@@ -126,7 +128,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
             {isToggledrawer && <button className="p-2 hover:bg-gray-200 rounded-full transition-colors" onClick={() => { setToggleDrawer(!isToggledrawer) }}> <AlignLeft size={22} color="#555555" /></button>}
             <h2 className="text-lg font-bold">History</h2>
             <div className="flex items-center gap-2">
-              {isToggledrawer && (
+              {isToggledrawer && !isHelloUser && (
                 <div className="tooltip tooltip-bottom z-[9999]" data-tip="New Chat">
                   <button
                     className="p-2 hover:bg-gray-200 rounded-full transition-colors"

@@ -14,6 +14,15 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             fetchAllThreads: () => { },
             getIntialChatHistory: () => { },
             getMoreChats: () => { },
+            sendMessage: () => { },
+            setToggleDrawer: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_TOGGLE_DRAWER, payload }),
+            setLoading: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_LOADING, payload }),
+            setChatsLoading: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_CHATS_LOADING, payload }),
+            setImages: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload }),
+            setOptions: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_OPTIONS, payload }),
+            setNewMessage: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload }),
+            setMessages: (payload: any) => chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload }),
+            handleMessageFeedback: () => { }
         }
     }
     const globalDispatch = useDispatch();
