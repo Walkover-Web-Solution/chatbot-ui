@@ -246,8 +246,6 @@ export class ChatWidgetComponent extends BaseComponent implements OnInit, OnDest
     }
 
     ngOnInit() {
-      //remove website cookie hello-widget-uuid
-        removeCookie('hello-widget-uuid')
         let storedWidgetToken = this.getValueFromObservable(this.store.pipe(select(selectWidgetToken)));
         if (storedWidgetToken && storedWidgetToken !== this.widgetToken) {
             this.store.dispatch(actions.resetState());
