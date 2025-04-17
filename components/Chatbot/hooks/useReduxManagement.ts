@@ -28,7 +28,10 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch, chatState }: 
     mode,
     selectedAiServiceAndModal,
     unique_id_hello,
-    widgetToken
+    widgetToken,
+    currentChatId,
+    currentChannelId,
+    currentTeamId,
   } = useCustomSelector((state: $ReduxCoreType) => ({
     interfaceContextData:
       state.Interface?.interfaceContext?.[chatbotId]?.variables,
@@ -39,16 +42,19 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch, chatState }: 
     reduxHelloId: state.Interface?.helloId || null,
     reduxBridgeVersionId: state.Interface?.version_id || null,
     IsHuman: state.Hello?.isHuman || false,
-    uuid: state.Hello?.ChannelList?.uuid,
-    unique_id: state.Hello?.ChannelList?.unique_id,
-    presence_channel: state.Hello?.ChannelList?.presence_channel,
+    uuid: state.Hello?.channelListData?.uuid,
+    unique_id: state.Hello?.channelListData?.unique_id,
+    presence_channel: state.Hello?.channelListData?.presence_channel,
     team_id: state.Hello?.widgetInfo?.team?.[0]?.id,
     chat_id: state.Hello?.Channel?.id,
     channelId: state.Hello?.Channel?.channel || null,
     mode: state.Hello?.mode || [],
     selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null,
     unique_id_hello: state?.Hello?.helloConfig?.unique_id,
-    widgetToken: state?.Hello?.helloConfig?.widgetToken
+    widgetToken: state?.Hello?.helloConfig?.widgetToken,
+    currentChatId: state.Hello?.currentChatId,
+    currentChannelId: state.Hello?.currentChannelId,
+    currentTeamId: state.Hello?.currentTeamId,
   }));
 
   // Sync Redux threadId with local state
@@ -125,6 +131,9 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch, chatState }: 
     selectedAiServiceAndModal,
     theme,
     unique_id_hello,
-    widgetToken
+    widgetToken,
+    currentChatId,
+    currentChannelId,
+    currentTeamId
   };
 };

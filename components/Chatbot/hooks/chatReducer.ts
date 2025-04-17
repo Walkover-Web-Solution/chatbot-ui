@@ -259,39 +259,74 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         }
       };
     }
+    // case ChatActionTypes.ADD_HELLO_MESSAGE: {
+    //   const subThreadId = state.subThreadId
+    //   // If the last message ID is the same, we don't add a new message
+    //   if (action.payload?.reponseType === 'assistant') {
+    //     return {
+    //       ...state,
+    //       helloMsgIds: {
+    //         ...state.helloMsgIds,
+    //         [subThreadId]: Array.from(new Set([...state.helloMsgIds?.[subThreadId], action.payload?.message?.id])) as string[]
+    //       },
+    //       helloMsgIdAndDataMap: {
+    //         ...state.helloMsgIdAndDataMap,
+    //         [subThreadId]: {
+    //           ...state.helloMsgIdAndDataMap?.[subThreadId],
+    //           [action.payload?.message?.id]: action?.payload?.message
+    //         }
+    //       }
+    //     }
+    //   }
+    //   return {
+    //     ...state,
+    //     helloMsgIds: {
+    //       ...state.helloMsgIds,
+    //       [subThreadId]: [...state.helloMsgIds?.[subThreadId], action.payload?.message?.id]
+    //     },
+    //     helloMsgIdAndDataMap: {
+    //       ...state.helloMsgIdAndDataMap,
+    //       [subThreadId]: {
+    //         ...state.helloMsgIdAndDataMap?.[subThreadId],
+    //         [action.payload.message?.id]: action?.payload?.message
+    //       }
+    //     }
+    //   };
+    // }
     case ChatActionTypes.ADD_HELLO_MESSAGE: {
-      const subThreadId = state.subThreadId
+      // const subThreadId = state.subThreadId
       // If the last message ID is the same, we don't add a new message
-      if (action.payload?.reponseType === 'assistant') {
-        return {
-          ...state,
-          helloMsgIds: {
-            ...state.helloMsgIds,
-            [subThreadId]: Array.from(new Set([...state.helloMsgIds?.[subThreadId], action.payload?.message?.id])) as string[]
-          },
-          helloMsgIdAndDataMap: {
-            ...state.helloMsgIdAndDataMap,
-            [subThreadId]: {
-              ...state.helloMsgIdAndDataMap?.[subThreadId],
-              [action.payload?.message?.id]: action?.payload?.message
-            }
-          }
-        }
-      }
-      return {
-        ...state,
-        helloMsgIds: {
-          ...state.helloMsgIds,
-          [subThreadId]: [...state.helloMsgIds?.[subThreadId], action.payload?.message?.id]
-        },
-        helloMsgIdAndDataMap: {
-          ...state.helloMsgIdAndDataMap,
-          [subThreadId]: {
-            ...state.helloMsgIdAndDataMap?.[subThreadId],
-            [action.payload.message?.id]: action?.payload?.message
-          }
-        }
-      };
+      // if (action.payload?.reponseType === 'assistant') {
+      //   return {
+      //     ...state,
+      //     helloMsgIds: {
+      //       ...state.helloMsgIds,
+      //       [subThreadId]: Array.from(new Set([...state.helloMsgIds?.[subThreadId], action.payload?.message?.id])) as string[]
+      //     },
+      //     helloMsgIdAndDataMap: {
+      //       ...state.helloMsgIdAndDataMap,
+      //       [subThreadId]: {
+      //         ...state.helloMsgIdAndDataMap?.[subThreadId],
+      //         [action.payload?.message?.id]: action?.payload?.message
+      //       }
+      //     }
+      //   }
+      // }
+      state.helloMessages.push(action.payload?.message)
+      // return {
+      //   ...state?.hello,
+      //   helloMsgIds: {
+      //     ...state.helloMsgIds,
+      //     [subThreadId]: [...state.helloMsgIds?.[subThreadId], action.payload?.message?.id]
+      //   },
+      //   helloMsgIdAndDataMap: {
+      //     ...state.helloMsgIdAndDataMap,
+      //     [subThreadId]: {
+      //       ...state.helloMsgIdAndDataMap?.[subThreadId],
+      //       [action.payload.message?.id]: action?.payload?.message
+      //     }
+      //   }
+      // };
     }
     case ChatActionTypes.SET_MESSAGE_TIMEOUT:
       return {

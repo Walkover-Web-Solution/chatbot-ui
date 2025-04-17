@@ -36,7 +36,8 @@ function MessageList({ containerRef }: MessageListProps) {
     messageIds,
     msgIdAndDataMap,
     helloMsgIdAndDataMap,
-    helloMsgIds
+    helloMsgIds,
+    helloMessages
   } = useContext(MessageContext);
   const [showScrollButton, setShowScrollButton] = useState(false)
   const [isInverse, setIsInverse] = useState(false);
@@ -96,7 +97,25 @@ function MessageList({ containerRef }: MessageListProps) {
   }, [containerRef, handleScroll]);
 
   const RenderMessages = useMemo(() => {
-    const targetMessages = IsHuman ? helloMsgIds : messageIds;
+    if (IsHuman) {
+      return helloMessages?.map((msg, index) => {
+        return <Message
+          // testKey={`${msgId}-${index}`}
+          key={`${msg?.id}-${index}`}
+          message={msg}
+        />
+      });
+    } else {
+      return messageIds?.map((msgId, index) => {
+        return <Message
+          // testKey={`${msgId}-${index}`}
+          key={`${msgId}-${index}`}
+          message={msgIdAndDataMap[msgId]}
+        />
+      });
+    }
+
+    const targetMessages = IsHuman ? helloMessages : messageIds;
     const data = IsHuman ? helloMsgIdAndDataMap : msgIdAndDataMap;
     return targetMessages?.map((msgId, index) => {
       return <Message

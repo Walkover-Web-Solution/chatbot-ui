@@ -29,7 +29,7 @@ export const reducers: ValidateSliceCaseReducers<
     state.widgetInfo = widgetInfo;
     state.anonymousClientId = anonymousClientId;
     state.socketJwt = { jwt: Jwt };
-    state.ChannelList = ChannelList;
+    state.channelListData = ChannelList;
     // state.isHuman = ChannelList?.channels?.[0]?.channel || false;
     state.isLoading = false;
     state.Channel = ChannelList?.channels?.[0];
@@ -54,13 +54,13 @@ export const reducers: ValidateSliceCaseReducers<
   setChannelListData(state, action: actionType<any>) {
     state.channelListData = action.payload;
     state.Channel = action.payload?.channels?.[0];
-    state.currentChannelId = action.payload?.channels?.[0];
+    state.currentChannelId = action.payload?.channels?.[0]?.channel;
   },
   setJwtToken(state, action: actionType<string>) {
     state.socketJwt = { jwt: action.payload };
   },
 
-  setHelloKeysData(state, action: actionType<Record<string, any>>) {
+  setHelloKeysData(state, action: actionType<$HelloReduxType>) {
     const payload = action.payload;
     if (payload && typeof payload === 'object') {
       Object.keys(payload).forEach(key => {

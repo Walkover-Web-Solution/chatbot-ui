@@ -14,6 +14,7 @@ import { useDispatch } from "react-redux";
 import { MessageContext } from "./InterfaceChatbot";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { ChatbotContext } from "../context";
+import { setHelloKeysData } from "@/store/hello/helloSlice";
 
 
 const createRandomId = () => {
@@ -106,6 +107,13 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
     </div>
   );
 
+  const handleChangeChannel = (channelId: string, chatId: string) => {
+    dispatch(setHelloKeysData({ currentChannelId: channelId , currentChatId: chatId }));
+  }
+  const handleChangeTeam = (teamId: string) => {
+    dispatch(setHelloKeysData({ currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
+  }
+
   const TeamsList = (
     <div className="teams-container p-2 relative">
       {/* Conversations Section */}
@@ -121,7 +129,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
                 <div
                   key={`${thread?._id}-${index}`}
                   className={`conversation-card overflow-hidden text-ellipsis p-3 ${thread?.sub_thread_id === selectedSubThreadId ? 'bg-primary/10' : 'bg-white'} rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-between`}
-                  onClick={() => handleChangeSubThread(thread?.sub_thread_id)}
+                  onClick={() => handleChangeChannel(thread?.channel, thread?.id)}
                 >
                   <div className="conversation-info w-full">
                     <div className="conversation-name text-xs text-gray-400 break-words">
@@ -156,7 +164,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
             <div
               key={`${team?.id}-${index}`}
               className="team-card overflow-hidden text-ellipsis p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start"
-              onClick={() => handleChangeSubThread(team?.sub_thread_id || team?._id)}
+              onClick={() => handleChangeTeam(team?.id)}
             >
               <div className="team-avatar mr-3 bg-primary/10 p-2 rounded-full flex-shrink-0">
                 {team?.icon || <Users size={12} className="text-primary" />}

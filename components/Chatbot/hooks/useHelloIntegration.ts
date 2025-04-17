@@ -1,6 +1,6 @@
 import { getHelloChatsApi } from '@/config/api';
 import useSocket from '@/hooks/socket';
-import { getHelloDetailsStart, setChannel, setChannelListData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
+import { getHelloDetailsStart, setChannel, setChannelListData, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
 import axios from 'axios';
 import { useCallback, useContext, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
@@ -20,7 +20,7 @@ interface HelloMessage {
 
 const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction>, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement> }) => {
   const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId } = chatState;
-  const { uuid, unique_id, channelId, presence_channel, team_id, chat_id, unique_id_hello = "", widgetToken } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
+  const { uuid, unique_id, presence_channel, unique_id_hello = "", widgetToken, currentChatId, currentTeamId, currentChannelId } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
   const socket: any = useSocket();
   const dispatch = useDispatch();
@@ -76,9 +76,9 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
   // Fetch previous Hello chat history
   const fetchHelloPreviousHistory = useCallback(async () => {
-    if (channelId && uuid) {
+    if (currentChannelId && uuid) {
       try {
-        const response = await getHelloChatsApi({ channelId });
+        const response = await getHelloChatsApi({ channelId: currentChannelId });
         const helloChats = response?.data?.data;
 
         if (Array.isArray(helloChats) && helloChats.length > 0) {
@@ -112,11 +112,11 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         console.warn("Error fetching Hello chats:", error);
       }
     }
-  }, [channelId, uuid]);
+  }, [currentChannelId, uuid]);
 
   useEffect(() => {
     fetchHelloPreviousHistory();
-  }, [fetchHelloPreviousHistory, channelId, uuid]);
+  }, [fetchHelloPreviousHistory, currentChannelId, uuid]);
 
   const getWidgetInfo = async () => {
     if (isHelloUser && widgetToken) {
@@ -137,7 +137,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   const createAnonymousUser = async () => {
     registerAnonymousUser()
   }
-  
+
   useEffect(() => {
     getWidgetInfo();
   }, [bridgeName, threadId, helloId, isHelloUser, widgetToken]);
@@ -169,12 +169,12 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     if (!message.trim()) return;
 
     try {
-      const channelDetail = !channelId ? {
+      const channelDetail = !currentChatId ? {
         call_enabled: null,
         uuid,
+        unique_id,
         country: null,
         pseudo_name: null,
-        unique_id,
         presence_channel,
         country_iso2: null,
         chatInputSubmitted: false,
@@ -182,47 +182,22 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         customer_name: null,
         customer_number: null,
         customer_mail: null,
-        team_id,
+        team_id: currentTeamId,
         new: true,
       } : undefined;
 
-      if (!channelId) chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true });
+      if (!currentChatId) chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true });
 
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_MSG91_HOST_URL}/v2/send/`,
-        {
-          type: "widget",
-          message_type: "text",
-          content: {
-            text: message,
-            attachment: [],
-          },
-          ...(channelDetail ? { channelDetail } : {}),
-          chat_id: !channelId ? null : chat_id,
-          session_id: null,
-          user_data: {},
-          is_anon: true,
-        },
-        {
-          headers: {
-            accept: "application/json",
-            // authorization: localStorage.getItem("HelloAgentAuth"),
-            authorization: localStorage.getItem("HelloClientId") ? `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}` : localStorage.getItem("WidgetId"),
-          },
+      sendMessageToHelloApi(message, null, channelDetail, currentChatId).then((data) => {
+        console.log(data, 'response', currentChatId);
+        if (data && !currentChatId) {
+          dispatch(setHelloKeysData({ currentChatId: data?.['id'], currentChannelId: data?.['channel'] }));
         }
-      );
-
-      sendMessageToHelloApi(message, null, channelDetail, channelId, chat_id);
-
-      if (!channelId && response?.data?.data) {
-        dispatch(setChannel({ Channel: response.data.data }));
-      }
-
-      return response.data.data;
+      });
     } catch (error) {
       console.error("Error sending message to Hello:", error);
     }
-  }, [channelId, uuid, unique_id, presence_channel, team_id, chat_id, chatDispatch]);
+  }, [currentChatId, currentTeamId, uuid, unique_id, presence_channel, chatDispatch]);
 
   // Handle sending a message
   const sendMessageToHello = useCallback(() => {
