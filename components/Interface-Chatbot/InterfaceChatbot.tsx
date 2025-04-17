@@ -91,8 +91,8 @@ export const MessageContext = createContext<{
   disabled?: boolean;
   options?: any[];
   setChatsLoading?: any;
-  images: string[];
-  setImages: (data: string[]) => void;
+  images: string[] | {path: string}[];
+  setImages: (data: string[] | {path: string}) => void;
   setToggleDrawer: (data: boolean) => void;
   setLoading: (data: boolean) => void,
   isToggledrawer: boolean,
@@ -600,7 +600,7 @@ function InterfaceChatbot({
     messageRef.current.value = "";
   };
 
-  const sendMessageToHello = async (message: string) => {
+  const sendMessageToHello = async (message: string, attachment: Array<object> = []) => {
     const channelDetail = {
       call_enabled: null,
       uuid: uuid,
@@ -618,7 +618,7 @@ function InterfaceChatbot({
       new: true,
     };
     if (!channelId) setOpen(true);
-
+debugger
     const response = (
       await axios.post(
         "https://api.phone91.com/v2/send/",
@@ -627,7 +627,7 @@ function InterfaceChatbot({
           message_type: "text",
           content: {
             text: message,
-            attachment: [],
+            attachment: attachment,
           },
           ...(!channelId ? { channelDetail: channelDetail } : {}),
           chat_id: !channelId ? null : chat_id,

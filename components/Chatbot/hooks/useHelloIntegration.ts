@@ -18,7 +18,7 @@ interface HelloMessage {
 }
 
 const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction>, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement> }) => {
-  const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId } = chatState;
+  const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId, images } = chatState;
   const { uuid, unique_id, presence_channel, unique_id_hello = "", widgetToken, currentChatId, currentTeamId, currentChannelId } = useReduxStateManagement({ chatbotId, chatDispatch });
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
   const socket: any = useSocket();
@@ -175,7 +175,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
   // Send message to Hello
   const onSendHello = useCallback(async (message: string) => {
-    if (!message.trim()) return;
+    debugger
+    if (!message.trim() && images.length ===0) return;
 
     try {
       const channelDetail = !currentChatId ? {
@@ -196,8 +197,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       } : undefined;
 
       if (!currentChatId) chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true });
-
-      sendMessageToHelloApi(message, null, channelDetail, currentChatId).then((data) => {
+      const attchments = Array.isArray(images) && images?.length ? images : null
+      sendMessageToHelloApi(message, attchments, channelDetail, currentChatId).then((data) => {
         if (data && !currentChatId) {
           dispatch(setHelloKeysData({ currentChatId: data?.['id'], currentChannelId: data?.['channel'] }));
         }
@@ -210,7 +211,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   // Handle sending a message
   const sendMessageToHello = useCallback(() => {
     const textMessage = (messageRef?.current?.value || '');
-    if (!textMessage.trim()) return;
+    if (!textMessage.trim() && images?.length === 0) return;
 
     addHelloMessage({
       id: generateNewId(),

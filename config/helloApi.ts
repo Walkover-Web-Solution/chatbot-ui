@@ -125,7 +125,7 @@ export async function saveClientDetails(clientData: any): Promise<any> {
 }
 
 // Get chat history
-export async function getChatHistory(channelId: string): Promise<any> {
+export async function getHelloChatHistoryApi(channelId: string): Promise<any> {
   try {
     const response = await axios.post(
       `${HELLO_HOST_URL}/get-history/`,
@@ -177,7 +177,7 @@ export async function initializeHelloChat(uniqueId: string | null = null): Promi
 }
 
 // Function to send message to Hello chat
-export async function sendMessageToHelloApi(message: string, attachment: object | null = null, channelDetail?: any, chat_id?: string): Promise<any> {
+export async function sendMessageToHelloApi(message: string, attachment: Array<object> = [], channelDetail?: any, chat_id?: string): Promise<any> {
   try {
     const response = await axios.post(
       `${HELLO_HOST_URL}/v2/send/`,
@@ -186,7 +186,7 @@ export async function sendMessageToHelloApi(message: string, attachment: object 
         message_type: "text",
         content: {
           text: message,
-          attachment: attachment ? [attachment] : [],
+          attachment: attachment ,
         },
         ...(!chat_id ? { channelDetail } : {}),
         chat_id: chat_id ? chat_id : null,
@@ -214,7 +214,7 @@ export async function sendMessageToHelloApi(message: string, attachment: object 
 
 
 // Function to upload attachment to Hello chat
-export async function uploadAttachmentToHello(file: File, inboxId: string): Promise<any> {
+export async function uploadAttachmentToHello(file: any, inboxId: string): Promise<any> {
   try {
     const formData = new FormData();
     formData.append('attachment', file);

@@ -50,7 +50,7 @@ export interface ReduxSetterActionType {
   loading?: boolean;
   chatsLoading?: boolean;
   options?: any[];
-  images?: string[];
+  images?: string[] | Array<{path: string}>;
   threadId?: string;
   subThreadId?: string;
   bridgeName?: string;

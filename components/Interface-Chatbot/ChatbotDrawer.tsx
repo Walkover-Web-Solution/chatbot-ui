@@ -208,7 +208,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         />
       )}
 
-      <div className={`drawer-side ${!isHelloUser ? 'max-w-[265px]' : 'max-w-[80%]'} ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
+      <div className={`drawer-side max-w-[265px] ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
         <div className="p-4 w-full min-h-full text-base-content relative bg-base-200 border-r-base-300 border overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             {isToggledrawer && <button className="p-2 hover:bg-gray-200 rounded-full transition-colors" onClick={() => { setToggleDrawer(!isToggledrawer) }}> <AlignLeft size={22} color="#555555" /></button>}

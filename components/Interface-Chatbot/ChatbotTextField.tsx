@@ -11,6 +11,7 @@ import { ChevronDown, Send, Upload, X } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { MessageContext } from "./InterfaceChatbot";
+import { uploadAttachmentToHello } from "@/config/helloApi";
 
 interface ChatbotTextFieldProps {
   className?: string;
@@ -25,9 +26,10 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
   const isLight = isColorLight(theme.palette.primary.main);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { IsHuman, mode } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { IsHuman, mode, inbox_id } = useCustomSelector((state: $ReduxCoreType) => ({
     IsHuman: state.Hello?.isHuman,
     mode: state.Hello?.mode || [],
+    inbox_id: state.Hello?.widgetInfo?.inbox_id,
   }));
 
   const reduxIsVision = useCustomSelector(
@@ -83,8 +85,14 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
       const uploadPromises = filesArray.map(async (file) => {
         const formData = new FormData();
         formData.append("image", file);
-        const response = await uploadImage({ formData });
-        return response.success ? response.image_url : null;
+        if (IsHuman) {
+          const response = await uploadAttachmentToHello(file, inbox_id);
+          return response?.data?.[0]
+        }
+        else {
+          const response = await uploadImage({ formData });
+          return response.success ? response.image_url : null;
+        }
       });
 
       const uploadedUrls = (await Promise.all(uploadPromises)).filter((url): url is string => url !== null);
@@ -109,13 +117,13 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
   }, [messageRef]);
 
   const isVisionEnabled = useMemo(() =>
-    (reduxIsVision?.vision || mode?.includes("vision")) && !IsHuman,
+    (reduxIsVision?.vision || mode?.includes("vision")) || IsHuman,
     [reduxIsVision, mode, IsHuman]
   );
 
   const buttonDisabled = useMemo(() =>
-    loading || isUploading || !message?.trim(),
-    [loading, isUploading, message]
+    loading || isUploading || (!message?.trim() && images?.length === 0),
+    [loading, isUploading, message, images]
   );
 
   return (
@@ -152,26 +160,28 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
 
       {images.length > 0 && (
         <div className="flex flex-wrap gap-3 my-4 px-4">
-          {images.map((image, index) => (
-            <div key={index} className="relative group">
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden shadow-md transition-transform hover:scale-105">
-                <Image
-                  src={image}
-                  alt={`Uploaded Preview ${index + 1}`}
-                  className="w-full h-full object-cover"
-                  width={128}
-                  height={128}
-                />
+          {images.map((image, index) => {
+            return (
+              <div key={index} className="relative group">
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden shadow-md transition-transform hover:scale-105">
+                  <Image
+                    src={IsHuman ? image?.path : image}
+                    alt={`Uploaded Preview ${index + 1}`}
+                    className="w-full h-full object-cover"
+                    width={128}
+                    height={128}
+                  />
+                </div>
+                <button
+                  onClick={() => handleRemoveImage(index)}
+                  className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  aria-label="Remove image"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                onClick={() => handleRemoveImage(index)}
-                className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                aria-label="Remove image"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
