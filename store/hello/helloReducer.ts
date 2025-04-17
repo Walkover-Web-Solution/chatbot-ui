@@ -60,11 +60,15 @@ export const reducers: ValidateSliceCaseReducers<
     state.socketJwt = { jwt: action.payload };
   },
 
-  setHelloKeysData(state, action: actionType<$HelloReduxType>) {
+  setHelloKeysData(state, action: actionType<Partial<$HelloReduxType>>) {
     const payload = action.payload;
     if (payload && typeof payload === 'object') {
       Object.keys(payload).forEach(key => {
-        (state as any)[key] = payload[key];
+        if (key in state) {
+          // This ensures we only set properties that exist in $HelloReduxType
+          (state as Record<keyof $HelloReduxType, any>)[key as keyof $HelloReduxType] = 
+            payload[key as keyof $HelloReduxType];
+        }
       });
     }
   }

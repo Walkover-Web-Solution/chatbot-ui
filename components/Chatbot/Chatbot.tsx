@@ -28,7 +28,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     // hooks
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
     const { sendMessageToHello } = useHelloIntegration({ chatbotId, chatDispatch, chatState, messageRef });
-    const { IsHuman } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
+    const { IsHuman } = useReduxStateManagement({ chatbotId, chatDispatch });
     const chatActions = useChatActions({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef });
 
     const theme = useTheme();

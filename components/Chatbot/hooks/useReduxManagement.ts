@@ -3,9 +3,9 @@ import { GetSessionStorageData } from '@/utils/ChatbotUtility';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { useEffect } from 'react';
-import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
+import { ChatAction, ChatActionTypes } from './chatTypes';
 
-export const useReduxStateManagement = ({ chatbotId, chatDispatch, chatState }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction> }) => {
+export const useReduxStateManagement = ({ chatbotId, chatDispatch }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction> }) => {
   const theme = useTheme();
   const isLargeScreen = useMediaQuery('(max-width: 1024px)');
 

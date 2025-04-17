@@ -15,6 +15,7 @@ import { MessageContext } from "./InterfaceChatbot";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { ChatbotContext } from "../context";
 import { setHelloKeysData } from "@/store/hello/helloSlice";
+import { useReduxStateManagement } from "../Chatbot/hooks/useReduxManagement";
 
 
 const createRandomId = () => {
@@ -31,8 +32,8 @@ interface ChatbotDrawerProps {
 const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, setToggleDrawer, isToggledrawer, preview = false }) => {
   const dispatch = useDispatch();
   const isSmallScreen = useMediaQuery('(max-width:1023px)');
-  const { setOptions } = useContext(MessageContext);
-
+  const { setOptions, chatDispatch } = useContext(MessageContext);
+  const { currentTeamId } = useReduxStateManagement({ chatbotId, chatDispatch })
   const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName, teamsList, channelList } =
     useCustomSelector((state: $ReduxCoreType) => ({
       reduxThreadId: GetSessionStorageData("threadId") || state.appInfo?.threadId || "",
@@ -50,7 +51,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         GetSessionStorageData("threadId") || state.appInfo?.threadId
         ] || [],
       teamsList: state.Hello?.widgetInfo?.teams || [],
-      channelList: state.Hello?.channelListData?.channels || []
+      channelList: state.Hello?.channelListData?.channels || [],
     }));
   const { isHelloUser } = useContext(ChatbotContext);
 
@@ -108,7 +109,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   );
 
   const handleChangeChannel = (channelId: string, chatId: string) => {
-    dispatch(setHelloKeysData({ currentChannelId: channelId , currentChatId: chatId }));
+    dispatch(setHelloKeysData({ currentChannelId: channelId, currentChatId: chatId }));
   }
   const handleChangeTeam = (teamId: string) => {
     dispatch(setHelloKeysData({ currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
@@ -163,7 +164,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
           {teamsList.map((team: any, index: number) => (
             <div
               key={`${team?.id}-${index}`}
-              className="team-card overflow-hidden text-ellipsis p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start"
+              className={`team-card overflow-hidden text-ellipsis p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start ${currentTeamId === team?.id ? 'border-2 border-primary' : ''}`}
               onClick={() => handleChangeTeam(team?.id)}
             >
               <div className="team-avatar mr-3 bg-primary/10 p-2 rounded-full flex-shrink-0">

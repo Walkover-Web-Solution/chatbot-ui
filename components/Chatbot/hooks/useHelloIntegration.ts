@@ -1,14 +1,13 @@
+import { ChatbotContext } from '@/components/context';
 import { getHelloChatsApi } from '@/config/api';
+import { getAllChannels, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
 import useSocket from '@/hooks/socket';
-import { getHelloDetailsStart, setChannel, setChannelListData, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
-import axios from 'axios';
+import { getHelloDetailsStart, setChannelListData, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
+import { generateNewId } from '@/utils/utilities';
 import { useCallback, useContext, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { useReduxStateManagement } from './useReduxManagement';
-import { generateNewId } from '@/utils/utilities';
-import { ChatbotContext } from '@/components/context';
-import { getAllChannels, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
 
 interface HelloMessage {
   role: string;
@@ -20,7 +19,7 @@ interface HelloMessage {
 
 const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction>, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement> }) => {
   const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId } = chatState;
-  const { uuid, unique_id, presence_channel, unique_id_hello = "", widgetToken, currentChatId, currentTeamId, currentChannelId } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
+  const { uuid, unique_id, presence_channel, unique_id_hello = "", widgetToken, currentChatId, currentTeamId, currentChannelId } = useReduxStateManagement({ chatbotId, chatDispatch });
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
   const socket: any = useSocket();
   const dispatch = useDispatch();
@@ -189,7 +188,6 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       if (!currentChatId) chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true });
 
       sendMessageToHelloApi(message, null, channelDetail, currentChatId).then((data) => {
-        console.log(data, 'response', currentChatId);
         if (data && !currentChatId) {
           dispatch(setHelloKeysData({ currentChatId: data?.['id'], currentChannelId: data?.['channel'] }));
         }
