@@ -1,6 +1,6 @@
 import { ChatbotContext } from '@/components/context';
 import { getHelloChatsApi } from '@/config/api';
-import { getAllChannels, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
+import { getAllChannels, getHelloChatHistoryApi, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
 import useSocket from '@/hooks/socket';
 import { getHelloDetailsStart, setChannelListData, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
 import { generateNewId } from '@/utils/utilities';
@@ -77,36 +77,43 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   const fetchHelloPreviousHistory = useCallback(async () => {
     if (currentChannelId && uuid) {
       try {
-        const response = await getHelloChatsApi({ channelId: currentChannelId });
-        const helloChats = response?.data?.data;
-
-        if (Array.isArray(helloChats) && helloChats.length > 0) {
-          const filterChats = helloChats
-            .map((chat) => {
-              let role;
-
-              if (chat?.message?.from_name) {
-                role = "Human";
-              } else if (
-                !chat?.message?.from_name &&
-                chat?.message?.sender_id === "bot"
-              ) {
-                role = "Bot";
-              } else {
-                role = "user";
-              }
-
-              return {
-                role: role,
-                message_id: chat?.id,
-                from_name: chat?.message?.from_name,
-                content: chat?.message?.content?.text,
-              };
-            })
-            .reverse();
-
-          setHelloMessages(filterChats);
+        getHelloChatHistoryApi(currentChannelId).then((response) => {
+          console.log("Hello chat history response:", response);
         }
+        ).catch((error) => {
+          console.error("Error fetching Hello chat history:", error);
+        });
+
+        // const response = await getHelloChatsApi({ channelId: currentChannelId });
+        // const helloChats = response?.data?.data;
+
+        // if (Array.isArray(helloChats) && helloChats.length > 0) {
+        //   const filterChats = helloChats
+        //     .map((chat) => {
+        //       let role;
+
+        //       if (chat?.message?.from_name) {
+        //         role = "Human";
+        //       } else if (
+        //         !chat?.message?.from_name &&
+        //         chat?.message?.sender_id === "bot"
+        //       ) {
+        //         role = "Bot";
+        //       } else {
+        //         role = "user";
+        //       }
+
+        //       return {
+        //         role: role,
+        //         message_id: chat?.id,
+        //         from_name: chat?.message?.from_name,
+        //         content: chat?.message?.content?.text,
+        //       };
+        //     })
+        //     .reverse();
+
+        //   setHelloMessages(filterChats);
+        // }
       } catch (error) {
         console.warn("Error fetching Hello chats:", error);
       }
@@ -134,22 +141,22 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   };
 
   const createAnonymousUser = async () => {
-    registerAnonymousUser()
+    registerAnonymousUser().then(() => {
+      getToken()
+    })
   }
 
   useEffect(() => {
     getWidgetInfo();
   }, [bridgeName, threadId, helloId, isHelloUser, widgetToken]);
 
-  useEffect(() => {
-    if (isHelloUser) {
-      getJwtToken().then((data) => {
-        if (data !== null) {
-          dispatch(setJwtToken(data));
-        }
-      });
-    }
-  }, [isHelloUser])
+  const getToken = () => {
+    getJwtToken().then((data) => {
+      if (data !== null) {
+        dispatch(setJwtToken(data));
+      }
+    });
+  }
 
   useEffect(() => {
     if (!localStorage.getItem("HelloClientId") && !unique_id_hello && widgetToken && isHelloUser) {
@@ -159,7 +166,10 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
   useEffect(() => {
     if (isHelloUser && localStorage.getItem("HelloClientId")) {
-      getAllChannels(unique_id_hello).then(data => dispatch(setChannelListData(data)));
+      getAllChannels(unique_id_hello).then(data => {
+        dispatch(setChannelListData(data));
+        getToken();
+      });
     }
   }, [isHelloUser, unique_id_hello])
 

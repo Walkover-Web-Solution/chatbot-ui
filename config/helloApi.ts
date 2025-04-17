@@ -17,7 +17,7 @@ export async function registerAnonymousUser(): Promise<any> {
     );
 
     if (response?.data?.data?.uuid) {
-      localStorage.setItem("HelloClientId", response.data.data.uuid);
+      localStorage.setItem("HelloClientId", response.data?.data?.uuid);
     }
 
     return response?.data?.data;
@@ -57,6 +57,7 @@ export async function getAllChannels(uniqueId?: string): Promise<any> {
           "unique_id": uniqueId
         },
         is_anon: !!localStorage.getItem("HelloClientId"),
+        // is_anon: false,
         ...(localStorage.getItem("client") ? {}:  {anonymous_client_uuid: localStorage.getItem("HelloClientId")})
       },
       {
@@ -125,7 +126,7 @@ export async function saveClientDetails(clientData: any): Promise<any> {
 }
 
 // Get chat history
-export async function getChatHistory(channelId: string): Promise<any> {
+export async function getHelloChatHistoryApi(channelId: string): Promise<any> {
   try {
     const response = await axios.post(
       `${HELLO_HOST_URL}/get-history/`,

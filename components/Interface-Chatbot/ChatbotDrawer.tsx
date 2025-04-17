@@ -33,7 +33,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   const dispatch = useDispatch();
   const isSmallScreen = useMediaQuery('(max-width:1023px)');
   const { setOptions, chatDispatch } = useContext(MessageContext);
-  const { currentTeamId } = useReduxStateManagement({ chatbotId, chatDispatch })
+  const { currentChannelId, currentChatId, currentTeamId } = useReduxStateManagement({ chatbotId, chatDispatch })
   const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName, teamsList, channelList } =
     useCustomSelector((state: $ReduxCoreType) => ({
       reduxThreadId: GetSessionStorageData("threadId") || state.appInfo?.threadId || "",
@@ -114,6 +114,8 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   const handleChangeTeam = (teamId: string) => {
     dispatch(setHelloKeysData({ currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
   }
+
+  console.log(currentChannelId, 1, currentChatId, 2, currentTeamId, 'currentTeamId')
 
   const TeamsList = (
     <div className="teams-container p-2 relative">
