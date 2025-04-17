@@ -53,12 +53,13 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   } = useContext(MessageContext);
   const { chatbotConfig: { chatbotTitle, chatbotSubtitle, width = '', widthUnit = '', allowBridgeSwitch = false, bridges = [] } } = useContext<any>(ChatbotContext);
   const [fullScreen, setFullScreen] = useState(false)
+  const [teamName, setteamName] = useState(false)
   const shouldToggleScreenSize = `${width}${widthUnit}` !== '1200%'
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
   const { isHelloUser } = useContext(ChatbotContext);
 
-  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug, chatSubTitle, allowBridgeSwitchViaProp, subThreadList, subThreadId, hideFullScreenButton, isHuman, mode } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug, chatSubTitle, allowBridgeSwitchViaProp, subThreadList, subThreadId, hideFullScreenButton, isHuman, mode, teams, currentTeamId } = useCustomSelector((state: $ReduxCoreType) => ({
     allowModalSwitch: state.Interface.allowModalSwitch || false,
     hideCloseButton: state.Interface.hideCloseButton || false,
     hideFullScreenButton: state.Interface.hideFullScreenButton || false,
@@ -68,6 +69,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
     currentSelectedBridgeSlug: state?.Interface?.bridgeName,
     allowBridgeSwitchViaProp: state?.Interface?.allowBridgeSwitch,
     subThreadId: state.appInfo?.subThreadId,
+    teams: state.Hello?.widgetInfo?.teams || [],
+    currentTeamId: state.Hello?.currentTeamId || "",
     subThreadList:
       state.Interface?.interfaceContext?.[chatbotId]?.[
         GetSessionStorageData("bridgeName") ||
@@ -108,6 +111,16 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
     console.log("handleVoiceCall");
   }
 
+  useEffect(() => {
+    if (teams?.length > 0 && currentTeamId) {
+      teams.map((item: any) => {
+        if (item?.id === currentTeamId) {
+          setteamName(item?.name)
+        }
+      })
+    }
+  }, [teams, currentTeamId])
+
   return (
     <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-2 py-1 w-full">
       <div className="flex items-center w-full relative">
@@ -132,7 +145,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
           <div className="flex items-center sm:gap-3 gap-1 justify-center">
             {chatIcon ? <Image alt="headerIcon" width={24} height={24} src={chatIcon} className="rounded-full" /> : null}
             <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis">
-              {chatTitle || chatbotTitle || "AI Assistant"}
+              {chatTitle || chatbotTitle || teamName || "AI Assistant"}
             </h1>
           </div>
           {chatbotSubtitle && <p className="text-sm opacity-75 text-center whitespace-nowrap overflow-hidden overflow-ellipsis">

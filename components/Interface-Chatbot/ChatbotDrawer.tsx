@@ -33,8 +33,8 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   const dispatch = useDispatch();
   const isSmallScreen = useMediaQuery('(max-width:1023px)');
   const { setOptions, chatDispatch } = useContext(MessageContext);
-  const { currentChannelId, currentChatId, currentTeamId } = useReduxStateManagement({ chatbotId, chatDispatch })
-  const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName, teamsList, channelList } =
+  const { currentChannelId, currentChatId, currentTeamId, } = useReduxStateManagement({ chatbotId, chatDispatch })
+  const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName, teamsList, channelList, isHuman} =
     useCustomSelector((state: $ReduxCoreType) => ({
       reduxThreadId: GetSessionStorageData("threadId") || state.appInfo?.threadId || "",
       reduxSubThreadId: state.appInfo?.subThreadId || "",
@@ -52,6 +52,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         ] || [],
       teamsList: state.Hello?.widgetInfo?.teams || [],
       channelList: state.Hello?.channelListData?.channels || [],
+      isHuman: state.Hello?.isHuman || false
     }));
   const { isHelloUser } = useContext(ChatbotContext);
 
@@ -74,7 +75,6 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
       setOptions([]);
     }
   };
-
   const handleChangeSubThread = (sub_thread_id: string) => {
     setLoading(false);
     dispatch(setThreadId({ subThreadId: sub_thread_id }));
@@ -108,14 +108,23 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
     </div>
   );
 
-  const handleChangeChannel = (channelId: string, chatId: string) => {
-    dispatch(setHelloKeysData({ currentChannelId: channelId, currentChatId: chatId }));
+  const handleChangeChannel = (channelId: string, chatId: string, teamId: string) => {
+    dispatch(setHelloKeysData({ currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
   }
   const handleChangeTeam = (teamId: string) => {
     dispatch(setHelloKeysData({ currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
+    setToggleDrawer(false)
   }
 
-  console.log(currentChannelId, 1, currentChatId, 2, currentTeamId, 'currentTeamId')
+  const closeToggleDrawer = (isOpen: boolean) => {
+    if(isHuman) {
+      if (currentTeamId )
+      setToggleDrawer(isOpen)
+    }
+    else {
+      setToggleDrawer(isOpen)
+    }
+  }
 
   const TeamsList = (
     <div className="teams-container p-2 relative">
@@ -132,7 +141,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
                 <div
                   key={`${thread?._id}-${index}`}
                   className={`conversation-card overflow-hidden text-ellipsis p-3 ${thread?.sub_thread_id === selectedSubThreadId ? 'bg-primary/10' : 'bg-white'} rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-between`}
-                  onClick={() => handleChangeChannel(thread?.channel, thread?.id)}
+                  onClick={() => handleChangeChannel(thread?.channel, thread?.id, thread?.team_id)}
                 >
                   <div className="conversation-info w-full">
                     <div className="conversation-name text-xs text-gray-400 break-words">
@@ -204,14 +213,14 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
       {isToggledrawer && (
         <div
           className="fixed inset-0 bg-black/30 backdrop-blur-sm lg:hidden"
-          onClick={() => setToggleDrawer(false)}
+          onClick={() => closeToggleDrawer(false)}
         />
       )}
 
       <div className={`drawer-side max-w-[265px] ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
         <div className="p-4 w-full min-h-full text-base-content relative bg-base-200 border-r-base-300 border overflow-hidden">
           <div className="flex items-center justify-between mb-4">
-            {isToggledrawer && <button className="p-2 hover:bg-gray-200 rounded-full transition-colors" onClick={() => { setToggleDrawer(!isToggledrawer) }}> <AlignLeft size={22} color="#555555" /></button>}
+            {isToggledrawer && <button className="p-2 hover:bg-gray-200 rounded-full transition-colors" onClick={() => { closeToggleDrawer(!isToggledrawer) }}> <AlignLeft size={22} color="#555555" /></button>}
             <h2 className="text-lg font-bold">History</h2>
             <div className="flex items-center gap-2">
               {isToggledrawer && !isHelloUser && (

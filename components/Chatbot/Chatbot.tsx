@@ -3,7 +3,7 @@ import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { ParamsEnums } from '@/utils/enums';
 import { LinearProgress, useTheme } from '@mui/material';
 import Image from 'next/image';
-import React, { useReducer } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import FormComponent from '../FormComponent';
 import ChatbotDrawer from '../Interface-Chatbot/ChatbotDrawer';
 import ChatbotHeader from '../Interface-Chatbot/ChatbotHeader';
@@ -28,11 +28,17 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     // hooks
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
     const { sendMessageToHello } = useHelloIntegration({ chatbotId, chatDispatch, chatState, messageRef });
-    const { IsHuman } = useReduxStateManagement({ chatbotId, chatDispatch });
+    const { IsHuman, currentTeamId } = useReduxStateManagement({ chatbotId, chatDispatch });
     const chatActions = useChatActions({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef });
 
     const theme = useTheme();
 
+
+    useEffect(() => {
+        if (IsHuman && !currentTeamId) {
+            chatActions.setToggleDrawer(true)
+        }
+    }, [IsHuman, currentTeamId])
     // RTLayer Event Listiner
     useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef })
     const { openHelloForm, isToggledrawer, chatsLoading, helloMessages, messageIds, msgIdAndDataMap, subThreadId, helloMsgIds, helloMsgIdAndDataMap } = chatState;
