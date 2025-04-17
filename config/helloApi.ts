@@ -17,7 +17,7 @@ export async function registerAnonymousUser(): Promise<any> {
     );
 
     if (response?.data?.data?.uuid) {
-      localStorage.setItem("HelloClientId", response.data?.data?.uuid);
+      localStorage.setItem("HelloClientId", response.data.data.uuid);
     }
 
     return response?.data?.data;
@@ -30,7 +30,7 @@ export async function registerAnonymousUser(): Promise<any> {
 // Get JWT token for socket subscription
 export async function getJwtToken(): Promise<string | null> {
   try {
-    const response = await axios.get(`${HELLO_HOST_URL}/jwt-token/?is_anon=${!(localStorage.getItem("HelloClientId") && localStorage.getItem("client"))}`, {
+    const response = await axios.get(`${HELLO_HOST_URL}/jwt-token/?is_anon=${localStorage.getItem("is_anon") == 'true'}`, {
       headers: {
         authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
       },
@@ -56,8 +56,7 @@ export async function getAllChannels(uniqueId?: string): Promise<any> {
         user_data: !uniqueId ? {} : {
           "unique_id": uniqueId
         },
-        is_anon: !!localStorage.getItem("HelloClientId"),
-        // is_anon: false,
+        is_anon: localStorage.getItem("is_anon") == 'true',
         ...(localStorage.getItem("client") ? {}:  {anonymous_client_uuid: localStorage.getItem("HelloClientId")})
       },
       {
@@ -92,10 +91,10 @@ export async function getAgentTeam(): Promise<any> {
 }
 
 // Get greeting/starter questions
-export async function getGreetingQuestions(companyId: string, botId: string, isAnonymous: boolean): Promise<any> {
+export async function getGreetingQuestions(companyId: string, botId: string): Promise<any> {
   try {
     const response = await axios.get(
-      `${HELLO_HOST_URL}/chat-gpt/greeting/?company_id=${companyId}&bot_id=${botId}&is_anon=${isAnonymous}`, {
+      `${HELLO_HOST_URL}/chat-gpt/greeting/?company_id=${companyId}&bot_id=${botId}&is_anon=${localStorage.getItem("is_anon") == 'true'}`, {
       headers: {
         authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
       },
@@ -126,7 +125,7 @@ export async function saveClientDetails(clientData: any): Promise<any> {
 }
 
 // Get chat history
-export async function getHelloChatHistoryApi(channelId: string): Promise<any> {
+export async function getChatHistory(channelId: string): Promise<any> {
   try {
     const response = await axios.post(
       `${HELLO_HOST_URL}/get-history/`,
@@ -136,7 +135,7 @@ export async function getHelloChatHistoryApi(channelId: string): Promise<any> {
         page_size: 30,
         start_from: 1,
         user_data: {},
-        is_anon: false,
+        is_anon: localStorage.getItem("is_anon") == 'true',
       },
       {
         headers: {
@@ -161,7 +160,7 @@ export async function initializeHelloChat(uniqueId: string | null = null): Promi
         "user_data": uniqueId ? {
           "unique_id": uniqueId
         } : {},
-        "is_anon": localStorage.getItem("HelloClientId") ? false : true
+        "is_anon": localStorage.getItem("is_anon") == 'true'
       },
       {
         headers: {
@@ -193,7 +192,7 @@ export async function sendMessageToHelloApi(message: string, attachment: object 
         chat_id: chat_id ? chat_id : null,
         session_id: null,
         user_data: {},
-        is_anon: true,
+        is_anon: localStorage.getItem("is_anon") == 'true',
       },
       {
         headers: {
@@ -202,6 +201,10 @@ export async function sendMessageToHelloApi(message: string, attachment: object 
         },
       }
     );
+
+    if (channelDetail && localStorage.getItem("is_anon") === 'true') {
+      localStorage.setItem("is_anon", "false");
+    }
     return response?.data?.data;
   } catch (error: any) {
     errorToast(error?.message || "Failed to send message");
