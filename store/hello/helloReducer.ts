@@ -54,7 +54,7 @@ export const reducers: ValidateSliceCaseReducers<
   setChannelListData(state, action: actionType<any>) {
     state.channelListData = action.payload;
     state.Channel = action.payload?.channels?.[0];
-    state.currentChannelId = action.payload?.channels?.[0]?.channel;
+    // state.currentChannelId = action.payload?.channels?.[0]?.channel;
   },
   setJwtToken(state, action: actionType<string>) {
     state.socketJwt = { jwt: action.payload };

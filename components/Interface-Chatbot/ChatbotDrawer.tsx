@@ -109,8 +109,8 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
     </div>
   );
 
-  const handleChangeChannel = (channelId: string, chatId: string) => {
-    dispatch(setHelloKeysData({ currentChannelId: channelId, currentChatId: chatId }));
+  const handleChangeChannel = (channelId: string, chatId: string, teamId: string) => {
+    dispatch(setHelloKeysData({ currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
     dispatch(setDataInAppInfoReducer({ subThreadId: chatId }));
     isSmallScreen && setToggleDrawer(false)
   }

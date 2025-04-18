@@ -5,7 +5,7 @@ import socketManager from '@/hooks/socketManager';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
 import { getHelloDetailsStart, setChannelListData, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
 import { generateNewId } from '@/utils/utilities';
-import { useCallback, useContext, useEffect, useRef } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { useReduxStateManagement } from './useReduxManagement';
@@ -16,6 +16,7 @@ interface HelloMessage {
   from_name?: string;
   content: string;
   id?: string;
+  chat_id?: string
 }
 
 const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction>, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement> }) => {
@@ -44,6 +45,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     // if (!socket) return;
     const handleNewMessage = (data: any) => {
       const { response } = data;
+      console.log(data,'response')
       const { message } = response || {};
       const { content, chat_id, from_name, sender_id } = message || {};
       const text = content?.text;
@@ -69,7 +71,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     return () => {
       socketManager.off("NewPublish", handleNewMessage);
     };
-  }, []);
+  }, [socketManager?.isConnected]);
 
   // Fetch previous Hello chat history
   const fetchHelloPreviousHistory = useCallback(async () => {
@@ -107,37 +109,6 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         ).catch((error) => {
           console.error("Error fetching Hello chat history:", error);
         });
-
-        // const response = await getHelloChatsApi({ channelId: currentChannelId });
-        // const helloChats = response?.data?.data;
-
-        // if (Array.isArray(helloChats) && helloChats.length > 0) {
-        //   const filterChats = helloChats
-        //     .map((chat) => {
-        //       let role;
-
-        //       if (chat?.message?.from_name) {
-        //         role = "Human";
-        //       } else if (
-        //         !chat?.message?.from_name &&
-        //         chat?.message?.sender_id === "bot"
-        //       ) {
-        //         role = "Bot";
-        //       } else {
-        //         role = "user";
-        //       }
-
-        //       return {
-        //         role: role,
-        //         message_id: chat?.id,
-        //         from_name: chat?.message?.from_name,
-        //         content: chat?.message?.content?.text,
-        //       };
-        //     })
-        //     .reverse();
-
-        //   setHelloMessages(filterChats);
-        // }
       } catch (error) {
         console.warn("Error fetching Hello chats:", error);
       }
@@ -202,7 +173,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [isHelloUser, unique_id_hello, isToggledrawer, mountedRef])
 
   // Send message to Hello
-  const onSendHello = useCallback(async (message: string) => {
+  const onSendHello = useCallback(async (message: string, newMessage: HelloMessage) => {
     if (!message.trim() && images.length === 0) return;
 
     try {
@@ -229,9 +200,9 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
       sendMessageToHelloApi(message, attachments, channelDetail, currentChatId).then((data) => {
         if (data && !currentChatId) {
-          dispatch(setHelloKeysData({ currentChatId: data?.['id'], currentChannelId: data?.['channel'] }));
           dispatch(setDataInAppInfoReducer({ subThreadId: data?.['id'] }));
-
+          dispatch(setHelloKeysData({ currentChatId: data?.['id'], currentChannelId: data?.['channel'] }));
+          addHelloMessage({...newMessage, chat_id: data?.['id']})
           if (data?.['presence_channel'] && data?.['channel']) {
             socketManager.subscribe([data?.['presence_channel'], data?.['channel']])
               .then((subscriptionData) => {
@@ -250,25 +221,42 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
   // Handle sending a message
   const sendMessageToHello = useCallback(() => {
-    const textMessage = (messageRef?.current?.value || '');
+    // Handle different types of input elements
+    let textMessage = '';
+    if (messageRef?.current) {
+      if ('value' in messageRef.current) {
+        textMessage = messageRef.current.value || '';
+      } else if (messageRef.current instanceof HTMLDivElement) {
+        textMessage = messageRef.current.textContent || '';
+      }
+    }
+    
     if (!textMessage.trim() && images?.length === 0) return;
 
-    addHelloMessage({
-      id: generateNewId(),
+    const messageId = generateNewId();
+    const newMessage = {
+      id: messageId,
       role: "user",
       content: textMessage,
-    });
+    };
+
+    // Add message to chat
+    addHelloMessage(newMessage);
 
     // Send message to API
-    onSendHello(textMessage);
+    onSendHello(textMessage, newMessage);
 
     // Clear input field
     if (messageRef?.current) {
-      messageRef.current.value = '';
+      if ('value' in messageRef.current) {
+        messageRef.current.value = '';
+      } else if (messageRef.current instanceof HTMLDivElement) {
+        messageRef.current.textContent = '';
+      }
     }
 
     return true;
-  }, [onSendHello]);
+  }, [onSendHello, addHelloMessage, images]);
 
   // Start timeout timer for response waiting
   const startTimeoutTimer = useCallback(() => {

@@ -260,7 +260,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
       };
     }
     case ChatActionTypes.ADD_HELLO_MESSAGE: {
-      const currentChatId = action.payload?.chat_id || state.subThreadId;
+      const currentChatId = action?.payload?.message?.chat_id || state.subThreadId;
       // If the last message ID is the same, we don't add a new message
       // if (action.payload?.reponseType === 'assistant') {
         return {
