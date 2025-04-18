@@ -154,7 +154,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
                     </div>
                     {thread?.last_message && (
                       <div className="last-message text-sm text-black font-medium mt-1 truncate">
-                        {!thread.last_message.sender_id ? "You: " : "Sender: "}
+                        {!thread.last_message?.message?.sender_id ? "You: " : "Sender: "}
                         {thread.last_message.message?.content?.text ||
                           thread.last_message.message?.message_type ||
                           "New conversation"}
@@ -222,12 +222,14 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         />
       )}
 
-      <div className={`drawer-side max-w-[265px] ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
+      <div className={`drawer-side ${isHelloUser ? '100%' : 'max-w-[265px]'} ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
         <div className="p-4 w-full min-h-full text-base-content relative bg-base-200 border-r-base-300 border overflow-hidden">
           <div className="flex items-center justify-between mb-4">
-            {isToggledrawer && <button className="p-2 hover:bg-gray-200 rounded-full transition-colors" onClick={() => { closeToggleDrawer(!isToggledrawer) }}> <AlignLeft size={22} color="#555555" /></button>}
-            <h2 className="text-lg font-bold">History</h2>
-            <div className="flex items-center gap-2">
+            <div className="w-10">
+              {isToggledrawer && <button className="p-2 hover:bg-gray-200 rounded-full transition-colors" onClick={() => { closeToggleDrawer(!isToggledrawer) }}> <AlignLeft size={22} color="#555555" /></button>}
+            </div>
+            <h2 className="text-lg font-bold text-center flex-1">History</h2>
+            <div className="w-10 flex items-center justify-end">
               {isToggledrawer && !isHelloUser && (
                 <div className="tooltip tooltip-bottom z-[9999]" data-tip="New Chat">
                   <button

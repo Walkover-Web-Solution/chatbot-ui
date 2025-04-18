@@ -116,8 +116,6 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         try {
 
             const nextPage = currentPage + 1;
-            console.log("Current page", currentPage)
-            console.log("Next page", nextPage)
             const { previousChats } = await getPreviousMessage(
                 threadId,
                 bridgeName,

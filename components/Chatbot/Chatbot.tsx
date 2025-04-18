@@ -42,6 +42,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     // RTLayer Event Listiner
     useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef })
     const { openHelloForm, isToggledrawer, chatsLoading, helloMessages, messageIds, msgIdAndDataMap, subThreadId, helloMsgIds, helloMsgIdAndDataMap } = chatState;
+
     return (
         <MessageContext.Provider value={{
             ...chatState,
@@ -55,7 +56,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
             helloMsgIds: helloMsgIds?.[subThreadId],
             ...chatActions
         }}>
-            <FormComponent open={openHelloForm} setOpen={() => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true })} />
+            <FormComponent open={openHelloForm} setOpen={(isFormOpen) => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: isFormOpen })} />
             <div className="flex h-screen w-full overflow-hidden relative">
                 {/* Sidebar - always visible on large screens */}
                 <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? ' w-64' : 'w-0'}`}>

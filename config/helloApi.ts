@@ -109,7 +109,7 @@ export async function getGreetingQuestions(companyId: string, botId: string): Pr
 // Save client details
 export async function saveClientDetails(clientData: any): Promise<any> {
   try {
-    const response = await axios.post(`${HELLO_HOST_URL}/client/`, clientData, {
+    const response = await axios.put(`${HELLO_HOST_URL}/client/`, clientData, {
       headers: {
         authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
       },

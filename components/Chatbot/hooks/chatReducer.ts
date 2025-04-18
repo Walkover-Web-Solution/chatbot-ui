@@ -363,6 +363,12 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         }
       }
     }
+    case ChatActionTypes.SET_OPEN_HELLO_FORM: {
+      return {
+        ...state,
+        openHelloForm: action.payload
+      };
+    }
       
     case ChatActionTypes.RESET_STATE:
       return {
