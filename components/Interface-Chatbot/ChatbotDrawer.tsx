@@ -13,7 +13,7 @@ import { useMediaQuery } from "@mui/material";
 import { AlignLeft, ChevronRight, SquarePen, Users } from "lucide-react";
 import React, { useContext } from "react";
 import { useDispatch } from "react-redux";
-import { ChatActionTypes, ChatState } from "../Chatbot/hooks/chatTypes";
+import { ChatActionTypes } from "../Chatbot/hooks/chatTypes";
 import { useReduxStateManagement } from "../Chatbot/hooks/useReduxManagement";
 import { ChatbotContext } from "../context";
 import { MessageContext } from "./InterfaceChatbot";
@@ -34,7 +34,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   const dispatch = useDispatch();
   const isSmallScreen = useMediaQuery('(max-width:1023px)');
   const { setOptions, chatDispatch, fetchHelloPreviousHistory } = useContext(MessageContext);
-  const { currentChannelId, currentChatId, currentTeamId, } = useReduxStateManagement({ chatbotId, chatDispatch });
+  const { currentChatId, currentTeamId, } = useReduxStateManagement({ chatbotId, chatDispatch });
   const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName, teamsList, channelList, isHuman } =
     useCustomSelector((state: $ReduxCoreType) => ({
       reduxThreadId: GetSessionStorageData("threadId") || state.appInfo?.threadId || "",

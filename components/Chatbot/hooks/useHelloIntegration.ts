@@ -41,43 +41,43 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }
 
   // Initialize socket listeners
-  useEffect(() => {
-    // if (!socket) return;
-    const handleNewMessage = (data: any) => {
-      const { response } = data;
-      const { message } = response || {};
-      const { content, chat_id, from_name, sender_id, new_event, type, message_type } = message || {};
 
-      if (new_event && type === 'chat') {
-        if (!chat_id) {
-          setLoading(false);
-          if (timeoutIdRef.current) {
-            clearTimeout(timeoutIdRef.current);
-          }
+  const handleNewMessage = useCallback((data: any) => {
+    const { response } = data;
+    const { message } = response || {};
+    const { channel, content, chat_id, from_name, sender_id, new_event, type, message_type } = message || {};
 
-          switch (message_type) {
-            case "interactive":
-              addHelloMessage({
-                role: sender_id === "bot" ? "Bot" : "Human",
-                from_name,
-                content: content?.body?.text,
-                urls: content?.body?.attachment,
-                id: response?.id,
-              }, 'assistant');
-              break;
-            default:
-              addHelloMessage({
-                role: sender_id === "bot" ? "Bot" : "Human",
-                from_name,
-                content: content?.text,
-                urls: content?.attachment,
-                id: response?.id,
-              }, 'assistant');
-          }
+    if (channel === currentChannelId && new_event && type === 'chat') {
+      if (!chat_id) {
+        setLoading(false);
+        if (timeoutIdRef.current) {
+          clearTimeout(timeoutIdRef.current);
+        }
+
+        switch (message_type) {
+          case "interactive":
+            addHelloMessage({
+              role: sender_id === "bot" ? "Bot" : "Human",
+              from_name,
+              content: content?.body?.text,
+              urls: content?.body?.attachment,
+              id: response?.id,
+            }, 'assistant');
+            break;
+          default:
+            addHelloMessage({
+              role: sender_id === "bot" ? "Bot" : "Human",
+              from_name,
+              content: content?.text,
+              urls: content?.attachment,
+              id: response?.id,
+            }, 'assistant');
         }
       }
-    };
+    }
+  }, [currentChannelId, setLoading, addHelloMessage]);
 
+  useEffect(() => {
     socketManager.on("NewPublish", handleNewMessage);
 
     // Clean up when component unmounts
