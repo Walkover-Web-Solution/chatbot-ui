@@ -142,27 +142,32 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
           </div>
           <div className="conversations-list space-y-2">
             {channelList
-              .filter((thread: any) => thread?.id)
-              .map((thread: any, index: number) => (
+              .filter((channel: any) => channel?.id)
+              .map((channel: any, index: number) => (
                 <div
-                  key={`${thread?._id}-${index}`}
-                  className={`conversation-card overflow-hidden text-ellipsis p-3 ${thread?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center`}
-                  onClick={() => handleChangeChannel(thread?.channel, thread?.id, thread?.team_id)}
+                  key={`${channel?._id}-${index}`}
+                  className={`conversation-card overflow-hidden text-ellipsis p-3 ${channel?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center`}
+                  onClick={() => handleChangeChannel(channel?.channel, channel?.id, channel?.team_id)}
                 >
                   <div className="conversation-info flex-1 min-w-0 pr-2">
                     <div className="conversation-name text-xs text-gray-400 break-words">
                       Conversation
                     </div>
-                    {thread?.last_message && (
+                    {channel?.last_message && (
                       <div className="last-message text-sm text-black font-medium mt-1 truncate">
-                        {!thread.last_message?.message?.sender_id ? "You: " : "Sender: "}
-                        {thread.last_message.message?.content?.text ||
-                          thread.last_message.message?.message_type ||
+                        {!channel.last_message?.message?.sender_id ? "You: " : "Sender: "}
+                        {channel.last_message.message?.content?.text ||
+                          channel.last_message.message?.message_type ||
                           "New conversation"}
                       </div>
                     )}
                   </div>
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 flex items-center">
+                    {channel?.widget_unread_count > 0 && (
+                      <div className="bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center mr-2">
+                        {channel?.widget_unread_count}
+                      </div>
+                    )}
                     <ChevronRight size={16} className="text-gray-800" />
                   </div>
                 </div>
