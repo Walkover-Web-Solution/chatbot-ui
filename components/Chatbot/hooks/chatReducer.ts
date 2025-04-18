@@ -238,18 +238,18 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         isToggledrawer: action.payload
       };
     case ChatActionTypes.SET_HELLO_MESSAGES: {
-      const subThreadId = state.subThreadId
+      const subThreadId = action.payload?.teamId || state.subThreadId
       return {
         ...state,
         helloMsgIds: {
           ...state.helloMsgIds,
-          [subThreadId]: Array.from(new Set(action.payload?.map((item) => item?.message_id))) as string[]
+          [subThreadId]: Array.from(new Set(action.payload?.data?.map((item) => item?.message_id))) as string[]
         },
         helloMsgIdAndDataMap: {
           ...state.helloMsgIdAndDataMap,
           [subThreadId]: {
             ...state.helloMsgIdAndDataMap?.[subThreadId],
-            ...action.payload?.reduce((acc, item) => {
+            ...action.payload?.data?.reduce((acc, item) => {
               if (item.message_id) {
                 acc[item?.message_id] = item
                 return acc
@@ -260,7 +260,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
       };
     }
     case ChatActionTypes.ADD_HELLO_MESSAGE: {
-      const currentChatId = action?.payload?.message?.chat_id || state.subThreadId;
+      const currentChatId = state.subThreadId;
       // If the last message ID is the same, we don't add a new message
       // if (action.payload?.reponseType === 'assistant') {
         return {

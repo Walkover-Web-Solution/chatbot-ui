@@ -2,6 +2,8 @@
 
 import { createNewThreadApi } from "@/config/api";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
+import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
+import { setHelloKeysData } from "@/store/hello/helloSlice";
 import { setThreadId, setThreads } from "@/store/interface/interfaceSlice";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
@@ -11,13 +13,10 @@ import { useMediaQuery } from "@mui/material";
 import { AlignLeft, ChevronRight, SquarePen, Users } from "lucide-react";
 import React, { useContext } from "react";
 import { useDispatch } from "react-redux";
-import { MessageContext } from "./InterfaceChatbot";
-import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
-import { ChatbotContext } from "../context";
-import { setHelloKeysData } from "@/store/hello/helloSlice";
+import { ChatActionTypes, ChatState } from "../Chatbot/hooks/chatTypes";
 import { useReduxStateManagement } from "../Chatbot/hooks/useReduxManagement";
-import { ChatActionTypes } from "../Chatbot/hooks/chatTypes";
-
+import { ChatbotContext } from "../context";
+import { MessageContext } from "./InterfaceChatbot";
 
 const createRandomId = () => {
   return Math.random().toString(36).substring(2, 15);
@@ -28,13 +27,14 @@ interface ChatbotDrawerProps {
   chatbotId: string;
   isToggledrawer: boolean;
   setToggleDrawer: (isOpen: boolean) => void;
+  preview?: boolean;
 }
 
 const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, setToggleDrawer, isToggledrawer, preview = false }) => {
   const dispatch = useDispatch();
   const isSmallScreen = useMediaQuery('(max-width:1023px)');
-  const { setOptions, chatDispatch } = useContext(MessageContext);
-  const { currentChannelId, currentChatId, currentTeamId, } = useReduxStateManagement({ chatbotId, chatDispatch })
+  const { setOptions, chatDispatch, fetchHelloPreviousHistory } = useContext(MessageContext);
+  const { currentChannelId, currentChatId, currentTeamId, } = useReduxStateManagement({ chatbotId, chatDispatch });
   const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName, teamsList, channelList, isHuman } =
     useCustomSelector((state: $ReduxCoreType) => ({
       reduxThreadId: GetSessionStorageData("threadId") || state.appInfo?.threadId || "",
@@ -112,12 +112,13 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   const handleChangeChannel = (channelId: string, chatId: string, teamId: string) => {
     dispatch(setHelloKeysData({ currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
     dispatch(setDataInAppInfoReducer({ subThreadId: chatId }));
+    fetchHelloPreviousHistory(channelId);
     isSmallScreen && setToggleDrawer(false)
   }
   const handleChangeTeam = (teamId: string) => {
     dispatch(setHelloKeysData({ currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
     dispatch(setDataInAppInfoReducer({ subThreadId: teamId }));
-    chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: [] });
+    chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: { teamId: teamId, data: [] } });
     isSmallScreen && setToggleDrawer(false)
   }
 
@@ -137,7 +138,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
       {(channelList || []).length > 0 && channelList.some((thread: any) => thread?.id) && (
         <div className="conversations-section mb-4 border-b">
           <div className="conversations-header mb-3 pb-2">
-            <h3 className="text-md font-semibold">Recent Conversations</h3>
+            <h3 className="text-md font-semibold">Continue Conversations</h3>
           </div>
           <div className="conversations-list space-y-2">
             {channelList

@@ -1,8 +1,8 @@
+import { ThemeContext } from '@/components/AppWrapper';
 import { ChatbotContext } from '@/components/context';
 import { getAllChannels, getHelloChatHistoryApi, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
 import useSocket from '@/hooks/socket';
 import socketManager from '@/hooks/socketManager';
-import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
 import { getHelloDetailsStart, setChannelListData, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
 import { generateNewId } from '@/utils/utilities';
 import { useCallback, useContext, useEffect, useRef } from 'react';
@@ -17,10 +17,12 @@ interface HelloMessage {
   from_name?: string;
   content: string;
   id?: string;
-  chat_id?: string
+  chat_id?: string;
+  urls?: string[];
 }
 
 const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction>, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement> }) => {
+  const { handleThemeChange } = useContext(ThemeContext);
   const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId, images, isToggledrawer } = chatState;
   const { setLoading, setChatsLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
   const { uuid, unique_id, presence_channel, unique_id_hello = "", widgetToken, currentChatId, currentTeamId, currentChannelId } = useReduxStateManagement({ chatbotId, chatDispatch });
@@ -31,7 +33,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   const mountedRef = useRef(false);
 
   const setHelloMessages = (messages: HelloMessage[]) => {
-    chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: messages });
+    chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: { data: messages } });
   }
 
   const addHelloMessage = (message: HelloMessage, reponseType: any = '') => {
@@ -43,23 +45,36 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     // if (!socket) return;
     const handleNewMessage = (data: any) => {
       const { response } = data;
-      console.log(data, 'response')
       const { message } = response || {};
-      const { content, chat_id, from_name, sender_id } = message || {};
-      const text = content?.text;
+      const { content, chat_id, from_name, sender_id, new_event, type, message_type } = message || {};
 
-      if (text && !chat_id) {
-        setLoading(false);
-        if (timeoutIdRef.current) {
-          clearTimeout(timeoutIdRef.current);
+      if (new_event && type === 'chat') {
+        if (!chat_id) {
+          setLoading(false);
+          if (timeoutIdRef.current) {
+            clearTimeout(timeoutIdRef.current);
+          }
+
+          switch (message_type) {
+            case "interactive":
+              addHelloMessage({
+                role: sender_id === "bot" ? "Bot" : "Human",
+                from_name,
+                content: content?.body?.text,
+                urls: content?.body?.attachment,
+                id: response?.id,
+              }, 'assistant');
+              break;
+            default:
+              addHelloMessage({
+                role: sender_id === "bot" ? "Bot" : "Human",
+                from_name,
+                content: content?.text,
+                urls: content?.attachment,
+                id: response?.id,
+              }, 'assistant');
+          }
         }
-
-        addHelloMessage({
-          role: sender_id === "bot" ? "Bot" : "Human",
-          from_name,
-          content: text,
-          id: response?.id,
-        }, 'assistant');
       }
     };
 
@@ -72,17 +87,16 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [socketManager?.isConnected]);
 
   // Fetch previous Hello chat history
-  const fetchHelloPreviousHistory = useCallback(async () => {
-    if (currentChannelId && uuid) {
+  const fetchHelloPreviousHistory = useCallback((channelId: string = currentChannelId) => {
+    if (channelId && uuid) {
       try {
         setChatsLoading(true)
-        getHelloChatHistoryApi(currentChannelId).then((response) => {
+        getHelloChatHistoryApi(channelId).then((response) => {
           const helloChats = response?.data?.data;
           if (Array.isArray(helloChats) && helloChats.length > 0) {
             const filterChats = helloChats
               .map((chat) => {
                 let role;
-
                 if (chat?.message?.from_name) {
                   role = "Human";
                 } else if (
@@ -99,6 +113,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
                   message_id: chat?.id,
                   from_name: chat?.message?.from_name,
                   content: chat?.message?.content?.text,
+                  urls: chat?.message?.content?.attachment,
                 };
               })
               .reverse();
@@ -118,12 +133,17 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [currentChannelId, uuid]);
 
   useEffect(() => {
-    fetchHelloPreviousHistory();
+    if (!mountedRef.current) {
+      fetchHelloPreviousHistory();
+    }
   }, [fetchHelloPreviousHistory, currentChannelId, uuid]);
 
   const getWidgetInfo = async () => {
     if (isHelloUser && widgetToken) {
-      initializeHelloChat(unique_id_hello).then(data => dispatch(setWidgetInfo(data)));
+      initializeHelloChat(unique_id_hello).then(data => {
+        dispatch(setWidgetInfo(data));
+        handleThemeChange(data?.primary_color || "#000000");
+      });
     }
     else if (bridgeName && threadId) {
       dispatch(
@@ -202,9 +222,9 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
       sendMessageToHelloApi(message, attachments, channelDetail, currentChatId).then((data) => {
         if (data && !currentChatId) {
-          dispatch(setDataInAppInfoReducer({ subThreadId: data?.['id'] }));
+          // dispatch(setDataInAppInfoReducer({ subThreadId: data?.['id'] }));
           dispatch(setHelloKeysData({ currentChatId: data?.['id'], currentChannelId: data?.['channel'] }));
-          addHelloMessage({ ...newMessage, chat_id: data?.['id'] })
+          // addHelloMessage({ ...newMessage, chat_id: data?.['id'] })
           if (data?.['presence_channel'] && data?.['channel']) {
             socketManager.subscribe([data?.['presence_channel'], data?.['channel']])
               .then((subscriptionData) => {
@@ -240,6 +260,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       id: messageId,
       role: "user",
       content: textMessage,
+      urls: images || [],
     };
 
     // Add message to chat

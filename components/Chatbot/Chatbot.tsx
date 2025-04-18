@@ -27,7 +27,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
 
     // hooks
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
-    const { sendMessageToHello } = useHelloIntegration({ chatbotId, chatDispatch, chatState, messageRef });
+    const { sendMessageToHello, fetchHelloPreviousHistory } = useHelloIntegration({ chatbotId, chatDispatch, chatState, messageRef });
     const { IsHuman, currentTeamId } = useReduxStateManagement({ chatbotId, chatDispatch });
     const chatActions = useChatActions({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef });
 
@@ -47,6 +47,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
         <MessageContext.Provider value={{
             ...chatState,
             sendMessageToHello,
+            fetchHelloPreviousHistory,
             messageRef,
             chatDispatch,
             messageIds: messageIds?.[subThreadId] || [],
@@ -56,11 +57,11 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
             helloMsgIds: helloMsgIds?.[subThreadId],
             ...chatActions
         }}>
-            <FormComponent open={openHelloForm} setOpen={(isFormOpen) => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: isFormOpen })} />
+            {/* <FormComponent open={openHelloForm} setOpen={(isFormOpen) => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: isFormOpen })} /> */}
             <div className="flex h-screen w-full overflow-hidden relative">
                 {/* Sidebar - always visible on large screens */}
                 <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? ' w-64' : 'w-0'}`}>
-                    <ChatbotDrawer setToggleDrawer={chatActions.setToggleDrawer} isToggledrawer={isToggledrawer} />
+                    <ChatbotDrawer setToggleDrawer={chatActions.setToggleDrawer} isToggledrawer={isToggledrawer} fetchHelloPreviousHistory={fetchHelloPreviousHistory} />
                 </div>
 
                 {/* Main content area */}

@@ -16,10 +16,11 @@ import {
   Divider,
   lighten,
   Stack,
+  useMediaQuery,
   useTheme
 } from "@mui/material";
 import copy from "copy-to-clipboard";
-import { AlertCircle, Check, CircleCheckBig, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
+import { AlertCircle, Check, CircleCheckBig, Copy, Maximize2, ThumbsDown, ThumbsUp, User } from "lucide-react";
 import dynamic from 'next/dynamic';
 import Image from "next/image";
 import React, { useContext } from "react";
@@ -41,26 +42,29 @@ const ResetHistoryLine = ({ text = "" }) => {
 };
 
 const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
+  const isSmallScreen = useMediaQuery('(max-width:1023px)');
   return (
     <>
       <div className="flex flex-col gap-2.5 items-end w-full mb-2.5 animate-slide-left mt-1">
         {Array.isArray(message?.urls) && message.urls.length > 0 && (
-          <div className="flex flex-row-reverse flex-wrap gap-2.5 max-w-[80%] p-2.5 rounded-[10px_10px_1px_10px]">
-            {message.urls.map((url: string, index: number) => (
-              <Image
-                key={index}
-                src={url}
-                alt={`Image ${index + 1}`}
-                className="block max-w-[40%] h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => window.open(url, "_blank")}
-                width={10} // You should replace 0 with the actual width
-                height={10} // You should replace 0 with the actual height
-                layout="responsive"
-              />
-            ))}
+          <div className="flex flex-row-reverse flex-wrap gap-2.5 max-w-[80%] p-2.5 ">
+            {message.urls.map((url: any, index: number) => {
+              return (
+                <Image
+                  key={index}
+                  src={typeof url === 'object' ? url?.path : url}
+                  alt={`Image ${index + 1}`}
+                  className={`block ${isSmallScreen ? 'max-w-[80%]' : 'max-w-[40%]'} h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity`}
+                  onClick={() => window.open(typeof url === 'object' ? url?.path : url, "_blank")}
+                  width={20} // You should replace 0 with the actual width
+                  height={20} // You should replace 0 with the actual height
+                  layout="responsive"
+                />
+              )
+            })}
           </div>
         )}
-        <div
+        {message?.content && <div
           className="p-2.5 min-w-[150px] sm:max-w-[80%] max-w-[90%] rounded-[10px_10px_1px_10px] break-words"
           style={{
             backgroundColor: theme.palette.primary.main,
@@ -72,7 +76,7 @@ const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
               {message?.content}
             </p>
           </div>
-        </div>
+        </div>}
       </div>
 
       {message?.is_reset && <ResetHistoryLine />}
@@ -298,21 +302,25 @@ const HumanOrBotMessageCard = React.memo(
       }, 1500);
     };
 
+    const isSmallScreen = useMediaQuery('(max-width:1023px)');
+
     return (
-      <div className="w-full mb-4 animate-fade-in">
+      <div className="w-full mb-2 animate-fade-in">
         <div className="flex items-start gap-3 max-w-[90%]">
           <div className="avatar">
             <div className="w-8 h-8 rounded-full flex items-center justify-center bg-base-200">
               {!isBot ? (
-                <Image
-                  src={UserAssistant}
-                  width={28}
-                  height={28}
-                  alt="Human"
-                  className="rounded-full"
-                />
-              ) : (
                 <div className="bg-primary/10 rounded-full p-1 shadow-inner transform active:scale-95 transition-transform active:bg-primary/20">
+                  <Image
+                    width={24}
+                    height={24}
+                    src={UserAssistant}
+                    alt="User"
+                    className="opacity-70"
+                  />
+                </div>
+              ) : (
+                <div className="rounded-full p-1 shadow-inner transform active:scale-95 transition-transform active:bg-primary/20">
                   <Image
                     width={24}
                     height={24}
@@ -327,12 +335,33 @@ const HumanOrBotMessageCard = React.memo(
 
           <div className="flex-1">
             <div className="text-base-content p-1">
+              {message?.from_name && (
+                <div className="text-sm font-medium mb-1">{message.from_name}</div>
+              )}
+              {Array.isArray(message?.urls) && message.urls.length > 0 && (
+                <div className="flex flex-wrap gap-2.5 max-w-[80%] p-2.5">
+                  {message.urls.map((url: any, index: number) => {
+                    return (
+                      <Image
+                        key={index}
+                        src={typeof url === 'object' ? url?.path : url}
+                        alt={`Image ${index + 1}`}
+                        className={`block ${isSmallScreen ? 'max-w-[80%]' : 'max-w-[40%]'} h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity`}
+                        onClick={() => window.open(typeof url === 'object' ? url?.path : url, "_blank")}
+                        width={20}
+                        height={20}
+                        layout="responsive"
+                      />
+                    )
+                  })}
+                </div>
+              )}
               <div className="prose max-w-none">
                 <div dangerouslySetInnerHTML={{ __html: message?.content }}></div>
               </div>
             </div>
-            
-            <div className="flex items-center gap-2 mt-1 ml-1">
+
+            {/* <div className="flex items-center gap-2 mt-1 ml-1">
               <button
                 className="btn btn-ghost btn-xs tooltip tooltip-top"
                 data-tip={isCopied ? "Copied!" : "Copy message"}
@@ -344,10 +373,10 @@ const HumanOrBotMessageCard = React.memo(
                   <Copy className="w-3.5 h-3.5 text-base-content/70" />
                 )}
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
-        
+
         {message?.is_reset && (
           <div className="divider my-3">
             <div className="badge badge-warning badge-sm">Chat history cleared</div>
@@ -460,7 +489,7 @@ function FeedBackButtons({ msgId }) {
       onClick={() =>
         handleMessageFeedback({
           msgId: msgIdAndDataMap?.[msgId]?.message_id,
-          reduxMsgId:msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
+          reduxMsgId: msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
           feedback: 1,
         })
       }
@@ -475,7 +504,7 @@ function FeedBackButtons({ msgId }) {
       onClick={() =>
         handleMessageFeedback({
           msgId: msgIdAndDataMap?.[msgId]?.message_id,
-          reduxMsgId:msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
+          reduxMsgId: msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
           feedback: 2
         }
         )
