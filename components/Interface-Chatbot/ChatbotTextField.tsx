@@ -223,17 +223,15 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
 
           <div className="flex flex-row justify-between gap-2 h-full self-end mr-2">
             <div className="flex items-center gap-2">
-              <div className="z-[2]">
-                <div className="relative w-7 h-7">
-                  <Image
-                    src={IsHuman ? UserAssistant : AiIcon}
-                    width={28}
-                    height={28}
-                    alt="AI"
-                    className={`absolute transition-opacity duration-200 ${!IsHuman ? 'filter drop-shadow-pink' : ''}`}
-                  />
-                </div>
-              </div>
+              {!IsHuman && <div className="relative w-7 h-7 z-[2]">
+                <Image
+                  src={IsHuman ? UserAssistant : AiIcon}
+                  width={28}
+                  height={28}
+                  alt="AI"
+                  className={`absolute transition-opacity duration-200 ${!IsHuman ? 'filter drop-shadow-pink' : ''}`}
+                />
+              </div>}
               {isVisionEnabled && (
                 <>
                   <input
