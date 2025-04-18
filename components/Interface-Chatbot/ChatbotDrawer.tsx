@@ -53,20 +53,32 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
 
   const handleCreateNewSubThread = async () => {
     if (preview) return;
-    const result = await createNewThreadApi({
+    // const result = await createNewThreadApi({
+    //   threadId: reduxThreadId,
+    //   subThreadId: createRandomId(),
+    // });
+    // if (result?.success) {
+    //   dispatch(
+    //     setThreads({
+    //       newThreadData: result?.thread,
+    //       bridgeName: GetSessionStorageData("bridgeName") || reduxBridgeName,
+    //       threadId: reduxThreadId,
+    //     })
+    //   );
+    //   setOptions([]);
+    // }
+    dispatch(setThreadId({ subThreadId:"New Chat"}))
+    // dispatch(setThreadFlag(true));
+    dispatch(setThreads({
+      newThreadData: {
+        _id: createRandomId(),
+        display_name: "New Chat",
+        sub_thread_id: createRandomId(),
+      },
+      bridgeName: GetSessionStorageData("bridgeName") || reduxBridgeName,
       threadId: reduxThreadId,
-      subThreadId: createRandomId(),
-    });
-    if (result?.success) {
-      dispatch(
-        setThreads({
-          newThreadData: result?.thread,
-          bridgeName: GetSessionStorageData("bridgeName") || reduxBridgeName,
-          threadId: reduxThreadId,
-        })
-      );
-      setOptions([]);
-    }
+    }));
+    setOptions([]);
   };
 
   const handleChangeSubThread = (sub_thread_id: string) => {

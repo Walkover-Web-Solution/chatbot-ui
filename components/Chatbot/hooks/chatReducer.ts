@@ -37,6 +37,9 @@ export const initialChatState: ChatState = {
   // Options & Media
   options: [],
   images: [],
+
+  //new subthread state flag
+  thread_flag: false,
 };
 
 export const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
@@ -334,6 +337,12 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         helloId: state.helloId,
         bridgeVersionId: state.bridgeVersionId,
         headerButtons: state.headerButtons
+      };
+
+    case ChatActionTypes.SET_THREAD_FLAG:
+      return {
+        ...state,
+        thread_flag: action.payload
       };
     default:
       return state;

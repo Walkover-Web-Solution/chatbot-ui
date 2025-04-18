@@ -39,6 +39,7 @@ export interface ChatState {
   newMessage: boolean;
   openHelloForm: boolean;
   isToggledrawer: boolean;
+  thread_flag: boolean;
 }
 
 
@@ -98,6 +99,7 @@ export enum ChatActionTypes {
   SET_DATA = 'SET_DATA',
   SET_MESSAGE_FEEDBACK = 'SET_MESSAGE_FEEDBACK',
   UPDATE_SINGLE_MESSAGE = 'UPDATE_SINGLE_MESSAGE',
+  SET_THREAD_FLAG = 'SET_THREAD_FLAG',
 }
 
 export type ChatAction =
@@ -132,6 +134,7 @@ export type ChatAction =
   | { type: ChatActionTypes.SET_DATA; payload: ReduxSetterActionType }
   | { type:ChatActionTypes.SET_MESSAGE_FEEDBACK;payload:any}
   | { type: ChatActionTypes.UPDATE_SINGLE_MESSAGE; payload: any }
+  | { type: ChatActionTypes.SET_THREAD_FLAG; payload: boolean }
 
 export interface ChatContextType extends ChatState {
   dispatch: React.Dispatch<ChatAction>;

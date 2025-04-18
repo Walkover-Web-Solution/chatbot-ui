@@ -3,11 +3,14 @@ import { useCustomSelector } from '@/utils/deepCheckSelector';
 import React, { useCallback, useEffect } from 'react';
 import WebSocketClient from 'rtlayer-client';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
+import { setThreadId } from '@/store/interface/interfaceSlice';
+import { useDispatch } from 'react-redux';
 
 const client = WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
 
 function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) {
   const { threadId, subThreadId } = chatState
+  const dispatch = useDispatch();
   const { userId } = useCustomSelector((state: $ReduxCoreType) => ({ userId: state.appInfo.userId }))
 
   const handleMessageRTLayer = useCallback((message: string) => {
@@ -20,7 +23,8 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
     }
 
     // Determine the type of response
-    const { function_call, message: responseMessage, data, error } = parsedMessage?.response || {};
+    const { function_call, message: responseMessage, data, error, displayName } = parsedMessage?.response || {};
+    console.log("parsedMessage", displayName);
     switch (true) {
       // Case: Function call is present without a message
       case function_call && !responseMessage:
@@ -55,6 +59,11 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
         chatDispatch({
           type: ChatActionTypes.SET_OPTIONS, payload: Array.isArray(data?.suggestions) ? data?.suggestions : []
         });
+        break;
+       
+      // Case: New sub thread is present
+      case displayName !== undefined:
+        dispatch(setThreadId({ subThreadId: displayName }));
         break;
 
       // Case: Response data is present

@@ -12,6 +12,7 @@ export const initialState: $AppInfoReduxType = {
 
 export const reducers = {
     setDataInAppInfoReducer(state: $AppInfoReduxType, action: PayloadAction<Partial<$AppInfoReduxType>>) {
+        console.log("action.payload", action.payload);
         return { ...state, ...action.payload }
     }
 };
