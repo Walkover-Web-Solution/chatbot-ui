@@ -171,8 +171,10 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
 
     public pushNotificationChannel: IChannel;
     public webrtc: any;
-    public CallToken$: Observable<string>;
-    public ClientToken$: Observable<string>;
+    public callToken$: Observable<string>;
+    public clientToken$: Observable<string>;
+    public calling: boolean = false;
+    public callConnected: boolean = false;
 
     constructor(
         private store: Store<IAppState>,
@@ -185,12 +187,12 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
     }
 
     ngOnInit() {
-        this.CallToken$ = this.store.pipe(
+        this.callToken$ = this.store.pipe(
             select(selectGetCallToken), 
             takeUntil(this.destroy$), 
             distinctUntilChanged(isEqual)
         );        
-        this.ClientToken$ = this.store.pipe(
+        this.clientToken$ = this.store.pipe(
             select(selectGetClientToken), 
             takeUntil(this.destroy$), 
             distinctUntilChanged(isEqual)
@@ -495,19 +497,21 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
         this.store.dispatch(actions.getClientToken({token: authToken, uuid: this.widgetUUID}));
         this.store.dispatch(actions.getCallToken({token: authToken, uuid: this.widgetUUID}));
 
-        this.ClientToken$.subscribe((token) => {
+        this.clientToken$.subscribe((token) => {
             if (token) {                
                 this.webrtc = WebRTC(token);
                 this.webrtc.on("call", (call) => {
                     const isOutgoing = call.type === "outgoing-call";
-                    if (isOutgoing){                
+                    if (isOutgoing){
+                        this.calling = true;
                         const mediaStream = call.getMediaStream();                
                         if (this.webRTCAudioRef && this.webRTCAudioRef.nativeElement) {
                             this.webRTCAudioRef.nativeElement.srcObject = mediaStream;
                         }
                     };
                     call.on("connected", (mediaStream)=>{
-                        console.log("🚀  ➽ connected ⏩" , mediaStream)                
+                        this.callConnected = true;
+                        console.log("🚀  ➽ connected ⏩" , mediaStream, call.getInfo());
                     });                      
                 });
             }
