@@ -287,6 +287,8 @@ const HumanOrBotMessageCard = React.memo(
   ({
     message,
     theme,
+    backgroundColor,
+    textColor,
     isBot = false,
     isError = false,
     handleFeedback = () => { },
@@ -305,18 +307,24 @@ const HumanOrBotMessageCard = React.memo(
 
     return (
       <div className="w-full mb-2 animate-fade-in animate-slide-left">
-        <div className="flex items-start gap-3 max-w-[90%]">
-          <div className="avatar">
+        <div className="flex items-start gap-2 max-w-[90%]">
+          <div className="">
             <div className="w-8 h-8 rounded-full flex items-center justify-center bg-base-200">
               {!isBot ? (
-                <div className="bg-primary/10 rounded-full p-1 shadow-inner transform active:scale-95 transition-transform active:bg-primary/20">
-                  <Image
-                    width={24}
-                    height={24}
-                    src={UserAssistant}
-                    alt="User"
-                    className="opacity-70"
-                  />
+                <div className="rounded-full" style={{ backgroundColor: lighten(backgroundColor, 0.3) }}>
+                  {message?.from_name ? (
+                    <div className="w-7 h-7 flex items-center justify-center text-xs font-bold rounded-full" style={{ color: textColor }}>
+                      {message?.from_name?.charAt(0)?.toUpperCase()}
+                    </div>
+                  ) : (
+                    <Image
+                      width={24}
+                      height={24}
+                      src={UserAssistant}
+                      alt="User"
+                      className="opacity-70"
+                    />
+                  )}
                 </div>
               ) : (
                 <div className="rounded-full p-1 shadow-inner transform active:scale-95 transition-transform active:bg-primary/20">
@@ -389,7 +397,7 @@ const HumanOrBotMessageCard = React.memo(
 function Message({ testKey, message, addMessage }: any) {
   const theme = useTheme();
   const backgroundColor = theme.palette.primary.main;
-  const textColor = isColorLight(backgroundColor) ? "black" : "white";
+  const textColor = isColorLight(backgroundColor) ? "#000000" : "#ffffff";
   const { sendEventToParentOnMessageClick } = useCustomSelector((state: $ReduxCoreType) => ({
     sendEventToParentOnMessageClick: state.Interface.eventsSubscribedByParent?.includes(ALLOWED_EVENTS_TO_SUBSCRIBE.MESSAGE_CLICK) || false
   }))
@@ -426,6 +434,7 @@ function Message({ testKey, message, addMessage }: any) {
           message={message}
           theme={theme}
           textColor={textColor}
+          backgroundColor={backgroundColor}
           addMessage={addMessage}
         />
       ) : message?.role === "Bot" ? (

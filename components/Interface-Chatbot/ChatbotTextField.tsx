@@ -3,6 +3,7 @@
 import { AiIcon, UserAssistant } from "@/assests/assestsIndex";
 import { errorToast } from "@/components/customToast";
 import { uploadImage } from "@/config/api";
+import { uploadAttachmentToHello } from "@/config/helloApi";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { isColorLight } from "@/utils/themeUtility";
@@ -11,7 +12,6 @@ import { ChevronDown, Send, Upload, X } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { MessageContext } from "./InterfaceChatbot";
-import { uploadAttachmentToHello } from "@/config/helloApi";
 
 interface ChatbotTextFieldProps {
   className?: string;
@@ -21,7 +21,6 @@ const MAX_IMAGES = 4;
 
 const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
   const [isUploading, setIsUploading] = useState(false);
-  const [message, setMessage] = useState('');
   const theme = useTheme();
   const isLight = isColorLight(theme.palette.primary.main);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -123,8 +122,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
   );
 
   const buttonDisabled = useMemo(() =>
-    loading || isUploading || (!message?.trim() && images?.length === 0),
-    [loading, isUploading, message, images]
+    loading || isUploading || (!messageRef?.current?.value?.trim() && images?.length === 0),
+    [loading, isUploading, messageRef?.current?.value, images]
   );
 
   return (
@@ -195,7 +194,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
           <TextField
             inputRef={messageRef}
             onChange={(e) => {
-              setMessage(e.target.value);
               if (messageRef.current) {
                 messageRef.current.value = e.target.value;
               }
