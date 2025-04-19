@@ -57,7 +57,7 @@ export async function getAllChannels(uniqueId?: string): Promise<any> {
           "unique_id": uniqueId
         },
         is_anon: localStorage.getItem("is_anon") == 'true',
-        ...(localStorage.getItem("client") ? {}:  {anonymous_client_uuid: localStorage.getItem("HelloClientId")})
+        ...(localStorage.getItem("client") ? {} : { anonymous_client_uuid: localStorage.getItem("HelloClientId") })
       },
       {
         headers: {
@@ -76,9 +76,14 @@ export async function getAllChannels(uniqueId?: string): Promise<any> {
 }
 
 // Get agent team list
-export async function getAgentTeam(): Promise<any> {
+export async function getAgentTeamApi(uniqueId: string): Promise<any> {
   try {
-    const response = await axios.get(`${HELLO_HOST_URL}/agent-team/`, {
+    const response = await axios.post(`${HELLO_HOST_URL}/agent-team/`, {
+      user_data: !uniqueId ? {} : {
+        "unique_id": uniqueId
+      },
+      is_anon: localStorage.getItem("is_anon") == 'true',
+    }, {
       headers: {
         authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
       },
@@ -186,7 +191,7 @@ export async function sendMessageToHelloApi(message: string, attachment: Array<o
         message_type: "text",
         content: {
           text: message,
-          attachment: attachment ,
+          attachment: attachment,
         },
         ...(!chat_id ? { channelDetail } : {}),
         chat_id: chat_id ? chat_id : null,

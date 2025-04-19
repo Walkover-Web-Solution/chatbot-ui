@@ -19,7 +19,7 @@ export const initialChatState: ChatState = {
 
   // UI States
   openHelloForm: false,
-  isToggledrawer: true,
+  isToggledrawer: false,
   headerButtons: [],
 
   // Chat Metadata

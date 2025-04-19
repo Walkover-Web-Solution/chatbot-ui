@@ -1,6 +1,6 @@
 import { ThemeContext } from '@/components/AppWrapper';
 import { ChatbotContext } from '@/components/context';
-import { getAllChannels, getHelloChatHistoryApi, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
+import { getAgentTeamApi, getAllChannels, getHelloChatHistoryApi, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
 import useSocket from '@/hooks/socket';
 import socketManager from '@/hooks/socketManager';
 import { getHelloDetailsStart, setChannelListData, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
@@ -164,6 +164,12 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }
 
   useEffect(() => {
+    if (!localStorage.getItem("HelloClientId") && !unique_id_hello && widgetToken && isHelloUser) {
+      createAnonymousUser();
+    }
+  }, [isHelloUser, unique_id_hello, widgetToken])
+
+  useEffect(() => {
     getWidgetInfo();
   }, [bridgeName, threadId, helloId, isHelloUser, widgetToken]);
 
@@ -176,11 +182,11 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     });
   }
 
-  useEffect(() => {
-    if (!localStorage.getItem("HelloClientId") && !unique_id_hello && widgetToken && isHelloUser) {
-      createAnonymousUser();
-    }
-  }, [isHelloUser, unique_id_hello, widgetToken])
+  const getAgentTeam = async (unique_id_hello: string) => {
+    getAgentTeamApi(unique_id_hello).then((data) => {
+      console.log(data, 'data')
+    })
+  }
 
   useEffect(() => {
     if (isHelloUser && localStorage.getItem("HelloClientId")) {
@@ -188,7 +194,10 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       if (!mountedRef.current || isToggledrawer) {
         getAllChannels(unique_id_hello).then(data => {
           dispatch(setChannelListData(data));
-          if (!mountedRef.current) getToken();
+          if (!mountedRef.current) {
+            // Call both APIs in parallel
+            Promise.any([getToken(), getAgentTeam(unique_id_hello)]);
+          }
         });
       }
     }
