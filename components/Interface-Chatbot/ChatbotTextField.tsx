@@ -44,7 +44,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
     disabled,
     options,
     images,
-    setImages
+    setImages,
+    isTyping
   } = useContext(MessageContext);
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -185,6 +186,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
         </div>
       )}
 
+
       <div className="w-full h-full cursor-text" onClick={focusTextField}>
         <div
           className="relative flex-col h-full items-center justify-between gap-2 p-2 bg-white rounded-xl border border-gray-300 focus-within:outline focus-within:outline-2 focus-within:outline-offset-0"
@@ -259,6 +261,16 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
                     </div>
                   </label>
                 </>
+              )}
+              {IsHuman && isTyping && (
+                <div className="flex items-center justify-center">
+                  <span className="text-xs text-gray-800 mr-2">Agent is typing</span>
+                  <div className="flex space-x-1">
+                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></div>
+                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
+                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: "600ms" }}></div>
+                  </div>
+                </div>
               )}
             </div>
 

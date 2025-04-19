@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
+import useSocketEvents from '@/hooks/socketEventHanler';
 
 interface HelloMessage {
   role: string;
@@ -23,14 +24,16 @@ interface HelloMessage {
 
 const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction>, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement> }) => {
   const { handleThemeChange } = useContext(ThemeContext);
-  const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId, images, isToggledrawer } = chatState;
+  const { loading, isTyping, helloMessages, bridgeName, threadId, helloId, bridgeVersionId, images, isToggledrawer } = chatState;
+  console.log(isTyping,'isTypingisTypingisTyping')
   const { setLoading, setChatsLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
   const { uuid, unique_id, presence_channel, unique_id_hello = "", widgetToken, currentChatId, currentTeamId, currentChannelId } = useReduxStateManagement({ chatbotId, chatDispatch });
-  const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
-  const socket: any = useSocket();
   const dispatch = useDispatch();
   const { isHelloUser } = useContext(ChatbotContext);
   const mountedRef = useRef(false);
+  
+  useSocket();
+  useSocketEvents({chatbotId, chatState, chatDispatch, messageRef });
 
   const setHelloMessages = (messages: HelloMessage[]) => {
     chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: { data: messages } });
@@ -39,52 +42,6 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   const addHelloMessage = (message: HelloMessage, reponseType: any = '') => {
     chatDispatch({ type: ChatActionTypes.ADD_HELLO_MESSAGE, payload: { message, reponseType } });
   }
-
-  // Initialize socket listeners
-
-  const handleNewMessage = useCallback((data: any) => {
-    const { response } = data;
-    const { message } = response || {};
-    const { channel, content, chat_id, from_name, sender_id, new_event, type, message_type } = message || {};
-
-    if (channel === currentChannelId && new_event && type === 'chat') {
-      if (!chat_id) {
-        setLoading(false);
-        if (timeoutIdRef.current) {
-          clearTimeout(timeoutIdRef.current);
-        }
-
-        switch (message_type) {
-          case "interactive":
-            addHelloMessage({
-              role: sender_id === "bot" ? "Bot" : "Human",
-              from_name,
-              content: content?.body?.text,
-              urls: content?.body?.attachment,
-              id: response?.id,
-            }, 'assistant');
-            break;
-          default:
-            addHelloMessage({
-              role: sender_id === "bot" ? "Bot" : "Human",
-              from_name,
-              content: content?.text,
-              urls: content?.attachment,
-              id: response?.id,
-            }, 'assistant');
-        }
-      }
-    }
-  }, [currentChannelId, setLoading, addHelloMessage]);
-
-  useEffect(() => {
-    socketManager.on("NewPublish", handleNewMessage);
-
-    // Clean up when component unmounts
-    return () => {
-      socketManager.off("NewPublish", handleNewMessage);
-    };
-  }, [handleNewMessage, socketManager?.isConnected]);
 
   // Fetch previous Hello chat history
   const fetchHelloPreviousHistory = useCallback((channelId: string = currentChannelId) => {
@@ -290,30 +247,31 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     return true;
   }, [onSendHello, addHelloMessage, images]);
 
-  // Start timeout timer for response waiting
-  const startTimeoutTimer = useCallback(() => {
-    if (timeoutIdRef.current) {
-      clearTimeout(timeoutIdRef.current);
-    }
+  // // Start timeout timer for response waiting
+  // const startTimeoutTimer = useCallback(() => {
+  //   if (timeoutIdRef.current) {
+  //     clearTimeout(timeoutIdRef.current);
+  //   }
 
-    timeoutIdRef.current = setTimeout(() => {
-      setLoading(false);
-    }, 240000); // 4 minutes timeout
+  //   timeoutIdRef.current = setTimeout(() => {
+  //     setLoading(false);
+  //   }, 240000); // 4 minutes timeout
 
-    return () => {
-      if (timeoutIdRef.current) {
-        clearTimeout(timeoutIdRef.current);
-      }
-    };
-  }, []);
+  //   return () => {
+  //     if (timeoutIdRef.current) {
+  //       clearTimeout(timeoutIdRef.current);
+  //     }
+  //   };
+  // }, []);
 
   return {
     helloMessages,
     loading,
     setLoading,
     sendMessageToHello,
-    startTimeoutTimer,
-    fetchHelloPreviousHistory
+    // startTimeoutTimer,
+    fetchHelloPreviousHistory,
+    addHelloMessage
   };
 };
 

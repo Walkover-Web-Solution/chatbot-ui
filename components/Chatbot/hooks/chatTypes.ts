@@ -13,6 +13,7 @@ export interface MessageType {
   urls?: string[];
   Name?: any[];
   mode?: string;
+  isTyping?: boolean;
 }
 
 export interface ChatState {
@@ -39,6 +40,7 @@ export interface ChatState {
   newMessage: boolean;
   openHelloForm: boolean;
   isToggledrawer: boolean;
+  isTyping: boolean;
 }
 
 
@@ -98,6 +100,7 @@ export enum ChatActionTypes {
   SET_DATA = 'SET_DATA',
   SET_MESSAGE_FEEDBACK = 'SET_MESSAGE_FEEDBACK',
   UPDATE_SINGLE_MESSAGE = 'UPDATE_SINGLE_MESSAGE',
+  SET_TYPING = 'SET_TYPING',
 }
 
 export type ChatAction =
@@ -132,7 +135,7 @@ export type ChatAction =
   | { type: ChatActionTypes.SET_DATA; payload: ReduxSetterActionType }
   | { type:ChatActionTypes.SET_MESSAGE_FEEDBACK;payload:any}
   | { type: ChatActionTypes.UPDATE_SINGLE_MESSAGE; payload: any }
-
+  | { type: ChatActionTypes.SET_TYPING; payload: boolean }
 export interface ChatContextType extends ChatState {
   dispatch: React.Dispatch<ChatAction>;
   sendMessage: (message: SendMessagePayloadType) => void;

@@ -99,7 +99,8 @@ export const MessageContext = createContext<{
   isToggledrawer: boolean,
   chatDispatch?: React.Dispatch<ChatAction>;
   getMoreChats: () => void;
-  handleMessageFeedback:(data:any)=>void
+  handleMessageFeedback:(data:any)=>void;
+  isTyping: boolean;
 }>({
   starterQuestions: [],
   messages: [],
@@ -118,6 +119,7 @@ export const MessageContext = createContext<{
   handleMessageFeedback: () => { },
   helloMsgIds: [],
   helloMsgIdAndDataMap: {},
+  isTyping: false,
 });
 
 function InterfaceChatbot({
