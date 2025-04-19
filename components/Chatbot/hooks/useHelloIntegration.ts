@@ -152,8 +152,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         getAllChannels(unique_id_hello).then(data => {
           dispatch(setChannelListData(data));
           if (!mountedRef.current) {
-            // Call both APIs in parallel
-            Promise.any([getToken(), getAgentTeam(unique_id_hello)]);
+            getToken();
           }
         });
       }
