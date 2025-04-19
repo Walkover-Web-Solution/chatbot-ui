@@ -45,7 +45,7 @@ function MessageList({ containerRef }: MessageListProps) {
   const prevMessagesLengthRef = useRef<number>(messageIds?.length);
   const { IsHuman, assigned_type } = useCustomSelector((state: $ReduxCoreType) => ({
     IsHuman: state.Hello?.isHuman,
-    assigned_type: state.Hello?.channelListData?.channels?.find((channel: any) => channel?.channel === state?.Hello?.currentChannelId)?.assigned_type,
+    assigned_type: state.Hello?.channelListData?.channels?.find((channel: any) => channel?.channel === state?.Hello?.currentChannelId)?.assigned_type || 'bot',
   }));
   const theme = useTheme();
   const themePalette = {
