@@ -305,7 +305,7 @@ const HumanOrBotMessageCard = React.memo(
     const isSmallScreen = useMediaQuery('(max-width:1023px)');
 
     return (
-      <div className="w-full mb-2 animate-fade-in">
+      <div className="w-full mb-2 animate-fade-in animate-slide-left">
         <div className="flex items-start gap-3 max-w-[90%]">
           <div className="avatar">
             <div className="w-8 h-8 rounded-full flex items-center justify-center bg-base-200">

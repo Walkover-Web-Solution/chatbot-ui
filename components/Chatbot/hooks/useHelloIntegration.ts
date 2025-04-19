@@ -84,7 +84,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     return () => {
       socketManager.off("NewPublish", handleNewMessage);
     };
-  }, [socketManager?.isConnected]);
+  }, [handleNewMessage, socketManager?.isConnected]);
 
   // Fetch previous Hello chat history
   const fetchHelloPreviousHistory = useCallback((channelId: string = currentChannelId) => {
