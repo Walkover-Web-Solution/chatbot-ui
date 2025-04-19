@@ -56,6 +56,7 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch }: { chatbotId
     currentChannelId: state.Hello?.currentChannelId,
     currentTeamId: state.Hello?.currentTeamId,
   }));
+  const isSmallScreen = useMediaQuery('(max-width:1023px)');
 
   // Sync Redux threadId with local state
   useEffect(() => {
@@ -134,6 +135,7 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch }: { chatbotId
     widgetToken,
     currentChatId,
     currentChannelId,
-    currentTeamId
+    currentTeamId,
+    isSmallScreen
   };
 };

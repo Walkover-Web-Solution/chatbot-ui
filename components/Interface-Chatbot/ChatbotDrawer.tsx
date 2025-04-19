@@ -33,7 +33,7 @@ interface ChatbotDrawerProps {
 const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, setToggleDrawer, isToggledrawer, preview = false }) => {
   const dispatch = useDispatch();
   const isSmallScreen = useMediaQuery('(max-width:1023px)');
-  const { setOptions, chatDispatch, fetchHelloPreviousHistory } = useContext(MessageContext);
+  const { setOptions, chatDispatch, fetchHelloPreviousHistory, images, setImages } = useContext(MessageContext);
   const { currentChatId, currentTeamId, } = useReduxStateManagement({ chatbotId, chatDispatch });
   const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName, teamsList, channelList, isHuman } =
     useCustomSelector((state: $ReduxCoreType) => ({
@@ -114,12 +114,14 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
     dispatch(setDataInAppInfoReducer({ subThreadId: chatId }));
     fetchHelloPreviousHistory(channelId);
     isSmallScreen && setToggleDrawer(false)
+    images?.length > 0 && setImages([])
   }
   const handleChangeTeam = (teamId: string) => {
     dispatch(setHelloKeysData({ currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
     dispatch(setDataInAppInfoReducer({ subThreadId: teamId }));
     chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: { teamId: teamId, data: [] } });
     isSmallScreen && setToggleDrawer(false)
+    images?.length > 0 && setImages([])
   }
 
   const closeToggleDrawer = (isOpen: boolean) => {

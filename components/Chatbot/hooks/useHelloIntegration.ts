@@ -13,6 +13,7 @@ import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
+import { useMediaQuery } from '@mui/material';
 
 interface HelloMessage {
   role: string;
@@ -26,9 +27,9 @@ interface HelloMessage {
 
 const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction>, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement> }) => {
   const { handleThemeChange } = useContext(ThemeContext);
-  const { loading, isTyping, helloMessages, bridgeName, threadId, helloId, bridgeVersionId, images, isToggledrawer } = chatState;
+  const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId, images, isToggledrawer } = chatState;
   const { setLoading, setChatsLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
-  const { uuid, unique_id, presence_channel, unique_id_hello = "", widgetToken, currentChatId, currentTeamId, currentChannelId } = useReduxStateManagement({ chatbotId, chatDispatch });
+  const { uuid, unique_id, presence_channel, unique_id_hello = "", widgetToken, currentChatId, currentTeamId, currentChannelId, isSmallScreen } = useReduxStateManagement({ chatbotId, chatDispatch });
   const { assigned_type } = useCustomSelector((state: $ReduxCoreType) => ({
     assigned_type: state.Hello?.channelListData?.channels?.find((channel: any) => channel?.channel === state?.Hello?.currentChannelId)?.assigned_type || 'bot',
   }))
@@ -207,14 +208,21 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
               });
           }
           isBot && setLoading(false)
+          !isSmallScreen && getAllChannels(unique_id_hello).then(data => {
+            dispatch(setChannelListData(data));
+            if (!mountedRef.current) {
+              getToken();
+            }
+          });
         }
       });
     } catch (error) {
       isBot && setLoading(false)
       console.error("Error sending message to Hello:", error);
     }
-  }, [currentChatId, currentTeamId, uuid, unique_id, presence_channel, chatDispatch, images, isBot]);
+  }, [currentChatId, currentTeamId, uuid, unique_id, presence_channel, chatDispatch, images, isBot, isSmallScreen, unique_id_hello]);
 
+  console.log(isSmallScreen, 'isSmallScreen')
   // Handle sending a message
   const sendMessageToHello = useCallback(() => {
     // Handle different types of input elements

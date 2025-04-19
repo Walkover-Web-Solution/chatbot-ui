@@ -101,6 +101,7 @@ export const MessageContext = createContext<{
   getMoreChats: () => void;
   handleMessageFeedback:(data:any)=>void;
   isTyping: boolean;
+  isSmallScreen: boolean;
 }>({
   starterQuestions: [],
   messages: [],
@@ -120,6 +121,7 @@ export const MessageContext = createContext<{
   helloMsgIds: [],
   helloMsgIdAndDataMap: {},
   isTyping: false,
+  isSmallScreen: false,
 });
 
 function InterfaceChatbot({

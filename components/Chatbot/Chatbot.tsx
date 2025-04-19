@@ -28,7 +28,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     // hooks
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
     const { sendMessageToHello, fetchHelloPreviousHistory } = useHelloIntegration({ chatbotId, chatDispatch, chatState, messageRef });
-    const { IsHuman, currentTeamId } = useReduxStateManagement({ chatbotId, chatDispatch });
+    const { IsHuman, currentTeamId, isSmallScreen } = useReduxStateManagement({ chatbotId, chatDispatch });
     const chatActions = useChatActions({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef });
 
     const theme = useTheme();
@@ -55,6 +55,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
             helloMessages,
             helloMsgIdAndDataMap: helloMsgIdAndDataMap?.[subThreadId],
             helloMsgIds: helloMsgIds?.[subThreadId],
+            isSmallScreen,
             ...chatActions
         }}>
             <FormComponent open={openHelloForm} setOpen={(isFormOpen) => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: isFormOpen })} />
