@@ -63,10 +63,11 @@ export const useSocketEvents = ({
                         setLoading(false);
 
                         // Play notification sound when message is received
-                        // const notificationSound = new Audio('./assests/notification-sound.mp3'); // Path to notification sound file
-                        // notificationSound.play().catch(error => {
-                        //     console.error("Failed to play notification sound:", error);
-                        // });
+                        const notificationSound = new Audio('/notification-sound.mp3'); // Path to notification sound file in public folder
+                        notificationSound.volume = 0.1;
+                        notificationSound.play().catch(error => {
+                            console.error("Failed to play notification sound:", error);
+                        });
 
                         switch (message_type) {
                             case "interactive":
