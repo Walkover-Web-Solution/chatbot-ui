@@ -18,11 +18,11 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
         try {
             const parsedDetails = interfaceDetails
                 ? JSON.parse(interfaceDetails)
-                : { chatbot_id: null, userId: null, token: null, config: null, isHelloUser: false };
+                : { chatbot_id: null, userId: null, token: null, config: null, isHelloUser: true };
             return parsedDetails;
         } catch (e) {
             console.error("Error parsing interfaceDetails:", e);
-            return { chatbot_id: null, userId: null, token: null, config: null, isHelloUser: false };
+            return { chatbot_id: null, userId: null, token: null, config: null, isHelloUser: true };
         }
     }, []);
     useEffect(() => {

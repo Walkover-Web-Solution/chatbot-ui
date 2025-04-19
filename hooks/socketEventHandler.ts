@@ -4,6 +4,8 @@ import socketManager from './socketManager';
 import { ChatActionTypes, ChatState } from '@/components/Chatbot/hooks/chatTypes';
 import { useReduxStateManagement } from '@/components/Chatbot/hooks/useReduxManagement';
 import { useChatActions } from '@/components/Chatbot/hooks/useChatActions';
+import { useDispatch } from 'react-redux';
+import { changeChannelAssigned } from '@/store/hello/helloSlice';
 
 // Define types for better type safety
 export interface HelloMessage {
@@ -34,6 +36,7 @@ export const useSocketEvents = ({
     chatDispatch: (action: { type: string; payload?: any }) => void,
     messageRef: React.RefObject<HTMLDivElement>
 }) => {
+    const dispatch = useDispatch();
     // Reference to timeout for typing indicators
     const { setLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
     const { currentChannelId } = useReduxStateManagement({ chatbotId, chatDispatch });
@@ -42,47 +45,61 @@ export const useSocketEvents = ({
         chatDispatch({ type: ChatActionTypes.ADD_HELLO_MESSAGE, payload: { message, reponseType } });
     }
 
+    function isSameChannel(channelId: string) {
+        return channelId === currentChannelId;
+    }
     // Handler for new messages
     const handleNewMessage = useCallback((data: any) => {
         const { response } = data;
-        console.log(data,'data')
+        // console.log(data, 'data')
         const { message } = response || {};
-        const {
-            channel,
-            content,
-            chat_id,
-            from_name,
-            sender_id,
-            new_event,
-            type,
-            message_type
-        } = message || {};
+        const { type } = message || {};
 
-        if (channel === currentChannelId && new_event && type === 'chat') {
-            if (!chat_id) {
-                setLoading(false);
+        switch (type) {
+            case 'chat':
+                const { channel, content, chat_id, from_name, sender_id, new_event, message_type } = message || {};
+                if (isSameChannel(channel) && new_event) {
+                    if (!chat_id) {
+                        setLoading(false);
 
-                switch (message_type) {
-                    case "interactive":
-                        addHelloMessage({
-                            role: sender_id === "bot" ? "Bot" : "Human",
-                            from_name,
-                            content: content?.body?.text,
-                            urls: content?.body?.attachment,
-                            id: response?.id,
-                        }, 'assistant');
-                        break;
-                    default:
-                        addHelloMessage({
-                            role: sender_id === "bot" ? "Bot" : "Human",
-                            from_name,
-                            content: content?.text,
-                            urls: content?.attachment,
-                            id: response?.id,
-                        }, 'assistant');
+                        // Play notification sound when message is received
+                        // const notificationSound = new Audio('./assests/notification-sound.mp3'); // Path to notification sound file
+                        // notificationSound.play().catch(error => {
+                        //     console.error("Failed to play notification sound:", error);
+                        // });
+
+                        switch (message_type) {
+                            case "interactive":
+                                addHelloMessage({
+                                    role: sender_id === "bot" ? "Bot" : "Human",
+                                    from_name,
+                                    content: content?.body?.text,
+                                    urls: content?.body?.attachment,
+                                    id: response?.id,
+                                }, 'assistant');
+                                break;
+                            default:
+                                addHelloMessage({
+                                    role: sender_id === "bot" ? "Bot" : "Human",
+                                    from_name,
+                                    content: content?.text,
+                                    urls: content?.attachment,
+                                    id: response?.id,
+                                }, 'assistant');
+                        }
+                        chatDispatch({ type: ChatActionTypes.SET_TYPING, payload: false });
+                    }
                 }
-                chatDispatch({ type: ChatActionTypes.SET_TYPING, payload: false });
-            }
+                break;
+            case 'assign':
+                const { assignee_type, channel_details, assignee_id } = message || {};
+                if (isSameChannel(channel_details?.channel)) {
+                    dispatch(changeChannelAssigned({ assigned_type: assignee_type, assignee_id }));
+                }
+                break;
+            default:
+                // Handle other types if needed
+                break;
         }
     }, [currentChannelId, setLoading, addHelloMessage]);
 
@@ -90,7 +107,7 @@ export const useSocketEvents = ({
     const handleTyping = useCallback((data: any) => {
         const { channel, type, action } = data || {};
 
-        if (channel === currentChannelId && type === 'chat') {
+        if (isSameChannel(channel) && type === 'chat') {
             switch (action) {
                 case 'typing':
                     // Handle typing indicator logic here

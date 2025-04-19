@@ -30,6 +30,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   const dispatch = useDispatch();
   const { isHelloUser } = useContext(ChatbotContext);
   const mountedRef = useRef(false);
+  const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
   
   useSocket();
   useSocketEvents({chatbotId, chatState, chatDispatch, messageRef });
@@ -184,7 +185,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       if (!currentChatId) chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true });
       const attachments = Array.isArray(images) && images?.length ? images : null;
       if (attachments) chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload: [] })
-
+      setLoading(true)
+      startTimeoutTimer();
       sendMessageToHelloApi(message, attachments, channelDetail, currentChatId).then((data) => {
         if (data && !currentChatId) {
           // dispatch(setDataInAppInfoReducer({ subThreadId: data?.['id'] }));
@@ -199,9 +201,11 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
                 console.error("Failed to subscribe to channels:", error);
               });
           }
+          setLoading(false)
         }
       });
     } catch (error) {
+      setLoading(false)
       console.error("Error sending message to Hello:", error);
     }
   }, [currentChatId, currentTeamId, uuid, unique_id, presence_channel, chatDispatch, images]);
@@ -247,21 +251,22 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [onSendHello, addHelloMessage, images]);
 
   // // Start timeout timer for response waiting
-  // const startTimeoutTimer = useCallback(() => {
-  //   if (timeoutIdRef.current) {
-  //     clearTimeout(timeoutIdRef.current);
-  //   }
+  const startTimeoutTimer = useCallback(() => {
+    if (timeoutIdRef.current) {
+      clearTimeout(timeoutIdRef.current);
+    }
 
-  //   timeoutIdRef.current = setTimeout(() => {
-  //     setLoading(false);
-  //   }, 240000); // 4 minutes timeout
+    timeoutIdRef.current = setTimeout(() => {
+      setLoading(false);
+    }, 10000); // 10 minutes timeout
 
-  //   return () => {
-  //     if (timeoutIdRef.current) {
-  //       clearTimeout(timeoutIdRef.current);
-  //     }
-  //   };
-  // }, []);
+    return () => {
+      if (timeoutIdRef.current) {
+        setLoading(false)
+        clearTimeout(timeoutIdRef.current);
+      }
+    };
+  }, []);
 
   return {
     helloMessages,

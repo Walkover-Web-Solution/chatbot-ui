@@ -9,7 +9,7 @@ import React, {
 } from "react";
 
 // MUI Components
-import { Box, LinearProgress } from "@mui/material";
+import { Box, lighten, LinearProgress, useTheme } from "@mui/material";
 
 // Third-party libraries
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -37,15 +37,20 @@ function MessageList({ containerRef }: MessageListProps) {
     msgIdAndDataMap,
     helloMsgIdAndDataMap,
     helloMsgIds,
-    helloMessages
+    loading
   } = useContext(MessageContext);
   const [showScrollButton, setShowScrollButton] = useState(false)
   const [isInverse, setIsInverse] = useState(false);
   const scrollPositionRef = useRef<number>(0);
   const prevMessagesLengthRef = useRef<number>(messageIds?.length);
-  const { IsHuman } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { IsHuman, assigned_type } = useCustomSelector((state: $ReduxCoreType) => ({
     IsHuman: state.Hello?.isHuman,
+    assigned_type: state.Hello?.channelListData?.channels?.find((channel: any) => channel?.channel === state?.Hello?.currentChannelId)?.assigned_type,
   }));
+  const theme = useTheme();
+  const themePalette = {
+    "--primary-main": lighten(theme.palette.secondary.main, 0.4),
+  };
 
   const movetoDown = useCallback(() => {
     containerRef?.current?.scrollTo({
@@ -97,24 +102,6 @@ function MessageList({ containerRef }: MessageListProps) {
   }, [containerRef, handleScroll]);
 
   const RenderMessages = useMemo(() => {
-    // if (IsHuman) {
-    //   return helloMessages?.map((msg, index) => {
-    //     return <Message
-    //       // testKey={`${msgId}-${index}`}
-    //       key={`${msg?.id}-${index}`}
-    //       message={msg}
-    //     />
-    //   });
-    // } else {
-    //   return messageIds?.map((msgId, index) => {
-    //     return <Message
-    //       // testKey={`${msgId}-${index}`}
-    //       key={`${msgId}-${index}`}
-    //       message={msgIdAndDataMap[msgId]}
-    //     />
-    //   });
-    // }
-
     const targetMessages = IsHuman ? helloMsgIds : messageIds;
     const data = IsHuman ? helloMsgIdAndDataMap : msgIdAndDataMap;
     return targetMessages?.map((msgId, index) => {
@@ -167,6 +154,17 @@ function MessageList({ containerRef }: MessageListProps) {
         scrollThreshold="230px"
       >
         {RenderMessages}
+        {IsHuman && loading && assigned_type === 'bot' && <div className="w-full">
+          <div className="flex flex-wrap gap-2 items-center">
+            <p className="text-sm">Thinking...</p>
+          </div>
+          <div className="loading-indicator" style={themePalette}>
+            <div className="loading-bar"></div>
+            <div className="loading-bar"></div>
+            <div className="loading-bar"></div>
+          </div>
+        </div>
+        }
       </InfiniteScroll>
 
       <MoveToDownButton

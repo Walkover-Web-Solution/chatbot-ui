@@ -50,7 +50,7 @@ export const reducers: ValidateSliceCaseReducers<
 
   setWidgetInfo(state, action: actionType<HelloData>) {
     state.widgetInfo = action.payload;
-  }, 
+  },
   setChannelListData(state, action: actionType<any>) {
     state.channelListData = action.payload;
     state.Channel = action.payload?.channels?.[0];
@@ -66,10 +66,21 @@ export const reducers: ValidateSliceCaseReducers<
       Object.keys(payload).forEach(key => {
         if (key in state) {
           // This ensures we only set properties that exist in $HelloReduxType
-          (state as Record<keyof $HelloReduxType, any>)[key as keyof $HelloReduxType] = 
+          (state as Record<keyof $HelloReduxType, any>)[key as keyof $HelloReduxType] =
             payload[key as keyof $HelloReduxType];
         }
       });
     }
+  },
+
+  changeChannelAssigned(state, action: actionType<{ assigned_type: string, assignee_id: string }>) {
+    const { assigned_type, assignee_id } = action.payload;
+    const channel = state.channelListData?.channels?.find((channel: any) => channel?.channel === state.currentChannelId);
+    if (channel) {
+      channel.assigned_type = assigned_type;
+      channel.assignee_id = assignee_id;
+    }
+    // Remove the return statement as we're already modifying the draft state
+    // When using Immer, we should either modify the draft OR return a new state, not both
   }
 };
