@@ -22,23 +22,24 @@ import useRtlayerEventManager from './hooks/useRtlayerEventManager';
 function Chatbot({ chatbotId }: { chatbotId: string }) {
     // refs
     const containerRef = React.useRef<HTMLDivElement>(null);
+    const mountedRef = React.useRef(false);
     const messageRef = React.useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
     const timeoutIdRef = React.useRef<NodeJS.Timeout | null>(null);
 
     // hooks
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
     const { sendMessageToHello, fetchHelloPreviousHistory } = useHelloIntegration({ chatbotId, chatDispatch, chatState, messageRef });
-    const { IsHuman, currentTeamId, isSmallScreen } = useReduxStateManagement({ chatbotId, chatDispatch });
+    const { IsHuman, isSmallScreen, currentChatId } = useReduxStateManagement({ chatbotId, chatDispatch });
     const chatActions = useChatActions({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef });
 
     const theme = useTheme();
 
-
     useEffect(() => {
-        if (IsHuman && !currentTeamId) {
+        if (IsHuman && !currentChatId && !mountedRef.current) {
             chatActions.setToggleDrawer(true)
         }
-    }, [IsHuman, currentTeamId])
+        mountedRef.current = true;
+    }, [IsHuman, currentChatId, mountedRef?.current])
     // RTLayer Event Listiner
     useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef })
     const { openHelloForm, isToggledrawer, chatsLoading, helloMessages, messageIds, msgIdAndDataMap, subThreadId, helloMsgIds, helloMsgIdAndDataMap } = chatState;
