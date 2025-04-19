@@ -25,7 +25,6 @@ interface HelloMessage {
 const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction>, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement> }) => {
   const { handleThemeChange } = useContext(ThemeContext);
   const { loading, isTyping, helloMessages, bridgeName, threadId, helloId, bridgeVersionId, images, isToggledrawer } = chatState;
-  console.log(isTyping,'isTypingisTypingisTyping')
   const { setLoading, setChatsLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
   const { uuid, unique_id, presence_channel, unique_id_hello = "", widgetToken, currentChatId, currentTeamId, currentChannelId } = useReduxStateManagement({ chatbotId, chatDispatch });
   const dispatch = useDispatch();
@@ -69,7 +68,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
                   role: role,
                   message_id: chat?.id,
                   from_name: chat?.message?.from_name,
-                  content: chat?.message?.content?.text,
+                  content: chat?.message?.message_type === 'interactive' ? chat?.message?.content?.body?.text : chat?.message?.content?.text,
                   urls: chat?.message?.content?.attachment,
                 };
               })
