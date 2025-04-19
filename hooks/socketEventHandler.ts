@@ -45,6 +45,7 @@ export const useSocketEvents = ({
     // Handler for new messages
     const handleNewMessage = useCallback((data: any) => {
         const { response } = data;
+        console.log(data,'data')
         const { message } = response || {};
         const {
             channel,

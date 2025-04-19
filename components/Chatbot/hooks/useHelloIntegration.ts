@@ -10,7 +10,7 @@ import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
-import useSocketEvents from '@/hooks/socketEventHanler';
+import useSocketEvents from '@/hooks/socketEventHandler';
 
 interface HelloMessage {
   role: string;

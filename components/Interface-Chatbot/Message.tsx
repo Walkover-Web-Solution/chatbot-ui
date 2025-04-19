@@ -15,18 +15,17 @@ import {
   Chip,
   Divider,
   lighten,
-  Stack,
   useMediaQuery,
   useTheme
 } from "@mui/material";
 import copy from "copy-to-clipboard";
-import { AlertCircle, Check, CircleCheckBig, Copy, Maximize2, ThumbsDown, ThumbsUp, User } from "lucide-react";
+import { AlertCircle, Check, CircleCheckBig, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
 import dynamic from 'next/dynamic';
 import Image from "next/image";
 import React, { useContext } from "react";
 import ReactMarkdown from "react-markdown";
-import "./Message.css";
 import { MessageContext } from "./InterfaceChatbot";
+import "./Message.css";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 const ResetHistoryLine = ({ text = "" }) => {
