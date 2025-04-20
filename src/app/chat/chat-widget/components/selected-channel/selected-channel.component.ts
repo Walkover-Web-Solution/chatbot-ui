@@ -168,13 +168,16 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
     public botReplyInProcess: boolean = false;
     public selectWidgetChatStatus$: Observable<CHAT_STATUS>;
     public chatStatusEnums = CHAT_STATUS;
-
     public pushNotificationChannel: IChannel;
+
     public webrtc: any;
     public callToken$: Observable<string>;
     public clientToken$: Observable<string>;
-    public calling: boolean = false;
+    public webrtcStatus: string = '';
     public callConnected: boolean = false;
+    public timeSpent: number = 0;
+    public interval: any;
+    public webrtcCall: any;
 
     constructor(
         private store: Store<IAppState>,
@@ -501,15 +504,30 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
             if (token) {                
                 this.webrtc = WebRTC(token);
                 this.webrtc.on("call", (call) => {
+                    this.webrtcCall = call;
                     const isOutgoing = call.type === "outgoing-call";
                     if (isOutgoing){
-                        this.calling = true;
+                        this.webrtcStatus = 'Calling';
                         const mediaStream = call.getMediaStream();                
                         if (this.webRTCAudioRef && this.webRTCAudioRef.nativeElement) {
                             this.webRTCAudioRef.nativeElement.srcObject = mediaStream;
                         }
                     };
+                    call.on("answered", (data)=>{
+                        this.webrtcStatus = 'Ongoing';
+                        console.log("🚀  ➽ answered ⏩" , data);
+                        this.interval = setInterval(() => this.timeSpent++, 1000);
+                    });
+                  
+                    call.on("ended", (data)=>{
+                        console.log("🚀  ➽ ended ⏩" , data);
+                        clearInterval(this.interval);
+                        this.timeSpent = 0;
+                        this.webrtcStatus = 'Ended';
+                        call.hang();
+                    });
                     call.on("connected", (mediaStream)=>{
+                        this.webrtcStatus = 'Connected';
                         this.callConnected = true;
                         console.log("🚀  ➽ connected ⏩" , mediaStream, call.getInfo());
                     });                      
@@ -522,6 +540,14 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
     public call() {
         let callToken = this.getValueFromObservable(this.store.pipe(select(selectGetCallToken)));        
         this.webrtc.call(callToken);
+    }
+
+    public muteUnmuteWebrtcCall() {        
+        this.webrtcCall.mute();
+    }
+
+    public endWebrtcCall() {        
+        this.webrtcCall.hang();        
     }
 
     public getFirstMessage() {

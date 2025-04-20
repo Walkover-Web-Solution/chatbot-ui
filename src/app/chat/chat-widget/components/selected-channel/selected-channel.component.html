@@ -118,7 +118,7 @@
             </button>
         </div>
         <!-- Widget Tagline:: START -->
-        <div>
+        <div *ngIf="!webrtcStatus || webrtcStatus === 'Ended'">
             <ng-container *ngIf="!widgetTagline$ | async as tagline">
                 <p class="h-desc text-white">We reply within a few hours.</p>
             </ng-container>
@@ -130,20 +130,34 @@
             </ng-container>
         </div>
         <!-- Widget Tagline:: END -->
-    </div>
 
-    <div class="selected-channel-body-container flex-1 position-relative">
-        <div *ngIf="calling" class="d-flex justify-content-center align-items-center h-100">
+        <div *ngIf="webrtcStatus && webrtcStatus !== 'Ended'" class="d-flex justify-content-center align-items-center h-100 bg-light-gray">
             <audio #webRTCAudio autoplay></audio>
             <div class="d-flex flex-column justify-content-center align-items-center">
-                <p>Calling...</p>
+                <p>{{ webrtcData?.status }}</p>
             </div>
-            <button mat-icon-button class="call-action-btn end" matTooltip="End" (click)="endCall.emit()">
+            <span class="call-mode text-white mr-3 mat-body-2 fw-regular">{{ webrtcData?.status | titlecase }}</span>
+            <span class="call-mode text-white mr-3 mat-body-2 fw-regular">{{ timeSpent }}</span>
+            <button
+                mat-icon-button
+                class="call-action-btn mr-2"
+                (click)="muteUnmuteWebrtcCall()"
+            >
+                <mat-icon class="mat-icon-18 material-icons-outlined">mic_off</mat-icon>
+            </button>
+            <button 
+                mat-icon-button 
+                class="call-action-btn end" 
+                matTooltip="End"
+                (click)="endWebrtcCall()"
+            >
                 <mat-icon class="mat-icon-18 material-icons-outlined">call_end</mat-icon>
             </button>
         </div>
-        
-        <div *ngIf="!calling" #container (scroll)="scroll($event)" class="selected-channel-body-inner-container px-3 h-100 overflow-y position-absolute">
+    </div>
+
+    <div class="selected-channel-body-container flex-1 position-relative">
+        <div #container (scroll)="scroll($event)" class="selected-channel-body-inner-container px-3 h-100 overflow-y position-absolute">
             <div>
                 <mat-spinner
                     class="loading-indicator loader-center-align m-auto position-absolute"
