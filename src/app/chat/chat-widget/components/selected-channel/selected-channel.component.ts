@@ -178,7 +178,7 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
     public timeSpent: number = 0;
     public interval: any;
     public webrtcCall: any;
-
+    public webrtcMute: boolean = false;
     constructor(
         private store: Store<IAppState>,
         @Inject(DOCUMENT) private document: Document,
@@ -500,13 +500,14 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
         this.store.dispatch(actions.getClientToken({token: authToken, uuid: this.widgetUUID}));
         this.store.dispatch(actions.getCallToken({token: authToken, uuid: this.widgetUUID}));
 
-        this.clientToken$.subscribe((token) => {
-            if (token) {                
+        this.clientToken$.pipe(filter(Boolean), take(1)).subscribe((token) => {
+            if (token) {
                 this.webrtc = WebRTC(token);
                 this.webrtc.on("call", (call) => {
                     this.webrtcCall = call;
                     const isOutgoing = call.type === "outgoing-call";
                     if (isOutgoing){
+                        clearInterval(this.interval);
                         this.webrtcStatus = 'Calling';
                         const mediaStream = call.getMediaStream();                
                         if (this.webRTCAudioRef && this.webRTCAudioRef.nativeElement) {
@@ -514,22 +515,22 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
                         }
                     };
                     call.on("answered", (data)=>{
-                        this.webrtcStatus = 'Ongoing';
-                        console.log("🚀  ➽ answered ⏩" , data);
+                        this.webrtcStatus = 'Ongoing';                        
+                        this.timeSpent = 0;
+                        clearInterval(this.interval);
                         this.interval = setInterval(() => this.timeSpent++, 1000);
                     });
                   
-                    call.on("ended", (data)=>{
-                        console.log("🚀  ➽ ended ⏩" , data);
+                    call.on("ended", (data)=>{                        
                         clearInterval(this.interval);
                         this.timeSpent = 0;
                         this.webrtcStatus = 'Ended';
                         call.hang();
                     });
                     call.on("connected", (mediaStream)=>{
+                        this.timeSpent = 0;                        
                         this.webrtcStatus = 'Connected';
                         this.callConnected = true;
-                        console.log("🚀  ➽ connected ⏩" , mediaStream, call.getInfo());
                     });                      
                 });
             }
@@ -538,16 +539,30 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
     }
         
     public call() {
-        let callToken = this.getValueFromObservable(this.store.pipe(select(selectGetCallToken)));        
+        let callToken = this.getValueFromObservable(this.store.pipe(select(selectGetCallToken)));
         this.webrtc.call(callToken);
     }
 
-    public muteUnmuteWebrtcCall() {        
-        this.webrtcCall.mute();
+    public muteUnmuteWebrtcCall() {
+        if (this.webRTCAudioRef && this.webRTCAudioRef.nativeElement) {
+            if (this.webRTCAudioRef.nativeElement.muted) {
+                this.webRTCAudioRef.nativeElement.muted = false;
+                this.webrtcCall.unmute();
+                this.webrtcMute = false;
+            } else {
+                this.webRTCAudioRef.nativeElement.muted = true;
+                this.webrtcCall.mute();
+                this.webrtcMute = true;
+            }
+        }        
     }
 
-    public endWebrtcCall() {        
-        this.webrtcCall.hang();        
+    public endWebrtcCall() {
+        if(this.webrtcStatus === 'Calling'){
+            this.webrtcCall.cancel();
+        }else{
+            this.webrtcCall.hang();
+        }
     }
 
     public getFirstMessage() {
@@ -852,7 +867,6 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
                 teamId = team;
             });
         this.selectedClient$.pipe(take(1)).subscribe((cl) => {
-            console.log("🚀 ➽ file: selected client ⏩" , cl)
             client = cl;
         });
         let otherConfigDetails = {};

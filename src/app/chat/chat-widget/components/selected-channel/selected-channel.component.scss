@@ -5,6 +5,14 @@
     color: var(--msg-textMsgColor) !important;
 }
 
+.webrtc-container {
+    position: relative;
+    top: -8px;
+    left: -20px;    
+    width: 100%;
+    padding: 0 20px;    
+}
+
 .selected-channel-body-inner-container {
     inset: 0;
     overflow-x: hidden;

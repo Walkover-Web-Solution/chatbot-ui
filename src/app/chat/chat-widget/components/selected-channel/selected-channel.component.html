@@ -1,6 +1,6 @@
 <div class="selected-channel-main-container min-h-100 d-flex flex-column">
     <div
-        class="semples-header"
+        class="samples-header"
         [style.background-color]="primaryColor"
         [style.background-image]="backgroundImage"
         [ngClass]="{
@@ -108,10 +108,17 @@
                 </div>
                 <span class="assigneeName text-dotted fw-bolder font-18" [style.color]="textColor">Conversation</span>
             </ng-template>
-            
-            <button mat-button class="mat-faqs-btn font-16 fw-bolder ml-auto py-0 pr-1 pl-2 flex-row-reverse gap-1" (click)="call()">
-                Call                
+
+            <button 
+                *ngIf="!webrtcStatus || webrtcStatus === 'Ended'"
+                mat-icon-button 
+                class="call-action-btn end" 
+                matTooltip="Call"
+                (click)="call()"
+            >
+                <mat-icon class="mat-icon-18 material-icons-outlined">call</mat-icon>
             </button>
+
             <button mat-button class="mat-faqs-btn font-16 fw-bolder ml-auto py-0 pr-1 pl-2 flex-row-reverse gap-1" (click)="enableChatView(false)" *ngIf="widgetShowFaq$ | async">
                 FAQs
                 <mat-icon class="material-symbols-outlined mat-icon-20" aria-hidden="false" aria-label="chevron right icon" fontIcon="chevron_right"></mat-icon>
@@ -131,19 +138,23 @@
         </div>
         <!-- Widget Tagline:: END -->
 
-        <div *ngIf="webrtcStatus && webrtcStatus !== 'Ended'" class="d-flex justify-content-center align-items-center h-100 bg-light-gray">
+        <div *ngIf="webrtcStatus && webrtcStatus !== 'Ended'" class="d-flex justify-content-center align-items-center h-100 bg-light-gray webrtc-container">
             <audio #webRTCAudio autoplay></audio>
             <div class="d-flex flex-column justify-content-center align-items-center">
                 <p>{{ webrtcData?.status }}</p>
             </div>
             <span class="call-mode text-white mr-3 mat-body-2 fw-regular">{{ webrtcData?.status | titlecase }}</span>
-            <span class="call-mode text-white mr-3 mat-body-2 fw-regular">{{ timeSpent }}</span>
+            <span class="call-mode text-white mr-3 mat-body-2 fw-regular">{{ timeSpent | timer }}</span>
             <button
+                *ngIf="webrtcStatus === 'Ongoing'"
                 mat-icon-button
                 class="call-action-btn mr-2"
+                [matTooltip]="webrtcMute ? 'Unmute' : 'Mute'"
                 (click)="muteUnmuteWebrtcCall()"
             >
-                <mat-icon class="mat-icon-18 material-icons-outlined">mic_off</mat-icon>
+                <mat-icon class="mat-icon-18 material-icons-outlined">
+                    {{ webrtcMute ? 'mic_off' : 'mic' }}
+                </mat-icon>
             </button>
             <button 
                 mat-icon-button 

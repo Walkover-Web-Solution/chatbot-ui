@@ -63,10 +63,12 @@ import { UiInteractiveMessageModule } from '@msg91/ui/interactive-message';
 import { IdentityVerificationService } from './service/identity-verification.service';
 import { DirectivesSkeletonModule } from '@msg91/directives/skeleton';
 import { PipesTypeofModule } from '@msg91/pipes/typeof';
+import { PipesTimerModule } from '@msg91/pipes/timer';
 import { PipesWhatsappInlineStyleFormatModule, WhatsappInlineStyleFormat } from '@msg91/pipes/whatsapp-inline-style-format';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ENVIRONMENT_TOKEN } from '@msg91/constant';
 import { MatListModule } from '@angular/material/list';
+
 
 export const CHAT_COMPONENTS: any[] = [
     ChatWidgetComponent,
@@ -133,6 +135,7 @@ export const CHAT_COMPONENTS: any[] = [
         MatDialogModule,
         DirectivesSkeletonModule,
         PipesTypeofModule,
+        PipesTimerModule,
         PipesWhatsappInlineStyleFormatModule,
         MatListModule], providers: [
         ChatService,

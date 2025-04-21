@@ -94,13 +94,13 @@
     }
 }
 
-.semples-header {
+.samples-header {
     padding: 32px 16px !important;
     border-radius: 16px 16px 40px 40px;
     box-sizing: border-box;
     height: 104px;
     box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.08);
-
+    overflow: hidden;
     .head-logo img {
         height: 23px !important;
     }
