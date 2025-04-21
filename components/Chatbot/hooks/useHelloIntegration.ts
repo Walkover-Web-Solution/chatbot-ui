@@ -132,22 +132,23 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [dispatch, unique_id_hello, getToken]);
 
   const getWidgetInfo = async () => {
+
     if (isHelloUser && widgetToken) {
       initializeHelloChat(unique_id_hello).then(data => {
         dispatch(setWidgetInfo(data));
         handleThemeChange(data?.primary_color || "#000000");
       });
     }
-    else if (bridgeName && threadId) {
-      dispatch(
-        getHelloDetailsStart({
-          slugName: bridgeName,
-          threadId: threadId,
-          helloId: helloId || null,
-          versionId: bridgeVersionId || null,
-        })
-      );
-    }
+    // else if (bridgeName && threadId) {
+    //   dispatch(
+    //     getHelloDetailsStart({
+    //       slugName: bridgeName,
+    //       threadId: threadId,
+    //       helloId: helloId || null,
+    //       versionId: bridgeVersionId || null,
+    //     })
+    //   );
+    // }
   };
 
   const createAnonymousUser = useCallback(() => {

@@ -189,17 +189,17 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
       <div className="teams-section">
         <div className="teams-header mb-1 border-b pb-2 flex items-center">
           <SquarePen size={22} color="#555555" className="mr-2" />
-          <h3 className="text-md font-semibold">Our team is all set to help you!</h3>
+          <h3 className="text-lg font-semibold">Talk to our experts</h3>
           {/* <p className="text-xs text-gray-500">Connect with our experts</p> */}
         </div>
-        <div className="teams-list space-y-2">
+        <div className="teams-list space-y-0">
           {teamsList.map((team: any, index: number) => (
             <div
               key={`${team?.id}-${index}`}
-              className={`team-card overflow-hidden text-ellipsis p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start ${currentTeamId === team?.id ? '' : ''}`}
+              className={`team-card overflow-hidden text-ellipsis p-3 bg-white  shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start ${currentTeamId === team?.id ? '' : ''}`}
               onClick={() => handleChangeTeam(team?.id)}
             >
-              <div className="team-avatar mr-3 bg-primary/10 p-2 rounded-full flex-shrink-0">
+              <div className="team-avatar mr-3 bg-primary/10 p-2 rounded-md flex-shrink-0">
                 {team?.icon || <Users size={12} className="text-primary" />}
               </div>
               <div className="team-info">
