@@ -13,16 +13,16 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
     const { themeColor, handleThemeChange } = useContext(ThemeContext);
     const dispatch = useDispatch();
     // Use useMemo to parse interfaceDetails once and avoid repeated parsing
-    const { chatbot_id, userId, token, config, isHelloUser } = useMemo(() => {
+    const { chatbot_id, userId, token, config, isHelloUser = false } = useMemo(() => {
         const interfaceDetails = search.get("interfaceDetails");
         try {
             const parsedDetails = interfaceDetails
                 ? JSON.parse(interfaceDetails)
-                : { chatbot_id: null, userId: null, token: null, config: null, isHelloUser: true };
+                : { chatbot_id: null, userId: null, token: null, config: null, isHelloUser: false };
             return parsedDetails;
         } catch (e) {
             console.error("Error parsing interfaceDetails:", e);
-            return { chatbot_id: null, userId: null, token: null, config: null, isHelloUser: true };
+            return { chatbot_id: null, userId: null, token: null, config: null, isHelloUser: false };
         }
     }, []);
     useEffect(() => {

@@ -217,7 +217,6 @@ export async function sendMessageToHelloApi(message: string, attachment: Array<o
   }
 }
 
-
 // Function to upload attachment to Hello chat
 export async function uploadAttachmentToHello(file: any, inboxId: string): Promise<any> {
   try {
