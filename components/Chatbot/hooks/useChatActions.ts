@@ -108,7 +108,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
     };
 
     const getMoreChats = async () => {
-        const { isFetching, hasMoreMessages, currentPage } = chatState;
+        const { isFetching, hasMoreMessages, currentPage, subThreadId } = chatState;
         if (isFetching || !hasMoreMessages) return;
         chatDispatch({
             type: ChatActionTypes.SET_IS_FETCHING, payload: true
@@ -119,7 +119,8 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             const { previousChats } = await getPreviousMessage(
                 threadId,
                 bridgeName,
-                nextPage
+                nextPage,
+                subThreadId
             );
 
             if (Array.isArray(previousChats) && previousChats.length > 0) {
