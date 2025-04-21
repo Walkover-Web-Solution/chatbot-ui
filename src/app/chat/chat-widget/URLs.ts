@@ -26,6 +26,8 @@ export const URLS = {
         GREETING: `:URL/chat-gpt/greeting/`,
         LEX_GREETING: `:URL/chat-bot/welcome/get-welcome/`,
         CREATE_ANONYMOUS_USER: ':URL/anonymous-client-details/',
+        GET_CLIENT_TOKEN:':URL/web-rtc/get-client-token/',
+        GET_CALL_TOKEN:':URL/web-rtc/get-call-token/'
     },
     PUBNUB: {
         GET_KEYS: `:URL/pubnub-keys/`,

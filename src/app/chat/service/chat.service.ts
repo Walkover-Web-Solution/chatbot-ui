@@ -407,4 +407,18 @@ export class ChatService {
             this.options
         );
     }
+
+    public getClientToken(token: string, uuid: string = null): Observable<any> {        
+        this.options.headers.Authorization = token;        
+        return this.http.get<{ token: string }>(URLS.CHAT.GET_CLIENT_TOKEN.replace(':URL', this.apiUrl),{
+            is_anon: Boolean(getCookie('hello-widget-anonymous-uuid')),
+        }, this.options);
+    }
+
+    public getCallToken(token: string, uuid: string = null): Observable<any> {
+        this.options.headers.Authorization = token;
+        return this.http.get<{ token: string }>(URLS.CHAT.GET_CALL_TOKEN.replace(':URL', this.apiUrl), {
+            is_anon: Boolean(getCookie('hello-widget-anonymous-uuid')),
+        }, this.options);
+    }
 }

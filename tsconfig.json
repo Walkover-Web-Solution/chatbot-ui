@@ -71,7 +71,8 @@
             "@msg91/ui/interactive-message": ["src/app/libs/ui/interactive-message/index.ts"],
             "@msg91/ui/interactive-message-section": ["src/app/libs/ui/interactive-message-section/index.ts"],
             "@msg91/ui/phone-number-material": ["src/app/libs/ui/phone-number-material/index.ts"],
-            "@msg91/utils": ["src/app/libs/utils/index.ts"]
+            "@msg91/utils": ["src/app/libs/utils/index.ts"],
+            "@msg91/pipes/timer": ["src/app/libs/pipes/timer/index.ts"]
         }
     },
     "angularCompilerOptions": {
