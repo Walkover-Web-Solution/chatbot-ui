@@ -6,7 +6,7 @@ import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { ChatAction, ChatActionTypes, ChatState, SendMessagePayloadType } from './chatTypes';
+import { ChatAction, ChatActionTypes, ChatState, MessageType, SendMessagePayloadType } from './chatTypes';
 
 export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) => {
 
@@ -25,6 +25,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
     }, [threadId, bridgeName]);
 
     useEffect(() => {
+        setMessages([])
         getIntialChatHistory();
     }, [threadId, bridgeName, subThreadId]);
 
@@ -57,37 +58,37 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                     subThreadId
                 );
                 if (Array.isArray(previousChats)) {
-                    setMessages(previousChats)
+                    chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload: { messages: previousChats, initial: true } });
                     chatDispatch({
                         type: ChatActionTypes.SET_DATA, payload: {
                             currentPage: 1,
                             hasMoreMessages: previousChats?.length >= 20
                         }
-                    })
+                    });
                 } else {
-                    setMessages([])
+                    chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload: { messages: [], initial: true } });
                     chatDispatch({
                         type: ChatActionTypes.SET_DATA, payload: {
                             hasMoreMessages: false
                         }
-                    })
+                    });
                     console.warn("previousChats is not an array");
                 }
                 if (Array.isArray(starterQuestion)) {
-                    chatDispatch({ type: ChatActionTypes.SET_STARTER_QUESTIONS, payload: starterQuestion })
+                    chatDispatch({ type: ChatActionTypes.SET_STARTER_QUESTIONS, payload: starterQuestion });
                 }
             } catch (error) {
                 console.warn("Error fetching previous chats:", error);
-                setMessages([])
+                chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload: { messages: [], initial: true } });
                 chatDispatch({
                     type: ChatActionTypes.SET_DATA, payload: {
                         hasMoreMessages: false
                     }
-                })
+                });
             } finally {
                 chatDispatch({
                     type: ChatActionTypes.SET_CHATS_LOADING, payload: false
-                })
+                });
             }
         }
     };
@@ -97,32 +98,30 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         if (isFetching || !hasMoreMessages) return;
         chatDispatch({
             type: ChatActionTypes.SET_IS_FETCHING, payload: true
-        })
+        });
         try {
-
             const nextPage = currentPage + 1;
-            console.log("Current page", currentPage)
-            console.log("Next page", nextPage)
             const { previousChats } = await getPreviousMessage(
                 threadId,
                 bridgeName,
-                nextPage
+                nextPage,
+                subThreadId
             );
 
             if (Array.isArray(previousChats) && previousChats.length > 0) {
-                setMessages([...previousChats])
+                chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload: { messages: [...previousChats], initial: false } });
                 chatDispatch({
                     type: ChatActionTypes.SET_DATA, payload: {
                         currentPage: nextPage,
-                        hasMoreMessages: previousChats?.length < 20 ? false : true
+                        hasMoreMessages: previousChats?.length >= 20
                     }
-                })
+                });
             } else {
                 chatDispatch({
                     type: ChatActionTypes.SET_DATA, payload: {
                         hasMoreMessages: false
                     }
-                })
+                });
             }
         } catch (error) {
             console.warn("Error fetching more messages:", error);
@@ -130,15 +129,18 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         } finally {
             chatDispatch({
                 type: ChatActionTypes.SET_IS_FETCHING, payload: false
-            })
+            });
         }
     }
 
     const sendMessage = async ({ message = '', customVariables = {}, customThreadId = '', customBridgeSlug = '', apiCall = true }: SendMessagePayloadType) => {
+        chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload: true })
         const textMessage = message || (messageRef?.current as HTMLInputElement)?.value;
         const imageUrls = Array.isArray(chatState.images) && chatState?.images?.length ? chatState?.images : []; // Assuming imageUrls is an empty array or you can replace it with the actual value
         if (!textMessage && imageUrls.length === 0) return;
-        messageRef.current.value = "";
+        if (messageRef.current) {
+            messageRef.current.value = "";
+        }
         chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: true })
         chatDispatch({ type: ChatActionTypes.SET_OPTIONS, payload: [] })
 
@@ -177,13 +179,13 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         }
     }
 
-    const setMessages = (payload: any) => chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload })
+    const setMessages = (payload: MessageType[]) => chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload: { messages: payload, initial: false } })
 
     const handleMessageFeedback = async (payload:{ msgId: string, feedback: number , reduxMsgId:string }) =>{
         const { msgId, feedback ,reduxMsgId} = payload;
         const currentStatus = chatState.msgIdAndDataMap?.[subThreadId]?.[reduxMsgId]?.user_feedback;
         if (msgId && feedback && currentStatus !== feedback) {
-            const response: any = await sendFeedbackAction({
+            const response = await sendFeedbackAction({
               messageId: msgId,
               feedbackStatus:feedback,
             });
