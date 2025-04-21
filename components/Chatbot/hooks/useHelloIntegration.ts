@@ -1,10 +1,10 @@
 import { ThemeContext } from '@/components/AppWrapper';
 import { ChatbotContext } from '@/components/context';
-import { getAgentTeamApi, getAllChannels, getHelloChatHistoryApi, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
+import { getAllChannels, getCallToken, getClientToken, getHelloChatHistoryApi, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
 import useSocket from '@/hooks/socket';
 import useSocketEvents from '@/hooks/socketEventHandler';
 import socketManager from '@/hooks/socketManager';
-import { getHelloDetailsStart, setChannelListData, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
+import { setChannelListData, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { generateNewId } from '@/utils/utilities';
@@ -13,7 +13,6 @@ import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
-import { useMediaQuery } from '@mui/material';
 
 interface HelloMessage {
   role: string;
@@ -35,7 +34,7 @@ interface UseHelloIntegrationProps {
 const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: UseHelloIntegrationProps) => {
   const { handleThemeChange } = useContext(ThemeContext);
   const { isHelloUser } = useContext(ChatbotContext);
-  const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId, images, isToggledrawer } = chatState;
+  const { loading, helloMessages, bridgeName, images, isToggledrawer } = chatState;
   const { setLoading, setChatsLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
   const {
     uuid,
@@ -118,6 +117,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       if (data !== null) {
         mountedRef.current = true;
         dispatch(setJwtToken(data));
+        getClientToken();
+        getCallToken();
       }
     });
   }, [dispatch]);

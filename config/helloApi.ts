@@ -240,3 +240,47 @@ export async function uploadAttachmentToHello(file: any, inboxId: string): Promi
   }
 }
 
+// Get client token for WebRTC
+export async function getClientToken(): Promise<any> {
+  try {
+    const isAnon = localStorage.getItem("is_anon") == 'true';
+    const response = await axios.get(
+      `${HELLO_HOST_URL}/web-rtc/get-client-token/?is_anon=${isAnon}`,
+      {
+        headers: {
+          authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+        },
+      }
+    );
+    if (response?.data?.data?.jwt_token) {
+      localStorage.setItem("HelloClientToken", response?.data?.data?.jwt_token);
+    }
+    return response?.data?.data;
+  } catch (error: any) {
+    errorToast(error?.message || "Failed to get client token for WebRTC");
+    return null;
+  }
+}
+
+// Get call token for WebRTC
+export async function getCallToken(): Promise<any> {
+  try {
+    const isAnon = localStorage.getItem("is_anon") == 'true';
+    const response = await axios.get(
+      `${HELLO_HOST_URL}/web-rtc/get-call-token/?is_anon=${isAnon}`,
+      {
+        headers: {
+          authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+        },
+      }
+    );
+    if (response?.data?.data?.jwt_token) {
+      localStorage.setItem("HelloCallToken", response?.data?.data?.jwt_token);
+    }
+    return response?.data?.data;
+  } catch (error: any) {
+    errorToast(error?.message || "Failed to get call token for WebRTC");
+    return null;
+  }
+}
+
