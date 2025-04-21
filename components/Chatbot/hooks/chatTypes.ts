@@ -1,6 +1,6 @@
 // types for the chat reducer and actions
 export interface MessageType {
-  Id:string
+  Id: string
   content: string;
   role: string;
   responseId?: string;
@@ -13,14 +13,15 @@ export interface MessageType {
   urls?: string[];
   Name?: any[];
   mode?: string;
+  isTyping?: boolean;
 }
 
 export interface ChatState {
   messages: MessageType[];
-  messageIds: { [subThreadId:string] : string[] };
+  messageIds: { [subThreadId: string]: string[] };
   msgIdAndDataMap: { [subThreadId: string]: { [msgId: string]: MessageType } }
   helloMessages: any[];
-  helloMsgIds:{ [subThreadId:string] : string[] };
+  helloMsgIds: { [subThreadId: string]: string[] };
   helloMsgIdAndDataMap: { [subThreadId: string]: { [msgId: string]: any } }
   loading: boolean;
   chatsLoading: boolean;
@@ -39,18 +40,19 @@ export interface ChatState {
   newMessage: boolean;
   openHelloForm: boolean;
   isToggledrawer: boolean;
+  isTyping: boolean;
 }
 
 
 export interface ReduxSetterActionType {
   messages?: MessageType[];
-  messageIds?: { [subThreadId:string] : string[] };
+  messageIds?: { [subThreadId: string]: string[] };
   msgIdAndDataMap?: { [subThreadId: string]: { [msgId: string]: MessageType } }
   helloMessages?: any[];
   loading?: boolean;
   chatsLoading?: boolean;
   options?: any[];
-  images?: string[];
+  images?: string[] | Array<{ path: string }>;
   threadId?: string;
   subThreadId?: string;
   bridgeName?: string;
@@ -98,6 +100,7 @@ export enum ChatActionTypes {
   SET_DATA = 'SET_DATA',
   SET_MESSAGE_FEEDBACK = 'SET_MESSAGE_FEEDBACK',
   UPDATE_SINGLE_MESSAGE = 'UPDATE_SINGLE_MESSAGE',
+  SET_TYPING = 'SET_TYPING',
 }
 
 export type ChatAction =
@@ -130,9 +133,9 @@ export type ChatAction =
   | { type: ChatActionTypes.SET_MESSAGE_TIMEOUT }
   | { type: ChatActionTypes.RESET_STATE }
   | { type: ChatActionTypes.SET_DATA; payload: ReduxSetterActionType }
-  | { type:ChatActionTypes.SET_MESSAGE_FEEDBACK;payload:any}
+  | { type: ChatActionTypes.SET_MESSAGE_FEEDBACK; payload: any }
   | { type: ChatActionTypes.UPDATE_SINGLE_MESSAGE; payload: any }
-
+  | { type: ChatActionTypes.SET_TYPING; payload: boolean }
 export interface ChatContextType extends ChatState {
   dispatch: React.Dispatch<ChatAction>;
   sendMessage: (message: SendMessagePayloadType) => void;

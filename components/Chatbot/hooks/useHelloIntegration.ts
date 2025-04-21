@@ -1,12 +1,19 @@
-import { getHelloChatsApi } from '@/config/api';
+import { ThemeContext } from '@/components/AppWrapper';
+import { ChatbotContext } from '@/components/context';
+import { getAgentTeamApi, getAllChannels, getHelloChatHistoryApi, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
 import useSocket from '@/hooks/socket';
-import { getHelloDetailsStart, setChannel } from '@/store/hello/helloSlice';
-import axios from 'axios';
-import { useCallback, useEffect, useRef } from 'react';
+import useSocketEvents from '@/hooks/socketEventHandler';
+import socketManager from '@/hooks/socketManager';
+import { getHelloDetailsStart, setChannelListData, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
+import { $ReduxCoreType } from '@/types/reduxCore';
+import { useCustomSelector } from '@/utils/deepCheckSelector';
+import { generateNewId } from '@/utils/utilities';
+import { useCallback, useContext, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
+import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
-import { generateNewId } from '@/utils/utilities';
+import { useMediaQuery } from '@mui/material';
 
 interface HelloMessage {
   role: string;
@@ -14,109 +21,124 @@ interface HelloMessage {
   from_name?: string;
   content: string;
   id?: string;
+  chat_id?: string;
+  urls?: string[];
 }
 
-const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction>, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement> }) => {
-  const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId } = chatState;
-  const { uuid, unique_id, channelId, presence_channel, team_id, chat_id } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
-  const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
-  const socket: any = useSocket();
+interface UseHelloIntegrationProps {
+  chatbotId: string;
+  chatState: ChatState;
+  chatDispatch: React.Dispatch<ChatAction>;
+  messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement>;
+}
+
+const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: UseHelloIntegrationProps) => {
+  const { handleThemeChange } = useContext(ThemeContext);
+  const { isHelloUser } = useContext(ChatbotContext);
+  const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId, images, isToggledrawer } = chatState;
+  const { setLoading, setChatsLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
+  const {
+    uuid,
+    unique_id,
+    presence_channel,
+    unique_id_hello = "",
+    widgetToken,
+    currentChatId,
+    currentTeamId,
+    currentChannelId,
+    isSmallScreen
+  } = useReduxStateManagement({ chatbotId, chatDispatch });
+
+  const { assigned_type } = useCustomSelector((state: $ReduxCoreType) => ({
+    assigned_type: state.Hello?.channelListData?.channels?.find(
+      (channel: any) => channel?.channel === state?.Hello?.currentChannelId
+    )?.assigned_type || 'bot',
+  }));
+
+  const isBot = assigned_type === 'bot';
   const dispatch = useDispatch();
+  const mountedRef = useRef(false);
+  const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
-  const setLoading = (value: boolean) => {
-    chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: value });
-  }
+  useSocket();
+  useSocketEvents({ chatbotId, chatState, chatDispatch, messageRef });
 
-  const setHelloMessages = (messages: HelloMessage[]) => {
-    chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: messages });
-  }
+  const setHelloMessages = useCallback((messages: HelloMessage[]) => {
+    chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: { data: messages } });
+  }, [chatDispatch]);
 
-  const addHelloMessage = (message: HelloMessage, reponseType: any = '') => {
-    chatDispatch({ type: ChatActionTypes.ADD_HELLO_MESSAGE, payload: { message, reponseType } });
-  }
-
-  // Initialize socket listeners
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleNewPublish = (data: any) => {
-      const { response } = data;
-      const { message } = response || {};
-      const { content, chat_id, from_name, sender_id } = message || {};
-      const text = content?.text;
-
-      if (text && !chat_id) {
-        setLoading(false);
-        if (timeoutIdRef.current) {
-          clearTimeout(timeoutIdRef.current);
-        }
-
-        addHelloMessage({
-          role: sender_id === "bot" ? "Bot" : "Human",
-          from_name,
-          content: text,
-          id: response?.id,
-        }, 'assistant');
-      }
-    };
-
-    socket.on("NewPublish", handleNewPublish);
-    // socket.on("message", (data) => {
-    //   // Handle any message events if needed
-    // });
-
-    return () => {
-      socket.on("NewPublish");
-      // socket.off("message");
-    };
-  }, [socket]);
+  const addHelloMessage = useCallback((message: HelloMessage, responseType: any = '') => {
+    chatDispatch({ type: ChatActionTypes.ADD_HELLO_MESSAGE, payload: { message, responseType } });
+  }, [chatDispatch]);
 
   // Fetch previous Hello chat history
-  const fetchHelloPreviousHistory = useCallback(async () => {
-    if (channelId && uuid) {
-      try {
-        const response = await getHelloChatsApi({ channelId });
-        const helloChats = response?.data?.data;
+  const fetchHelloPreviousHistory = useCallback((channelId: string = currentChannelId) => {
+    if (!channelId || !uuid) return;
 
+    setChatsLoading(true);
+    getHelloChatHistoryApi(channelId)
+      .then((response) => {
+        const helloChats = response?.data?.data;
         if (Array.isArray(helloChats) && helloChats.length > 0) {
           const filterChats = helloChats
             .map((chat) => {
               let role;
-
               if (chat?.message?.from_name) {
                 role = "Human";
-              } else if (
-                !chat?.message?.from_name &&
-                chat?.message?.sender_id === "bot"
-              ) {
+              } else if (!chat?.message?.from_name && chat?.message?.sender_id === "bot") {
                 role = "Bot";
               } else {
                 role = "user";
               }
 
               return {
-                role: role,
+                role,
                 message_id: chat?.id,
                 from_name: chat?.message?.from_name,
-                content: chat?.message?.content?.text,
+                content: chat?.message?.message_type === 'interactive'
+                  ? chat?.message?.content?.body?.text
+                  : chat?.message?.content?.text,
+                urls: chat?.message?.content?.attachment,
               };
             })
             .reverse();
-
           setHelloMessages(filterChats);
         }
-      } catch (error) {
-        console.warn("Error fetching Hello chats:", error);
+      })
+      .catch((error) => {
+        console.error("Error fetching Hello chat history:", error);
+      })
+      .finally(() => {
+        setChatsLoading(false);
+      });
+  }, [currentChannelId, uuid, setChatsLoading, setHelloMessages]);
+
+  const getToken = useCallback(() => {
+    getJwtToken().then((data) => {
+      if (data !== null) {
+        mountedRef.current = true;
+        dispatch(setJwtToken(data));
       }
+    });
+  }, [dispatch]);
+
+  const fetchChannels = useCallback(() => {
+    return getAllChannels(unique_id_hello).then(data => {
+      dispatch(setChannelListData(data));
+      if (!mountedRef.current) {
+        getToken();
+      }
+    });
+  }, [dispatch, unique_id_hello, getToken]);
+
+  const getWidgetInfo = async () => {
+    if (isHelloUser && widgetToken) {
+      initializeHelloChat(unique_id_hello).then(data => {
+        dispatch(setWidgetInfo(data));
+        handleThemeChange(data?.primary_color || "#000000");
+      });
     }
-  }, [channelId, uuid]);
-
-  useEffect(() => {
-    fetchHelloPreviousHistory();
-  }, [fetchHelloPreviousHistory, channelId, uuid]);
-
-  const subscribeToChannel = () => {
-    if (bridgeName && threadId) {
+    else if (bridgeName && threadId) {
       dispatch(
         getHelloDetailsStart({
           slugName: bridgeName,
@@ -128,88 +150,11 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     }
   };
 
-  useEffect(() => {
-    subscribeToChannel();
-  }, [bridgeName, threadId, helloId]);
-
-  // Send message to Hello
-  const onSendHello = useCallback(async (message: string) => {
-    if (!message.trim()) return;
-
-    try {
-      const channelDetail = !channelId ? {
-        call_enabled: null,
-        uuid,
-        country: null,
-        pseudo_name: null,
-        unique_id,
-        presence_channel,
-        country_iso2: null,
-        chatInputSubmitted: false,
-        is_blocked: null,
-        customer_name: null,
-        customer_number: null,
-        customer_mail: null,
-        team_id,
-        new: true,
-      } : undefined;
-
-      if (!channelId) chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true });
-
-      const response = await axios.post(
-        "https://api.phone91.com/v2/send/",
-        {
-          type: "widget",
-          message_type: "text",
-          content: {
-            text: message,
-            attachment: [],
-          },
-          ...(channelDetail ? { channelDetail } : {}),
-          chat_id: !channelId ? null : chat_id,
-          session_id: null,
-          user_data: {},
-          is_anon: true,
-        },
-        {
-          headers: {
-            accept: "application/json",
-            authorization: localStorage.getItem("HelloAgentAuth"),
-          },
-        }
-      );
-
-      if (!channelId && response?.data?.data) {
-        dispatch(setChannel({ Channel: response.data.data }));
-      }
-
-      return response.data.data;
-    } catch (error) {
-      console.error("Error sending message to Hello:", error);
-    }
-  }, [channelId, uuid, unique_id, presence_channel, team_id, chat_id, chatDispatch]);
-
-  // Handle sending a message
-  const sendMessageToHello = useCallback(() => {
-    const textMessage = (messageRef?.current?.value || '');
-    if (!textMessage.trim()) return;
-
-    addHelloMessage({
-      id: generateNewId(),
-      role: "user",
-      content: textMessage,
+  const createAnonymousUser = useCallback(() => {
+    registerAnonymousUser().then(() => {
+      getToken();
     });
-
-    // Send message to API
-    onSendHello(textMessage);
-
-    // Clear input field
-    if (messageRef?.current) {
-      messageRef.current.value = '';
-    }
-
-    return true;
-  }, [onSendHello]);
+  }, [getToken]);
 
   // Start timeout timer for response waiting
   const startTimeoutTimer = useCallback(() => {
@@ -219,22 +164,174 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
     timeoutIdRef.current = setTimeout(() => {
       setLoading(false);
-    }, 240000); // 4 minutes timeout
+    }, 10000); // 10 seconds timeout
 
     return () => {
       if (timeoutIdRef.current) {
+        setLoading(false);
         clearTimeout(timeoutIdRef.current);
       }
     };
+  }, [setLoading]);
+
+  // Send message to Hello
+  const onSendHello = useCallback(async (message: string, newMessage: HelloMessage) => {
+    if (!message.trim() && images.length === 0) return;
+
+    try {
+      const channelDetail = !currentChatId ? {
+        call_enabled: null,
+        uuid,
+        unique_id,
+        country: null,
+        pseudo_name: null,
+        presence_channel,
+        country_iso2: null,
+        chatInputSubmitted: false,
+        is_blocked: null,
+        customer_name: null,
+        customer_number: null,
+        customer_mail: null,
+        team_id: currentTeamId,
+        new: true,
+      } : undefined;
+
+      if (!currentChatId) {
+        chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true });
+      }
+
+      const attachments = Array.isArray(images) && images?.length ? images : null;
+
+      if (attachments) {
+        chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload: [] });
+      }
+
+      if (isBot) {
+        setLoading(true);
+      }
+
+      startTimeoutTimer();
+
+      const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId);
+
+      if (data && !currentChatId) {
+        dispatch(setHelloKeysData({
+          currentChatId: data?.['id'],
+          currentChannelId: data?.['channel']
+        }));
+
+        if (data?.['presence_channel'] && data?.['channel']) {
+          try {
+            await socketManager.subscribe([data?.['presence_channel'], data?.['channel']]);
+          } catch (error) {
+            console.error("Failed to subscribe to channels:", error);
+          }
+        }
+
+        if (isBot) {
+          setLoading(false);
+        }
+
+        if (!isSmallScreen) {
+          fetchChannels();
+        }
+      }
+    } catch (error) {
+      if (isBot) {
+        setLoading(false);
+      }
+      console.error("Error sending message to Hello:", error);
+    }
+  }, [
+    currentChatId,
+    currentTeamId,
+    uuid,
+    unique_id,
+    presence_channel,
+    chatDispatch,
+    images,
+    isBot,
+    isSmallScreen,
+    unique_id_hello,
+    startTimeoutTimer,
+    setLoading,
+    dispatch,
+    fetchChannels
+  ]);
+
+  // Handle sending a message
+  const sendMessageToHello = useCallback(() => {
+    // Handle different types of input elements
+    let textMessage = '';
+    if (messageRef?.current) {
+      if ('value' in messageRef.current) {
+        textMessage = messageRef.current.value || '';
+      } else if (messageRef.current instanceof HTMLDivElement) {
+        textMessage = messageRef.current.textContent || '';
+      }
+    }
+
+    if (!textMessage.trim() && images?.length === 0) return false;
+
+    const messageId = generateNewId();
+    const newMessage = {
+      id: messageId,
+      role: "user",
+      content: textMessage,
+      urls: images || [],
+    };
+
+    // Add message to chat
+    addHelloMessage(newMessage);
+
+    // Send message to API
+    onSendHello(textMessage, newMessage);
+
+    // Clear input field
+    if (messageRef?.current) {
+      if ('value' in messageRef.current) {
+        messageRef.current.value = '';
+      } else if (messageRef.current instanceof HTMLDivElement) {
+        messageRef.current.textContent = '';
+      }
+    }
+
+    return true;
+  }, [onSendHello, addHelloMessage, images, messageRef]);
+
+  // Effect hooks
+  useEffect(() => {
+    if (!mountedRef.current) {
+      fetchHelloPreviousHistory();
+    }
   }, []);
+
+  useEffect(() => {
+    if (!localStorage.getItem("HelloClientId") && !unique_id_hello && widgetToken && isHelloUser) {
+      createAnonymousUser();
+    }
+  }, [isHelloUser, unique_id_hello, widgetToken, createAnonymousUser]);
+
+  useEffect(() => {
+    getWidgetInfo();
+  }, [bridgeName, isHelloUser, widgetToken]);
+
+  useEffect(() => {
+    if (isHelloUser && localStorage.getItem("HelloClientId")) {
+      // Only fetch channels on mount (when mountedRef is false) or when drawer is toggled open
+      if (!mountedRef.current || isToggledrawer) {
+        fetchChannels();
+      }
+    }
+  }, [isHelloUser, unique_id_hello, isToggledrawer, mountedRef, fetchChannels]);
 
   return {
     helloMessages,
     loading,
     setLoading,
     sendMessageToHello,
-    startTimeoutTimer,
-    fetchHelloPreviousHistory
+    fetchHelloPreviousHistory,
+    addHelloMessage
   };
 };
 

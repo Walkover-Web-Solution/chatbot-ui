@@ -1,5 +1,5 @@
 // React and Next.js imports
-import React, {
+import {
   useCallback,
   useContext,
   useEffect,
@@ -9,8 +9,7 @@ import React, {
 } from "react";
 
 // MUI Components
-// Removing unused imports
-import { LinearProgress } from "@mui/material";
+import { lighten, LinearProgress, useTheme } from "@mui/material";
 
 // Third-party libraries
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -31,6 +30,7 @@ function MessageList() {
     msgIdAndDataMap,
     helloMsgIdAndDataMap,
     helloMsgIds,
+    loading,
     messages,
     setNewMessage
   } = useContext(MessageContext);
@@ -39,9 +39,14 @@ function MessageList() {
   const [isAtBottom, setIsAtBottom] = useState(true);
   const lastScrollHeightRef = useRef<number>(0);
   const prevMessagesLengthRef = useRef<number>(0);
-  const { IsHuman } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { IsHuman, assigned_type } = useCustomSelector((state: $ReduxCoreType) => ({
     IsHuman: state.Hello?.isHuman,
+    assigned_type: state.Hello?.channelListData?.channels?.find((channel: any) => channel?.channel === state?.Hello?.currentChannelId)?.assigned_type || 'bot',
   }));
+  const theme = useTheme();
+  const themePalette = {
+    "--primary-main": lighten(theme.palette.secondary.main, 0.4),
+  };
 
   const movetoDown = useCallback(() => {
     const messageContainer = document.getElementById("message-container");
@@ -60,7 +65,7 @@ function MessageList() {
 
     const { scrollTop, scrollHeight, clientHeight } = messageContainer;
     const isBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 50;
-    
+
     setIsAtBottom(isBottom);
     setShowScrollButton(!isBottom);
 
@@ -96,17 +101,17 @@ function MessageList() {
     // If messages were added at the end (new messages)
     if (messageIds?.length > prevMessagesLengthRef.current && isAtBottom) {
       setTimeout(movetoDown, 100);
-    } 
+    }
     // If messages were added at the beginning (pagination)
     else if (messageIds?.length > prevMessagesLengthRef.current && lastScrollHeightRef.current > 0) {
       const newScrollHeight = messageContainer.scrollHeight;
       const heightDifference = newScrollHeight - lastScrollHeightRef.current;
-      
+
       if (heightDifference > 0) {
         messageContainer.scrollTop = heightDifference;
       }
     }
-    
+
     prevMessagesLengthRef.current = messageIds?.length || 0;
   }, [messageIds?.length, movetoDown, isAtBottom]);
 
@@ -122,7 +127,7 @@ function MessageList() {
   const RenderMessages = useMemo(() => {
     const targetMessages = IsHuman ? helloMsgIds : messageIds;
     const targetMap = IsHuman ? helloMsgIdAndDataMap : msgIdAndDataMap;
-    
+
     return targetMessages?.map((msgId, index) => (
       <Message
         key={`${msgId}-${index}`}
@@ -147,9 +152,20 @@ function MessageList() {
           loader={<LinearProgress color="primary" />}
           scrollableTarget="message-container"
           scrollThreshold="200px"
-          // style={{ display: 'flex', flexDirection: 'column-reverse' }}
+        // style={{ display: 'flex', flexDirection: 'column-reverse' }}
         >
           {RenderMessages}
+          {IsHuman && loading && assigned_type === 'bot' && <div className="w-full">
+            <div className="flex flex-wrap gap-2 items-center">
+              <p className="text-sm">Thinking...</p>
+            </div>
+            <div className="loading-indicator" style={themePalette}>
+              <div className="loading-bar"></div>
+              <div className="loading-bar"></div>
+              <div className="loading-bar"></div>
+            </div>
+          </div>
+          }
         </InfiniteScroll>
       </div>
       <MoveToDownButton

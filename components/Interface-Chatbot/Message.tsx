@@ -15,7 +15,7 @@ import {
   Chip,
   Divider,
   lighten,
-  Stack,
+  useMediaQuery,
   useTheme
 } from "@mui/material";
 import copy from "copy-to-clipboard";
@@ -24,8 +24,8 @@ import dynamic from 'next/dynamic';
 import Image from "next/image";
 import React, { useContext } from "react";
 import ReactMarkdown from "react-markdown";
-import "./Message.css";
 import { MessageContext } from "./InterfaceChatbot";
+import "./Message.css";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 const ResetHistoryLine = ({ text = "" }) => {
@@ -41,26 +41,29 @@ const ResetHistoryLine = ({ text = "" }) => {
 };
 
 const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
+  const isSmallScreen = useMediaQuery('(max-width:1023px)');
   return (
     <>
       <div className="flex flex-col gap-2.5 items-end w-full mb-2.5 animate-slide-left mt-1">
         {Array.isArray(message?.urls) && message.urls.length > 0 && (
-          <div className="flex flex-row-reverse flex-wrap gap-2.5 max-w-[80%] p-2.5 rounded-[10px_10px_1px_10px]">
-            {message.urls.map((url: string, index: number) => (
-              <Image
-                key={index}
-                src={url}
-                alt={`Image ${index + 1}`}
-                className="block max-w-[40%] h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => window.open(url, "_blank")}
-                width={10} // You should replace 0 with the actual width
-                height={10} // You should replace 0 with the actual height
-                layout="responsive"
-              />
-            ))}
+          <div className="flex flex-row-reverse flex-wrap gap-2.5 max-w-[80%] p-2.5 ">
+            {message.urls.map((url: any, index: number) => {
+              return (
+                <Image
+                  key={index}
+                  src={typeof url === 'object' ? url?.path : url}
+                  alt={`Image ${index + 1}`}
+                  className={`block ${isSmallScreen ? 'max-w-[80%]' : 'max-w-[40%]'} h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity`}
+                  onClick={() => window.open(typeof url === 'object' ? url?.path : url, "_blank")}
+                  width={20} // You should replace 0 with the actual width
+                  height={20} // You should replace 0 with the actual height
+                  layout="responsive"
+                />
+              )
+            })}
           </div>
         )}
-        <div
+        {message?.content && <div
           className="p-2.5 min-w-[150px] sm:max-w-[80%] max-w-[90%] rounded-[10px_10px_1px_10px] break-words"
           style={{
             backgroundColor: theme.palette.primary.main,
@@ -72,7 +75,7 @@ const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
               {message?.content}
             </p>
           </div>
-        </div>
+        </div>}
       </div>
 
       {message?.is_reset && <ResetHistoryLine />}
@@ -283,6 +286,8 @@ const HumanOrBotMessageCard = React.memo(
   ({
     message,
     theme,
+    backgroundColor,
+    textColor,
     isBot = false,
     isError = false,
     handleFeedback = () => { },
@@ -297,90 +302,101 @@ const HumanOrBotMessageCard = React.memo(
       }, 1500);
     };
 
-    return (
-      <Box className="assistant_message_card">
-        <Stack
-          className="assistant-message-slide"
-          sx={{
-            alignItems: "flex-end",
-            gap: "10px",
-            maxWidth: "90%",
-            "@media(max-width:479px)": {
-              height: "fit-content",
-              columnGap: "5px",
-            },
-            marginBottom: "10px",
-          }}
-          direction="row"
-        >
-          <Stack
-            sx={{
-              alignItems: "center",
-              width: "30px",
-              justifyContent: "flex-end",
-              "@media(max-width:479px)": { width: "30px" },
-            }}
-            spacing="5px"
-          >
-            {!isBot ? (
-              <Image
-                src={UserAssistant}
-                width={28}
-                height={28}
-                alt="AI"
-                style={{ color: "red" }}
-              />
-            ) : (
-              <Image
-                width={24}
-                height={24}
-                src="https://img.icons8.com/ios/50/message-bot.png"
-                alt="message-bot"
-              />
-            )}
-          </Stack>
+    const isSmallScreen = useMediaQuery('(max-width:1023px)');
 
-          <Box
-            className="assistant-message-slide"
-            sx={{
-              backgroundColor: theme.palette.background.default,
-              padding: "2px 10px",
-              boxSizing: "border-box",
-              height: "fit-content",
-              minWidth: "150px",
-              borderRadius: "10px 10px 10px 1px",
-              boxShadow: "0 2px 1px rgba(0, 0, 0, 0.1)",
-              wordBreak: "break-word",
-              overflowWrap: "break-word",
-              maxWidth: "100%",
-              color: "black",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            <Box className="assistant-message-slide">
-              <div dangerouslySetInnerHTML={{ __html: message?.content }}></div>
-            </Box>
-          </Box>
-        </Stack>
-        <Box className="flex flex-row">
-          <Box
-            sx={{
-              alignItems: "center",
-              width: "30px",
-              justifyContent: "flex-end",
-              "@media(max-width:479px)": { width: "30px" },
-            }}
-          ></Box>
-        </Box>
-        {message?.is_reset && <ResetHistoryLine />}
-      </Box>
+    return (
+      <div className="w-full mb-2 animate-fade-in animate-slide-left">
+        <div className="flex items-start gap-2 max-w-[90%]">
+          <div className="">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-base-200">
+              {!isBot ? (
+                <div className="rounded-full" style={{ backgroundColor: lighten(backgroundColor, 0.3) }}>
+                  {message?.from_name ? (
+                    <div className="w-7 h-7 flex items-center justify-center text-xs font-bold rounded-full" style={{ color: textColor }}>
+                      {message?.from_name?.charAt(0)?.toUpperCase()}
+                    </div>
+                  ) : (
+                    <Image
+                      width={24}
+                      height={24}
+                      src={UserAssistant}
+                      alt="User"
+                      className="opacity-70"
+                    />
+                  )}
+                </div>
+              ) : (
+                <div className="rounded-full p-1 shadow-inner transform active:scale-95 transition-transform active:bg-primary/20">
+                  <Image
+                    width={24}
+                    height={24}
+                    src="https://img.icons8.com/ios/50/message-bot.png"
+                    alt="Bot"
+                    className="opacity-70"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex-1">
+            <div className="text-base-content p-1">
+              {message?.from_name && (
+                <div className="text-sm font-medium mb-1">{message.from_name}</div>
+              )}
+              {Array.isArray(message?.urls) && message.urls.length > 0 && (
+                <div className="flex flex-wrap gap-2.5 max-w-[80%] p-2.5">
+                  {message.urls.map((url: any, index: number) => {
+                    return (
+                      <Image
+                        key={index}
+                        src={typeof url === 'object' ? url?.path : url}
+                        alt={`Image ${index + 1}`}
+                        className={`block ${isSmallScreen ? 'max-w-[80%]' : 'max-w-[40%]'} h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity`}
+                        onClick={() => window.open(typeof url === 'object' ? url?.path : url, "_blank")}
+                        width={20}
+                        height={20}
+                        layout="responsive"
+                      />
+                    )
+                  })}
+                </div>
+              )}
+              <div className="prose max-w-none">
+                <div dangerouslySetInnerHTML={{ __html: message?.content }}></div>
+              </div>
+            </div>
+
+            {/* <div className="flex items-center gap-2 mt-1 ml-1">
+              <button
+                className="btn btn-ghost btn-xs tooltip tooltip-top"
+                data-tip={isCopied ? "Copied!" : "Copy message"}
+                onClick={handleCopy}
+              >
+                {isCopied ? (
+                  <Check className="w-3.5 h-3.5 text-success" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5 text-base-content/70" />
+                )}
+              </button>
+            </div> */}
+          </div>
+        </div>
+
+        {message?.is_reset && (
+          <div className="divider my-3">
+            <div className="badge badge-warning badge-sm">Chat history cleared</div>
+          </div>
+        )}
+      </div>
     );
   }
 );
+
 function Message({ testKey, message, addMessage }: any) {
   const theme = useTheme();
   const backgroundColor = theme.palette.primary.main;
-  const textColor = isColorLight(backgroundColor) ? "black" : "white";
+  const textColor = isColorLight(backgroundColor) ? "#000000" : "#ffffff";
   const { sendEventToParentOnMessageClick } = useCustomSelector((state: $ReduxCoreType) => ({
     sendEventToParentOnMessageClick: state.Interface.eventsSubscribedByParent?.includes(ALLOWED_EVENTS_TO_SUBSCRIBE.MESSAGE_CLICK) || false
   }))
@@ -417,6 +433,7 @@ function Message({ testKey, message, addMessage }: any) {
           message={message}
           theme={theme}
           textColor={textColor}
+          backgroundColor={backgroundColor}
           addMessage={addMessage}
         />
       ) : message?.role === "Bot" ? (
@@ -479,7 +496,7 @@ function FeedBackButtons({ msgId }) {
       onClick={() =>
         handleMessageFeedback({
           msgId: msgIdAndDataMap?.[msgId]?.message_id,
-          reduxMsgId:msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
+          reduxMsgId: msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
           feedback: 1,
         })
       }
@@ -494,7 +511,7 @@ function FeedBackButtons({ msgId }) {
       onClick={() =>
         handleMessageFeedback({
           msgId: msgIdAndDataMap?.[msgId]?.message_id,
-          reduxMsgId:msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
+          reduxMsgId: msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
           feedback: 2
         }
         )

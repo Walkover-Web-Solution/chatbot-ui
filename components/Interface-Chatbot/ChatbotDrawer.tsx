@@ -2,18 +2,21 @@
 
 import { createNewThreadApi } from "@/config/api";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
+import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
+import { setHelloKeysData } from "@/store/hello/helloSlice";
 import { setThreadId, setThreads } from "@/store/interface/interfaceSlice";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ParamsEnums } from "@/utils/enums";
-import { useMediaQuery } from "@mui/material";
-import { AlignLeft, SquarePen } from "lucide-react";
+import { useMediaQuery, useTheme } from "@mui/material";
+import { AlignLeft, ChevronRight, SquarePen, Users } from "lucide-react";
 import React, { useContext } from "react";
 import { useDispatch } from "react-redux";
+import { ChatActionTypes } from "../Chatbot/hooks/chatTypes";
+import { useReduxStateManagement } from "../Chatbot/hooks/useReduxManagement";
+import { ChatbotContext } from "../context";
 import { MessageContext } from "./InterfaceChatbot";
-import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
-
 
 const createRandomId = () => {
   return Math.random().toString(36).substring(2, 15);
@@ -24,15 +27,17 @@ interface ChatbotDrawerProps {
   chatbotId: string;
   isToggledrawer: boolean;
   setToggleDrawer: (isOpen: boolean) => void;
+  preview?: boolean;
 }
 
 const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, setToggleDrawer, isToggledrawer, preview = false }) => {
   const dispatch = useDispatch();
+  const theme = useTheme();
   const { setNewMessage } = useContext(MessageContext);
   const isSmallScreen = useMediaQuery('(max-width:1023px)');
-  const { setOptions } = useContext(MessageContext);
-
-  const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName } =
+  const { setOptions, chatDispatch, fetchHelloPreviousHistory, images, setImages } = useContext(MessageContext);
+  const { currentChatId, currentTeamId, } = useReduxStateManagement({ chatbotId, chatDispatch });
+  const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName, teamsList, channelList, isHuman } =
     useCustomSelector((state: $ReduxCoreType) => ({
       reduxThreadId: GetSessionStorageData("threadId") || state.appInfo?.threadId || "",
       reduxSubThreadId: state.appInfo?.subThreadId || "",
@@ -48,7 +53,11 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         ]?.threadList?.[
         GetSessionStorageData("threadId") || state.appInfo?.threadId
         ] || [],
+      teamsList: state.Hello?.widgetInfo?.teams || [],
+      channelList: state.Hello?.channelListData?.channels || [],
+      isHuman: state.Hello?.isHuman || false
     }));
+  const { isHelloUser } = useContext(ChatbotContext);
 
   const selectedSubThreadId = reduxSubThreadId;
 
@@ -69,11 +78,10 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
       setOptions([]);
     }
   };
-
   const handleChangeSubThread = (sub_thread_id: string) => {
     setLoading(false);
     dispatch(setThreadId({ subThreadId: sub_thread_id }));
-    dispatch(setDataInAppInfoReducer({subThreadId: sub_thread_id}))
+    dispatch(setDataInAppInfoReducer({ subThreadId: sub_thread_id }))
     setNewMessage(true);
     setOptions([]);
     if (isSmallScreen) {
@@ -85,7 +93,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
     <div className="menu p-0 w-full h-full bg-base-200 text-base-content">
       {(subThreadList || []).length === 0 ? (
         <div className="flex justify-center items-center mt-5">
-          <span>No Threads</span>
+          <span>No Conversations</span>
         </div>
       ) : (
         <ul>
@@ -104,6 +112,114 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
     </div>
   );
 
+  const handleChangeChannel = (channelId: string, chatId: string, teamId: string) => {
+    dispatch(setHelloKeysData({ currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
+    dispatch(setDataInAppInfoReducer({ subThreadId: chatId }));
+    fetchHelloPreviousHistory(channelId);
+    isSmallScreen && setToggleDrawer(false)
+    images?.length > 0 && setImages([])
+  }
+  const handleChangeTeam = (teamId: string) => {
+    dispatch(setHelloKeysData({ currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
+    dispatch(setDataInAppInfoReducer({ subThreadId: teamId }));
+    chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: { teamId: teamId, data: [] } });
+    isSmallScreen && setToggleDrawer(false)
+    images?.length > 0 && setImages([])
+  }
+
+  const closeToggleDrawer = (isOpen: boolean) => {
+    if (isHuman) {
+      if (currentTeamId)
+        setToggleDrawer(isOpen)
+    }
+    else {
+      setToggleDrawer(isOpen)
+    }
+  }
+
+  const TeamsList = (
+    <div className="teams-container p-2 relative gap-6 flex flex-col">
+      {/* Conversations Section */}
+      {(channelList || []).length > 0 && channelList.some((thread: any) => thread?.id) && (
+        <div className="conversations-section border-b">
+          <div className="conversations-header mb-1 pb-2">
+            <h3 className="text-md font-semibold">Continue Conversations</h3>
+          </div>
+          <div className="conversations-list space-y-2">
+            {channelList
+              .filter((channel: any) => channel?.id)
+              .map((channel: any, index: number) => (
+                <div
+                  key={`${channel?._id}-${index}`}
+                  className={`conversation-card overflow-hidden text-ellipsis p-3 ${channel?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center`}
+                  style={{
+                    borderColor: channel?.id === currentChatId ? theme.palette.primary.main : ''
+                  }}
+                  onClick={() => handleChangeChannel(channel?.channel, channel?.id, channel?.team_id)}
+                >
+                  <div className="conversation-info flex-1 min-w-0 pr-2">
+                    <div className="conversation-name text-xs text-gray-400 break-words">
+                      Conversation
+                    </div>
+                    {channel?.last_message && (
+                      <div className="last-message text-sm text-black font-medium mt-1 truncate">
+                        {!channel.last_message?.message?.sender_id ? "You: " : "Sender: "}
+                        {channel.last_message.message?.content?.text ||
+                          (channel.last_message.message?.content?.attachment?.length > 0 ? "Attachment" :
+                            channel.last_message.message?.message_type ||
+                            "New conversation")}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-shrink-0 flex items-center">
+                    {channel?.widget_unread_count > 0 && (
+                      <div className="bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center mr-2">
+                        {channel?.widget_unread_count}
+                      </div>
+                    )}
+                    <ChevronRight size={16} className="text-gray-800" />
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+
+      {/* Teams Section */}
+      <div className="teams-section">
+        <div className="teams-header mb-1 border-b pb-2 flex items-center">
+          <SquarePen size={22} color="#555555" className="mr-2" />
+          <h3 className="text-md font-semibold">Our team is all set to help you!</h3>
+          {/* <p className="text-xs text-gray-500">Connect with our experts</p> */}
+        </div>
+        <div className="teams-list space-y-2">
+          {teamsList.map((team: any, index: number) => (
+            <div
+              key={`${team?.id}-${index}`}
+              className={`team-card overflow-hidden text-ellipsis p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start ${currentTeamId === team?.id ? '' : ''}`}
+              onClick={() => handleChangeTeam(team?.id)}
+            >
+              <div className="team-avatar mr-3 bg-primary/10 p-2 rounded-full flex-shrink-0">
+                {team?.icon || <Users size={12} className="text-primary" />}
+              </div>
+              <div className="team-info">
+                <div className="team-name font-medium break-words">{team?.name}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="marketing-banner mt-4 p-3 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg">
+        <p className="text-sm font-medium">Need specialized help?</p>
+        <p className="text-xs">Our teams are ready to assist you with any questions</p>
+        <button className="mt-2 text-xs bg-primary text-white py-1 px-3 rounded-md hover:bg-primary/80 transition-colors">
+          Call Us
+        </button>
+      </div>
+    </div>
+  )
+
   return (
     <div className="drawer z-[10]">
       <input
@@ -118,17 +234,19 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
       {isToggledrawer && (
         <div
           className="fixed inset-0 bg-black/30 backdrop-blur-sm lg:hidden"
-          onClick={() => setToggleDrawer(false)}
+          onClick={() => closeToggleDrawer(false)}
         />
       )}
 
-      <div className={`drawer-side max-w-[265px] ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
+      <div className={`drawer-side ${isHelloUser && isSmallScreen ? '100%' : 'max-w-[265px]'} ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
         <div className="p-4 w-full min-h-full text-base-content relative bg-base-200 border-r-base-300 border overflow-hidden">
           <div className="flex items-center justify-between mb-4">
-            {isToggledrawer && <button className="p-2 hover:bg-gray-200 rounded-full transition-colors" onClick={() => { setToggleDrawer(!isToggledrawer) }}> <AlignLeft size={22} color="#555555" /></button>}
-            <h2 className="text-lg font-bold">History</h2>
-            <div className="flex items-center gap-2">
-              {isToggledrawer && (
+            <div className="w-10">
+              {isToggledrawer && <button className="p-2 hover:bg-gray-200 rounded-full transition-colors" onClick={() => { closeToggleDrawer(!isToggledrawer) }}> <AlignLeft size={22} color="#555555" /></button>}
+            </div>
+            <h2 className="text-lg font-bold text-center flex-1">History</h2>
+            <div className="w-10 flex items-center justify-end">
+              {isToggledrawer && !isHelloUser && (
                 <div className="tooltip tooltip-bottom z-[9999]" data-tip="New Chat">
                   <button
                     className="p-2 hover:bg-gray-200 rounded-full transition-colors"
@@ -140,7 +258,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
               )}
             </div>
           </div>
-          {DrawerList}
+          {!isHelloUser ? DrawerList : TeamsList}
         </div>
       </div>
     </div>

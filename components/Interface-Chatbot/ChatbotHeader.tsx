@@ -1,6 +1,6 @@
 // MUI Icons
 import ChatIcon from "@mui/icons-material/Chat";
-import { AlignLeft, EllipsisVertical, History, Maximize, PictureInPicture2, Settings, SquarePen, X } from "lucide-react";
+import { AlignLeft, EllipsisVertical, History, Maximize, PhoneOutgoing, PictureInPicture2, Settings, SquarePen, X } from "lucide-react";
 
 // MUI Components
 import { useTheme } from "@mui/material";
@@ -21,8 +21,9 @@ import { isColorLight } from "@/utils/themeUtility";
 import ChatbotDrawer from "./ChatbotDrawer";
 
 // Styles
+import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { setDataInInterfaceRedux, setSelectedAIServiceAndModal, setThreads } from "@/store/interface/interfaceSlice";
-import { HeaderButtonType, SelectedAiServicesType } from "@/types/interface/InterfaceReduxType";
+import { SelectedAiServicesType } from "@/types/interface/InterfaceReduxType";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
@@ -30,7 +31,6 @@ import { useDispatch } from "react-redux";
 import { ChatbotContext } from "../context";
 import { MessageContext } from "./InterfaceChatbot";
 import "./InterfaceChatbot.css";
-import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 
 interface ChatbotHeaderProps {
   chatbotId: string
@@ -53,10 +53,13 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   } = useContext(MessageContext);
   const { chatbotConfig: { chatbotTitle, chatbotSubtitle, width = '', widthUnit = '', allowBridgeSwitch = false, bridges = [] } } = useContext<any>(ChatbotContext);
   const [fullScreen, setFullScreen] = useState(false)
+  const [teamName, setteamName] = useState(false)
   const shouldToggleScreenSize = `${width}${widthUnit}` !== '1200%'
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
-  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug, chatSubTitle, allowBridgeSwitchViaProp, subThreadList, subThreadId, hideFullScreenButton } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { isHelloUser } = useContext(ChatbotContext);
+
+  const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug, chatSubTitle, allowBridgeSwitchViaProp, subThreadList, subThreadId, hideFullScreenButton, isHuman, mode, teams, currentTeamId } = useCustomSelector((state: $ReduxCoreType) => ({
     allowModalSwitch: state.Interface.allowModalSwitch || false,
     hideCloseButton: state.Interface.hideCloseButton || false,
     hideFullScreenButton: state.Interface.hideFullScreenButton || false,
@@ -66,6 +69,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
     currentSelectedBridgeSlug: state?.Interface?.bridgeName,
     allowBridgeSwitchViaProp: state?.Interface?.allowBridgeSwitch,
     subThreadId: state.appInfo?.subThreadId,
+    teams: state.Hello?.widgetInfo?.teams || [],
+    currentTeamId: state.Hello?.currentTeamId || "",
     subThreadList:
       state.Interface?.interfaceContext?.[chatbotId]?.[
         GetSessionStorageData("bridgeName") ||
@@ -74,6 +79,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
       ]?.threadList?.[
       GetSessionStorageData("threadId") || state.appInfo?.threadId
       ] || [],
+    isHuman: state.Hello?.isHuman || false,
+    mode: state.Hello?.mode || [],
   }))
   const showCreateThreadButton = useMemo(() => {
     // Show icon unless subThreadList length is less than 2 AND messageIds array is empty
@@ -100,11 +107,25 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
     }
   };
 
+  const handleVoiceCall = () => {
+    console.log("handleVoiceCall");
+  }
+
+  useEffect(() => {
+    if (teams?.length > 0 && currentTeamId) {
+      teams.map((item: any) => {
+        if (item?.id === currentTeamId) {
+          setteamName(item?.name)
+        }
+      })
+    }
+  }, [teams, currentTeamId])
+
   return (
     <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-2 py-1 w-full">
       <div className="flex items-center w-full relative">
         <div className="sm:absolute left-0 flex items-center">
-          {subThreadList?.length > 1 && <button
+          {(subThreadList?.length > 1 || isHelloUser) && <button
             className="p-2 hover:bg-gray-200 rounded-full transition-colors"
             onClick={() => setToggleDrawer(!isToggledrawer)}
           >
@@ -124,12 +145,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
           <div className="flex items-center sm:gap-3 gap-1 justify-center">
             {chatIcon ? <Image alt="headerIcon" width={24} height={24} src={chatIcon} className="rounded-full" /> : null}
             <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis">
-              {chatTitle || chatbotTitle || "AI Assistant"}
+              {chatTitle || chatbotTitle || teamName || "AI Assistant"}
             </h1>
-            {/* <ResetChatOption
-              textColor={textColor}
-              setChatsLoading={setChatsLoading}
-            /> */}
           </div>
           {chatbotSubtitle && <p className="text-sm opacity-75 text-center whitespace-nowrap overflow-hidden overflow-ellipsis">
             {chatSubTitle || chatbotSubtitle || "Do you have any questions? Ask us!"}
@@ -144,6 +161,11 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
             </React.Fragment>
           })}
           <div className="flex items-center">
+            {mode?.includes("human") && isHuman && (
+              <div className="cursor-pointer p-1 mx-2 rounded-full" onClick={() => { handleVoiceCall() }}>
+                <PhoneOutgoing size={22} color="#555555" />
+              </div>
+            )}
             {shouldToggleScreenSize && (hideFullScreenButton !== true && hideFullScreenButton !== "true") ? (
               <div>
                 {!fullScreen ? (

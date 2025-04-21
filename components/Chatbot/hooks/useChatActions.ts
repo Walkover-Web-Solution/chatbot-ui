@@ -6,10 +6,25 @@ import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { ChatAction, ChatActionTypes, ChatState, MessageType, SendMessagePayloadType } from './chatTypes';
+import { ChatAction, ChatActionTypes, ChatState, SendMessagePayloadType } from './chatTypes';
 
 export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) => {
-
+    if (chatbotId === 'hello') {
+        return {
+            fetchAllThreads: () => { },
+            getIntialChatHistory: () => { },
+            getMoreChats: () => { },
+            sendMessage: () => { },
+            setToggleDrawer: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_TOGGLE_DRAWER, payload }),
+            setLoading: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_LOADING, payload }),
+            setChatsLoading: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_CHATS_LOADING, payload }),
+            setImages: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload }),
+            setOptions: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_OPTIONS, payload }),
+            setNewMessage: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload }),
+            setMessages: (payload: any) => chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload }),
+            handleMessageFeedback: () => { }
+        }
+    }
     const globalDispatch = useDispatch();
     const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId } = useCustomSelector((state: $ReduxCoreType) => ({
         threadId: state.appInfo.threadId,
@@ -94,12 +109,13 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
     };
 
     const getMoreChats = async () => {
-        const { isFetching, hasMoreMessages, currentPage } = chatState;
+        const { isFetching, hasMoreMessages, currentPage, subThreadId } = chatState;
         if (isFetching || !hasMoreMessages) return;
         chatDispatch({
             type: ChatActionTypes.SET_IS_FETCHING, payload: true
-        });
+        })
         try {
+
             const nextPage = currentPage + 1;
             const { previousChats } = await getPreviousMessage(
                 threadId,
@@ -181,13 +197,13 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
 
     const setMessages = (payload: MessageType[]) => chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload: { messages: payload, initial: false } })
 
-    const handleMessageFeedback = async (payload:{ msgId: string, feedback: number , reduxMsgId:string }) =>{
-        const { msgId, feedback ,reduxMsgId} = payload;
+    const handleMessageFeedback = async (payload: { msgId: string, feedback: number, reduxMsgId: string }) => {
+        const { msgId, feedback, reduxMsgId } = payload;
         const currentStatus = chatState.msgIdAndDataMap?.[subThreadId]?.[reduxMsgId]?.user_feedback;
         if (msgId && feedback && currentStatus !== feedback) {
             const response = await sendFeedbackAction({
-              messageId: msgId,
-              feedbackStatus:feedback,
+                messageId: msgId,
+                feedbackStatus: feedback,
             });
             if (response?.success) {
                 chatDispatch({
@@ -198,7 +214,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                     }
                 })
             }
-          }
+        }
     }
 
     const handleMessage = useCallback(

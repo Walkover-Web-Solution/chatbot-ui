@@ -3,10 +3,8 @@ import { ChatBotGif } from "@/assests/assestsIndex";
 import { errorToast } from "@/components/customToast";
 import FormComponent from "@/components/FormComponent";
 import {
-  getAllThreadsApi,
   getHelloChatsApi,
-  getPreviousMessage,
-  sendDataToAction,
+  getPreviousMessage
 } from "@/config/api";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import useSocket from "@/hooks/socket";
@@ -14,13 +12,12 @@ import {
   getHelloDetailsStart,
   setChannel,
 } from "@/store/hello/helloSlice";
-import { setThreads } from "@/store/interface/interfaceSlice";
 import { HeaderButtonType } from "@/types/interface/InterfaceReduxType";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ParamsEnums } from "@/utils/enums";
-import { lighten, LinearProgress, useMediaQuery, useTheme } from "@mui/material";
+import { LinearProgress, useMediaQuery, useTheme } from "@mui/material";
 import axios from "axios";
 import Image from "next/image";
 import React, {
@@ -33,6 +30,8 @@ import React, {
 } from "react";
 import { useDispatch } from "react-redux";
 import WebSocketClient from "rtlayer-client";
+import { ChatAction } from "../Chatbot/hooks/chatTypes";
+import { useChatActions } from "../Chatbot/hooks/useChatActions";
 import ChatbotDrawer from "./ChatbotDrawer";
 import ChatbotHeader from "./ChatbotHeader";
 import ChatbotHeaderTab from "./ChatbotHeaderTab";
@@ -40,8 +39,6 @@ import ChatbotTextField from "./ChatbotTextField";
 import "./InterfaceChatbot.css";
 import MessageList from "./MessageList";
 import StarterQuestions from "./StarterQuestions";
-import { useChatActions } from "../Chatbot/hooks/useChatActions";
-import { ChatAction } from "../Chatbot/hooks/chatTypes";
 
 const client = WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
 
@@ -67,14 +64,15 @@ interface MessageType {
 }
 export const MessageContext = createContext<{
   messages: MessageType[] | [];
-  messageIds: string[] ,
-  msgIdAndDataMap: {  [msgId: string]: MessageType } ,
-  helloMsgIds: string[] ,
-  helloMsgIdAndDataMap: {  [msgId: string]: any } ,
+  messageIds: string[],
+  msgIdAndDataMap: { [msgId: string]: MessageType },
+  helloMsgIds: string[],
+  helloMsgIdAndDataMap: { [msgId: string]: any },
   helloMessages: any;
   addMessage?: (message: string) => void;
   setMessages?: (message: MessageType[]) => void;
   sendMessageToHello?: (() => void) | undefined
+  fetchHelloPreviousHistory?: (channelId: string) => void;
   threadId?: string;
   bridgeName?: string;
   fetchMoreData?: () => void;
@@ -91,14 +89,16 @@ export const MessageContext = createContext<{
   disabled?: boolean;
   options?: any[];
   setChatsLoading?: any;
-  images: string[];
-  setImages: (data: string[]) => void;
+  images: string[] | { path: string }[];
+  setImages: (data: string[] | { path: string }) => void;
   setToggleDrawer: (data: boolean) => void;
   setLoading: (data: boolean) => void,
   isToggledrawer: boolean,
   chatDispatch?: React.Dispatch<ChatAction>;
   getMoreChats: () => void;
-  handleMessageFeedback:(data:any)=>void
+  handleMessageFeedback: (data: any) => void;
+  isTyping: boolean;
+  isSmallScreen: boolean;
 }>({
   starterQuestions: [],
   messages: [],
@@ -117,6 +117,8 @@ export const MessageContext = createContext<{
   handleMessageFeedback: () => { },
   helloMsgIds: [],
   helloMsgIdAndDataMap: {},
+  isTyping: false,
+  isSmallScreen: false,
 });
 
 function InterfaceChatbot({
@@ -600,7 +602,7 @@ function InterfaceChatbot({
     messageRef.current.value = "";
   };
 
-  const sendMessageToHello = async (message: string) => {
+  const sendMessageToHello = async (message: string, attachment: Array<object> = []) => {
     const channelDetail = {
       call_enabled: null,
       uuid: uuid,
@@ -618,7 +620,7 @@ function InterfaceChatbot({
       new: true,
     };
     if (!channelId) setOpen(true);
-
+    debugger
     const response = (
       await axios.post(
         "https://api.phone91.com/v2/send/",
@@ -627,7 +629,7 @@ function InterfaceChatbot({
           message_type: "text",
           content: {
             text: message,
-            attachment: [],
+            attachment: attachment,
           },
           ...(!channelId ? { channelDetail: channelDetail } : {}),
           chat_id: !channelId ? null : chat_id,

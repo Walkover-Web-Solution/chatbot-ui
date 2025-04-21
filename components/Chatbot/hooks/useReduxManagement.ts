@@ -3,9 +3,9 @@ import { GetSessionStorageData } from '@/utils/ChatbotUtility';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { useEffect } from 'react';
-import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
+import { ChatAction, ChatActionTypes } from './chatTypes';
 
-export const useReduxStateManagement = ({ chatbotId, chatDispatch, chatState }: { chatbotId: string, chatState: ChatState, chatDispatch: React.Dispatch<ChatAction> }) => {
+export const useReduxStateManagement = ({ chatbotId, chatDispatch }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction> }) => {
   const theme = useTheme();
   const isLargeScreen = useMediaQuery('(max-width: 1024px)');
 
@@ -26,7 +26,12 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch, chatState }: 
     chat_id,
     channelId,
     mode,
-    selectedAiServiceAndModal
+    selectedAiServiceAndModal,
+    unique_id_hello,
+    widgetToken,
+    currentChatId,
+    currentChannelId,
+    currentTeamId,
   } = useCustomSelector((state: $ReduxCoreType) => ({
     interfaceContextData:
       state.Interface?.interfaceContext?.[chatbotId]?.variables,
@@ -37,15 +42,21 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch, chatState }: 
     reduxHelloId: state.Interface?.helloId || null,
     reduxBridgeVersionId: state.Interface?.version_id || null,
     IsHuman: state.Hello?.isHuman || false,
-    uuid: state.Hello?.ChannelList?.uuid,
-    unique_id: state.Hello?.ChannelList?.unique_id,
-    presence_channel: state.Hello?.ChannelList?.presence_channel,
+    uuid: state.Hello?.channelListData?.uuid,
+    unique_id: state.Hello?.channelListData?.unique_id,
+    presence_channel: state.Hello?.channelListData?.presence_channel,
     team_id: state.Hello?.widgetInfo?.team?.[0]?.id,
     chat_id: state.Hello?.Channel?.id,
     channelId: state.Hello?.Channel?.channel || null,
     mode: state.Hello?.mode || [],
-    selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null
+    selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null,
+    unique_id_hello: state?.Hello?.helloConfig?.unique_id,
+    widgetToken: state?.Hello?.helloConfig?.widgetToken,
+    currentChatId: state.Hello?.currentChatId,
+    currentChannelId: state.Hello?.currentChannelId,
+    currentTeamId: state.Hello?.currentTeamId,
   }));
+  const isSmallScreen = useMediaQuery('(max-width:1023px)');
 
   // Sync Redux threadId with local state
   useEffect(() => {
@@ -119,6 +130,12 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch, chatState }: 
     channelId,
     mode,
     selectedAiServiceAndModal,
-    theme
+    theme,
+    unique_id_hello,
+    widgetToken,
+    currentChatId,
+    currentChannelId,
+    currentTeamId,
+    isSmallScreen
   };
 };

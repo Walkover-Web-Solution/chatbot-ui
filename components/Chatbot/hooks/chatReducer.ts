@@ -1,6 +1,6 @@
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
-import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { generateNewId } from "@/utils/utilities";
+import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 
 export const initialChatState: ChatState = {
   // Messages and Conversations
@@ -11,6 +11,7 @@ export const initialChatState: ChatState = {
   helloMsgIdAndDataMap: {},
   helloMessages: [],
   starterQuestions: [],
+  isTyping: false,
 
   // Loading States
   loading: false,
@@ -19,7 +20,7 @@ export const initialChatState: ChatState = {
 
   // UI States
   openHelloForm: false,
-  isToggledrawer: true,
+  isToggledrawer: false,
   headerButtons: [],
 
   // Chat Metadata
@@ -44,7 +45,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
     case ChatActionTypes.SET_MESSAGES: {
       const subThreadId = state.subThreadId;
       const { messages, initial } = action.payload;
-      
+
       if (initial) {
         // First empty the messages, messageIds and msgIdAndDataMap in initial case
         return {
@@ -65,7 +66,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
       } else {
         // Check if messages is an array before spreading it
         const messagesArray = Array.isArray(messages) ? messages : [];
-        
+
         return {
           ...state,
           messages: [...messagesArray, ...state.messages],
@@ -74,7 +75,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
             [subThreadId]: [
               ...messagesArray.map(msg => msg.Id),
               ...(state.messageIds[subThreadId] || [])
-              
+
             ]
           },
           msgIdAndDataMap: {
@@ -263,18 +264,18 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         isToggledrawer: action.payload
       };
     case ChatActionTypes.SET_HELLO_MESSAGES: {
-      const subThreadId = state.subThreadId
+      const subThreadId = action.payload?.teamId || state.subThreadId
       return {
         ...state,
         helloMsgIds: {
           ...state.helloMsgIds,
-          [subThreadId]: Array.from(new Set(action.payload?.map((item) => item?.message_id))) as string[]
+          [subThreadId]: Array.from(new Set(action.payload?.data?.map((item) => item?.message_id))) as string[]
         },
         helloMsgIdAndDataMap: {
           ...state.helloMsgIdAndDataMap,
           [subThreadId]: {
             ...state.helloMsgIdAndDataMap?.[subThreadId],
-            ...action.payload?.reduce((acc, item) => {
+            ...action.payload?.data?.reduce((acc, item) => {
               if (item.message_id) {
                 acc[item?.message_id] = item
                 return acc
@@ -285,39 +286,32 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
       };
     }
     case ChatActionTypes.ADD_HELLO_MESSAGE: {
-      const subThreadId = state.subThreadId
+      const currentChatId = state.subThreadId;
       // If the last message ID is the same, we don't add a new message
-      if (action.payload?.reponseType === 'assistant') {
-        return {
-          ...state,
-          helloMsgIds: {
-            ...state.helloMsgIds,
-            [subThreadId]: Array.from(new Set([...state.helloMsgIds?.[subThreadId], action.payload?.message?.id])) as string[]
-          },
-          helloMsgIdAndDataMap: {
-            ...state.helloMsgIdAndDataMap,
-            [subThreadId]: {
-              ...state.helloMsgIdAndDataMap?.[subThreadId],
-              [action.payload?.message?.id]: action?.payload?.message
-            }
-          }
-        }
-      }
+      // if (action.payload?.reponseType === 'assistant') {
       return {
         ...state,
         helloMsgIds: {
           ...state.helloMsgIds,
-          [subThreadId]: [...state.helloMsgIds?.[subThreadId], action.payload?.message?.id]
+          [currentChatId]: Array.from(new Set([
+            ...(state.helloMsgIds?.[currentChatId] || []),
+            action.payload?.message?.id
+          ].filter(Boolean))) as string[]
         },
         helloMsgIdAndDataMap: {
           ...state.helloMsgIdAndDataMap,
-          [subThreadId]: {
-            ...state.helloMsgIdAndDataMap?.[subThreadId],
-            [action.payload.message?.id]: action?.payload?.message
+          [currentChatId]: {
+            ...state.helloMsgIdAndDataMap?.[currentChatId],
+            [action.payload?.message?.id]: action?.payload?.message
           }
         }
-      };
+      }
     }
+    case ChatActionTypes.SET_TYPING:
+      return {
+        ...state,
+        isTyping: action.payload
+      };
     case ChatActionTypes.SET_MESSAGE_TIMEOUT:
       return {
         ...state,
@@ -332,10 +326,10 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         ...state,
         ...action.payload
       };
-    
-    case ChatActionTypes.UPDATE_SINGLE_MESSAGE:{
+
+    case ChatActionTypes.UPDATE_SINGLE_MESSAGE: {
       const subThreadId = state.subThreadId
-      const {messageId,data} = action.payload
+      const { messageId, data } = action.payload
       return {
         ...state,
         msgIdAndDataMap: {
@@ -350,7 +344,13 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         }
       }
     }
-      
+    case ChatActionTypes.SET_OPEN_HELLO_FORM: {
+      return {
+        ...state,
+        openHelloForm: action.payload
+      };
+    }
+
     case ChatActionTypes.RESET_STATE:
       return {
         ...initialChatState,

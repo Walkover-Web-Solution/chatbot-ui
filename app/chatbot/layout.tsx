@@ -2,8 +2,9 @@
 import { ThemeContext } from '@/components/AppWrapper';
 import { ChatbotContext } from '@/components/context';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
+import { setHuman } from '@/store/hello/helloSlice';
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useContext, useEffect, useState, useMemo } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 export default function ChatbotLayout({ children }: { children: React.ReactNode }) {
@@ -12,19 +13,18 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
     const { themeColor, handleThemeChange } = useContext(ThemeContext);
     const dispatch = useDispatch();
     // Use useMemo to parse interfaceDetails once and avoid repeated parsing
-    const { chatbot_id, userId, token, config } = useMemo(() => {
+    const { chatbot_id, userId, token, config, isHelloUser = false } = useMemo(() => {
         const interfaceDetails = search.get("interfaceDetails");
         try {
-            const parsedDetails = interfaceDetails 
-                ? JSON.parse(interfaceDetails) 
-                : { chatbot_id: null, userId: null, token: null, config: null };
+            const parsedDetails = interfaceDetails
+                ? JSON.parse(interfaceDetails)
+                : { chatbot_id: null, userId: null, token: null, config: null, isHelloUser: false };
             return parsedDetails;
         } catch (e) {
             console.error("Error parsing interfaceDetails:", e);
-            return { chatbot_id: null, userId: null, token: null, config: null };
+            return { chatbot_id: null, userId: null, token: null, config: null, isHelloUser: false };
         }
-    }, [search]);
-    
+    }, []);
     useEffect(() => {
         if (chatbot_id && userId) {
             dispatch(setDataInAppInfoReducer({
@@ -35,7 +35,7 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
         }
     }, [chatbot_id, userId, config]);
 
-    
+
     const onConfigChange = useCallback((config: any) => {
         if (!config) return;
         handleThemeChange(config.themeColor || "#000000");
@@ -43,10 +43,10 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
             // Avoid unnecessary string conversion for deep comparison
             const configChanged = JSON.stringify(prev) !== JSON.stringify(config);
             if (configChanged) {
-                return { 
-                    ...prev, 
-                    ...config, 
-                    hideCloseButton: config?.hideCloseButton ?? prev?.hideCloseButton 
+                return {
+                    ...prev,
+                    ...config,
+                    hideCloseButton: config?.hideCloseButton ?? prev?.hideCloseButton
                 };
             }
             return prev;
@@ -64,6 +64,12 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
         }));
     }, []);
 
+    useEffect(() => {
+        if (isHelloUser) {
+            dispatch(setHuman({ isHuman: true }));
+        }
+    }, [isHelloUser])
+
     // Create context value with useMemo to prevent unnecessary re-renders
     const contextValue = useMemo(() => ({
         chatbotConfig,
@@ -73,7 +79,8 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
         themeColor,
         onConfigChange,
         toggleHideCloseButton,
-    }), [chatbotConfig, chatbot_id, userId, token, themeColor, onConfigChange, toggleHideCloseButton]);
+        isHelloUser
+    }), [chatbotConfig, chatbot_id, userId, token, themeColor, onConfigChange, toggleHideCloseButton, isHelloUser]);
 
     return (
         <ChatbotContext.Provider value={contextValue}>

@@ -1,7 +1,7 @@
 'use client';
-import InterfaceChatbot from "@/components/Interface-Chatbot/InterfaceChatbot";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
+import { setHelloConfig } from "@/store/hello/helloSlice";
 import {
   addDefaultContext,
   setConfig,
@@ -11,6 +11,7 @@ import {
   setModalConfig,
   setThreadId
 } from "@/store/interface/interfaceSlice";
+import { HelloData } from "@/types/hello/HelloReduxType";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE, ParamsEnums } from "@/utils/enums";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -42,17 +43,20 @@ interface ChatbotWrapperProps {
 function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
   const dispatch = useDispatch();
 
-  // Notify parent when interface is loaded
-  useEffect(() => {
-    window?.parent?.postMessage({ type: "interfaceLoaded" }, "*");
-  }, []);
-
   // Handle messages from parent window
   const handleMessage = useCallback((event: MessageEvent) => {
-    if (event?.data?.type !== "interfaceData" || !event?.data?.data) return;
+    if (event?.data?.type !== "interfaceData" && event?.data?.type !== "helloData") return;
+    if (event?.data?.type === "helloData") {
+      const receivedHelloData: HelloData = event.data.data;
+      localStorage.setItem('WidgetId', receivedHelloData?.widgetToken)
+      if (!localStorage.getItem('is_anon'))
+        localStorage.setItem('is_anon', receivedHelloData?.unique_id ? 'false' : 'true')
+      dispatch(setHelloConfig(receivedHelloData));
+      return;
+    }
 
     const receivedData: InterfaceData = event.data.data;
-
+    if (Object.keys(receivedData || {}).length === 0) return;
     // Process thread-related data
     if (receivedData.threadId) {
       dispatch(setThreadId({ threadId: receivedData.threadId }));
@@ -126,6 +130,13 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
       window.removeEventListener("message", handleMessage);
     };
   }, [handleMessage, chatbotId]);
+
+  // Notify parent when interface is loaded
+  useEffect(() => {
+    setTimeout(() => {
+      window?.parent?.postMessage({ type: "interfaceLoaded" }, "*");
+    }, 0);
+  }, []);
 
   // return <InterfaceChatbot />;
   return <Chatbot />

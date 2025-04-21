@@ -13,5 +13,11 @@ export const {
   getHelloDetailsSuccess,
   setHuman,
   setIsVision,
+  setHelloConfig,
+  setWidgetInfo,
+  setChannelListData,
+  setJwtToken,
+  setHelloKeysData,
+  changeChannelAssigned
 } = interfaceSlice.actions;
 export default interfaceSlice.reducer;

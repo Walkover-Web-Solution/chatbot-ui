@@ -3,7 +3,7 @@ import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { ParamsEnums } from '@/utils/enums';
 import { LinearProgress, useTheme } from '@mui/material';
 import Image from 'next/image';
-import React, { useReducer } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import FormComponent from '../FormComponent';
 import ChatbotDrawer from '../Interface-Chatbot/ChatbotDrawer';
 import ChatbotHeader from '../Interface-Chatbot/ChatbotHeader';
@@ -22,58 +22,48 @@ import useRtlayerEventManager from './hooks/useRtlayerEventManager';
 function Chatbot({ chatbotId }: { chatbotId: string }) {
     // refs
     const containerRef = React.useRef<HTMLDivElement>(null);
+    const mountedRef = React.useRef(false);
     const messageRef = React.useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
     const timeoutIdRef = React.useRef<NodeJS.Timeout | null>(null);
 
     // hooks
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
-    const { sendMessageToHello } = useHelloIntegration({ chatbotId, chatDispatch, chatState, messageRef });
-    const { IsHuman } = useReduxStateManagement({ chatbotId, chatDispatch, chatState });
-    const {
-        setToggleDrawer,
-        setLoading,
-        setChatsLoading,
-        sendMessage,
-        setImages,
-        setOptions,
-        getMoreChats,
-        setNewMessage,
-        setMessages,
-        handleMessageFeedback
-    } = useChatActions({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef });
+    const { sendMessageToHello, fetchHelloPreviousHistory } = useHelloIntegration({ chatbotId, chatDispatch, chatState, messageRef });
+    const { IsHuman, isSmallScreen, currentChatId } = useReduxStateManagement({ chatbotId, chatDispatch });
+    const chatActions = useChatActions({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef });
 
     const theme = useTheme();
 
+    useEffect(() => {
+        if (IsHuman && !currentChatId && !mountedRef.current) {
+            chatActions.setToggleDrawer(true)
+        }
+        mountedRef.current = true;
+    }, [IsHuman, currentChatId, mountedRef?.current])
     // RTLayer Event Listiner
     useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef })
     const { openHelloForm, isToggledrawer, chatsLoading, helloMessages, messageIds, msgIdAndDataMap, subThreadId, helloMsgIds, helloMsgIdAndDataMap } = chatState;
+
     return (
         <MessageContext.Provider value={{
             ...chatState,
             sendMessageToHello,
-            sendMessage,
-            setImages,
-            setToggleDrawer,
-            setLoading,
-            setChatsLoading,
+            fetchHelloPreviousHistory,
             messageRef,
-            setOptions,
             chatDispatch,
-            getMoreChats,
-            setNewMessage,
-            setMessages,
             messageIds: messageIds?.[subThreadId] || [],
             msgIdAndDataMap: msgIdAndDataMap[subThreadId],
             helloMessages,
             helloMsgIdAndDataMap: helloMsgIdAndDataMap?.[subThreadId],
             helloMsgIds: helloMsgIds?.[subThreadId],
-            handleMessageFeedback
+            isSmallScreen,
+            ...chatActions
         }}>
-            <FormComponent open={openHelloForm} setOpen={() => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true })} />
+            <FormComponent open={openHelloForm} setOpen={(isFormOpen) => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: isFormOpen })} />
             <div className="flex h-screen w-full overflow-hidden relative">
                 {/* Sidebar - always visible on large screens */}
                 <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? ' w-64' : 'w-0'}`}>
-                    <ChatbotDrawer setToggleDrawer={setToggleDrawer} isToggledrawer={isToggledrawer} />
+                    <ChatbotDrawer setToggleDrawer={chatActions.setToggleDrawer} isToggledrawer={isToggledrawer} fetchHelloPreviousHistory={fetchHelloPreviousHistory} />
                 </div>
 
                 {/* Main content area */}
