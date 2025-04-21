@@ -9,7 +9,7 @@ import { $ReduxCoreType } from "@/types/reduxCore";
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ParamsEnums } from "@/utils/enums";
-import { useMediaQuery } from "@mui/material";
+import { useMediaQuery, useTheme } from "@mui/material";
 import { AlignLeft, ChevronRight, SquarePen, Users } from "lucide-react";
 import React, { useContext } from "react";
 import { useDispatch } from "react-redux";
@@ -32,6 +32,7 @@ interface ChatbotDrawerProps {
 
 const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, setToggleDrawer, isToggledrawer, preview = false }) => {
   const dispatch = useDispatch();
+  const theme = useTheme();
   const { setNewMessage } = useContext(MessageContext);
   const isSmallScreen = useMediaQuery('(max-width:1023px)');
   const { setOptions, chatDispatch, fetchHelloPreviousHistory, images, setImages } = useContext(MessageContext);
@@ -137,11 +138,11 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   }
 
   const TeamsList = (
-    <div className="teams-container p-2 relative">
+    <div className="teams-container p-2 relative gap-6 flex flex-col">
       {/* Conversations Section */}
       {(channelList || []).length > 0 && channelList.some((thread: any) => thread?.id) && (
-        <div className="conversations-section mb-4 border-b">
-          <div className="conversations-header mb-3 pb-2">
+        <div className="conversations-section border-b">
+          <div className="conversations-header mb-1 pb-2">
             <h3 className="text-md font-semibold">Continue Conversations</h3>
           </div>
           <div className="conversations-list space-y-2">
@@ -151,6 +152,9 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
                 <div
                   key={`${channel?._id}-${index}`}
                   className={`conversation-card overflow-hidden text-ellipsis p-3 ${channel?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center`}
+                  style={{
+                    borderColor: channel?.id === currentChatId ? theme.palette.primary.main : ''
+                  }}
                   onClick={() => handleChangeChannel(channel?.channel, channel?.id, channel?.team_id)}
                 >
                   <div className="conversation-info flex-1 min-w-0 pr-2">
@@ -161,8 +165,9 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
                       <div className="last-message text-sm text-black font-medium mt-1 truncate">
                         {!channel.last_message?.message?.sender_id ? "You: " : "Sender: "}
                         {channel.last_message.message?.content?.text ||
-                          channel.last_message.message?.message_type ||
-                          "New conversation"}
+                          (channel.last_message.message?.content?.attachment?.length > 0 ? "Attachment" :
+                            channel.last_message.message?.message_type ||
+                            "New conversation")}
                       </div>
                     )}
                   </div>
@@ -182,7 +187,8 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
 
       {/* Teams Section */}
       <div className="teams-section">
-        <div className="teams-header mb-3 border-b pb-2">
+        <div className="teams-header mb-1 border-b pb-2 flex items-center">
+          <SquarePen size={22} color="#555555" className="mr-2" />
           <h3 className="text-md font-semibold">Our team is all set to help you!</h3>
           {/* <p className="text-xs text-gray-500">Connect with our experts</p> */}
         </div>
