@@ -15,16 +15,33 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
     // Use useMemo to parse interfaceDetails once and avoid repeated parsing
     const { chatbot_id, userId, token, config, isHelloUser = false } = useMemo(() => {
         const interfaceDetails = search.get("interfaceDetails");
+        // Default values if parsing fails or interfaceDetails is not provided
+        const defaultValues = {
+            chatbot_id: null,
+            userId: null,
+            token: null,
+            config: null,
+            isHelloUser: false
+        };
+
+        // Return default values if interfaceDetails is undefined or null
+        if (!interfaceDetails) {
+            return defaultValues;
+        }
+
+        // Handle case where interfaceDetails is the string "undefined"
+        if (interfaceDetails === "undefined") {
+            return defaultValues;
+        }
+
         try {
-            const parsedDetails = interfaceDetails
-                ? JSON.parse(interfaceDetails)
-                : { chatbot_id: null, userId: null, token: null, config: null, isHelloUser: false };
-            return parsedDetails;
+            return JSON.parse(interfaceDetails);
         } catch (e) {
             console.error("Error parsing interfaceDetails:", e);
-            return { chatbot_id: null, userId: null, token: null, config: null, isHelloUser: false };
+            return defaultValues;
         }
     }, []);
+
     useEffect(() => {
         if (chatbot_id && userId) {
             dispatch(setDataInAppInfoReducer({
