@@ -4,7 +4,7 @@ import { ChatbotContext } from '@/components/context';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
 import { setHuman } from '@/store/hello/helloSlice';
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useContext, useEffect, useState, useMemo } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 export default function ChatbotLayout({ children }: { children: React.ReactNode }) {

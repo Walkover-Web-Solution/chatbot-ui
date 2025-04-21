@@ -1,6 +1,6 @@
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
-import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { generateNewId } from "@/utils/utilities";
+import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 
 export const initialChatState: ChatState = {
   // Messages and Conversations
@@ -43,28 +43,53 @@ export const initialChatState: ChatState = {
 export const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
   switch (action.type) {
     case ChatActionTypes.SET_MESSAGES: {
-      const subThreadId = state.subThreadId
-      return {
-        ...state,
-        messages: action.payload,
-        messageIds: {
-          ...state.messageIds,
-          [subThreadId]: Array.from(new Set([
-            ...action.payload?.map((item) => item?.Id),
-            ...(state.messageIds[subThreadId] || []),
-          ])) as string[]
-        },
-        msgIdAndDataMap: {
-          ...state.msgIdAndDataMap,
-          [subThreadId]: {
-            ...state.msgIdAndDataMap[subThreadId],
-            ...action.payload?.reduce((acc, item) => {
-              acc[item?.Id] = item
-              return acc
-            }, {})
+      const subThreadId = state.subThreadId;
+      const { messages, initial } = action.payload;
+
+      if (initial) {
+        // First empty the messages, messageIds and msgIdAndDataMap in initial case
+        return {
+          ...state,
+          messages: messages || [],
+          messageIds: {
+            ...(initial ? {} : state.messageIds),
+            [subThreadId]: Array.isArray(messages) ? messages.map(msg => msg.Id) : []
+          },
+          msgIdAndDataMap: {
+            ...(initial ? {} : state.msgIdAndDataMap),
+            [subThreadId]: Array.isArray(messages) ? messages.reduce((acc: Record<string, any>, item) => {
+              acc[item.Id] = item;
+              return acc;
+            }, {}) : {}
           }
-        }
-      };
+        };
+      } else {
+        // Check if messages is an array before spreading it
+        const messagesArray = Array.isArray(messages) ? messages : [];
+
+        return {
+          ...state,
+          messages: [...messagesArray, ...state.messages],
+          messageIds: {
+            ...state.messageIds,
+            [subThreadId]: [
+              ...messagesArray.map(msg => msg.Id),
+              ...(state.messageIds[subThreadId] || [])
+
+            ]
+          },
+          msgIdAndDataMap: {
+            ...state.msgIdAndDataMap,
+            [subThreadId]: {
+              ...(state.msgIdAndDataMap[subThreadId] || {}),
+              ...messagesArray.reduce((acc: Record<string, MessageData>, item) => {
+                acc[item.Id] = item;
+                return acc;
+              }, {})
+            }
+          }
+        };
+      }
     }
     case ChatActionTypes.ADD_MESSAGE: {
       const subThreadId = state.subThreadId;

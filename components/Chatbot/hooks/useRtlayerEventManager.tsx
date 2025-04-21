@@ -33,7 +33,7 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
         break;
 
       // Case: Error is present without response data
-      case !data && error:
+      case !data && !!parsedMessage?.error:
         chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", content: `${parsedMessage?.error || error || "Error while talking to AI"}` } });
         chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: false });
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);

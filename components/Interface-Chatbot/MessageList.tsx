@@ -1,5 +1,5 @@
 // React and Next.js imports
-import React, {
+import {
   useCallback,
   useContext,
   useEffect,
@@ -9,40 +9,36 @@ import React, {
 } from "react";
 
 // MUI Components
-import { Box, lighten, LinearProgress, useTheme } from "@mui/material";
+import { lighten, LinearProgress, useTheme } from "@mui/material";
 
 // Third-party libraries
 import InfiniteScroll from "react-infinite-scroll-component";
 
 // App imports
-
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { MessageContext } from "./InterfaceChatbot";
 import Message from "./Message";
 import MoveToDownButton from "./MoveToDownButton";
 
-interface MessageListProps {
-  containerRef: React.RefObject<HTMLDivElement>;
-}
-
-function MessageList({ containerRef }: MessageListProps) {
+function MessageList() {
   const {
-    // fetchMoreData,
     hasMoreMessages = false,
     newMessage,
-    currentPage = 1,
     getMoreChats,
     messageIds,
     msgIdAndDataMap,
     helloMsgIdAndDataMap,
     helloMsgIds,
-    loading
+    loading,
+    messages,
+    setNewMessage
   } = useContext(MessageContext);
-  const [showScrollButton, setShowScrollButton] = useState(false)
-  const [isInverse, setIsInverse] = useState(false);
-  const scrollPositionRef = useRef<number>(0);
-  const prevMessagesLengthRef = useRef<number>(messageIds?.length);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const lastScrollHeightRef = useRef<number>(0);
+  const prevMessagesLengthRef = useRef<number>(0);
   const { IsHuman, assigned_type } = useCustomSelector((state: $ReduxCoreType) => ({
     IsHuman: state.Hello?.isHuman,
     assigned_type: state.Hello?.channelListData?.channels?.find((channel: any) => channel?.channel === state?.Hello?.currentChannelId)?.assigned_type || 'bot',
@@ -53,125 +49,131 @@ function MessageList({ containerRef }: MessageListProps) {
   };
 
   const movetoDown = useCallback(() => {
-    containerRef?.current?.scrollTo({
-      top: containerRef?.current.scrollHeight,
-      behavior: "smooth",
-    });
+    const messageContainer = document.getElementById("message-container");
+    if (messageContainer) {
+      messageContainer.scrollTo({
+        top: messageContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+      setIsAtBottom(true);
+    }
   }, []);
 
-
   const handleScroll = useCallback(() => {
-    const currentContainer = containerRef?.current;
-    if (!currentContainer) return;
+    const messageContainer = document.getElementById("message-container");
+    if (!messageContainer) return;
 
-    const scrollPosition = currentContainer.scrollTop;
-    const maxScrollTop = currentContainer.scrollHeight - currentContainer.clientHeight;
+    const { scrollTop, scrollHeight, clientHeight } = messageContainer;
+    const isBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 50;
 
-    // Save scroll position when scrolling up
-    if (scrollPosition < scrollPositionRef.current) {
-      scrollPositionRef.current = scrollPosition;
+    setIsAtBottom(isBottom);
+    setShowScrollButton(!isBottom);
+
+    // Load more messages when scrolled to top
+    if (scrollTop < 100 && hasMoreMessages) {
+      // Save current scroll height before loading more
+      lastScrollHeightRef.current = scrollHeight;
+      // Trigger loading more messages
+      getMoreChats();
     }
+  }, [hasMoreMessages, getMoreChats]);
 
-    setShowScrollButton(scrollPosition < maxScrollTop - 150);
-
-    // Trigger fetchMoreData when scrolled to top
-    if (scrollPosition === 0 && hasMoreMessages) {
-      getMoreChats()
-    }
-  }, [containerRef, hasMoreMessages, currentPage]);
 
   useEffect(() => {
-
-    if (messageIds.length === prevMessagesLengthRef.current) {
-      // New messageIds added at bottom
-      movetoDown();
-    } else if (messageIds.length > 0 && containerRef.current) {
-      // messageIds added at top (pagination)
-      const heightDiff = containerRef.current.scrollHeight - containerRef.current.clientHeight;
-      containerRef.current.scrollTop = heightDiff - scrollPositionRef.current;
+    if (newMessage) {
+      setNewMessage(false);
+      setTimeout(movetoDown, 100);
     }
-    prevMessagesLengthRef.current = messageIds.length;
-  }, [messageIds, IsHuman, newMessage]);
+  }, [newMessage, movetoDown]);
 
+  // Initial scroll to bottom when messages first load
   useEffect(() => {
-    const currentContainer = containerRef?.current;
-    if (currentContainer) {
-      currentContainer.addEventListener("scroll", handleScroll);
-      return () => currentContainer.removeEventListener("scroll", handleScroll);
+    if ((messageIds?.length > 0 && prevMessagesLengthRef.current === 0) || newMessage) {
+      setTimeout(movetoDown, 100);
     }
-  }, [containerRef, handleScroll]);
+  }, [messageIds?.length, movetoDown, newMessage]);
+
+  // Handle new messages vs pagination
+  useEffect(() => {
+    const messageContainer = document.getElementById("message-container");
+    if (!messageContainer) return;
+
+    // If messages were added at the end (new messages)
+    if (messageIds?.length > prevMessagesLengthRef.current && isAtBottom) {
+      setTimeout(movetoDown, 100);
+    }
+    // If messages were added at the beginning (pagination)
+    else if (messageIds?.length > prevMessagesLengthRef.current && lastScrollHeightRef.current > 0) {
+      const newScrollHeight = messageContainer.scrollHeight;
+      const heightDifference = newScrollHeight - lastScrollHeightRef.current;
+
+      if (heightDifference > 0) {
+        messageContainer.scrollTop = heightDifference;
+      }
+    }
+
+    prevMessagesLengthRef.current = messageIds?.length || 0;
+  }, [messageIds?.length, movetoDown, isAtBottom]);
+
+  // Set up scroll event listener
+  useEffect(() => {
+    const messageContainer = document.getElementById("message-container");
+    if (messageContainer) {
+      messageContainer.addEventListener("scroll", handleScroll);
+      return () => messageContainer.removeEventListener("scroll", handleScroll);
+    }
+  }, [handleScroll]);
 
   const RenderMessages = useMemo(() => {
     const targetMessages = IsHuman ? helloMsgIds : messageIds;
-    const data = IsHuman ? helloMsgIdAndDataMap : msgIdAndDataMap;
-    return targetMessages?.map((msgId, index) => {
-      return <Message
-        // testKey={`${msgId}-${index}`}
+    const targetMap = IsHuman ? helloMsgIdAndDataMap : msgIdAndDataMap;
+
+    return targetMessages?.map((msgId, index) => (
+      <Message
         key={`${msgId}-${index}`}
-        message={data[msgId]}
+        message={targetMap?.[msgId]}
       />
-    });
-  }, [messageIds, helloMsgIds, IsHuman]);
+    ));
+  }, [messageIds, helloMsgIds, IsHuman, msgIdAndDataMap, helloMsgIdAndDataMap]);
 
+  // Function to manually trigger loading more messages
   return (
-    <Box
-      id="scrollableDiv"
-      sx={{
-        height: "100%",
-        overflowY: "auto",
-        display: "flex",
-        flexDirection: isInverse ? "column" : "column-reverse",
-      }}
-      className="p-2 sm:p-3 w-full"
-    >
-      <InfiniteScroll
-        dataLength={messageIds?.length}
-        next={() => getMoreChats()}
-        hasMore={hasMoreMessages}
-        inverse={!isInverse}
-        loader={
-          Number(currentPage) > 1 && (
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <LinearProgress
-                sx={{
-                  height: 4,
-                  width: "80%",
-                  marginBottom: 2,
-                  backgroundColor: '#e0e0e0',
-                  '& .MuiLinearProgress-bar': {
-                    backgroundColor: 'black'
-                  }
-                }}
-              />
-            </Box>
-          )
-        }
-        scrollableTarget="message-container"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-        }}
-        scrollThreshold="230px"
+    <div>
+      <div
+        ref={containerRef}
+        id="scrollableDiv"
+        className="h-full overflow-y-auto flex flex-col p-2 sm:p-3 w-full"
       >
-        {RenderMessages}
-        {IsHuman && loading && assigned_type === 'bot' && <div className="w-full">
-          <div className="flex flex-wrap gap-2 items-center">
-            <p className="text-sm">Thinking...</p>
+        <InfiniteScroll
+          dataLength={IsHuman ? (helloMsgIds?.length || 0) : (messageIds?.length || 0)}
+          next={getMoreChats}
+          hasMore={hasMoreMessages}
+          inverse={true}
+          loader={<LinearProgress color="primary" />}
+          scrollableTarget="message-container"
+          scrollThreshold="200px"
+        // style={{ display: 'flex', flexDirection: 'column-reverse' }}
+        >
+          {RenderMessages}
+          {IsHuman && loading && assigned_type === 'bot' && <div className="w-full">
+            <div className="flex flex-wrap gap-2 items-center">
+              <p className="text-sm">Thinking...</p>
+            </div>
+            <div className="loading-indicator" style={themePalette}>
+              <div className="loading-bar"></div>
+              <div className="loading-bar"></div>
+              <div className="loading-bar"></div>
+            </div>
           </div>
-          <div className="loading-indicator" style={themePalette}>
-            <div className="loading-bar"></div>
-            <div className="loading-bar"></div>
-            <div className="loading-bar"></div>
-          </div>
-        </div>
-        }
-      </InfiniteScroll>
-
+          }
+        </InfiniteScroll>
+      </div>
       <MoveToDownButton
         movetoDown={movetoDown}
         showScrollButton={showScrollButton}
       />
-    </Box>
+    </div>
   );
 }
+
 export default MessageList;

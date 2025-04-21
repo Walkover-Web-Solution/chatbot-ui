@@ -107,7 +107,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                                 ref={containerRef}
                             >
                                 <div className="w-full max-w-5xl mx-auto">
-                                    <MessageList containerRef={containerRef} />
+                                    <MessageList />
                                 </div>
                             </div>
 

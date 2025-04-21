@@ -1,6 +1,6 @@
+import actionType from "@/types/utility.js";
 import { SliceCaseReducers, ValidateSliceCaseReducers } from "@reduxjs/toolkit";
 import { $HelloReduxType, HelloData } from "../../types/hello/HelloReduxType";
-import actionType from "@/types/utility.js";
 
 export const initialState: $HelloReduxType = {
   isHuman: false,

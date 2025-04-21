@@ -1,7 +1,7 @@
 'use client';
-import InterfaceChatbot from "@/components/Interface-Chatbot/InterfaceChatbot";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
+import { setHelloConfig } from "@/store/hello/helloSlice";
 import {
   addDefaultContext,
   setConfig,
@@ -11,12 +11,11 @@ import {
   setModalConfig,
   setThreadId
 } from "@/store/interface/interfaceSlice";
+import { HelloData } from "@/types/hello/HelloReduxType";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE, ParamsEnums } from "@/utils/enums";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Chatbot from "../Chatbot/Chatbot";
-import { HelloData } from "@/types/hello/HelloReduxType";
-import { setHelloConfig } from "@/store/hello/helloSlice";
 
 interface InterfaceData {
   threadId?: string | null;
@@ -50,8 +49,8 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
     if (event?.data?.type === "helloData") {
       const receivedHelloData: HelloData = event.data.data;
       localStorage.setItem('WidgetId', receivedHelloData?.widgetToken)
-      if(!localStorage.getItem('is_anon') )
-        localStorage.setItem('is_anon',receivedHelloData?.unique_id ? 'false' : 'true')
+      if (!localStorage.getItem('is_anon'))
+        localStorage.setItem('is_anon', receivedHelloData?.unique_id ? 'false' : 'true')
       dispatch(setHelloConfig(receivedHelloData));
       return;
     }

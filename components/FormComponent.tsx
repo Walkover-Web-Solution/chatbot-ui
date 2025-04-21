@@ -1,7 +1,7 @@
 import { saveClientDetails } from "@/config/helloApi";
 import { isColorLight } from "@/utils/themeUtility";
 import { useTheme } from "@mui/material";
-import { Mail, Phone, Send, User, X } from "lucide-react";
+import { Mail, Phone, Send, User } from "lucide-react";
 import { useState } from "react";
 
 interface FormComponentProps {
@@ -51,15 +51,15 @@ function FormComponent({ open, setOpen }: FormComponentProps) {
       tempErrors.name = "Name is required";
       isValid = false;
     }
-    
+
     // Email is optional, but validate if present
-    if (formData.email && 
+    if (formData.email &&
       !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)
     ) {
       tempErrors.email = "Invalid email address";
       isValid = false;
     }
-    
+
     // Number is optional, but validate if present
     if (formData.number && !/^\d{10}$/.test(formData.number)) {
       tempErrors.number = "Invalid number";
@@ -92,9 +92,9 @@ function FormComponent({ open, setOpen }: FormComponentProps) {
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 relative">
         {/* Card header */}
         <div className="bg-primary text-white p-6 rounded-t-lg" style={{
-            backgroundColor: backgroundColor,
-            color: textColor
-          }}>
+          backgroundColor: backgroundColor,
+          color: textColor
+        }}>
           <h2 className="text-xl font-bold">Enter your details</h2>
           <p className="text-sm opacity-90 mt-1">
             Please provide your information below

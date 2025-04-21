@@ -37,24 +37,24 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   const { isHelloUser } = useContext(ChatbotContext);
   const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId, images, isToggledrawer } = chatState;
   const { setLoading, setChatsLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
-  const { 
-    uuid, 
-    unique_id, 
-    presence_channel, 
-    unique_id_hello = "", 
-    widgetToken, 
-    currentChatId, 
-    currentTeamId, 
-    currentChannelId, 
-    isSmallScreen 
+  const {
+    uuid,
+    unique_id,
+    presence_channel,
+    unique_id_hello = "",
+    widgetToken,
+    currentChatId,
+    currentTeamId,
+    currentChannelId,
+    isSmallScreen
   } = useReduxStateManagement({ chatbotId, chatDispatch });
-  
+
   const { assigned_type } = useCustomSelector((state: $ReduxCoreType) => ({
     assigned_type: state.Hello?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === state?.Hello?.currentChannelId
     )?.assigned_type || 'bot',
   }));
-  
+
   const isBot = assigned_type === 'bot';
   const dispatch = useDispatch();
   const mountedRef = useRef(false);
@@ -74,7 +74,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   // Fetch previous Hello chat history
   const fetchHelloPreviousHistory = useCallback((channelId: string = currentChannelId) => {
     if (!channelId || !uuid) return;
-    
+
     setChatsLoading(true);
     getHelloChatHistoryApi(channelId)
       .then((response) => {
@@ -95,8 +95,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
                 role,
                 message_id: chat?.id,
                 from_name: chat?.message?.from_name,
-                content: chat?.message?.message_type === 'interactive' 
-                  ? chat?.message?.content?.body?.text 
+                content: chat?.message?.message_type === 'interactive'
+                  ? chat?.message?.content?.body?.text
                   : chat?.message?.content?.text,
                 urls: chat?.message?.content?.attachment,
               };
@@ -199,27 +199,27 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       if (!currentChatId) {
         chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true });
       }
-      
+
       const attachments = Array.isArray(images) && images?.length ? images : null;
-      
+
       if (attachments) {
         chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload: [] });
       }
-      
+
       if (isBot) {
         setLoading(true);
       }
-      
+
       startTimeoutTimer();
-      
+
       const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId);
-      
+
       if (data && !currentChatId) {
-        dispatch(setHelloKeysData({ 
-          currentChatId: data?.['id'], 
-          currentChannelId: data?.['channel'] 
+        dispatch(setHelloKeysData({
+          currentChatId: data?.['id'],
+          currentChannelId: data?.['channel']
         }));
-        
+
         if (data?.['presence_channel'] && data?.['channel']) {
           try {
             await socketManager.subscribe([data?.['presence_channel'], data?.['channel']]);
@@ -227,11 +227,11 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
             console.error("Failed to subscribe to channels:", error);
           }
         }
-        
+
         if (isBot) {
           setLoading(false);
         }
-        
+
         if (!isSmallScreen) {
           fetchChannels();
         }
@@ -243,19 +243,19 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       console.error("Error sending message to Hello:", error);
     }
   }, [
-    currentChatId, 
-    currentTeamId, 
-    uuid, 
-    unique_id, 
-    presence_channel, 
-    chatDispatch, 
-    images, 
-    isBot, 
-    isSmallScreen, 
-    unique_id_hello, 
-    startTimeoutTimer, 
-    setLoading, 
-    dispatch, 
+    currentChatId,
+    currentTeamId,
+    uuid,
+    unique_id,
+    presence_channel,
+    chatDispatch,
+    images,
+    isBot,
+    isSmallScreen,
+    unique_id_hello,
+    startTimeoutTimer,
+    setLoading,
+    dispatch,
     fetchChannels
   ]);
 

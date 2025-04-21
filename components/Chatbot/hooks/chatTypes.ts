@@ -1,6 +1,6 @@
 // types for the chat reducer and actions
 export interface MessageType {
-  Id:string
+  Id: string
   content: string;
   role: string;
   responseId?: string;
@@ -18,10 +18,10 @@ export interface MessageType {
 
 export interface ChatState {
   messages: MessageType[];
-  messageIds: { [subThreadId:string] : string[] };
+  messageIds: { [subThreadId: string]: string[] };
   msgIdAndDataMap: { [subThreadId: string]: { [msgId: string]: MessageType } }
   helloMessages: any[];
-  helloMsgIds:{ [subThreadId:string] : string[] };
+  helloMsgIds: { [subThreadId: string]: string[] };
   helloMsgIdAndDataMap: { [subThreadId: string]: { [msgId: string]: any } }
   loading: boolean;
   chatsLoading: boolean;
@@ -46,13 +46,13 @@ export interface ChatState {
 
 export interface ReduxSetterActionType {
   messages?: MessageType[];
-  messageIds?: { [subThreadId:string] : string[] };
+  messageIds?: { [subThreadId: string]: string[] };
   msgIdAndDataMap?: { [subThreadId: string]: { [msgId: string]: MessageType } }
   helloMessages?: any[];
   loading?: boolean;
   chatsLoading?: boolean;
   options?: any[];
-  images?: string[] | Array<{path: string}>;
+  images?: string[] | Array<{ path: string }>;
   threadId?: string;
   subThreadId?: string;
   bridgeName?: string;
@@ -104,7 +104,7 @@ export enum ChatActionTypes {
 }
 
 export type ChatAction =
-  | { type: ChatActionTypes.SET_MESSAGES; payload: MessageType[] }
+  | { type: ChatActionTypes.SET_MESSAGES; payload: { messages: MessageType[], initial?: boolean } }
   | { type: ChatActionTypes.ADD_USER_MESSAGE; payload: { content: string; urls?: string[] } }
   | { type: ChatActionTypes.ADD_MESSAGE; payload: MessageType }
   | { type: ChatActionTypes.REMOVE_MESSAGES; payload: { numberOfMessages: number } }
@@ -133,7 +133,7 @@ export type ChatAction =
   | { type: ChatActionTypes.SET_MESSAGE_TIMEOUT }
   | { type: ChatActionTypes.RESET_STATE }
   | { type: ChatActionTypes.SET_DATA; payload: ReduxSetterActionType }
-  | { type:ChatActionTypes.SET_MESSAGE_FEEDBACK;payload:any}
+  | { type: ChatActionTypes.SET_MESSAGE_FEEDBACK; payload: any }
   | { type: ChatActionTypes.UPDATE_SINGLE_MESSAGE; payload: any }
   | { type: ChatActionTypes.SET_TYPING; payload: boolean }
 export interface ChatContextType extends ChatState {
