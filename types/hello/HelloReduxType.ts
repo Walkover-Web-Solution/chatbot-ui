@@ -13,6 +13,7 @@ export interface $HelloReduxType {
   currentChannelId?: string;
   currentTeamId?: string;
   currentChatId?: string;
+  greeting?: object;
 }
 
 

@@ -240,3 +240,31 @@ export async function uploadAttachmentToHello(file: any, inboxId: string): Promi
   }
 }
 
+// Function to add domain to Hello chat
+export async function addDomainToHello(domain?: string, mail?: string, uniqueId?: string, userJwtToken?: string, number?: string): Promise<any> {
+  try {
+    const response = await axios.put(
+      `${HELLO_HOST_URL}/add-domain/`,
+      {
+        dom: domain,
+        user_data: {
+          mail: mail,
+          unique_id: uniqueId,
+          user_jwt_token: userJwtToken,
+          number: number,
+        },
+        is_anon: localStorage.getItem("is_anon") == 'true'
+      },
+      {
+        headers: {
+          'authorization': `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          'content-type': 'application/json',
+        }
+      }
+    );
+    return response?.data;
+  } catch (error: any) {
+    errorToast(error?.message || "Failed to add domain");
+    return null;
+  }
+}

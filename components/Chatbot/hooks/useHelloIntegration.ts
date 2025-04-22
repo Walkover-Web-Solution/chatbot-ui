@@ -1,10 +1,10 @@
 import { ThemeContext } from '@/components/AppWrapper';
 import { ChatbotContext } from '@/components/context';
-import { getAgentTeamApi, getAllChannels, getHelloChatHistoryApi, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
+import { addDomainToHello, getAgentTeamApi, getAllChannels, getGreetingQuestions, getHelloChatHistoryApi, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
 import useSocket from '@/hooks/socket';
 import useSocketEvents from '@/hooks/socketEventHandler';
 import socketManager from '@/hooks/socketManager';
-import { getHelloDetailsStart, setChannelListData, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
+import { getHelloDetailsStart, setChannelListData, setGreeting, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { generateNewId } from '@/utils/utilities';
@@ -49,10 +49,13 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     isSmallScreen
   } = useReduxStateManagement({ chatbotId, chatDispatch });
 
-  const { assigned_type } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { assigned_type, is_domain_enable, companyId, botId } = useCustomSelector((state: $ReduxCoreType) => ({
     assigned_type: state.Hello?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === state?.Hello?.currentChannelId
     )?.assigned_type || 'bot',
+    is_domain_enable: state.Hello?.widgetInfo?.is_domain_enable || false,
+    companyId: state.Hello?.widgetInfo?.company_id || '',
+    botId: state.Hello?.widgetInfo?.bot_id || '',
   }));
 
   const isBot = assigned_type === 'bot';
@@ -114,11 +117,15 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [currentChannelId, uuid, setChatsLoading, setHelloMessages]);
 
   const getToken = useCallback(() => {
+    is_domain_enable && addDomainToHello(document.referrer)
     getJwtToken().then((data) => {
       if (data !== null) {
         mountedRef.current = true;
         dispatch(setJwtToken(data));
       }
+    });
+    getGreetingQuestions(companyId, botId).then((data) => {
+      dispatch(setGreeting({...data?.greeting}));
     });
   }, [dispatch]);
 
