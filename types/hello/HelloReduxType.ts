@@ -31,4 +31,5 @@ export interface HelloData {
   country?: string;
   city?: string;
   region?: string;
+  user_jwt_token?: string;
 }

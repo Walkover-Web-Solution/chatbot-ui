@@ -49,13 +49,17 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     isSmallScreen
   } = useReduxStateManagement({ chatbotId, chatDispatch });
 
-  const { assigned_type, is_domain_enable, companyId, botId } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { assigned_type, is_domain_enable, companyId, botId, mail, number, userJwtToken, helloConfig } = useCustomSelector((state: $ReduxCoreType) => ({
     assigned_type: state.Hello?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === state?.Hello?.currentChannelId
     )?.assigned_type || 'bot',
     is_domain_enable: state.Hello?.widgetInfo?.is_domain_enable || false,
     companyId: state.Hello?.widgetInfo?.company_id || '',
     botId: state.Hello?.widgetInfo?.bot_id || '',
+    mail: state.Hello?.helloConfig?.mail,
+    number: state.Hello?.helloConfig?.number,
+    userJwtToken: state.Hello?.helloConfig?.user_jwt_token,
+    helloConfig: state.Hello?.helloConfig
   }));
 
   const isBot = assigned_type === 'bot';
@@ -117,7 +121,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [currentChannelId, uuid, setChatsLoading, setHelloMessages]);
 
   const getToken = useCallback(() => {
-    is_domain_enable && addDomainToHello(document.referrer)
+    is_domain_enable && addDomainToHello(document.referrer, unique_id_hello, mail, userJwtToken, number)
     getJwtToken().then((data) => {
       if (data !== null) {
         mountedRef.current = true;
@@ -130,7 +134,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [dispatch]);
 
   const fetchChannels = useCallback(() => {
-    return getAllChannels(unique_id_hello).then(data => {
+    return getAllChannels(helloConfig).then(data => {
       dispatch(setChannelListData(data));
       if (!mountedRef.current) {
         getToken();
@@ -314,7 +318,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, []);
 
   useEffect(() => {
-    if (!localStorage.getItem("HelloClientId") && !unique_id_hello && widgetToken && isHelloUser) {
+    if (!localStorage.getItem("HelloClientId") && !unique_id_hello && widgetToken && isHelloUser && !mail && !number) {
       createAnonymousUser();
     }
   }, [isHelloUser, unique_id_hello, widgetToken, createAnonymousUser]);
