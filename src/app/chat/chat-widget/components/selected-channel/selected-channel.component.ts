@@ -508,11 +508,7 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
                     const isOutgoing = call.type === "outgoing-call";
                     if (isOutgoing){
                         clearInterval(this.interval);
-                        this.webrtcStatus = 'Calling';
-                        const mediaStream = call.getMediaStream();                
-                        if (this.webRTCAudioRef && this.webRTCAudioRef.nativeElement) {
-                            this.webRTCAudioRef.nativeElement.srcObject = mediaStream;
-                        }
+                        this.webrtcStatus = 'Calling';                        
                     };
                     call.on("answered", (data)=>{
                         this.webrtcStatus = 'Ongoing';                        
@@ -531,6 +527,10 @@ export class SelectedChannelComponent extends BaseComponent implements OnInit, O
                         this.timeSpent = 0;                        
                         this.webrtcStatus = 'Connected';
                         this.callConnected = true;
+                        //const mediaStream = call.getMediaStream();                
+                        if (this.webRTCAudioRef && this.webRTCAudioRef.nativeElement) {
+                            this.webRTCAudioRef.nativeElement.srcObject = mediaStream;
+                        }
                     });                      
                 });
             }
