@@ -17,6 +17,8 @@ import { ChatActionTypes } from "../Chatbot/hooks/chatTypes";
 import { useReduxStateManagement } from "../Chatbot/hooks/useReduxManagement";
 import { ChatbotContext } from "../context";
 import { MessageContext } from "./InterfaceChatbot";
+import helloVoiceService from "../Chatbot/hooks/HelloVoiceService";
+import { useCallUI } from "../Chatbot/hooks/useCallUI";
 
 const createRandomId = () => {
   return Math.random().toString(36).substring(2, 15);
@@ -37,6 +39,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   const isSmallScreen = useMediaQuery('(max-width:1023px)');
   const { setOptions, chatDispatch, fetchHelloPreviousHistory, images, setImages } = useContext(MessageContext);
   const { currentChatId, currentTeamId, } = useReduxStateManagement({ chatbotId, chatDispatch });
+  const { callState } = useCallUI();
   const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName, teamsList, channelList, isHuman } =
     useCustomSelector((state: $ReduxCoreType) => ({
       reduxThreadId: GetSessionStorageData("threadId") || state.appInfo?.threadId || "",
@@ -137,6 +140,11 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
     }
   }
 
+
+  const handleVoiceCall = () => {
+    helloVoiceService.initiateCall();
+  }
+
   const TeamsList = (
     <div className="teams-container p-2 relative gap-6 flex flex-col">
       {/* Conversations Section */}
@@ -215,7 +223,11 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
       <div className="marketing-banner mt-4 p-3 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg">
         <p className="text-sm font-medium">Need specialized help?</p>
         <p className="text-xs">Our teams are ready to assist you with any questions</p>
-        <button className="mt-2 text-xs bg-primary text-white py-1 px-3 rounded-md hover:bg-primary/80 transition-colors">
+        <button
+          className={`mt-2 text-xs py-1 px-3 rounded-md transition-colors ${callState !== "idle" ? "bg-gray-400 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/80"}`}
+          onClick={handleVoiceCall}
+          disabled={callState !== "idle"}
+        >
           Call Us
         </button>
       </div>
