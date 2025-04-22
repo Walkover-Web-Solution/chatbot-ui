@@ -18,6 +18,7 @@ import { useChatActions } from './hooks/useChatActions';
 import useHelloIntegration from './hooks/useHelloIntegration';
 import { useReduxStateManagement } from './hooks/useReduxManagement';
 import useRtlayerEventManager from './hooks/useRtlayerEventManager';
+import CallUI from '../Hello/callUI';
 
 function Chatbot({ chatbotId }: { chatbotId: string }) {
     // refs
@@ -76,6 +77,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                             <LinearProgress color="inherit" style={{ color: theme.palette.primary.main }} />
                         </div>
                     )}
+                    <CallUI />
                     <ChatbotHeaderTab />
 
                     {(IsHuman ? helloMsgIds[subThreadId]?.length === 0 : messageIds[subThreadId]?.length === 0) ? (

@@ -128,7 +128,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   return (
     <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-2 py-1 w-full">
       <div className="flex items-center w-full relative">
-        <CallUI />
+        {/* <CallUI /> */}
         <div className="sm:absolute left-0 flex items-center">
           {(subThreadList?.length > 1 || isHelloUser) && <button
             className="p-2 hover:bg-gray-200 rounded-full transition-colors"
@@ -166,9 +166,12 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
             </React.Fragment>
           })}
           <div className="flex items-center">
-            {isHuman && (callState === "idle") && (
+            {isHuman && (
               <div className="tooltip tooltip-bottom" data-tip="Call">
-                <div className="cursor-pointer p-2 mx-2 hover:bg-gray-200 rounded-full transition-colors" onClick={() => { handleVoiceCall() }}>
+                <div
+                  className={`p-2 mx-2 rounded-full transition-colors ${callState === "idle" ? "cursor-pointer hover:bg-gray-200" : "cursor-not-allowed opacity-50 "}`}
+                  onClick={() => { if (callState === "idle") handleVoiceCall() }}
+                >
                   <Phone size={22} color="#555555" />
                 </div>
               </div>
