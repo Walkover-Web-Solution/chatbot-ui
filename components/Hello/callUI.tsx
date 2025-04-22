@@ -27,14 +27,15 @@ const CallUI: React.FC = () => {
     const renderCallUI = () => {
         switch (callState) {
             case 'idle':
-                return (
-                    <div className="call-container">
-                        <h3>Voice Call</h3>
-                        <button onClick={makeCall} className="call-button">
-                            Make Call
-                        </button>
-                    </div>
-                );
+                // return (
+                //     <div className="call-container">
+                //         <h3>Voice Call</h3>
+                //         <button onClick={makeCall} className="call-button">
+                //             Make Call
+                //         </button>
+                //     </div>
+                // );
+                return null;
 
             case 'ringing':
                 return (
@@ -75,14 +76,15 @@ const CallUI: React.FC = () => {
                 );
 
             case 'ended':
-                return (
-                    <div className="call-container">
-                        <h3>Call Ended</h3>
-                        <button onClick={makeCall} className="call-button">
-                            Call Again
-                        </button>
-                    </div>
-                );
+                // return (
+                //     <div className="call-container">
+                //         <h3>Call Ended</h3>
+                //         <button onClick={makeCall} className="call-button">
+                //             Call Again
+                //         </button>
+                //     </div>
+                // );
+                return null;
 
             default:
                 return null;

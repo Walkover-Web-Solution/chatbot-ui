@@ -1,8 +1,8 @@
 /* CallUI.css */
 .call-ui {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    top: 50px;
+    right: 30px;
     width: 300px;
     border-radius: 12px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
