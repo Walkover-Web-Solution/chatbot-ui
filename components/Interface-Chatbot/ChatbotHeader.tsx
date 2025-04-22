@@ -112,7 +112,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
 
   const handleVoiceCall = () => {
     helloVoiceService.initiateCall();
-    console.log("handleVoiceCall");
   }
 
   useEffect(() => {
