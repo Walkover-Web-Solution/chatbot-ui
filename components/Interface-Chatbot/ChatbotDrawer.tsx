@@ -4,7 +4,7 @@ import { createNewThreadApi } from "@/config/api";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { setThreadId, setThreads } from "@/store/interface/interfaceSlice";
 import { $ReduxCoreType } from "@/types/reduxCore";
-import { GetSessionStorageData } from "@/utils/ChatbotUtility";
+import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ParamsEnums } from "@/utils/enums";
 import { useMediaQuery } from "@mui/material";
@@ -13,7 +13,9 @@ import React, { useContext } from "react";
 import { useDispatch } from "react-redux";
 import { MessageContext } from "./InterfaceChatbot";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
-
+import  { useReducer } from 'react';
+import { chatReducer, initialChatState } from '../../components/Chatbot/hooks/chatReducer';
+import { ChatActionTypes } from '../../components/Chatbot/hooks/chatTypes';
 
 const createRandomId = () => {
   return Math.random().toString(36).substring(2, 15);
@@ -48,7 +50,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         GetSessionStorageData("threadId") || state.appInfo?.threadId
         ] || [],
     }));
-
+ const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
   const selectedSubThreadId = reduxSubThreadId;
 
   const handleCreateNewSubThread = async () => {
@@ -78,6 +80,9 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
       bridgeName: GetSessionStorageData("bridgeName") || reduxBridgeName,
       threadId: reduxThreadId,
     }));
+   
+     SetSessionStorage("thread_flag", true);
+     chatDispatch({ type: ChatActionTypes.SET_THREAD_FLAG, payload: true })
     setOptions([]);
   };
 
@@ -93,26 +98,29 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
 
   const DrawerList = (
     <div className="menu p-0 w-full h-full bg-base-200 text-base-content">
-      {(subThreadList || []).length === 0 ? (
+      {(subThreadList || []).filter(thread => thread?.display_name !== 'New Chat').length === 0 ? (
         <div className="flex justify-center items-center mt-5">
           <span>No Threads</span>
         </div>
       ) : (
         <ul>
-          {subThreadList.map((thread: any, index: number) => (
-            <li key={`${thread?._id}-${index}`}>
-              <a
-                className={`${thread?.sub_thread_id === selectedSubThreadId ? 'active' : ''}`}
-                onClick={() => handleChangeSubThread(thread?.sub_thread_id)}
-              >
-                {thread?.display_name || thread?.sub_thread_id}
-              </a>
-            </li>
-          ))}
+          {(subThreadList || [])
+            .filter(thread => thread?.display_name !== 'New Chat')
+            .map((thread: any, index: number) => (
+              <li key={`${thread?._id}-${index}`}>
+                <a
+                  className={`${thread?.sub_thread_id === selectedSubThreadId ? 'active' : ''}`}
+                  onClick={() => handleChangeSubThread(thread?.sub_thread_id)}
+                >
+                  {thread?.display_name || thread?.sub_thread_id}
+                </a>
+              </li>
+            ))}
         </ul>
       )}
     </div>
   );
+  
 
   return (
     <div className="drawer z-[10]">

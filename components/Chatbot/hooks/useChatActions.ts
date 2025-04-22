@@ -163,6 +163,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             subThreadId: subThreadId,
             slugName: customBridgeSlug || bridgeName,
             chatBotId: chatbotId,
+             ThreadFlag: chatState.thread_flag,
             version_id: chatState.bridgeVersionId === "null" ? null : chatState.bridgeVersionId,
             ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {
                 configuration: { model: selectedAiServiceAndModal?.modal },

@@ -8,18 +8,18 @@ import { useTheme } from "@mui/material";
 // Third-party libraries
 import axios from "axios";
 import React, { useContext, useEffect, useMemo, useState } from "react";
-
+import  { useReducer } from 'react';
 // App imports
 import { successToast } from "@/components/customToast";
 import { createNewThreadApi, performChatAction } from "@/config/api";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { $ReduxCoreType } from "@/types/reduxCore";
-import { GetSessionStorageData } from "@/utils/ChatbotUtility";
+import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { createRandomId, DEFAULT_AI_SERVICE_MODALS, ParamsEnums } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import ChatbotDrawer from "./ChatbotDrawer";
-
+import { chatReducer, initialChatState } from '../../components/Chatbot/hooks/chatReducer';
 // Styles
 import { setDataInInterfaceRedux, setSelectedAIServiceAndModal, setThreads } from "@/store/interface/interfaceSlice";
 import { HeaderButtonType, SelectedAiServicesType } from "@/types/interface/InterfaceReduxType";
@@ -31,7 +31,7 @@ import { ChatbotContext } from "../context";
 import { MessageContext } from "./InterfaceChatbot";
 import "./InterfaceChatbot.css";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
-
+import { ChatActionTypes } from '../../components/Chatbot/hooks/chatTypes';
 interface ChatbotHeaderProps {
   chatbotId: string
   preview?: boolean
@@ -75,6 +75,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
       GetSessionStorageData("threadId") || state.appInfo?.threadId
       ] || [],
   }))
+   const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
   const showCreateThreadButton = useMemo(() => {
     // Show icon unless subThreadList length is less than 2 AND messageIds array is empty
     return !(subThreadList?.length < 2 && (!messageIds || messageIds.length === 0));
@@ -82,22 +83,21 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
 
   const handleCreateNewSubThread = async () => {
     if (preview) return;
-    const subThreadId = createRandomId()
-    const result = await createNewThreadApi({
-      threadId: threadId,
-      subThreadId,
-    });
-    if (result?.success) {
-      dispatch(setDataInAppInfoReducer({ subThreadId }))
-      dispatch(
-        setThreads({
-          newThreadData: result?.thread,
+  //   dispatch(setThreadId({ subThreadId:"New Chat"}))
+     dispatch(setDataInAppInfoReducer({ subThreadId:"New Chat" }))
+        // dispatch(setThreadFlag(true));
+        dispatch(setThreads({
+          newThreadData: {
+            id: createRandomId(),
+            display_name: "New Chat",
+            subThreadId:"New Chat",
+            thread_flag:true
+          },
           bridgeName: GetSessionStorageData("bridgeName") || reduxBridgeName,
-          threadId: threadId,
-        })
-      );
-      setOptions([]);
-    }
+        }));
+        SetSessionStorage("thread_flag", true);
+        chatDispatch({ type: ChatActionTypes.SET_THREAD_FLAG, payload: true })
+        setOptions([]);
   };
 
   return (

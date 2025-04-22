@@ -45,7 +45,7 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch, chatState }: 
     channelId: state.Hello?.Channel?.channel || null,
     mode: state.Hello?.mode || [],
     selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null
-  }));
+     }));
 
   // Sync Redux threadId with local state
   useEffect(() => {
@@ -107,6 +107,14 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch, chatState }: 
       payload: !isLargeScreen
     });
   }, [isLargeScreen, chatDispatch]);
+
+  useEffect(() => {
+    const thread_flag = GetSessionStorageData("thread_flag");
+    chatDispatch({
+      type: ChatActionTypes.SET_THREAD_FLAG,
+      payload: (Boolean)(thread_flag) || false,
+    });
+  }, [chatDispatch]);
 
   return {
     interfaceContextData,
