@@ -162,18 +162,20 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
                       Conversation
                     </div>
                     {channel?.last_message && (
-                      <div className="last-message text-sm text-black font-medium mt-1 truncate">
+                      <div className="last-message text-sm text-black font-medium mt-1 truncate flex flex-row items-center gap-1">
                         {!channel.last_message?.message?.sender_id ? "You: " : "Sender: "}
-                        {channel.last_message.message?.content?.text ||
-                          (channel.last_message.message?.content?.attachment?.length > 0 ? "Attachment" :
-                            channel.last_message.message?.message_type ||
-                            "New conversation")}
+                        <div dangerouslySetInnerHTML={{
+                          __html: channel.last_message.message?.content?.text ||
+                            (channel.last_message.message?.content?.attachment?.length > 0 ? "Attachment" :
+                              channel.last_message.message?.message_type ||
+                              "New conversation")
+                        }}></div>
                       </div>
                     )}
                   </div>
                   <div className="flex-shrink-0 flex items-center">
                     {channel?.widget_unread_count > 0 && (
-                      <div className="bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center mr-2">
+                      <div className="text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center mr-2" style={{ backgroundColor: theme.palette.primary.main }}>
                         {channel?.widget_unread_count}
                       </div>
                     )}
