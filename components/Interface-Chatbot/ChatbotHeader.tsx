@@ -28,9 +28,11 @@ import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { useDispatch } from "react-redux";
+import helloVoiceService from "../Chatbot/hooks/HelloVoiceService";
 import { ChatbotContext } from "../context";
 import { MessageContext } from "./InterfaceChatbot";
 import "./InterfaceChatbot.css";
+import CallUI from "../Hello/callUI";
 
 interface ChatbotHeaderProps {
   chatbotId: string
@@ -108,6 +110,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   };
 
   const handleVoiceCall = () => {
+    helloVoiceService.initiateCall();
     console.log("handleVoiceCall");
   }
 
@@ -124,6 +127,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   return (
     <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-2 py-1 w-full">
       <div className="flex items-center w-full relative">
+        <CallUI />
         <div className="sm:absolute left-0 flex items-center">
           {(subThreadList?.length > 1 || isHelloUser) && <button
             className="p-2 hover:bg-gray-200 rounded-full transition-colors"
@@ -161,7 +165,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
             </React.Fragment>
           })}
           <div className="flex items-center">
-            {mode?.includes("human") && isHuman && (
+            {isHuman && (
               <div className="cursor-pointer p-1 mx-2 rounded-full" onClick={() => { handleVoiceCall() }}>
                 <PhoneOutgoing size={22} color="#555555" />
               </div>

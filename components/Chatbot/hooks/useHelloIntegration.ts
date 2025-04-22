@@ -13,6 +13,7 @@ import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
+import helloVoiceService from './HelloVoiceService';
 
 interface HelloMessage {
   role: string;
@@ -117,7 +118,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       if (data !== null) {
         mountedRef.current = true;
         dispatch(setJwtToken(data));
-        getClientToken();
+        getClientToken().then(() => { helloVoiceService.initialize() });
         getCallToken();
       }
     });
