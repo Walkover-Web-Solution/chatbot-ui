@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useCallUI } from '../Chatbot/hooks/useCallUI';
 import './CallUI.css';
+import { Mic, MicOff, Phone } from 'lucide-react';
 
 const CallUI: React.FC = () => {
     const {
@@ -44,11 +45,9 @@ const CallUI: React.FC = () => {
                         <div className="call-animation">
                             <div className="ripple"></div>
                         </div>
-                        <div className="call-actions">
-                            <button onClick={endCall} className="end-button">
-                                Decline
-                            </button>
-                        </div>
+                        <button onClick={endCall} className="end-button">
+                            <Phone style={{ transform: 'rotate(135deg)' }} />
+                        </button>
                     </div>
                 );
 
@@ -60,14 +59,16 @@ const CallUI: React.FC = () => {
                             <CallTimer />
                         </div>
                         <div className="call-actions">
-                            <button
-                                onClick={toggleMute}
-                                className={`mute-button ${isMuted ? 'muted' : ''}`}
-                            >
-                                {isMuted ? 'Unmute' : 'Mute'}
-                            </button>
+                            <div className="tooltip" data-tip={isMuted ? 'Unmute' : 'Mute'}>
+                                <button
+                                    onClick={toggleMute}
+                                    className={`mute-button ${isMuted ? 'muted' : ''}`}
+                                >
+                                    {isMuted ? <MicOff /> : <Mic />}
+                                </button>
+                            </div>
                             <button onClick={endCall} className="end-button">
-                                End Call
+                                <Phone style={{ transform: 'rotate(135deg)' }} />
                             </button>
                         </div>
                         {/* Hidden audio element to play remote audio */}

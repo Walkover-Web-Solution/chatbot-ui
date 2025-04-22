@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import helloVoiceService from './HelloVoiceService';
 
 export const useCallUI = () => {
-  const [callState, setCallState] = useState<string>("idle");
+  const [callState, setCallState] = useState<"idle" | "ringing" | "connected" | "ended">("idle");
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [mediaStream, setMediaStream] = useState<any>(null);
 

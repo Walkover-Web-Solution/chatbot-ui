@@ -54,7 +54,7 @@ class HelloVoiceService {
         });
 
         call.on("ended", (data: any) => {
-            this.callState = "ended";
+            this.callState = "idle";
             this.eventEmitter.emit("callStateChanged", { state: this.callState, data });
             this.currentCall = null;
         });

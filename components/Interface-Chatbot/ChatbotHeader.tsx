@@ -1,6 +1,6 @@
 // MUI Icons
 import ChatIcon from "@mui/icons-material/Chat";
-import { AlignLeft, EllipsisVertical, History, Maximize, PhoneOutgoing, PictureInPicture2, Settings, SquarePen, X } from "lucide-react";
+import { AlignLeft, EllipsisVertical, History, Maximize, Phone, PictureInPicture2, Settings, SquarePen, X } from "lucide-react";
 
 // MUI Components
 import { useTheme } from "@mui/material";
@@ -29,6 +29,7 @@ import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { useDispatch } from "react-redux";
 import helloVoiceService from "../Chatbot/hooks/HelloVoiceService";
+import { useCallUI } from "../Chatbot/hooks/useCallUI";
 import { ChatbotContext } from "../context";
 import { MessageContext } from "./InterfaceChatbot";
 import "./InterfaceChatbot.css";
@@ -60,7 +61,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
   const { isHelloUser } = useContext(ChatbotContext);
-
+  const { callState } = useCallUI();
   const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug, chatSubTitle, allowBridgeSwitchViaProp, subThreadList, subThreadId, hideFullScreenButton, isHuman, mode, teams, currentTeamId } = useCustomSelector((state: $ReduxCoreType) => ({
     allowModalSwitch: state.Interface.allowModalSwitch || false,
     hideCloseButton: state.Interface.hideCloseButton || false,
@@ -165,9 +166,11 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
             </React.Fragment>
           })}
           <div className="flex items-center">
-            {isHuman && (
-              <div className="cursor-pointer p-1 mx-2 rounded-full" onClick={() => { handleVoiceCall() }}>
-                <PhoneOutgoing size={22} color="#555555" />
+            {isHuman && (callState === "idle") && (
+              <div className="tooltip tooltip-bottom" data-tip="Call">
+                <div className="cursor-pointer p-2 mx-2 hover:bg-gray-200 rounded-full transition-colors" onClick={() => { handleVoiceCall() }}>
+                  <Phone size={22} color="#555555" />
+                </div>
               </div>
             )}
             {shouldToggleScreenSize && (hideFullScreenButton !== true && hideFullScreenButton !== "true") ? (
