@@ -15,7 +15,8 @@ export const initialState: $HelloReduxType = {
   currentChannelId: '',
   currentChatId: '',
   currentTeamId: '',
-  greeting: {}
+  greeting: {},
+  showWidgetForm: null
 };
 
 export const reducers: ValidateSliceCaseReducers<
@@ -47,6 +48,7 @@ export const reducers: ValidateSliceCaseReducers<
 
   setHelloConfig(state, action: actionType<HelloData>) {
     state.helloConfig = action.payload;
+    state.showWidgetForm = state.showWidgetForm !== null ? state.showWidgetForm : (action.payload?.show_widget_form ?? true);
   },
 
   setWidgetInfo(state, action: actionType<HelloData>) {

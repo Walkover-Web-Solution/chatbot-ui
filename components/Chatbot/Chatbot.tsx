@@ -60,7 +60,6 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
             isSmallScreen,
             ...chatActions
         }}>
-            <FormComponent open={openHelloForm} setOpen={(isFormOpen) => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: isFormOpen })} />
             <div className="flex h-screen w-full overflow-hidden relative">
                 {/* Sidebar - always visible on large screens */}
                 <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? ' w-64' : 'w-0'}`}>
@@ -77,6 +76,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                             <LinearProgress color="inherit" style={{ color: theme.palette.primary.main }} />
                         </div>
                     )}
+                    <FormComponent open={openHelloForm} setOpen={(isFormOpen) => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: isFormOpen })} isSmallScreen={isSmallScreen} />
                     <CallUI />
                     <ChatbotHeaderTab />
 

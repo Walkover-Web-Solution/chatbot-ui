@@ -49,13 +49,14 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     isSmallScreen
   } = useReduxStateManagement({ chatbotId, chatDispatch });
 
-  const { assigned_type, is_domain_enable, companyId, botId, mail, number, userJwtToken, helloConfig } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { assigned_type, is_domain_enable, companyId, botId, mail, number, userJwtToken, helloConfig, showWidgetForm } = useCustomSelector((state: $ReduxCoreType) => ({
     assigned_type: state.Hello?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === state?.Hello?.currentChannelId
     )?.assigned_type || 'bot',
     is_domain_enable: state.Hello?.widgetInfo?.is_domain_enable || false,
     companyId: state.Hello?.widgetInfo?.company_id || '',
     botId: state.Hello?.widgetInfo?.bot_id || '',
+    showWidgetForm: state.Hello?.showWidgetForm,
     mail: state.Hello?.helloConfig?.mail,
     number: state.Hello?.helloConfig?.number,
     userJwtToken: state.Hello?.helloConfig?.user_jwt_token,
@@ -209,7 +210,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         new: true,
       } : undefined;
 
-      if (!currentChatId) {
+      // show widget form only if in case of new chat and showWidgetForm is true i.e if all the fields are not filled
+      if (!currentChatId && showWidgetForm) {
         chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true });
       }
 
@@ -240,11 +242,6 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
             console.error("Failed to subscribe to channels:", error);
           }
         }
-
-        if (isBot) {
-          setLoading(false);
-        }
-
         if (!isSmallScreen) {
           fetchChannels();
         }

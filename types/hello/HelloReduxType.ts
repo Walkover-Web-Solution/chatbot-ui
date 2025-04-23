@@ -14,6 +14,7 @@ export interface $HelloReduxType {
   currentTeamId?: string;
   currentChatId?: string;
   greeting?: object;
+  showWidgetForm?: boolean | null;
 }
 
 
