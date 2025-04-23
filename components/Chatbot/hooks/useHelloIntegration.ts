@@ -117,7 +117,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [dispatch]);
 
   const fetchChannels = useCallback(() => {
-    return getAllChannels(unique_id_hello).then(data => {
+    return getAllChannels(helloConfig).then(data => {
       dispatch(setChannelListData(data));
       if (!mountedRef.current) {
         getToken();

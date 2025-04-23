@@ -54,6 +54,7 @@ export async function getAllChannels(helloConfig?: any): Promise<any> {
       `${HELLO_HOST_URL}/pubnub-channels/list/`,
       {
         ...rest,
+        mail, number,
         uuid: localStorage.getItem("HelloClientId"),
         user_data: {
           "unique_id": uniqueId,
@@ -314,6 +315,61 @@ export async function addDomainToHello(domain?: string, mail?: string, uniqueId?
     return response?.data;
   } catch (error: any) {
     errorToast(error?.message || "Failed to add domain");
+    return null;
+  }
+}
+// Delete read receipt for a message
+export async function deleteReadReceipt(channelId: string): Promise<any> {
+  try {
+    const response = await axios.delete(
+      `${HELLO_HOST_URL}/read-receipt/${channelId}`,
+      {
+        headers: {
+          'authorization': `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          'content-type': 'application/json'
+        }
+      }
+    );
+    return response?.data;
+  } catch (error: any) {
+    errorToast(error?.message || "Failed to delete read receipt");
+    return null;
+  }
+}
+
+
+// Submit feedback for a conversation
+export async function submitFeedback(params: {
+  feedbackMsg: string;
+  rating: string; 
+  token: string;
+  id: number;
+  uniqueId: string;
+}): Promise<any> {
+  try {
+    const response = await axios.post(
+      `${HELLO_HOST_URL}/receive-feedback/`,
+      {
+        feedback_msg: params.feedbackMsg,
+        rating: params.rating,
+        token: params.token,
+        type: "post-feedback",
+        id: params.id,
+        user_data: {
+          unique_id: params.uniqueId
+        },
+        is_anon: localStorage.getItem("is_anon") == 'true'
+      },
+      {
+        headers: {
+          'authorization': `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          'content-type': 'application/json'
+        }
+      }
+    );
+    return response?.data;
+  } catch (error: any) {
+    errorToast(error?.message || "Failed to submit feedback");
     return null;
   }
 }
