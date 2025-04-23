@@ -267,7 +267,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
             </div>
             <div className="flex flex-col items-center justify-center flex-1">
               <h2 className="text-lg font-bold text-center">{'Hello ' + Name || 'History'}</h2>
-              {tagline && <p className="text-xs text-gray-500 text-center">{tagline}</p>}
+              {tagline && Name && <p className="text-xs text-gray-500 text-center">{tagline}</p>}
             </div>
             <div className="w-10 flex items-center justify-end">
               {isToggledrawer && !isHelloUser && (
