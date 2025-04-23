@@ -266,7 +266,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
               {isToggledrawer && <button className="p-2 hover:bg-gray-200 rounded-full transition-colors" onClick={() => { closeToggleDrawer(!isToggledrawer) }}> <AlignLeft size={22} color="#555555" /></button>}
             </div>
             <div className="flex flex-col items-center justify-center flex-1">
-              <h2 className="text-lg font-bold text-center">{'Hello ' + Name || 'History'}</h2>
+              <h2 className="text-lg font-bold text-center">{Name ? `Hello ${Name}` : 'Hello There!'}</h2>
               {tagline && Name && <p className="text-xs text-gray-500 text-center">{tagline}</p>}
             </div>
             <div className="w-10 flex items-center justify-end">
