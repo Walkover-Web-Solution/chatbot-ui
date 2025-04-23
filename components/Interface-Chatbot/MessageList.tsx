@@ -28,10 +28,7 @@ function MessageList() {
     getMoreChats,
     messageIds,
     msgIdAndDataMap,
-    helloMsgIdAndDataMap,
-    helloMsgIds,
     loading,
-    messages,
     setNewMessage
   } = useContext(MessageContext);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -39,9 +36,10 @@ function MessageList() {
   const [isAtBottom, setIsAtBottom] = useState(true);
   const lastScrollHeightRef = useRef<number>(0);
   const prevMessagesLengthRef = useRef<number>(0);
-  const { IsHuman, assigned_type } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { IsHuman, assigned_type, currentChannelId } = useCustomSelector((state: $ReduxCoreType) => ({
     IsHuman: state.Hello?.isHuman,
     assigned_type: state.Hello?.channelListData?.channels?.find((channel: any) => channel?.channel === state?.Hello?.currentChannelId)?.assigned_type || 'bot',
+    currentChannelId: state.Hello?.currentChannelId
   }));
   const theme = useTheme();
   const themePalette = {
@@ -125,8 +123,8 @@ function MessageList() {
   }, [handleScroll]);
 
   const RenderMessages = useMemo(() => {
-    const targetMessages = IsHuman ? helloMsgIds : messageIds;
-    const targetMap = IsHuman ? helloMsgIdAndDataMap : msgIdAndDataMap;
+    const targetMessages = messageIds;
+    const targetMap = msgIdAndDataMap;
 
     return targetMessages?.map((msgId, index) => (
       <Message
@@ -134,7 +132,7 @@ function MessageList() {
         message={targetMap?.[msgId]}
       />
     ));
-  }, [messageIds, helloMsgIds, IsHuman, msgIdAndDataMap, helloMsgIdAndDataMap]);
+  }, [messageIds, IsHuman, msgIdAndDataMap]);
 
   // Function to manually trigger loading more messages
   return (
@@ -145,17 +143,16 @@ function MessageList() {
         className="h-full overflow-y-auto flex flex-col p-2 sm:p-3 w-full"
       >
         <InfiniteScroll
-          dataLength={IsHuman ? (helloMsgIds?.length || 0) : (messageIds?.length || 0)}
+          dataLength={messageIds?.length || 0}
           next={getMoreChats}
           hasMore={hasMoreMessages}
           inverse={true}
-          loader={<LinearProgress color="primary" />}
           scrollableTarget="message-container"
           scrollThreshold="200px"
         // style={{ display: 'flex', flexDirection: 'column-reverse' }}
         >
           {RenderMessages}
-          {IsHuman && loading && assigned_type === 'bot' && <div className="w-full">
+          {IsHuman && loading && assigned_type === 'bot' && currentChannelId && <div className="w-full">
             <div className="flex flex-wrap gap-2 items-center">
               <p className="text-sm">Thinking...</p>
             </div>

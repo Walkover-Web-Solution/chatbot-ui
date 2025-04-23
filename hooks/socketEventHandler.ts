@@ -41,8 +41,8 @@ export const useSocketEvents = ({
     const { setLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
     const { currentChannelId } = useReduxStateManagement({ chatbotId, chatDispatch });
 
-    const addHelloMessage = (message: HelloMessage, reponseType: any = '') => {
-        chatDispatch({ type: ChatActionTypes.ADD_HELLO_MESSAGE, payload: { message, reponseType } });
+    const addHelloMessage = (message: HelloMessage) => {
+        chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message } });
     }
 
     function isSameChannel(channelId: string) {
@@ -57,37 +57,20 @@ export const useSocketEvents = ({
 
         switch (type) {
             case 'chat':
-                const { channel, content, chat_id, from_name, sender_id, new_event, message_type } = message || {};
+                const { channel, chat_id, new_event } = message || {};
                 if (isSameChannel(channel) && new_event) {
                     if (!chat_id) {
                         setLoading(false);
 
                         // Play notification sound when message is received
                         const notificationSound = new Audio('/notification-sound.mp3'); // Path to notification sound file in public folder
-                        notificationSound.volume = 0.1;
+                        notificationSound.volume = 0.2;
                         notificationSound.play().catch(error => {
                             console.error("Failed to play notification sound:", error);
                         });
 
-                        switch (message_type) {
-                            case "interactive":
-                                addHelloMessage({
-                                    role: sender_id === "bot" ? "Bot" : "Human",
-                                    from_name,
-                                    content: content?.body?.text,
-                                    urls: content?.body?.attachment,
-                                    id: response?.id,
-                                }, 'assistant');
-                                break;
-                            default:
-                                addHelloMessage({
-                                    role: sender_id === "bot" ? "Bot" : "Human",
-                                    from_name,
-                                    content: content?.text,
-                                    urls: content?.attachment,
-                                    id: response?.id,
-                                }, 'assistant');
-                        }
+                 
+                        addHelloMessage({...message,id:response.id})
                         chatDispatch({ type: ChatActionTypes.SET_TYPING, payload: false });
                     }
                 }
