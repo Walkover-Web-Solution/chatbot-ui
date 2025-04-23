@@ -117,14 +117,14 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
 
   const handleChangeChannel = (channelId: string, chatId: string, teamId: string) => {
     dispatch(setHelloKeysData({ currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
-    dispatch(setDataInAppInfoReducer({ subThreadId: chatId }));
+    dispatch(setDataInAppInfoReducer({ subThreadId: channelId }));
     fetchHelloPreviousHistory(channelId);
     isSmallScreen && setToggleDrawer(false)
     images?.length > 0 && setImages([])
   }
   const handleChangeTeam = (teamId: string) => {
     dispatch(setHelloKeysData({ currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
-    dispatch(setDataInAppInfoReducer({ subThreadId: teamId }));
+    dispatch(setDataInAppInfoReducer({ subThreadId: '' }));
     chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: { teamId: teamId, data: [] } });
     isSmallScreen && setToggleDrawer(false)
     images?.length > 0 && setImages([])

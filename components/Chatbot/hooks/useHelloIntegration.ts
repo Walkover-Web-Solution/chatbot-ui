@@ -14,6 +14,7 @@ import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import helloVoiceService from './HelloVoiceService';
 import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
+import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
 
 interface HelloMessage {
   role: string;
@@ -72,11 +73,12 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   useSocketEvents({ chatbotId, chatState, chatDispatch, messageRef });
 
   const setHelloMessages = useCallback((messages: HelloMessage[]) => {
-    chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: { data: messages } });
+    chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages } });
+    // chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: { data: messages } });
   }, [chatDispatch]);
 
-  const addHelloMessage = useCallback((message: HelloMessage, responseType: any = '') => {
-    chatDispatch({ type: ChatActionTypes.ADD_HELLO_MESSAGE, payload: { message, responseType } });
+  const addHelloMessage = useCallback((message: HelloMessage) => {
+    chatDispatch({ type: ChatActionTypes.SET_PAGINATE_MESSAGES, payload: { messages: [message] } });
   }, [chatDispatch]);
 
   // Fetch previous Hello chat history
@@ -88,29 +90,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       .then((response) => {
         const helloChats = response?.data?.data;
         if (Array.isArray(helloChats) && helloChats.length > 0) {
-          const filterChats = helloChats
-            .map((chat) => {
-              let role;
-              if (chat?.message?.from_name) {
-                role = "Human";
-              } else if (!chat?.message?.from_name && chat?.message?.sender_id === "bot") {
-                role = "Bot";
-              } else {
-                role = "user";
-              }
-
-              return {
-                role,
-                message_id: chat?.id,
-                from_name: chat?.message?.from_name,
-                content: chat?.message?.message_type === 'interactive'
-                  ? chat?.message?.content?.body?.text
-                  : chat?.message?.content?.text,
-                urls: chat?.message?.content?.attachment,
-              };
-            })
-            .reverse();
-          setHelloMessages(filterChats);
+          setHelloMessages(helloChats);
         }
       })
       .catch((error) => {
@@ -228,12 +208,13 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       startTimeoutTimer();
 
       const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId);
-
-      if (data && !currentChatId) {
+      if (data && (!currentChatId || !currentChannelId)) {
         dispatch(setHelloKeysData({
           currentChatId: data?.['id'],
           currentChannelId: data?.['channel']
         }));
+        dispatch(setDataInAppInfoReducer({ subThreadId: data?.['channel'] }));
+        chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages: [newMessage] , subThreadId: data?.['channel']} })
 
         if (data?.['presence_channel'] && data?.['channel']) {
           try {
@@ -287,12 +268,16 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     const newMessage = {
       id: messageId,
       role: "user",
-      content: textMessage,
-      urls: images || [],
+      message:{
+        content: {
+          text: textMessage,
+          attachment: images || []
+        }
+      }
     };
 
-    // Add message to chat
-    addHelloMessage(newMessage);
+    // Add message to chat)
+    if(currentChannelId) addHelloMessage(newMessage);
 
     // Send message to API
     onSendHello(textMessage, newMessage);
@@ -310,6 +295,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [onSendHello, addHelloMessage, images, messageRef]);
 
   // Effect hooks
+  // todo NOT USEFULL
   useEffect(() => {
     if (!mountedRef.current) {
       fetchHelloPreviousHistory();

@@ -43,8 +43,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     }, [IsHuman, currentChatId, mountedRef?.current])
     // RTLayer Event Listiner
     useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef })
-    const { openHelloForm, isToggledrawer, chatsLoading, helloMessages, messageIds, msgIdAndDataMap, subThreadId, helloMsgIds, helloMsgIdAndDataMap } = chatState;
-
+    const { openHelloForm, isToggledrawer, chatsLoading, messageIds, msgIdAndDataMap, subThreadId, helloMsgIds ,isTyping} = chatState;
     return (
         <MessageContext.Provider value={{
             ...chatState,
@@ -54,10 +53,8 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
             chatDispatch,
             messageIds: messageIds?.[subThreadId] || [],
             msgIdAndDataMap: msgIdAndDataMap[subThreadId],
-            helloMessages,
-            helloMsgIdAndDataMap: helloMsgIdAndDataMap?.[subThreadId],
-            helloMsgIds: helloMsgIds?.[subThreadId],
             isSmallScreen,
+            isTyping: isTyping[subThreadId],
             ...chatActions
         }}>
             <div className="flex h-screen w-full overflow-hidden relative">

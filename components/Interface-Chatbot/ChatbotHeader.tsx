@@ -86,8 +86,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   }))
   const showCreateThreadButton = useMemo(() => {
     // Show icon unless subThreadList length is less than 2 AND messageIds array is empty
-    return !(subThreadList?.length < 2 && (!messageIds || messageIds.length === 0));
-  }, [subThreadList?.length, messageIds])
+    return !(subThreadList?.length < 2 && (!messageIds || messageIds.length === 0)) && !isHelloUser;
+  }, [subThreadList?.length, messageIds,isHelloUser])
 
   const handleCreateNewSubThread = async () => {
     if (preview) return;

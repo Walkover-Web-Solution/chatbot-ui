@@ -40,7 +40,7 @@ export interface ChatState {
   newMessage: boolean;
   openHelloForm: boolean;
   isToggledrawer: boolean;
-  isTyping: boolean;
+  isTyping: Record<string, boolean>;
 }
 
 
@@ -101,6 +101,9 @@ export enum ChatActionTypes {
   SET_MESSAGE_FEEDBACK = 'SET_MESSAGE_FEEDBACK',
   UPDATE_SINGLE_MESSAGE = 'UPDATE_SINGLE_MESSAGE',
   SET_TYPING = 'SET_TYPING',
+  SET_INTIAL_MESSAGES = 'SET_INTIAL_MESSAGES',
+  SET_PAGINATE_MESSAGES = 'SET_PAGINATE_MESSAGES',
+  SET_HELLO_EVENT_MESSAGE = 'SET_HELLO_EVENT_MESSAGE',
 }
 
 export type ChatAction =
@@ -136,6 +139,9 @@ export type ChatAction =
   | { type: ChatActionTypes.SET_MESSAGE_FEEDBACK; payload: any }
   | { type: ChatActionTypes.UPDATE_SINGLE_MESSAGE; payload: any }
   | { type: ChatActionTypes.SET_TYPING; payload: boolean }
+  | { type: ChatActionTypes.SET_INTIAL_MESSAGES; payload: any }
+  | { type: ChatActionTypes.SET_PAGINATE_MESSAGES; payload: any }
+  | { type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE; payload: any }
 export interface ChatContextType extends ChatState {
   dispatch: React.Dispatch<ChatAction>;
   sendMessage: (message: SendMessagePayloadType) => void;

@@ -620,7 +620,7 @@ function InterfaceChatbot({
       new: true,
     };
     if (!channelId) setOpen(true);
-    debugger
+    
     const response = (
       await axios.post(
         "https://api.phone91.com/v2/send/",
