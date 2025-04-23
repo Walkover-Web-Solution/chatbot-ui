@@ -1,6 +1,6 @@
 import actionType from "@/types/utility.js";
 import { SliceCaseReducers, ValidateSliceCaseReducers } from "@reduxjs/toolkit";
-import { $HelloReduxType, HelloData } from "../../types/hello/HelloReduxType";
+import { $HelloReduxType, ChannelListData, HelloData } from "../../types/hello/HelloReduxType";
 
 export const initialState: $HelloReduxType = {
   isHuman: false,
@@ -54,7 +54,7 @@ export const reducers: ValidateSliceCaseReducers<
   setWidgetInfo(state, action: actionType<HelloData>) {
     state.widgetInfo = action.payload;
   },
-  setChannelListData(state, action: actionType<any>) {
+  setChannelListData(state, action: actionType<ChannelListData>) {
     state.channelListData = action.payload;
     state.Channel = action.payload?.channels?.[0];
     // state.currentChannelId = action.payload?.channels?.[0]?.channel;

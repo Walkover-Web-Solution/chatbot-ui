@@ -41,7 +41,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   const { setOptions, chatDispatch, fetchHelloPreviousHistory, images, setImages } = useContext(MessageContext);
   const { currentChatId, currentTeamId, } = useReduxStateManagement({ chatbotId, chatDispatch });
   const { callState } = useCallUI();
-  const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName, teamsList, channelList, isHuman } =
+  const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName, teamsList, channelList, isHuman, Name, tagline } =
     useCustomSelector((state: $ReduxCoreType) => ({
       reduxThreadId: GetSessionStorageData("threadId") || state.appInfo?.threadId || "",
       reduxSubThreadId: state.appInfo?.subThreadId || "",
@@ -59,7 +59,9 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         ] || [],
       teamsList: state.Hello?.widgetInfo?.teams || [],
       channelList: state.Hello?.channelListData?.channels || [],
-      isHuman: state.Hello?.isHuman || false
+      isHuman: state.Hello?.isHuman || false,
+      Name: state.Hello?.channelListData?.customer_name || '',
+      tagline: state.Hello?.widgetInfo?.tagline || ''
     }));
   const { isHelloUser } = useContext(ChatbotContext);
 
@@ -263,7 +265,10 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
             <div className="w-10">
               {isToggledrawer && <button className="p-2 hover:bg-gray-200 rounded-full transition-colors" onClick={() => { closeToggleDrawer(!isToggledrawer) }}> <AlignLeft size={22} color="#555555" /></button>}
             </div>
-            <h2 className="text-lg font-bold text-center flex-1">History</h2>
+            <div className="flex flex-col items-center justify-center flex-1">
+              <h2 className="text-lg font-bold text-center">{'Hello ' + Name || 'History'}</h2>
+              {tagline && <p className="text-xs text-gray-500 text-center">{tagline}</p>}
+            </div>
             <div className="w-10 flex items-center justify-end">
               {isToggledrawer && !isHelloUser && (
                 <div className="tooltip tooltip-bottom z-[9999]" data-tip="New Chat">
