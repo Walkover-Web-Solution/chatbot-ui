@@ -13,6 +13,7 @@ export interface $HelloReduxType {
   currentChannelId?: string;
   currentTeamId?: string;
   currentChatId?: string;
+  greeting?: object;
 }
 
 
@@ -30,4 +31,5 @@ export interface HelloData {
   country?: string;
   city?: string;
   region?: string;
+  user_jwt_token?: string;
 }

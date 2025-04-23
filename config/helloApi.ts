@@ -1,5 +1,5 @@
-import axios from "axios";
 import { errorToast } from "@/components/customToast";
+import axios from "axios";
 
 const HELLO_HOST_URL = process.env.NEXT_PUBLIC_MSG91_HOST_URL;
 
@@ -47,14 +47,19 @@ export async function getJwtToken(): Promise<string | null> {
 }
 
 // Get all channels for registered user
-export async function getAllChannels(uniqueId?: string): Promise<any> {
+export async function getAllChannels(helloConfig?: any): Promise<any> {
   try {
+    const { mail, number, user_jwt_token, uniqueId, hide_launcher, show_widget_form, show_close_button, launch_widget, show_send_button, ...rest } = helloConfig;
     const response = await axios.post(
       `${HELLO_HOST_URL}/pubnub-channels/list/`,
       {
+        ...rest,
         uuid: localStorage.getItem("HelloClientId"),
-        user_data: !uniqueId ? {} : {
-          "unique_id": uniqueId
+        user_data: {
+          "unique_id": uniqueId,
+          "mail": mail,
+          "number": number,
+          "user_jwt_token": user_jwt_token
         },
         is_anon: localStorage.getItem("is_anon") == 'true',
         ...(localStorage.getItem("client") ? {} : { anonymous_client_uuid: localStorage.getItem("HelloClientId") })
@@ -284,3 +289,31 @@ export async function getCallToken(): Promise<any> {
   }
 }
 
+// Function to add domain to Hello chat
+export async function addDomainToHello(domain?: string, mail?: string, uniqueId?: string, userJwtToken?: string, number?: string): Promise<any> {
+  try {
+    const response = await axios.put(
+      `${HELLO_HOST_URL}/add-domain/`,
+      {
+        dom: domain,
+        user_data: {
+          mail: mail,
+          unique_id: uniqueId,
+          user_jwt_token: userJwtToken,
+          number: number,
+        },
+        is_anon: localStorage.getItem("is_anon") == 'true'
+      },
+      {
+        headers: {
+          'authorization': `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          'content-type': 'application/json',
+        }
+      }
+    );
+    return response?.data;
+  } catch (error: any) {
+    errorToast(error?.message || "Failed to add domain");
+    return null;
+  }
+}

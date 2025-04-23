@@ -5,6 +5,7 @@ import { LinearProgress, useTheme } from '@mui/material';
 import Image from 'next/image';
 import React, { useEffect, useReducer } from 'react';
 import FormComponent from '../FormComponent';
+import CallUI from '../Hello/callUI';
 import ChatbotDrawer from '../Interface-Chatbot/ChatbotDrawer';
 import ChatbotHeader from '../Interface-Chatbot/ChatbotHeader';
 import ChatbotHeaderTab from '../Interface-Chatbot/ChatbotHeaderTab';
@@ -18,7 +19,6 @@ import { useChatActions } from './hooks/useChatActions';
 import useHelloIntegration from './hooks/useHelloIntegration';
 import { useReduxStateManagement } from './hooks/useReduxManagement';
 import useRtlayerEventManager from './hooks/useRtlayerEventManager';
-import CallUI from '../Hello/callUI';
 
 function Chatbot({ chatbotId }: { chatbotId: string }) {
     // refs

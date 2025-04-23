@@ -33,7 +33,6 @@ import { useCallUI } from "../Chatbot/hooks/useCallUI";
 import { ChatbotContext } from "../context";
 import { MessageContext } from "./InterfaceChatbot";
 import "./InterfaceChatbot.css";
-import CallUI from "../Hello/callUI";
 
 interface ChatbotHeaderProps {
   chatbotId: string

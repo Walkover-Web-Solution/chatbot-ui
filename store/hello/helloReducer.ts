@@ -14,7 +14,8 @@ export const initialState: $HelloReduxType = {
   channelListData: {},
   currentChannelId: '',
   currentChatId: '',
-  currentTeamId: ''
+  currentTeamId: '',
+  greeting: {}
 };
 
 export const reducers: ValidateSliceCaseReducers<
@@ -59,7 +60,9 @@ export const reducers: ValidateSliceCaseReducers<
   setJwtToken(state, action: actionType<string>) {
     state.socketJwt = { jwt: action.payload };
   },
-
+  setGreeting(state, action: actionType<any>) {
+    state.greeting = action.payload;
+  },
   setHelloKeysData(state, action: actionType<Partial<$HelloReduxType>>) {
     const payload = action.payload;
     if (payload && typeof payload === 'object') {

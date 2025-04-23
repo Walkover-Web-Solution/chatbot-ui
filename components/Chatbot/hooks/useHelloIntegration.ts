@@ -1,19 +1,19 @@
 import { ThemeContext } from '@/components/AppWrapper';
 import { ChatbotContext } from '@/components/context';
-import { getAllChannels, getCallToken, getClientToken, getHelloChatHistoryApi, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
+import { addDomainToHello, getAllChannels, getCallToken, getClientToken, getGreetingQuestions, getHelloChatHistoryApi, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
 import useSocket from '@/hooks/socket';
 import useSocketEvents from '@/hooks/socketEventHandler';
 import socketManager from '@/hooks/socketManager';
-import { setChannelListData, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
+import { setChannelListData, setGreeting, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { generateNewId } from '@/utils/utilities';
 import { useCallback, useContext, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
+import helloVoiceService from './HelloVoiceService';
 import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
-import helloVoiceService from './HelloVoiceService';
 
 interface HelloMessage {
   role: string;
@@ -35,7 +35,7 @@ interface UseHelloIntegrationProps {
 const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: UseHelloIntegrationProps) => {
   const { handleThemeChange } = useContext(ThemeContext);
   const { isHelloUser } = useContext(ChatbotContext);
-  const { loading, helloMessages, bridgeName, images, isToggledrawer } = chatState;
+  const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId, images, isToggledrawer } = chatState;
   const { setLoading, setChatsLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
   const {
     uuid,
@@ -49,10 +49,17 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     isSmallScreen
   } = useReduxStateManagement({ chatbotId, chatDispatch });
 
-  const { assigned_type } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { assigned_type, is_domain_enable, companyId, botId, mail, number, userJwtToken, helloConfig } = useCustomSelector((state: $ReduxCoreType) => ({
     assigned_type: state.Hello?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === state?.Hello?.currentChannelId
     )?.assigned_type || 'bot',
+    is_domain_enable: state.Hello?.widgetInfo?.is_domain_enable || false,
+    companyId: state.Hello?.widgetInfo?.company_id || '',
+    botId: state.Hello?.widgetInfo?.bot_id || '',
+    mail: state.Hello?.helloConfig?.mail,
+    number: state.Hello?.helloConfig?.number,
+    userJwtToken: state.Hello?.helloConfig?.user_jwt_token,
+    helloConfig: state.Hello?.helloConfig
   }));
 
   const isBot = assigned_type === 'bot';
@@ -114,6 +121,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [currentChannelId, uuid, setChatsLoading, setHelloMessages]);
 
   const getToken = useCallback(() => {
+    is_domain_enable && addDomainToHello(document.referrer, unique_id_hello, mail, userJwtToken, number)
     getJwtToken().then((data) => {
       if (data !== null) {
         mountedRef.current = true;
@@ -121,6 +129,9 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         getClientToken().then(() => { helloVoiceService.initialize() });
         getCallToken();
       }
+    });
+    getGreetingQuestions(companyId, botId).then((data) => {
+      dispatch(setGreeting({ ...data?.greeting }));
     });
   }, [dispatch]);
 
@@ -134,7 +145,6 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [dispatch, unique_id_hello, getToken]);
 
   const getWidgetInfo = async () => {
-
     if (isHelloUser && widgetToken) {
       initializeHelloChat(unique_id_hello).then(data => {
         dispatch(setWidgetInfo(data));
@@ -310,7 +320,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, []);
 
   useEffect(() => {
-    if (!localStorage.getItem("HelloClientId") && !unique_id_hello && widgetToken && isHelloUser) {
+    if (!localStorage.getItem("HelloClientId") && !unique_id_hello && widgetToken && isHelloUser && !mail && !number) {
       createAnonymousUser();
     }
   }, [isHelloUser, unique_id_hello, widgetToken, createAnonymousUser]);

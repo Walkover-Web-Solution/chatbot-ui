@@ -50,7 +50,7 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
       const receivedHelloData: HelloData = event.data.data;
       localStorage.setItem('WidgetId', receivedHelloData?.widgetToken)
       if (!localStorage.getItem('is_anon'))
-        localStorage.setItem('is_anon', receivedHelloData?.unique_id ? 'false' : 'true')
+        localStorage.setItem('is_anon', (receivedHelloData?.unique_id || receivedHelloData?.mail || receivedHelloData?.number) ? 'false' : 'true')
       dispatch(setHelloConfig(receivedHelloData));
       return;
     }
