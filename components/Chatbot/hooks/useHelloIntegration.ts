@@ -123,7 +123,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         getToken();
       }
     });
-  }, [dispatch, unique_id_hello, getToken]);
+  }, [dispatch, unique_id_hello, getToken, helloConfig]);
 
   const getWidgetInfo = async () => {
     if (isHelloUser && widgetToken) {
@@ -214,7 +214,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
           currentChannelId: data?.['channel']
         }));
         dispatch(setDataInAppInfoReducer({ subThreadId: data?.['channel'] }));
-        chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages: [newMessage] , subThreadId: data?.['channel']} })
+        chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages: [newMessage], subThreadId: data?.['channel'] } })
 
         if (data?.['presence_channel'] && data?.['channel']) {
           try {
@@ -268,7 +268,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     const newMessage = {
       id: messageId,
       role: "user",
-      message:{
+      message: {
         content: {
           text: textMessage,
           attachment: images || []
@@ -277,7 +277,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     };
 
     // Add message to chat)
-    if(currentChannelId) addHelloMessage(newMessage);
+    if (currentChannelId) addHelloMessage(newMessage);
 
     // Send message to API
     onSendHello(textMessage, newMessage);
@@ -313,7 +313,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [bridgeName, isHelloUser, widgetToken]);
 
   useEffect(() => {
-    if (isHelloUser && localStorage.getItem("HelloClientId")) {
+    if (isHelloUser && (localStorage.getItem("HelloClientId") || (helloConfig?.unique_id || helloConfig?.mail || helloConfig?.number))) {
       // Only fetch channels on mount (when mountedRef is false) or when drawer is toggled open
       if (!mountedRef.current || isToggledrawer) {
         fetchChannels();
