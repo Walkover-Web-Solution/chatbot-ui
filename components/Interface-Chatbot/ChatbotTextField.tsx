@@ -21,6 +21,7 @@ const MAX_IMAGES = 4;
 
 const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [inputValue, setInputValue] = useState("");
   const theme = useTheme();
   const isLight = isColorLight(theme.palette.primary.main);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -122,8 +123,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
   );
 
   const buttonDisabled = useMemo(() =>
-    loading || isUploading || (!messageRef?.current?.value?.trim() && images?.length === 0),
-    [loading, isUploading, messageRef?.current?.value, images]
+    loading || isUploading || (!inputValue.trim() && images?.length === 0),
+    [loading, isUploading, inputValue, images]
   );
 
   return (
@@ -197,6 +198,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
               if (messageRef.current) {
                 messageRef.current.value = e.target.value;
               }
+              setInputValue(e.target.value);
             }}
             multiline
             fullWidth

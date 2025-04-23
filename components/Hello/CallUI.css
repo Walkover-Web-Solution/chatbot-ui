@@ -1,57 +1,3 @@
-/* CallUI.css */
-.call-ui {
-    position: fixed;
-    top: 50px;
-    right: 30px;
-    width: 300px;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
-    z-index: 1000;
-}
-
-.call-container {
-    background-color: #fff;
-    padding: 20px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-    align-self: center;
-}
-
-.call-container h3 {
-    margin: 0;
-    color: #333;
-}
-
-.call-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.2s;
-}
-
-.call-button {
-    background-color: #4caf50;
-    color: white;
-    padding: 12px 25px;
-}
-
-.answer-button {
-    background-color: #4caf50;
-    color: white;
-}
-
 .end-button {
     background-color: #f44336;
     color: white;
@@ -66,7 +12,7 @@ button {
     background-color: #ff9800;
 }
 
-button:hover {
+.button-hover:hover {
     opacity: 0.9;
     transform: scale(1.05);
 }

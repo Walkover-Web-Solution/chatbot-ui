@@ -44,7 +44,7 @@ const CallUI: React.FC = () => {
                         <div className="flex items-center space-x-4">
                             <button
                                 onClick={endCall}
-                                className="p-2 rounded-full text-red-500 transition-colors end-button"
+                                className="p-2 rounded-full button-hover text-red-500 transition-colors end-button"
                                 aria-label="End Call"
                             >
                                 <Phone style={{ transform: 'rotate(135deg)' }} size={18} />
@@ -63,14 +63,14 @@ const CallUI: React.FC = () => {
                         <div className="flex items-center space-x-4">
                             <button
                                 onClick={toggleMute}
-                                className={`p-2 rounded-full transition-colors ${isMuted ? 'bg-orange-500' : 'bg-blue-500'} text-white`}
+                                className={`p-2 rounded-full button-hover transition-colors ${isMuted ? 'bg-orange-500' : 'bg-blue-500'} text-white`}
                                 aria-label={isMuted ? 'Unmute' : 'Mute'}
                             >
                                 {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
                             </button>
                             <button
                                 onClick={endCall}
-                                className="p-2 rounded-full bg-red-500 text-white transition-colors"
+                                className="p-2 rounded-full button-hover transition-colors bg-red-500 text-white"
                                 aria-label="End Call"
                             >
                                 <Phone style={{ transform: 'rotate(135deg)' }} size={18} />
