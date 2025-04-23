@@ -19,6 +19,7 @@ import { useCallUI } from "../Chatbot/hooks/useCallUI";
 import { useReduxStateManagement } from "../Chatbot/hooks/useReduxManagement";
 import { ChatbotContext } from "../context";
 import { MessageContext } from "./InterfaceChatbot";
+import { deleteReadReceipt } from "@/config/helloApi";
 
 const createRandomId = () => {
   return Math.random().toString(36).substring(2, 15);
@@ -115,12 +116,16 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
     </div>
   );
 
-  const handleChangeChannel = (channelId: string, chatId: string, teamId: string) => {
+  const handleChangeChannel = async (channelId: string, chatId: string, teamId: string, widget_unread_count: number) => {
     dispatch(setHelloKeysData({ currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
     dispatch(setDataInAppInfoReducer({ subThreadId: chatId }));
     fetchHelloPreviousHistory(channelId);
     isSmallScreen && setToggleDrawer(false)
     images?.length > 0 && setImages([])
+    if (widget_unread_count > 0) {
+      await deleteReadReceipt(channelId);
+    }
+
   }
   const handleChangeTeam = (teamId: string) => {
     dispatch(setHelloKeysData({ currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
@@ -163,7 +168,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
                   style={{
                     borderColor: channel?.id === currentChatId ? theme.palette.primary.main : ''
                   }}
-                  onClick={() => handleChangeChannel(channel?.channel, channel?.id, channel?.team_id)}
+                  onClick={() => handleChangeChannel(channel?.channel, channel?.id, channel?.team_id, channel?.widget_unread_count)}
                 >
                   <div className="conversation-info flex-1 min-w-0 pr-2">
                     <div className="conversation-name text-xs text-gray-400 break-words">
