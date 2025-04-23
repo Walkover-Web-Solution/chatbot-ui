@@ -1,7 +1,7 @@
 'use client';
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
-import { setHelloConfig } from "@/store/hello/helloSlice";
+import { setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
 import {
   addDefaultContext,
   setConfig,
@@ -51,6 +51,9 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
       localStorage.setItem('WidgetId', receivedHelloData?.widgetToken)
       if (!localStorage.getItem('is_anon'))
         localStorage.setItem('is_anon', (receivedHelloData?.unique_id || receivedHelloData?.mail || receivedHelloData?.number) ? 'false' : 'true')
+      if (receivedHelloData?.unique_id || receivedHelloData?.mail || receivedHelloData?.number) {
+        dispatch(setHelloKeysData({ showWidgetForm: false }))
+      }
       dispatch(setHelloConfig(receivedHelloData));
       return;
     }
