@@ -54,6 +54,7 @@ export async function getAllChannels(helloConfig?: any): Promise<any> {
       `${HELLO_HOST_URL}/pubnub-channels/list/`,
       {
         ...rest,
+        mail, number,
         uuid: localStorage.getItem("HelloClientId"),
         user_data: {
           "unique_id": uniqueId,
