@@ -1,6 +1,6 @@
 // MUI Icons
 import ChatIcon from "@mui/icons-material/Chat";
-import { AlignLeft, EllipsisVertical, History, Maximize, PhoneOutgoing, PictureInPicture2, Settings, SquarePen, X } from "lucide-react";
+import { AlignLeft, EllipsisVertical, History, Maximize, Phone, PictureInPicture2, Settings, SquarePen, X } from "lucide-react";
 
 // MUI Components
 import { useTheme } from "@mui/material";
@@ -28,6 +28,8 @@ import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { useDispatch } from "react-redux";
+import helloVoiceService from "../Chatbot/hooks/HelloVoiceService";
+import { useCallUI } from "../Chatbot/hooks/useCallUI";
 import { ChatbotContext } from "../context";
 import { MessageContext } from "./InterfaceChatbot";
 import "./InterfaceChatbot.css";
@@ -58,7 +60,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
   const { isHelloUser } = useContext(ChatbotContext);
-
+  const { callState } = useCallUI();
   const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug, chatSubTitle, allowBridgeSwitchViaProp, subThreadList, subThreadId, hideFullScreenButton, isHuman, mode, teams, currentTeamId } = useCustomSelector((state: $ReduxCoreType) => ({
     allowModalSwitch: state.Interface.allowModalSwitch || false,
     hideCloseButton: state.Interface.hideCloseButton || false,
@@ -84,8 +86,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   }))
   const showCreateThreadButton = useMemo(() => {
     // Show icon unless subThreadList length is less than 2 AND messageIds array is empty
-    return !(subThreadList?.length < 2 && (!messageIds || messageIds.length === 0));
-  }, [subThreadList?.length, messageIds])
+    return !(subThreadList?.length < 2 && (!messageIds || messageIds.length === 0)) && !isHelloUser;
+  }, [subThreadList?.length, messageIds,isHelloUser])
 
   const handleCreateNewSubThread = async () => {
     if (preview) return;
@@ -108,7 +110,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   };
 
   const handleVoiceCall = () => {
-    console.log("handleVoiceCall");
+    helloVoiceService.initiateCall();
   }
 
   useEffect(() => {
@@ -124,6 +126,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   return (
     <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-2 py-1 w-full">
       <div className="flex items-center w-full relative">
+        {/* <CallUI /> */}
         <div className="sm:absolute left-0 flex items-center">
           {(subThreadList?.length > 1 || isHelloUser) && <button
             className="p-2 hover:bg-gray-200 rounded-full transition-colors"
@@ -161,9 +164,14 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
             </React.Fragment>
           })}
           <div className="flex items-center">
-            {mode?.includes("human") && isHuman && (
-              <div className="cursor-pointer p-1 mx-2 rounded-full" onClick={() => { handleVoiceCall() }}>
-                <PhoneOutgoing size={22} color="#555555" />
+            {isHuman && (
+              <div className="tooltip tooltip-bottom" data-tip="Call">
+                <div
+                  className={`p-2 mx-2 rounded-full transition-colors ${callState === "idle" ? "cursor-pointer hover:bg-gray-200" : "cursor-not-allowed opacity-50 "}`}
+                  onClick={() => { if (callState === "idle") handleVoiceCall() }}
+                >
+                  <Phone size={22} color="#555555" />
+                </div>
               </div>
             )}
             {shouldToggleScreenSize && (hideFullScreenButton !== true && hideFullScreenButton !== "true") ? (

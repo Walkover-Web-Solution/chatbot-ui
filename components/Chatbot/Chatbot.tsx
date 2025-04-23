@@ -5,6 +5,7 @@ import { LinearProgress, useTheme } from '@mui/material';
 import Image from 'next/image';
 import React, { useEffect, useReducer } from 'react';
 import FormComponent from '../FormComponent';
+import CallUI from '../Hello/callUI';
 import ChatbotDrawer from '../Interface-Chatbot/ChatbotDrawer';
 import ChatbotHeader from '../Interface-Chatbot/ChatbotHeader';
 import ChatbotHeaderTab from '../Interface-Chatbot/ChatbotHeaderTab';
@@ -42,8 +43,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     }, [IsHuman, currentChatId, mountedRef?.current])
     // RTLayer Event Listiner
     useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef })
-    const { openHelloForm, isToggledrawer, chatsLoading, helloMessages, messageIds, msgIdAndDataMap, subThreadId, helloMsgIds, helloMsgIdAndDataMap } = chatState;
-
+    const { openHelloForm, isToggledrawer, chatsLoading, messageIds, msgIdAndDataMap, subThreadId, helloMsgIds ,isTyping} = chatState;
     return (
         <MessageContext.Provider value={{
             ...chatState,
@@ -53,17 +53,14 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
             chatDispatch,
             messageIds: messageIds?.[subThreadId] || [],
             msgIdAndDataMap: msgIdAndDataMap[subThreadId],
-            helloMessages,
-            helloMsgIdAndDataMap: helloMsgIdAndDataMap?.[subThreadId],
-            helloMsgIds: helloMsgIds?.[subThreadId],
             isSmallScreen,
+            isTyping: isTyping[subThreadId],
             ...chatActions
         }}>
-            <FormComponent open={openHelloForm} setOpen={(isFormOpen) => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: isFormOpen })} />
             <div className="flex h-screen w-full overflow-hidden relative">
                 {/* Sidebar - always visible on large screens */}
                 <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? ' w-64' : 'w-0'}`}>
-                    <ChatbotDrawer setToggleDrawer={chatActions.setToggleDrawer} isToggledrawer={isToggledrawer} fetchHelloPreviousHistory={fetchHelloPreviousHistory} />
+                    <ChatbotDrawer setToggleDrawer={chatActions.setToggleDrawer} isToggledrawer={isToggledrawer} />
                 </div>
 
                 {/* Main content area */}
@@ -76,6 +73,8 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                             <LinearProgress color="inherit" style={{ color: theme.palette.primary.main }} />
                         </div>
                     )}
+                    <FormComponent open={openHelloForm} setOpen={(isFormOpen) => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: isFormOpen })} isSmallScreen={isSmallScreen} />
+                    <CallUI />
                     <ChatbotHeaderTab />
 
                     {(IsHuman ? helloMsgIds[subThreadId]?.length === 0 : messageIds[subThreadId]?.length === 0) ? (

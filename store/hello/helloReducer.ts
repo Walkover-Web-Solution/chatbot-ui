@@ -1,6 +1,6 @@
 import actionType from "@/types/utility.js";
 import { SliceCaseReducers, ValidateSliceCaseReducers } from "@reduxjs/toolkit";
-import { $HelloReduxType, HelloData } from "../../types/hello/HelloReduxType";
+import { $HelloReduxType, ChannelListData, HelloData } from "../../types/hello/HelloReduxType";
 
 export const initialState: $HelloReduxType = {
   isHuman: false,
@@ -14,7 +14,9 @@ export const initialState: $HelloReduxType = {
   channelListData: {},
   currentChannelId: '',
   currentChatId: '',
-  currentTeamId: ''
+  currentTeamId: '',
+  greeting: {},
+  showWidgetForm: null
 };
 
 export const reducers: ValidateSliceCaseReducers<
@@ -46,12 +48,13 @@ export const reducers: ValidateSliceCaseReducers<
 
   setHelloConfig(state, action: actionType<HelloData>) {
     state.helloConfig = action.payload;
+    state.showWidgetForm = state.showWidgetForm !== null ? state.showWidgetForm : (action.payload?.show_widget_form ?? true);
   },
 
   setWidgetInfo(state, action: actionType<HelloData>) {
     state.widgetInfo = action.payload;
   },
-  setChannelListData(state, action: actionType<any>) {
+  setChannelListData(state, action: actionType<ChannelListData>) {
     state.channelListData = action.payload;
     state.Channel = action.payload?.channels?.[0];
     // state.currentChannelId = action.payload?.channels?.[0]?.channel;
@@ -59,7 +62,9 @@ export const reducers: ValidateSliceCaseReducers<
   setJwtToken(state, action: actionType<string>) {
     state.socketJwt = { jwt: action.payload };
   },
-
+  setGreeting(state, action: actionType<any>) {
+    state.greeting = action.payload;
+  },
   setHelloKeysData(state, action: actionType<Partial<$HelloReduxType>>) {
     const payload = action.payload;
     if (payload && typeof payload === 'object') {

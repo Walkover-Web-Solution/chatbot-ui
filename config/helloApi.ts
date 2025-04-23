@@ -1,5 +1,5 @@
-import axios from "axios";
 import { errorToast } from "@/components/customToast";
+import axios from "axios";
 
 const HELLO_HOST_URL = process.env.NEXT_PUBLIC_MSG91_HOST_URL;
 
@@ -47,14 +47,20 @@ export async function getJwtToken(): Promise<string | null> {
 }
 
 // Get all channels for registered user
-export async function getAllChannels(uniqueId?: string): Promise<any> {
+export async function getAllChannels(helloConfig?: any): Promise<any> {
   try {
+    const { mail, number, user_jwt_token, uniqueId, hide_launcher, show_widget_form, show_close_button, launch_widget, show_send_button, ...rest } = helloConfig;
     const response = await axios.post(
       `${HELLO_HOST_URL}/pubnub-channels/list/`,
       {
+        ...rest,
+        mail, number,
         uuid: localStorage.getItem("HelloClientId"),
-        user_data: !uniqueId ? {} : {
-          "unique_id": uniqueId
+        user_data: {
+          "unique_id": uniqueId,
+          "mail": mail,
+          "number": number,
+          "user_jwt_token": user_jwt_token
         },
         is_anon: localStorage.getItem("is_anon") == 'true',
         ...(localStorage.getItem("client") ? {} : { anonymous_client_uuid: localStorage.getItem("HelloClientId") })
@@ -240,3 +246,130 @@ export async function uploadAttachmentToHello(file: any, inboxId: string): Promi
   }
 }
 
+// Get client token for WebRTC
+export async function getClientToken(): Promise<any> {
+  try {
+    const isAnon = localStorage.getItem("is_anon") == 'true';
+    const response = await axios.get(
+      `${HELLO_HOST_URL}/web-rtc/get-client-token/?is_anon=${isAnon}`,
+      {
+        headers: {
+          authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+        },
+      }
+    );
+    if (response?.data?.data?.jwt_token) {
+      localStorage.setItem("HelloClientToken", response?.data?.data?.jwt_token);
+    }
+    return response?.data?.data;
+  } catch (error: any) {
+    errorToast(error?.message || "Failed to get client token for WebRTC");
+    return null;
+  }
+}
+
+// Get call token for WebRTC
+export async function getCallToken(): Promise<any> {
+  try {
+    const isAnon = localStorage.getItem("is_anon") == 'true';
+    const response = await axios.get(
+      `${HELLO_HOST_URL}/web-rtc/get-call-token/?is_anon=${isAnon}`,
+      {
+        headers: {
+          authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+        },
+      }
+    );
+    if (response?.data?.data?.jwt_token) {
+      localStorage.setItem("HelloCallToken", response?.data?.data?.jwt_token);
+    }
+    return response?.data?.data;
+  } catch (error: any) {
+    errorToast(error?.message || "Failed to get call token for WebRTC");
+    return null;
+  }
+}
+
+// Function to add domain to Hello chat
+export async function addDomainToHello(domain?: string, mail?: string, uniqueId?: string, userJwtToken?: string, number?: string): Promise<any> {
+  try {
+    const response = await axios.put(
+      `${HELLO_HOST_URL}/add-domain/`,
+      {
+        dom: domain,
+        user_data: {
+          mail: mail,
+          unique_id: uniqueId,
+          user_jwt_token: userJwtToken,
+          number: number,
+        },
+        is_anon: localStorage.getItem("is_anon") == 'true'
+      },
+      {
+        headers: {
+          'authorization': `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          'content-type': 'application/json',
+        }
+      }
+    );
+    return response?.data;
+  } catch (error: any) {
+    errorToast(error?.message || "Failed to add domain");
+    return null;
+  }
+}
+// Delete read receipt for a message
+export async function deleteReadReceipt(channelId: string): Promise<any> {
+  try {
+    const response = await axios.delete(
+      `${HELLO_HOST_URL}/read-receipt/${channelId}`,
+      {
+        headers: {
+          'authorization': `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          'content-type': 'application/json'
+        }
+      }
+    );
+    return response?.data;
+  } catch (error: any) {
+    errorToast(error?.message || "Failed to delete read receipt");
+    return null;
+  }
+}
+
+
+// Submit feedback for a conversation
+export async function submitFeedback(params: {
+  feedbackMsg: string;
+  rating: string; 
+  token: string;
+  id: number;
+  uniqueId: string;
+}): Promise<any> {
+  try {
+    const response = await axios.post(
+      `${HELLO_HOST_URL}/receive-feedback/`,
+      {
+        feedback_msg: params.feedbackMsg,
+        rating: params.rating,
+        token: params.token,
+        type: "post-feedback",
+        id: params.id,
+        user_data: {
+          unique_id: params.uniqueId
+        },
+        is_anon: localStorage.getItem("is_anon") == 'true'
+      },
+      {
+        headers: {
+          'authorization': `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          'content-type': 'application/json'
+        }
+      }
+    );
+    return response?.data;
+  } catch (error: any) {
+    errorToast(error?.message || "Failed to submit feedback");
+    return null;
+  }
+}

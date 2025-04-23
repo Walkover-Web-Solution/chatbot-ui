@@ -73,7 +73,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                     subThreadId
                 );
                 if (Array.isArray(previousChats)) {
-                    chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload: { messages: previousChats, initial: true } });
+                    chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages: previousChats } });
                     chatDispatch({
                         type: ChatActionTypes.SET_DATA, payload: {
                             currentPage: 1,
@@ -81,7 +81,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                         }
                     });
                 } else {
-                    chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload: { messages: [], initial: true } });
+                    chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages: [] } });
                     chatDispatch({
                         type: ChatActionTypes.SET_DATA, payload: {
                             hasMoreMessages: false
@@ -94,7 +94,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                 }
             } catch (error) {
                 console.warn("Error fetching previous chats:", error);
-                chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload: { messages: [], initial: true } });
+                chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages: [] } });
                 chatDispatch({
                     type: ChatActionTypes.SET_DATA, payload: {
                         hasMoreMessages: false
@@ -125,7 +125,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             );
 
             if (Array.isArray(previousChats) && previousChats.length > 0) {
-                chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload: { messages: [...previousChats], initial: false } });
+                chatDispatch({ type: ChatActionTypes.SET_PAGINATE_MESSAGES, payload: { messages: [...previousChats] } });
                 chatDispatch({
                     type: ChatActionTypes.SET_DATA, payload: {
                         currentPage: nextPage,

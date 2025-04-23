@@ -67,6 +67,15 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch }: { chatbotId
     });
   }, [reduxThreadId, chatDispatch]);
 
+  useEffect(() => {
+    chatDispatch({
+      type: ChatActionTypes.SET_DATA,
+      payload: {
+        isHello: IsHuman
+      }
+    });
+  }, [IsHuman, chatDispatch]);
+
   // Sync Redux subThreadId with local state
   useEffect(() => {
     chatDispatch({

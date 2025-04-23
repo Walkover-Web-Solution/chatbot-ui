@@ -1,12 +1,17 @@
 import { saveClientDetails } from "@/config/helloApi";
+import { setHelloKeysData } from "@/store/hello/helloSlice";
+import { $ReduxCoreType } from "@/types/reduxCore";
+import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { isColorLight } from "@/utils/themeUtility";
 import { useTheme } from "@mui/material";
 import { Mail, Phone, Send, User } from "lucide-react";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 
 interface FormComponentProps {
   open: boolean;
   setOpen: (open: boolean) => void;
+  isSmallScreen: boolean;
 }
 
 interface FormData {
@@ -21,8 +26,12 @@ interface FormErrors {
   number: string;
 }
 
-function FormComponent({ open, setOpen }: FormComponentProps) {
+function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
   const theme = useTheme();
+  const { showWidgetForm } = useCustomSelector((state: $ReduxCoreType) => ({
+    showWidgetForm: state.Hello.showWidgetForm
+  }));
+  const dispatch = useDispatch();
   const backgroundColor = theme.palette.primary.main;
   const textColor = isColorLight(backgroundColor) ? "black" : "white";
   const [formData, setFormData] = useState<FormData>({
@@ -80,13 +89,35 @@ function FormComponent({ open, setOpen }: FormComponentProps) {
         user_data: {},
         is_anon: false,
       }
+
+      // Dispatch setHelloKeysData if all three fields are filled
+      if (formData.name && formData.email && formData.number) {
+        dispatch(setHelloKeysData({ showWidgetForm: false }));
+      }
+
       saveClientDetails(clientData).then(() => {
         setOpen(false);
       })
     }
   };
 
-  if (!open) return null;
+  if (!open && !showWidgetForm) return null;
+  if (!open && showWidgetForm) return (
+    <div
+      className={`bg-white p-2 px-4 cursor-pointer hover:shadow-xl transition-all borde border-gray-300 mx-auto ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
+      onClick={() => setOpen(true)}
+      style={{
+        backgroundColor: backgroundColor,
+        color: textColor
+      }}
+    >
+      <div className="flex items-center gap-2">
+        <User size={18} />
+        <span className="font-medium">Enter your details</span>
+      </div>
+      <p className="text-xs mt-1 opacity-80">Click here to provide your information</p>
+    </div>
+  );
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 relative">
@@ -145,9 +176,14 @@ function FormComponent({ open, setOpen }: FormComponentProps) {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Enter your email"
-                className={`input input-bordered w-full pl-10`}
+                className={`input input-bordered w-full pl-10 ${errors.email ? "input-error" : ""}`}
               />
             </div>
+            {errors.email && (
+              <label className="label">
+                <span className="label-text-alt text-error">{errors.email}</span>
+              </label>
+            )}
           </div>
 
           {/* Phone number field */}
@@ -165,9 +201,14 @@ function FormComponent({ open, setOpen }: FormComponentProps) {
                 value={formData.number}
                 onChange={handleChange}
                 placeholder="Enter your phone number"
-                className={`input input-bordered w-full pl-10`}
+                className={`input input-bordered w-full pl-10 ${errors.number ? "input-error" : ""}`}
               />
             </div>
+            {errors.number && (
+              <label className="label">
+                <span className="label-text-alt text-error">{errors.number}</span>
+              </label>
+            )}
           </div>
 
           {/* Submit button */}
