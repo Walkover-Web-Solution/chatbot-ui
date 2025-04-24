@@ -293,7 +293,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         ...state,
         isTyping: {
           ...state.isTyping,
-          [subThreadId]: action.payload
+          [subThreadId]: action.payload?.data
         }
       };
     }

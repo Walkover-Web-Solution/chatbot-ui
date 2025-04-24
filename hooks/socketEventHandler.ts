@@ -1,11 +1,12 @@
 // useSocketEvents.ts
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useContext } from 'react';
 import socketManager from './socketManager';
 import { ChatActionTypes, ChatState } from '@/components/Chatbot/hooks/chatTypes';
 import { useReduxStateManagement } from '@/components/Chatbot/hooks/useReduxManagement';
 import { useChatActions } from '@/components/Chatbot/hooks/useChatActions';
 import { useDispatch } from 'react-redux';
 import { changeChannelAssigned } from '@/store/hello/helloSlice';
+import { MessageContext } from '@/components/Interface-Chatbot/InterfaceChatbot';
 
 // Define types for better type safety
 export interface HelloMessage {
@@ -29,18 +30,19 @@ export const useSocketEvents = ({
     chatbotId,
     chatState,
     chatDispatch,
-    messageRef
+    messageRef,
+    fetchChannels
 }: {
     chatbotId: string,
     chatState: ChatState,
     chatDispatch: (action: { type: string; payload?: any }) => void,
-    messageRef: React.RefObject<HTMLDivElement>
+    messageRef: React.RefObject<HTMLDivElement>,
+    fetchChannels: () => void
 }) => {
     const dispatch = useDispatch();
     // Reference to timeout for typing indicators
     const { setLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
     const { currentChannelId } = useReduxStateManagement({ chatbotId, chatDispatch });
-
     const addHelloMessage = (message: HelloMessage) => {
         chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message } });
     }
@@ -54,6 +56,11 @@ export const useSocketEvents = ({
         // console.log(data, 'data')
         const { message } = response || {};
         const { type } = message || {};
+        
+        if (!isSameChannel(message?.channel)) {
+            // fetch channels when message is in a different channel
+            fetchChannels()
+        }
 
         switch (type) {
             case 'chat':
@@ -69,9 +76,9 @@ export const useSocketEvents = ({
                             console.error("Failed to play notification sound:", error);
                         });
 
-                 
-                        addHelloMessage({...message,id:response.id})
-                        chatDispatch({ type: ChatActionTypes.SET_TYPING, payload: false });
+
+                        addHelloMessage({ ...message, id: response.id })
+                        chatDispatch({ type: ChatActionTypes.SET_TYPING, payload: { data: false, subThreadId: channel } });
                     }
                 }
                 break;
@@ -85,21 +92,21 @@ export const useSocketEvents = ({
                 // Handle other types if needed
                 break;
         }
-    }, [currentChannelId, setLoading, addHelloMessage]);
+    }, [currentChannelId, setLoading, addHelloMessage,fetchChannels]);
 
     // Handler for typing events
     const handleTyping = useCallback((data: any) => {
         const { channel, type, action } = data || {};
 
-        if (isSameChannel(channel) && type === 'chat') {
+        if (type === 'chat') {
             switch (action) {
                 case 'typing':
                     // Handle typing indicator logic here
-                    chatDispatch({ type: ChatActionTypes.SET_TYPING, payload: true });
+                    chatDispatch({ type: ChatActionTypes.SET_TYPING, payload: { data: true, subThreadId: channel } });
                     break;
                 case 'not-typing':
                     // Handle not typing indicator logic here
-                    chatDispatch({ type: ChatActionTypes.SET_TYPING, payload: false });
+                    chatDispatch({ type: ChatActionTypes.SET_TYPING, payload: { data: false, subThreadId: channel } });
                     break;
                 default:
                     break;
