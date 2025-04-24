@@ -63,7 +63,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
       Name: state.Hello?.channelListData?.customer_name || '',
       tagline: state.Hello?.widgetInfo?.tagline || ''
     }));
-  const { isHelloUser } = useContext(ChatbotContext);
+
 
   const selectedSubThreadId = reduxSubThreadId;
 
@@ -260,7 +260,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         />
       )}
 
-      <div className={`drawer-side ${isHelloUser && isSmallScreen ? '100%' : 'max-w-[265px]'} ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
+      <div className={`drawer-side ${isHuman && isSmallScreen ? '100%' : 'max-w-[265px]'} ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
         <div className="p-4 w-full min-h-full text-base-content relative bg-base-200 border-r-base-300 border overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <div className="w-10">
@@ -271,7 +271,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
               {tagline && Name && <p className="text-xs text-gray-500 text-center">{tagline}</p>}
             </div>
             <div className="w-10 flex items-center justify-end">
-              {isToggledrawer && !isHelloUser && (
+              {isToggledrawer && !isHuman && (
                 <div className="tooltip tooltip-bottom z-[9999]" data-tip="New Chat">
                   <button
                     className="p-2 hover:bg-gray-200 rounded-full transition-colors"
@@ -283,7 +283,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
               )}
             </div>
           </div>
-          {!isHelloUser ? DrawerList : TeamsList}
+          {!isHuman ? DrawerList : TeamsList}
         </div>
       </div>
     </div>
