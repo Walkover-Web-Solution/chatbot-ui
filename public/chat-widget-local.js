@@ -13,8 +13,8 @@ class ChatbotEmbedManager {
             buttonName: ''
         };
         this.urls = {
-            chatbotUrl: 'https://ctest.msg91.com/chatbot',
-            styleSheet: 'https://ctest.msg91.com/chat-widget-style.css',
+            chatbotUrl: 'http://localhost:3001/chatbot',
+            styleSheet: 'https://chatbot-embed.viasocket.com/style-dev.css',
         };
         this.icons = {
             white: this.makeImageUrl('b1357e23-2fc6-4dc3-855a-7a213b1fa100'),

@@ -1,8 +1,6 @@
 /* eslint-disable */
-import './swenv.js'
 class ChatbotEmbedManager {
     constructor() {
-        console.log(window._env_.NEXT_PUBLIC_API_ENVIRONMENT, 123);
         this.props = {};
         this.helloProps = {};
         this.parentContainer = null;
