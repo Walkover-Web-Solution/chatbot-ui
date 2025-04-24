@@ -9,7 +9,7 @@ import {
 } from "react";
 
 // MUI Components
-import { lighten, LinearProgress, useTheme } from "@mui/material";
+import { lighten, useTheme } from "@mui/material";
 
 // Third-party libraries
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -40,7 +40,7 @@ function MessageList() {
     IsHuman: state.Hello?.isHuman,
     assigned_type: state.Hello?.channelListData?.channels?.find((channel: any) => channel?.channel === state?.Hello?.currentChannelId)?.assigned_type || 'bot',
     currentChannelId: state.Hello?.currentChannelId,
-    greetingMessage : state.Hello?.greeting
+    greetingMessage: state.Hello?.greeting
   }));
   const theme = useTheme();
   const themePalette = {

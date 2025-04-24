@@ -1,7 +1,7 @@
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
+import { convertChatHistoryToGenericFormat, convertEventMessageToGenericFormat } from "@/utils/dataConvertWrappers/makeGenericDataFormatUtility";
 import { generateNewId } from "@/utils/utilities";
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
-import { convertChatHistoryToGenericFormat, convertEventMessageToGenericFormat } from "@/utils/dataConvertWrappers/makeGenericDataFormatUtility";
 
 export const initialChatState: ChatState = {
   // Messages and Conversations
@@ -335,10 +335,10 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         openHelloForm: action.payload
       };
     }
-  
+
     case ChatActionTypes.SET_INTIAL_MESSAGES: {
       const subThreadId = action.payload?.subThreadId || state.subThreadId
-      const messages = convertChatHistoryToGenericFormat(action.payload.messages, state.isHelloUser)  
+      const messages = convertChatHistoryToGenericFormat(action.payload.messages, state.isHelloUser)
       return {
         ...state,
         messageIds: {
@@ -351,7 +351,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
             acc[item.id] = item;
             return acc;
           }, {})
-        } 
+        }
       }
     }
 
@@ -380,7 +380,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         }
       };
     }
-    
+
     case ChatActionTypes.SET_HELLO_EVENT_MESSAGE: {
       const subThreadId = action.payload?.subThreadId || state.subThreadId
       const messagesArray = convertEventMessageToGenericFormat(action.payload.message, state.isHelloUser)
