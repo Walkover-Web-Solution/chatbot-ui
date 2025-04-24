@@ -29,7 +29,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
 
     // hooks
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
-    const { sendMessageToHello, fetchHelloPreviousHistory } = useHelloIntegration({ chatbotId, chatDispatch, chatState, messageRef });
+    const { sendMessageToHello, fetchHelloPreviousHistory , fetchChannels} = useHelloIntegration({ chatbotId, chatDispatch, chatState, messageRef });
     const { IsHuman, isSmallScreen, currentChatId } = useReduxStateManagement({ chatbotId, chatDispatch });
     const chatActions = useChatActions({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef });
 
@@ -55,6 +55,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
             msgIdAndDataMap: msgIdAndDataMap[subThreadId],
             isSmallScreen,
             isTyping: isTyping[subThreadId],
+            fetchChannels,
             ...chatActions
         }}>
             <div className="flex h-screen w-full overflow-hidden relative">
