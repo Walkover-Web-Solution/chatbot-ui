@@ -251,14 +251,14 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   ]);
 
   // Handle sending a message
-  const sendMessageToHello = useCallback(() => {
+  const sendMessageToHello = useCallback((message: string = '') => {
     // Handle different types of input elements
     let textMessage = '';
     if (messageRef?.current) {
       if ('value' in messageRef.current) {
-        textMessage = messageRef.current.value || '';
+        textMessage = messageRef.current.value || message || '';
       } else if (messageRef.current instanceof HTMLDivElement) {
-        textMessage = messageRef.current.textContent || '';
+        textMessage = messageRef.current.textContent || message || '';
       }
     }
 
