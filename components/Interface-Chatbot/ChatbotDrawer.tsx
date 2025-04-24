@@ -38,7 +38,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   const theme = useTheme();
   const { setNewMessage } = useContext(MessageContext);
   const isSmallScreen = useMediaQuery('(max-width:1023px)');
-  const { setOptions, chatDispatch, fetchHelloPreviousHistory, images, setImages } = useContext(MessageContext);
+  const { setOptions, chatDispatch, fetchHelloPreviousHistory, images, setImages ,fetchChannels} = useContext(MessageContext);
   const { currentChatId, currentTeamId, } = useReduxStateManagement({ chatbotId, chatDispatch });
   const { callState } = useCallUI();
   const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName, teamsList, channelList, isHuman, Name, tagline } =
@@ -126,6 +126,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
     images?.length > 0 && setImages([])
     if (widget_unread_count > 0) {
       await deleteReadReceipt(channelId);
+      fetchChannels()
     }
 
   }
