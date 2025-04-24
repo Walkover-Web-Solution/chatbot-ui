@@ -20,6 +20,8 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                             ? chat?.message?.content?.body?.text
                             : chat?.message?.content?.text,
                         urls: chat?.message?.content?.attachment,
+                        message_type: chat?.message?.message_type,
+                        messageJson: chat?.message?.content
                     };
                 })
                 .reverse();
@@ -27,6 +29,7 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
         case false:
             return (Array.isArray(history) ? history : []).map((msgObj: any) => {
                 return {
+                    ...msgObj,
                     id: msgObj?.Id,
                     content: msgObj?.content,
                     role: msgObj?.role,
@@ -57,7 +60,9 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
         from_name,
         content: content?.body?.text || content?.text,
         urls: content?.body?.attachment || content?.attachment,
-        id: message?.id
+        id: message?.id,
+        message_type: message?.message_type,
+        messageJson: message?.content
     }]
 }
 
@@ -70,8 +75,7 @@ function createSendMessageGtwyPayload(message: string) {
 
 
 export {
-    createSendMessageHelloPayload,
-    createSendMessageGtwyPayload,
     convertChatHistoryToGenericFormat,
-    convertEventMessageToGenericFormat
+    convertEventMessageToGenericFormat, createSendMessageGtwyPayload, createSendMessageHelloPayload
 };
+

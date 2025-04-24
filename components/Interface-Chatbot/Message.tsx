@@ -26,6 +26,8 @@ import React, { useContext } from "react";
 import ReactMarkdown from "react-markdown";
 import { MessageContext } from "./InterfaceChatbot";
 import "./Message.css";
+import RenderHelloInteractiveMessage from "../Hello/RenderHelloInteractiveMessage";
+import RenderHelloAttachmentMessage from "../Hello/RenderHelloAttachmentMessage";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 const ResetHistoryLine = ({ text = "" }) => {
@@ -344,27 +346,10 @@ const HumanOrBotMessageCard = React.memo(
               {message?.from_name && (
                 <div className="text-sm font-medium mb-1">{message.from_name}</div>
               )}
-              {Array.isArray(message?.urls) && message.urls.length > 0 && (
-                <div className="flex flex-wrap gap-2.5 max-w-[80%] p-2.5">
-                  {message.urls.map((url: any, index: number) => {
-                    return (
-                      <Image
-                        key={index}
-                        src={typeof url === 'object' ? url?.path : url}
-                        alt={`Image ${index + 1}`}
-                        className={`block ${isSmallScreen ? 'max-w-[80%]' : 'max-w-[40%]'} h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity`}
-                        onClick={() => window.open(typeof url === 'object' ? url?.path : url, "_blank")}
-                        width={20}
-                        height={20}
-                        layout="responsive"
-                      />
-                    )
-                  })}
-                </div>
-              )}
-              <div className="prose max-w-none">
+         
+              {message?.message_type === 'interactive' ? <RenderHelloInteractiveMessage message={message} /> : (message?.message_type === 'attachment' || message?.message_type === 'text-attachment') ? <RenderHelloAttachmentMessage message={message} /> : <div className="prose max-w-none">
                 <div dangerouslySetInnerHTML={{ __html: message?.content }}></div>
-              </div>
+              </div>}
             </div>
 
             {/* <div className="flex items-center gap-2 mt-1 ml-1">

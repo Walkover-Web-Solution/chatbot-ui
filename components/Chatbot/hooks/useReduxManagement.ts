@@ -71,7 +71,7 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch }: { chatbotId
     chatDispatch({
       type: ChatActionTypes.SET_DATA,
       payload: {
-        isHello: IsHuman
+        isHelloUser: IsHuman
       }
     });
   }, [IsHuman, chatDispatch]);
