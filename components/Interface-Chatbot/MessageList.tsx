@@ -36,10 +36,11 @@ function MessageList() {
   const [isAtBottom, setIsAtBottom] = useState(true);
   const lastScrollHeightRef = useRef<number>(0);
   const prevMessagesLengthRef = useRef<number>(0);
-  const { IsHuman, assigned_type, currentChannelId } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { IsHuman, assigned_type, currentChannelId, greetingMessage } = useCustomSelector((state: $ReduxCoreType) => ({
     IsHuman: state.Hello?.isHuman,
     assigned_type: state.Hello?.channelListData?.channels?.find((channel: any) => channel?.channel === state?.Hello?.currentChannelId)?.assigned_type || 'bot',
-    currentChannelId: state.Hello?.currentChannelId
+    currentChannelId: state.Hello?.currentChannelId,
+    greetingMessage : state.Hello?.greeting
   }));
   const theme = useTheme();
   const themePalette = {
@@ -151,6 +152,24 @@ function MessageList() {
           scrollThreshold="200px"
         // style={{ display: 'flex', flexDirection: 'column-reverse' }}
         >
+          {IsHuman && greetingMessage && (greetingMessage?.text || greetingMessage?.options?.length > 0) && <Message message={{
+            role: 'Bot',
+            id: '12312312312312312312',
+            message_type: 'interactive',
+            messageJson: {
+              type: 'button',
+              body: {
+                text: greetingMessage.text
+              },
+              action: {
+                buttons: greetingMessage.options?.map((option: any) => ({
+                  reply: {
+                    title: option
+                  }
+                }))
+              }
+            }
+          }} />}
           {RenderMessages}
           {IsHuman && loading && assigned_type === 'bot' && currentChannelId && <div className="w-full">
             <div className="flex flex-wrap gap-2 items-center">
