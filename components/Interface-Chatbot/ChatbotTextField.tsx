@@ -262,7 +262,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
                   </label>
                 </>
               )}
-              {IsHuman && isTyping && (
+              {/* {IsHuman && isTyping && (
                 <div className="flex items-center justify-center">
                   <span className="text-xs text-gray-800 mr-2">Agent is typing</span>
                   <div className="flex space-x-1">
@@ -271,7 +271,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: "600ms" }}></div>
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
 
             <button
