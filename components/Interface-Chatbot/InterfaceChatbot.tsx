@@ -63,6 +63,7 @@ interface MessageType {
   images?: string[]; // Added images property to MessageType
 }
 export const MessageContext = createContext<{
+  fetchChannels:()=>void,
   messages: MessageType[] | [];
   messageIds: string[],
   msgIdAndDataMap: { [msgId: string]: MessageType },

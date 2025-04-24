@@ -70,7 +70,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
   useSocket();
-  useSocketEvents({ chatbotId, chatState, chatDispatch, messageRef });
+
 
   const setHelloMessages = useCallback((messages: HelloMessage[]) => {
     chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages } });
@@ -124,6 +124,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       }
     });
   }, [dispatch, unique_id_hello, getToken, helloConfig]);
+
+  useSocketEvents({ chatbotId, chatState, chatDispatch, messageRef , fetchChannels });
 
   const getWidgetInfo = async () => {
     if (isHelloUser && widgetToken) {
@@ -223,9 +225,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
             console.error("Failed to subscribe to channels:", error);
           }
         }
-        if (!isSmallScreen) {
           fetchChannels();
-        }
       }
     } catch (error) {
       if (isBot) {
@@ -315,11 +315,9 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   useEffect(() => {
     if (isHelloUser && (localStorage.getItem("HelloClientId") || (helloConfig?.unique_id || helloConfig?.mail || helloConfig?.number))) {
       // Only fetch channels on mount (when mountedRef is false) or when drawer is toggled open
-      if (!mountedRef.current || isToggledrawer) {
         fetchChannels();
-      }
     }
-  }, [isHelloUser, unique_id_hello, isToggledrawer, mountedRef, fetchChannels]);
+  }, [isHelloUser, unique_id_hello, fetchChannels]);
 
   return {
     helloMessages,
@@ -327,7 +325,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     setLoading,
     sendMessageToHello,
     fetchHelloPreviousHistory,
-    addHelloMessage
+    addHelloMessage,
+    fetchChannels
   };
 };
 
