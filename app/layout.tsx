@@ -25,6 +25,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-theme="light">
+      <head>
+      <link href="https://chatbot-embed.viasocket.com/style-prod.css" rel="stylesheet" />
+      </head>
       <body
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

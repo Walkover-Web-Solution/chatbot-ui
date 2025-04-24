@@ -26,6 +26,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     const mountedRef = React.useRef(false);
     const messageRef = React.useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
     const timeoutIdRef = React.useRef<NodeJS.Timeout | null>(null);
+    const [showChatBot, setShowChatBot] = React.useState(false);
 
     // hooks
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
@@ -36,11 +37,18 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     const theme = useTheme();
 
     useEffect(() => {
+        setShowChatBot(false);
         if (IsHuman && !currentChatId && !mountedRef.current) {
             chatActions.setToggleDrawer(true)
         }
         mountedRef.current = true;
     }, [IsHuman, currentChatId, mountedRef?.current])
+
+    function toggleChatBot(state: boolean) {
+        setShowChatBot(state);
+    }
+
+
     // RTLayer Event Listiner
     useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef })
     const { openHelloForm, isToggledrawer, chatsLoading, messageIds, msgIdAndDataMap, subThreadId, helloMsgIds ,isTyping} = chatState;
@@ -57,67 +65,72 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
             isTyping: isTyping[subThreadId],
             ...chatActions
         }}>
-            <div className="flex h-screen w-full overflow-hidden relative">
-                {/* Sidebar - always visible on large screens */}
-                <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? ' w-64' : 'w-0'}`}>
-                    <ChatbotDrawer setToggleDrawer={chatActions.setToggleDrawer} isToggledrawer={isToggledrawer} />
-                </div>
-
-                {/* Main content area */}
-
-                <div className="flex flex-col flex-1 w-full">
-                    {/* Mobile header - hidden on large screens */}
-                    <ChatbotHeader />
-                    {chatsLoading && (
-                        <div className="w-full">
-                            <LinearProgress color="inherit" style={{ color: theme.palette.primary.main }} />
-                        </div>
-                    )}
-                    <FormComponent open={openHelloForm} setOpen={(isFormOpen) => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: isFormOpen })} isSmallScreen={isSmallScreen} />
-                    <CallUI />
-                    <ChatbotHeaderTab />
-
-                    {(IsHuman ? helloMsgIds[subThreadId]?.length === 0 : messageIds[subThreadId]?.length === 0) ? (
-                        <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-70px] p-5">
-                            <div className="flex flex-col items-center w-full">
-                                <Image
-                                    src={ChatBotGif}
-                                    alt="Chatbot GIF"
-                                    className="block"
-                                    width={100}
-                                    height={100}
-                                    priority
-                                />
-                                <h2 className="text-xl font-bold text-black">
-                                    What can I help with?
-                                </h2>
-                            </div>
-                            <div className="max-w-5xl w-full mt-8">
-                                <ChatbotTextField />
-                            </div>
-                            <StarterQuestions />
-                        </div>
-                    ) : (
-                        <>
-                            {/* Messages container with flex layout */}
-                            <div
-                                className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1 ${messageIds?.[subThreadId]?.length === 0 ? 'flex items-center justify-center' : 'pb-10'}`}
-                                id="message-container"
-                                ref={containerRef}
-                            >
-                                <div className="w-full max-w-5xl mx-auto">
-                                    <MessageList />
-                                </div>
-                            </div>
-
-                            {/* Text input at bottom */}
-                            <div className="max-w-5xl mx-auto px-4 pb-3 w-full">
-                                <ChatbotTextField />
-                            </div>
-                        </>
-                    )}
-                </div>
+            <div id="interfaceEmbed" className="popup-interfaceEmbed" onClick={() => toggleChatBot(!showChatBot)}>
+                <img id="popup-interfaceEmbed" alt="Ask Ai" src="https://storage.googleapis.com/techdoc.walkover.in/q55SgjRDPzDt/w6i-1rL7kPY1/1917f227-0cf0-4075-8172-b2af962a691c_Untitled_design__5_-removebg-preview.png" /><span id="popup-interfaceEmbed-text"></span>
             </div>
+            {showChatBot && (
+                <div className="flex h-screen w-full overflow-hidden relative">
+                    {/* Sidebar - always visible on large screens */}
+                    <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? ' w-64' : 'w-0'}`}>
+                        <ChatbotDrawer setToggleDrawer={chatActions.setToggleDrawer} isToggledrawer={isToggledrawer} />
+                    </div>
+
+                    {/* Main content area */}
+
+                    <div className="flex flex-col flex-1 w-full">
+                        {/* Mobile header - hidden on large screens */}
+                        <ChatbotHeader />
+                        {chatsLoading && (
+                            <div className="w-full">
+                                <LinearProgress color="inherit" style={{ color: theme.palette.primary.main }} />
+                            </div>
+                        )}
+                        <FormComponent open={openHelloForm} setOpen={(isFormOpen) => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: isFormOpen })} isSmallScreen={isSmallScreen} />
+                        <CallUI />
+                        <ChatbotHeaderTab />
+
+                        {(IsHuman ? helloMsgIds[subThreadId]?.length === 0 : messageIds[subThreadId]?.length === 0) ? (
+                            <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-70px] p-5">
+                                <div className="flex flex-col items-center w-full">
+                                    <Image
+                                        src={ChatBotGif}
+                                        alt="Chatbot GIF"
+                                        className="block"
+                                        width={100}
+                                        height={100}
+                                        priority
+                                    />
+                                    <h2 className="text-xl font-bold text-black">
+                                        What can I help with?
+                                    </h2>
+                                </div>
+                                <div className="max-w-5xl w-full mt-8">
+                                    <ChatbotTextField />
+                                </div>
+                                <StarterQuestions />
+                            </div>
+                        ) : (
+                            <>
+                                {/* Messages container with flex layout */}
+                                <div
+                                    className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1 ${messageIds?.[subThreadId]?.length === 0 ? 'flex items-center justify-center' : 'pb-10'}`}
+                                    id="message-container"
+                                    ref={containerRef}
+                                >
+                                    <div className="w-full max-w-5xl mx-auto">
+                                        <MessageList />
+                                    </div>
+                                </div>
+
+                                {/* Text input at bottom */}
+                                <div className="max-w-5xl mx-auto px-4 pb-3 w-full">
+                                    <ChatbotTextField />
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </MessageContext.Provider>
     )
 }
