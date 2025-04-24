@@ -52,9 +52,9 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
             messageRef,
             chatDispatch,
             messageIds: messageIds?.[subThreadId] || [],
-            msgIdAndDataMap: msgIdAndDataMap[subThreadId],
+            msgIdAndDataMap: msgIdAndDataMap?.[subThreadId],
             isSmallScreen,
-            isTyping: isTyping[subThreadId],
+            isTyping: isTyping?.[subThreadId],
             fetchChannels,
             ...chatActions
         }}>
