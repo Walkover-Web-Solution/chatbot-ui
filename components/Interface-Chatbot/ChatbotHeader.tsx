@@ -59,7 +59,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   const shouldToggleScreenSize = `${width}${widthUnit}` !== '1200%'
   const isLightBackground = theme.palette.mode === "light";
   const textColor = isLightBackground ? "black" : "white";
-  const { isHelloUser } = useContext(ChatbotContext);
   const { callState } = useCallUI();
   const { allowModalSwitch, hideCloseButton, chatTitle, chatIcon, currentSelectedBridgeSlug, chatSubTitle, allowBridgeSwitchViaProp, subThreadList, subThreadId, hideFullScreenButton, isHuman, mode, teams, currentTeamId } = useCustomSelector((state: $ReduxCoreType) => ({
     allowModalSwitch: state.Interface.allowModalSwitch || false,
@@ -86,8 +85,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   }))
   const showCreateThreadButton = useMemo(() => {
     // Show icon unless subThreadList length is less than 2 AND messageIds array is empty
-    return !(subThreadList?.length < 2 && (!messageIds || messageIds.length === 0)) && !isHelloUser;
-  }, [subThreadList?.length, messageIds,isHelloUser])
+    return !(subThreadList?.length < 2 && (!messageIds || messageIds.length === 0)) && !isHuman;
+  }, [subThreadList?.length, messageIds,isHuman])
 
   const handleCreateNewSubThread = async () => {
     if (preview) return;
@@ -128,7 +127,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
       <div className="flex items-center w-full relative">
         {/* <CallUI /> */}
         <div className="sm:absolute left-0 flex items-center">
-          {(subThreadList?.length > 1 || isHelloUser) && <button
+          {(subThreadList?.length > 1 || isHuman) && <button
             className="p-2 hover:bg-gray-200 rounded-full transition-colors"
             onClick={() => setToggleDrawer(!isToggledrawer)}
           >
