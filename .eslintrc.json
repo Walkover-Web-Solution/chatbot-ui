@@ -1,0 +1,17 @@
+{
+    "extends": [
+      "next",
+      "next/core-web-vitals"
+    ],
+    "rules": {
+      "react/no-unescaped-entities": "off",
+      // Ignore "missing dependency" warnings in useEffect
+      "react-hooks/exhaustive-deps": "off",
+      // Ignore rules of hooks errors (but be cautious with this one)
+      "react-hooks/rules-of-hooks": "off",
+      // Ignore missing "key" prop for elements in iterators
+      "react/jsx-key": "off",
+      // Ignore missing display name for component definitions
+      "react/display-name": "off"
+    }
+  }

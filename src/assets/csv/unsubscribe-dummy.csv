@@ -1,5 +1,0 @@
-address,mail_type_ids
-foo@example.com,"1"
-bar@example.org,"1"
-bar@example.org,"2,3"
-foo@example.com,"1"
