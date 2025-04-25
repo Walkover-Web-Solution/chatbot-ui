@@ -29,7 +29,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
 
     // hooks
     const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
-    const { sendMessageToHello, fetchHelloPreviousHistory , fetchChannels} = useHelloIntegration({ chatbotId, chatDispatch, chatState, messageRef });
+    const { sendMessageToHello, fetchHelloPreviousHistory, fetchChannels } = useHelloIntegration({ chatbotId, chatDispatch, chatState, messageRef });
     const { IsHuman, isSmallScreen, currentChatId } = useReduxStateManagement({ chatbotId, chatDispatch });
     const chatActions = useChatActions({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef });
 
@@ -43,7 +43,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
     }, [IsHuman, currentChatId, mountedRef?.current])
     // RTLayer Event Listiner
     useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef })
-    const { openHelloForm, isToggledrawer, chatsLoading, messageIds, msgIdAndDataMap, subThreadId, helloMsgIds ,isTyping} = chatState;
+    const { openHelloForm, isToggledrawer, chatsLoading, messageIds, msgIdAndDataMap, subThreadId, helloMsgIds, isTyping } = chatState;
     return (
         <MessageContext.Provider value={{
             ...chatState,
@@ -74,7 +74,7 @@ function Chatbot({ chatbotId }: { chatbotId: string }) {
                             <LinearProgress color="inherit" style={{ color: theme.palette.primary.main }} />
                         </div>
                     )}
-                    <FormComponent open={openHelloForm} setOpen={(isFormOpen) => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: isFormOpen })} isSmallScreen={isSmallScreen} />
+                    {IsHuman && <FormComponent open={openHelloForm} setOpen={(isFormOpen) => chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: isFormOpen })} isSmallScreen={isSmallScreen} />}
                     <CallUI />
                     <ChatbotHeaderTab />
 
