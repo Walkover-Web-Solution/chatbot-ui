@@ -1,29 +1,33 @@
 'use client';
 
+import { useMediaQuery, useTheme } from "@mui/material";
+import { AlignLeft, ChevronRight, SquarePen, Users } from "lucide-react";
+import { memo, useContext, useMemo } from "react";
+import { useDispatch } from "react-redux";
+
+// API and Services
 import { createNewThreadApi } from "@/config/api";
+import { deleteReadReceipt } from "@/config/helloApi";
+import helloVoiceService from "../Chatbot/hooks/HelloVoiceService";
+
+// HOCs and Hooks
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
+import { useCustomSelector } from "@/utils/deepCheckSelector";
+import { useCallUI } from "../Chatbot/hooks/useCallUI";
+import { useReduxStateManagement } from "../Chatbot/hooks/useReduxManagement";
+
+// Redux Actions
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { setHelloKeysData } from "@/store/hello/helloSlice";
 import { setThreadId, setThreads } from "@/store/interface/interfaceSlice";
+
+// Utils and Types
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
-import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ParamsEnums } from "@/utils/enums";
-import { useMediaQuery, useTheme } from "@mui/material";
-import { AlignLeft, ChevronRight, SquarePen, Users } from "lucide-react";
-import React, { useContext } from "react";
-import { useDispatch } from "react-redux";
-import { ChatActionTypes } from "../Chatbot/hooks/chatTypes";
-import helloVoiceService from "../Chatbot/hooks/HelloVoiceService";
-import { useCallUI } from "../Chatbot/hooks/useCallUI";
-import { useReduxStateManagement } from "../Chatbot/hooks/useReduxManagement";
-import { ChatbotContext } from "../context";
 import { MessageContext } from "./InterfaceChatbot";
-import { deleteReadReceipt } from "@/config/helloApi";
 
-const createRandomId = () => {
-  return Math.random().toString(36).substring(2, 15);
-};
+const createRandomId = () => Math.random().toString(36).substring(2, 15);
 
 interface ChatbotDrawerProps {
   setLoading: (loading: boolean) => void;
@@ -33,46 +37,68 @@ interface ChatbotDrawerProps {
   preview?: boolean;
 }
 
-const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, setToggleDrawer, isToggledrawer, preview = false }) => {
+const ChatbotDrawer = ({
+  setLoading,
+  chatbotId,
+  setToggleDrawer,
+  isToggledrawer,
+  preview = false
+}: ChatbotDrawerProps) => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const { setNewMessage } = useContext(MessageContext);
   const isSmallScreen = useMediaQuery('(max-width:1023px)');
-  const { setOptions, chatDispatch, fetchHelloPreviousHistory, images, setImages, fetchChannels } = useContext(MessageContext);
-  const { currentChatId, currentTeamId, } = useReduxStateManagement({ chatbotId, chatDispatch });
+
+  // Context hooks
+  const {
+    setNewMessage,
+    setOptions,
+    chatDispatch,
+    fetchHelloPreviousHistory,
+    images,
+    setImages,
+    fetchChannels
+  } = useContext(MessageContext);
+
+  const { currentChatId, currentTeamId } = useReduxStateManagement({ chatbotId, chatDispatch });
   const { callState } = useCallUI();
-  const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName, teamsList, channelList, isHuman, Name, tagline } =
-    useCustomSelector((state: $ReduxCoreType) => ({
-      reduxThreadId: GetSessionStorageData("threadId") || state.appInfo?.threadId || "",
+
+  // Consolidated Redux state selection
+  const {
+    reduxThreadId,
+    subThreadList,
+    reduxSubThreadId,
+    reduxBridgeName,
+    teamsList,
+    channelList,
+    isHuman,
+    Name,
+    tagline
+  } = useCustomSelector((state: $ReduxCoreType) => {
+    const bridgeName = GetSessionStorageData("bridgeName") || state.appInfo?.bridgeName || "root";
+    const threadId = GetSessionStorageData("threadId") || state.appInfo?.threadId || "";
+
+    return {
+      reduxThreadId: threadId,
       reduxSubThreadId: state.appInfo?.subThreadId || "",
-      reduxBridgeName:
-        GetSessionStorageData("bridgeName") ||
-        state.appInfo?.bridgeName ||
-        "root",
-      subThreadList:
-        state.Interface?.interfaceContext?.[chatbotId]?.[
-          GetSessionStorageData("bridgeName") ||
-          state.appInfo?.bridgeName ||
-          "root"
-        ]?.threadList?.[
-        GetSessionStorageData("threadId") || state.appInfo?.threadId
-        ] || [],
+      reduxBridgeName: bridgeName,
+      subThreadList: state.Interface?.interfaceContext?.[chatbotId]?.[bridgeName]?.threadList?.[threadId] || [],
       teamsList: state.Hello?.widgetInfo?.teams || [],
       channelList: state.Hello?.channelListData?.channels || [],
       isHuman: state.Hello?.isHuman || false,
       Name: state.Hello?.channelListData?.customer_name || '',
       tagline: state.Hello?.widgetInfo?.tagline || ''
-    }));
+    };
+  });
 
-
-  const selectedSubThreadId = reduxSubThreadId;
-
+  // Handlers
   const handleCreateNewSubThread = async () => {
     if (preview) return;
+
     const result = await createNewThreadApi({
       threadId: reduxThreadId,
       subThreadId: createRandomId(),
     });
+
     if (result?.success) {
       dispatch(
         setThreads({
@@ -84,18 +110,67 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
       setOptions([]);
     }
   };
+
   const handleChangeSubThread = (sub_thread_id: string) => {
     setLoading(false);
     dispatch(setThreadId({ subThreadId: sub_thread_id }));
-    dispatch(setDataInAppInfoReducer({ subThreadId: sub_thread_id }))
+    dispatch(setDataInAppInfoReducer({ subThreadId: sub_thread_id }));
     setNewMessage(true);
     setOptions([]);
+
     if (isSmallScreen) {
       setToggleDrawer(false);
     }
   };
 
-  const DrawerList = (
+  const handleChangeChannel = async (channelId: string, chatId: string, teamId: string, widget_unread_count: number) => {
+    // Update redux state
+    dispatch(setHelloKeysData({ currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
+    dispatch(setDataInAppInfoReducer({ subThreadId: channelId }));
+
+    // Fetch history and cleanup
+    fetchHelloPreviousHistory(channelId);
+    if (isSmallScreen) setToggleDrawer(false);
+    if (images?.length > 0) setImages([]);
+
+    // Handle unread messages
+    if (widget_unread_count > 0) {
+      await deleteReadReceipt(channelId);
+      fetchChannels();
+    }
+  };
+
+  const handleChangeTeam = (teamId: string) => {
+    dispatch(setHelloKeysData({ currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
+    dispatch(setDataInAppInfoReducer({ subThreadId: '' }));
+
+    if (isSmallScreen) setToggleDrawer(false);
+    if (images?.length > 0) setImages([]);
+  };
+
+  const closeToggleDrawer = (isOpen: boolean) => {
+    if (isHuman) {
+      if (currentTeamId) setToggleDrawer(isOpen);
+    } else {
+      setToggleDrawer(isOpen);
+    }
+  };
+
+  const handleVoiceCall = () => {
+    helloVoiceService.initiateCall();
+    if (isSmallScreen) setToggleDrawer(false);
+  };
+
+  const handleSendMessageWithNoTeam = () => {
+    dispatch(setHelloKeysData({ currentTeamId: "", currentChannelId: "", currentChatId: "" }));
+    dispatch(setDataInAppInfoReducer({ subThreadId: '' }));
+
+    if (isSmallScreen) setToggleDrawer(false);
+    if (images?.length > 0) setImages([]);
+  };
+
+  // Memoized components
+  const DrawerList = useMemo(() => (
     <div className="menu p-0 w-full h-full bg-base-200 text-base-content">
       {(subThreadList || []).length === 0 ? (
         <div className="flex justify-center items-center mt-5">
@@ -106,7 +181,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
           {subThreadList.map((thread: any, index: number) => (
             <li key={`${thread?._id}-${index}`}>
               <a
-                className={`${thread?.sub_thread_id === selectedSubThreadId ? 'active' : ''}`}
+                className={`${thread?.sub_thread_id === reduxSubThreadId ? 'active' : ''}`}
                 onClick={() => handleChangeSubThread(thread?.sub_thread_id)}
               >
                 {thread?.display_name || thread?.sub_thread_id}
@@ -116,51 +191,9 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         </ul>
       )}
     </div>
-  );
+  ), [subThreadList, reduxSubThreadId, handleChangeSubThread]);
 
-  const handleChangeChannel = async (channelId: string, chatId: string, teamId: string, widget_unread_count: number) => {
-    dispatch(setHelloKeysData({ currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
-    dispatch(setDataInAppInfoReducer({ subThreadId: channelId }));
-    fetchHelloPreviousHistory(channelId);
-    isSmallScreen && setToggleDrawer(false)
-    images?.length > 0 && setImages([])
-    if (widget_unread_count > 0) {
-      await deleteReadReceipt(channelId);
-      fetchChannels()
-    }
-
-  }
-  const handleChangeTeam = (teamId: string) => {
-    dispatch(setHelloKeysData({ currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
-    dispatch(setDataInAppInfoReducer({ subThreadId: '' }));
-    isSmallScreen && setToggleDrawer(false)
-    images?.length > 0 && setImages([])
-  }
-
-  const closeToggleDrawer = (isOpen: boolean) => {
-    if (isHuman) {
-      if (currentTeamId)
-        setToggleDrawer(isOpen)
-    }
-    else {
-      setToggleDrawer(isOpen)
-    }
-  }
-
-
-  const handleVoiceCall = () => {
-    helloVoiceService.initiateCall();
-    isSmallScreen && setToggleDrawer(false);
-  }
-
-  const handleSendMessageWithNoTeam = () => {
-    dispatch(setHelloKeysData({ currentTeamId: "", currentChannelId: "", currentChatId: "" }));
-    dispatch(setDataInAppInfoReducer({ subThreadId: '' }));
-    isSmallScreen && setToggleDrawer(false)
-    images?.length > 0 && setImages([])
-  }
-
-  const TeamsList = (
+  const TeamsList = useMemo(() => (
     <div className="teams-container p-2 relative gap-6 flex flex-col">
       {/* Conversations Section */}
       {(channelList || []).length > 0 && channelList.some((thread: any) => thread?.id) && (
@@ -215,12 +248,10 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         <div className="teams-header mb-1 border-b pb-2 flex items-center">
           <SquarePen size={22} color="#555555" className="mr-2" />
           <h3 className="text-lg font-semibold">Talk to our experts</h3>
-          {/* <p className="text-xs text-gray-500">Connect with our experts</p> */}
         </div>
         <div className="teams-list space-y-0">
           {teamsList.length === 0 ? (
             <div className="flex">
-              {/* <span>No Teams Available</span> */}
               <button className="btn btn-outline w-full" onClick={handleSendMessageWithNoTeam}>Send us a message</button>
             </div>
           ) : (
@@ -228,7 +259,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
               {teamsList.map((team: any, index: number) => (
                 <div
                   key={`${team?.id}-${index}`}
-                  className={`team-card overflow-hidden text-ellipsis p-3 bg-white  shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start ${currentTeamId === team?.id ? '' : ''}`}
+                  className={`team-card overflow-hidden text-ellipsis p-3 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start ${currentTeamId === team?.id ? '' : ''}`}
                   onClick={() => handleChangeTeam(team?.id)}
                 >
                   <div className="team-avatar mr-3 bg-primary/10 p-2 rounded-md flex-shrink-0">
@@ -256,7 +287,18 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         </button>
       </div>
     </div>
-  )
+  ), [
+    channelList,
+    teamsList,
+    currentChatId,
+    currentTeamId,
+    callState,
+    theme.palette.primary.main,
+    handleChangeChannel,
+    handleChangeTeam,
+    handleSendMessageWithNoTeam,
+    handleVoiceCall
+  ]);
 
   return (
     <div className="drawer z-[10]">
@@ -280,11 +322,22 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
         <div className="p-4 w-full min-h-full text-base-content relative bg-base-200 border-r-base-300 border overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <div className="w-10">
-              {isToggledrawer && <button className="p-2 hover:bg-gray-200 rounded-full transition-colors" onClick={() => { closeToggleDrawer(!isToggledrawer) }}> <AlignLeft size={22} color="#555555" /></button>}
+              {isToggledrawer && (
+                <button
+                  className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                  onClick={() => closeToggleDrawer(!isToggledrawer)}
+                >
+                  <AlignLeft size={22} color="#555555" />
+                </button>
+              )}
             </div>
             <div className="flex flex-col items-center justify-center flex-1">
-              <h2 className="text-lg font-bold text-center">{Name ? `Hello ${Name}` : 'Hello There!'}</h2>
-              {tagline && Name && <p className="text-xs text-gray-500 text-center">{tagline}</p>}
+              <h2 className="text-lg font-bold text-center">
+                {Name ? `Hello ${Name}` : 'Hello There!'}
+              </h2>
+              {tagline && Name && (
+                <p className="text-xs text-gray-500 text-center">{tagline}</p>
+              )}
             </div>
             <div className="w-10 flex items-center justify-end">
               {isToggledrawer && !isHuman && (
@@ -306,6 +359,4 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   );
 };
 
-export default React.memo(
-  addUrlDataHoc(React.memo(ChatbotDrawer), [ParamsEnums.chatbotId])
-);
+export default addUrlDataHoc(memo(ChatbotDrawer), [ParamsEnums.chatbotId]);

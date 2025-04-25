@@ -283,6 +283,7 @@ class ChatbotEmbedManager {
         iframe.id = 'iframe-component-interfaceEmbed';
         iframe.title = 'iframe';
         iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-forms');
+        iframe.allow = 'microphone *; camera *; midi *; encrypted-media *';
 
         this.parentContainer.appendChild(iframe);
 

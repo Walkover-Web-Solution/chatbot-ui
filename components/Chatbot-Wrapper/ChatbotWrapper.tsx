@@ -141,7 +141,6 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
     }, 0);
   }, []);
 
-  // return <InterfaceChatbot />;
   return <Chatbot />
 }
 
