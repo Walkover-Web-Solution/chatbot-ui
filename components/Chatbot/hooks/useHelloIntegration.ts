@@ -37,6 +37,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   const { handleThemeChange } = useContext(ThemeContext);
   const { isHelloUser } = useContext(ChatbotContext);
   const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId, images, isToggledrawer } = chatState;
+  const initializingRef = useRef(false);
+
   const { setLoading, setChatsLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
   const {
     uuid,
@@ -71,7 +73,6 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
   useSocket();
 
-
   const setHelloMessages = useCallback((messages: HelloMessage[]) => {
     chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages } });
     // chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: { data: messages } });
@@ -101,56 +102,19 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       });
   }, [currentChannelId, uuid, setChatsLoading, setHelloMessages]);
 
-  const getToken = useCallback(() => {
-    is_domain_enable && addDomainToHello(document.referrer, unique_id_hello, mail, userJwtToken, number)
-    getJwtToken().then((data) => {
-      if (data !== null) {
-        mountedRef.current = true;
-        dispatch(setJwtToken(data));
-        getClientToken().then(() => { helloVoiceService.initialize() });
-        getCallToken();
-      }
-    });
-    getGreetingQuestions(companyId, botId).then((data) => {
-      dispatch(setGreeting({ ...data?.greeting }));
-    });
-  }, [dispatch]);
-
+  // Fetch all channels
   const fetchChannels = useCallback(() => {
-    return getAllChannels(helloConfig).then(data => {
-      dispatch(setChannelListData(data));
-      if (!mountedRef.current) {
-        getToken();
-      }
-    });
-  }, [dispatch, unique_id_hello, getToken, helloConfig]);
-
-  useSocketEvents({ chatbotId, chatState, chatDispatch, messageRef , fetchChannels });
-
-  const getWidgetInfo = async () => {
-    if (isHelloUser && widgetToken) {
-      initializeHelloChat(unique_id_hello).then(data => {
-        dispatch(setWidgetInfo(data));
-        handleThemeChange(data?.primary_color || "#000000");
+    return getAllChannels(helloConfig)
+      .then(data => {
+        dispatch(setChannelListData(data));
+        return data;
+      })
+      .catch(error => {
+        console.error("Error fetching channels:", error);
       });
-    }
-    // else if (bridgeName && threadId) {
-    //   dispatch(
-    //     getHelloDetailsStart({
-    //       slugName: bridgeName,
-    //       threadId: threadId,
-    //       helloId: helloId || null,
-    //       versionId: bridgeVersionId || null,
-    //     })
-    //   );
-    // }
-  };
+  }, [dispatch, helloConfig]);
 
-  const createAnonymousUser = useCallback(() => {
-    registerAnonymousUser().then(() => {
-      getToken();
-    });
-  }, [getToken]);
+  useSocketEvents({ chatbotId, chatState, chatDispatch, messageRef, fetchChannels });
 
   // Start timeout timer for response waiting
   const startTimeoutTimer = useCallback(() => {
@@ -225,7 +189,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
             console.error("Failed to subscribe to channels:", error);
           }
         }
-          fetchChannels();
+        fetchChannels();
       }
     } catch (error) {
       if (isBot) {
@@ -242,12 +206,12 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     chatDispatch,
     images,
     isBot,
-    isSmallScreen,
-    unique_id_hello,
     startTimeoutTimer,
     setLoading,
     dispatch,
-    fetchChannels
+    fetchChannels,
+    currentChannelId,
+    showWidgetForm
   ]);
 
   // Handle sending a message
@@ -276,7 +240,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       }
     };
 
-    // Add message to chat)
+    // Add message to chat
     if (currentChannelId) addHelloMessage(newMessage);
 
     // Send message to API
@@ -292,33 +256,119 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     }
 
     return true;
-  }, [onSendHello, addHelloMessage, images, messageRef]);
+  }, [onSendHello, addHelloMessage, images, messageRef, currentChannelId]);
 
   // Effect hooks
-  // todo NOT USEFULL
   useEffect(() => {
     if (!mountedRef.current) {
       fetchHelloPreviousHistory();
     }
-  }, []);
+  }, [fetchHelloPreviousHistory]);
 
-  useEffect(() => {
-    if (!localStorage.getItem("HelloClientId") && !unique_id_hello && widgetToken && isHelloUser && !mail && !number) {
-      createAnonymousUser();
+
+
+  const initializeHelloServices = useCallback(async () => {
+    // Prevent duplicate initialization
+    if (initializingRef.current || mountedRef.current) {
+      return;
     }
-  }, [isHelloUser, unique_id_hello, widgetToken, createAnonymousUser]);
-
-  useEffect(() => {
-    getWidgetInfo();
-  }, [bridgeName, isHelloUser, widgetToken]);
-
-  useEffect(() => {
-    if (isHelloUser && (localStorage.getItem("HelloClientId") || (helloConfig?.unique_id || helloConfig?.mail || helloConfig?.number))) {
-      // Only fetch channels on mount (when mountedRef is false) or when drawer is toggled open
-        fetchChannels();
+    
+    initializingRef.current = true;
+    
+    try {
+      let helloClientId = localStorage.getItem("HelloClientId");
+      let needsAnonymousRegistration = !helloClientId && !unique_id_hello && widgetToken && isHelloUser && !mail && !number;
+      
+      // Step 1: Create anonymous user if needed (first time only)
+      if (needsAnonymousRegistration) {
+        await registerAnonymousUser();
+        helloClientId = localStorage.getItem("HelloClientId"); // Should be set by registerAnonymousUser
+      }
+      
+      // Step 2: Handle domain (if needed)
+      if (is_domain_enable) {
+        await addDomainToHello(document.referrer, unique_id_hello, mail, userJwtToken, number);
+      }
+      
+      // Step 3: Get widget info and JWT token in parallel (they're independent)
+      const widgetInfoPromise = isHelloUser && widgetToken ? 
+        initializeHelloChat(unique_id_hello).then(data => {
+          dispatch(setWidgetInfo(data));
+          handleThemeChange(data?.primary_color || "#000000");
+          return data;
+        }) : 
+        Promise.resolve(null);
+      
+      const jwtTokenPromise = getJwtToken().then(data => {
+        if (data !== null) {
+          dispatch(setJwtToken(data));
+          return data;
+        }
+        return null;
+      });
+      
+      const [widgetData, jwtData] = await Promise.all([widgetInfoPromise, jwtTokenPromise]);
+      
+      // Step 4: Get client token and call token (depend on JWT)
+      if (jwtData) {
+        const clientTokenPromise = getClientToken().then(() => {
+          helloVoiceService.initialize();
+        });
+        
+        const callTokenPromise = getCallToken();
+        
+        await Promise.all([clientTokenPromise, callTokenPromise]);
+      }
+      
+      // Step 5: Get greeting questions (depends on widget info for company/bot IDs)
+      const greetingCompanyId = widgetData?.company_id || companyId;
+      const greetingBotId = widgetData?.bot_id || botId;
+      
+      if (greetingCompanyId && greetingBotId) {
+        await getGreetingQuestions(greetingCompanyId, greetingBotId).then((data) => {
+          dispatch(setGreeting({ ...data?.greeting }));
+        });
+      }
+      
+      // Step 6: Fetch channels
+      await fetchChannels();
+      
+      mountedRef.current = true;
+    } catch (error) {
+      console.error("Error initializing Hello services:", error);
+    } finally {
+      // Ensure we reset the initializing flag even if there's an error
+      initializingRef.current = false;
     }
-  }, [isHelloUser, unique_id_hello, fetchChannels]);
+  }, [
+    unique_id_hello, 
+    widgetToken, 
+    isHelloUser, 
+    mail, 
+    number, 
+    is_domain_enable, 
+    userJwtToken, 
+    companyId, 
+    botId, 
+    dispatch, 
+    handleThemeChange, 
+    fetchChannels
+  ]);
 
+
+
+  useEffect(() => {
+    if (isHelloUser && 
+        !mountedRef.current && 
+        !initializingRef.current &&
+        (localStorage.getItem("HelloClientId") || 
+         helloConfig?.unique_id || 
+         helloConfig?.mail || 
+         helloConfig?.number ||
+         widgetToken)) {
+      initializeHelloServices();
+    }
+  }, [isHelloUser, helloConfig, widgetToken, initializeHelloServices]);
   return {
     helloMessages,
     loading,
