@@ -1,4 +1,5 @@
 function convertChatHistoryToGenericFormat(history: any, isHello: boolean = false) {
+
     switch (isHello) {
         case true:
             return history
@@ -10,6 +11,20 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                         role = "Bot";
                     } else {
                         role = "user";
+                    }
+
+                    // Handle feedback type messages
+                    if (chat?.message?.type === 'feedback') {
+                        return {
+                            role: "Human",
+                            id: chat?.id,
+                            from_name: chat?.message?.dynamic_values?.agent_name,
+                            message_type: 'feedback',
+                            token: chat?.message?.token,
+                            dynamic_values: chat?.message?.dynamic_values,
+                            chat_id: chat?.message?.chat_id,
+                            channel: chat?.message?.channel
+                        };
                     }
 
                     return {
@@ -54,7 +69,22 @@ function createSendMessageHelloPayload(message: string) {
 }
 
 function convertEventMessageToGenericFormat(message: any, isHello: boolean = false) {
-    const { sender_id, from_name, content } = message || {};
+    const { sender_id, from_name, content, type } = message || {};
+    // Handle feedback type messages    
+    if (type === 'feedback') {
+        return [{
+            role: "Human",
+            from_name:message?.dynamic_values?.agent_name,
+            id: message?.id,
+            message_type: 'feedback',
+            token: message?.token,
+            dynamic_values: message?.dynamic_values,
+            chat_id: message?.chat_id,
+            channel: message?.channel
+        }];
+    }
+
+    // Handle regular messages
     return [{
         role: sender_id === "bot" ? "Bot" : "Human",
         from_name,
@@ -63,7 +93,7 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
         id: message?.id,
         message_type: message?.message_type,
         messageJson: message?.content
-    }]
+    }];
 }
 
 function createSendMessageGtwyPayload(message: string) {

@@ -89,4 +89,12 @@ export const DEFAULT_AI_SERVICE_MODALS = {
 Object.freeze(EmbedVerificationStatus);
 Object.freeze(ParamsEnums);
 
-export { EmbedVerificationStatus, ParamsEnums };
+const FeedbackRatings = {
+  terrible : 'terrible',
+  bad : 'bad',
+  ok : 'ok',
+  good : 'good',
+  amazing : 'amazing',
+}
+
+export { EmbedVerificationStatus, ParamsEnums , FeedbackRatings };

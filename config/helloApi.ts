@@ -344,7 +344,6 @@ export async function submitFeedback(params: {
   rating: string; 
   token: string;
   id: number;
-  uniqueId: string;
 }): Promise<any> {
   try {
     const response = await axios.post(
@@ -356,7 +355,7 @@ export async function submitFeedback(params: {
         type: "post-feedback",
         id: params.id,
         user_data: {
-          unique_id: params.uniqueId
+          unique_id: localStorage.getItem("HelloClientId")
         },
         is_anon: localStorage.getItem("is_anon") == 'true'
       },

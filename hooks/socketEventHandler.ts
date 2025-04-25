@@ -88,6 +88,11 @@ export const useSocketEvents = ({
                     dispatch(changeChannelAssigned({ assigned_type: assignee_type, assignee_id }));
                 }
                 break;
+            case 'feedback':
+                if(message?.new_event){
+                    addHelloMessage({ ...message, id: response.id })
+                }
+                break;
             default:
                 // Handle other types if needed
                 break;
