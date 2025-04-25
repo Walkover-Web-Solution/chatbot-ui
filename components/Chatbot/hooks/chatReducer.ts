@@ -338,7 +338,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
 
     case ChatActionTypes.SET_INTIAL_MESSAGES: {
       const subThreadId = action.payload?.subThreadId || state.subThreadId
-      const messages = convertChatHistoryToGenericFormat(action.payload.messages, state.isHelloUser)
+      const messages = convertChatHistoryToGenericFormat(action.payload.messages, state.isHelloUser)  
       return {
         ...state,
         messageIds: {
