@@ -1,0 +1,193 @@
+.chat-user-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  height: 100%;
+  padding: 10px;
+  overflow-y: auto;
+  margin-bottom: 5px;
+  /* Scrollable container */
+}
+
+.chat-row-user {
+  margin-right: 8px;
+  padding: 10px;
+  /* Padding inside the container */
+  border: 0.5px solid #c0c0c0;
+  /* Solid border with color, adjust color and thickness as needed */
+  border-radius: 10px;
+  border-top-right-radius: 0px;
+  max-width: 80%;
+  padding-left: 10px;
+  padding-right: 10px;
+  width: fit-content;
+  /* Rounded corners, adjust the radius as needed */
+  box-shadow: 0 4px 2px rgba(0, 0, 0, 0.1);
+}
+
+.chat-row-bot {
+  margin-bottom: 8px;
+  padding: 10px;
+  /* Padding inside the container */
+  border: 0.5px solid #c0c0c0;
+  /* Solid border with color, adjust color and thickness as needed */
+  border-radius: 10px;
+  /* Rounded corners, adjust the radius as needed */
+  box-shadow: 0 4px 2px rgba(0, 0, 0, 0.1);
+}
+
+.botIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  box-shadow: 0 4px 2px rgba(0, 0, 0, 0.1);
+}
+
+.loader {
+  width: 20px;
+  aspect-ratio: 0.75;
+  --c: no-repeat linear-gradient(#000 0 0);
+  background: var(--c) 0% 50%, var(--c) 50% 50%, var(--c) 100% 50%;
+  background-size: 20% 50%;
+  animation: l6 1s infinite linear;
+}
+
+@keyframes slideIn {
+  0% {
+    transform: translateX(5%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInMessage {
+  0% {
+    transform: translateX(-5%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.user-message-slide {
+  animation: slideIn 0.2s ease-in-out;
+}
+.assistant-message-slide {
+  animation: slideInMessage 0.2s ease-in-out;
+}
+
+@keyframes l6 {
+  20% {
+    background-position: 0% 0%, 50% 50%, 100% 50%;
+  }
+
+  40% {
+    background-position: 0% 100%, 50% 0%, 100% 50%;
+  }
+
+  60% {
+    background-position: 0% 50%, 50% 100%, 100% 0%;
+  }
+
+  80% {
+    background-position: 0% 50%, 50% 50%, 100% 100%;
+  }
+}
+
+.hover-and-see {
+  opacity: 0;
+}
+.assistant_message_card {
+  &:hover {
+    .hover-and-see {
+      opacity: 1 !important;
+    }
+  }
+}
+
+/* Loading Indicator Container */
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* Loading Bars */
+.loading-indicator .loading-bar {
+  height: 15px;
+  width: 100%;
+  border-radius: 0.3rem;
+  background: linear-gradient(
+    to right,
+    var(--primary-main),
+    #cacacb,
+    var(--primary-main)
+  );
+  background-size: 800px 100%;
+
+  /* Initial state for appear animation */
+  opacity: 0;
+  transform: translateX(-20px);
+
+  /* Multiple Animations: Appear and Loading */
+  animation: appear 0.9s ease forwards, loading 3s linear infinite;
+}
+
+/* Adjust the width of the last loading bar for variation */
+.loading-indicator .loading-bar:last-child {
+  width: 70%;
+}
+.loading-indicator .loading-bar:nth-child(2) {
+  width: 85%;
+}
+
+/* Sequential Animation Delays for Each Loading Bar */
+.loading-indicator .loading-bar:nth-child(1) {
+  animation-delay: 0s, 0.2s; /* Appear immediately, loading starts after 0.5s */
+}
+
+.loading-indicator .loading-bar:nth-child(2) {
+  animation-delay: 0.1s, 0.3s; /* Appear after 0.3s, loading starts after 0.8s */
+}
+
+.loading-indicator .loading-bar:nth-child(3) {
+  animation-delay: 0.2s, 0.4s; /* Appear after 0.6s, loading starts after 1.1s */
+}
+
+/* Loading Animation Keyframes */
+@keyframes loading {
+  0% {
+    background-position: -800px 0;
+  }
+  100% {
+    background-position: 800px 0;
+  }
+}
+
+/* Appear Animation Keyframes */
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
