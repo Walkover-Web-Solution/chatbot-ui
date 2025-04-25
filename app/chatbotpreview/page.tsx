@@ -4,7 +4,7 @@ import ChatbotDrawer from '@/components/Interface-Chatbot/ChatbotDrawer';
 import ChatbotHeader from '@/components/Interface-Chatbot/ChatbotHeader';
 import ChatbotHeaderTab from '@/components/Interface-Chatbot/ChatbotHeaderTab';
 import ChatbotTextField from '@/components/Interface-Chatbot/ChatbotTextField';
-import MessageList from '@/components/Interface-Chatbot/MessageList';
+import MessageList from '@/components/Interface-Chatbot/Messages/MessageList';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { useContext, useEffect, useRef, useState } from 'react';
 export const runtime = "edge";

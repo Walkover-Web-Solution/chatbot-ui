@@ -24,10 +24,10 @@ import dynamic from 'next/dynamic';
 import Image from "next/image";
 import React, { useContext } from "react";
 import ReactMarkdown from "react-markdown";
-import { MessageContext } from "./InterfaceChatbot";
+import { MessageContext } from "../InterfaceChatbot";
 import "./Message.css";
-import RenderHelloInteractiveMessage from "../Hello/RenderHelloInteractiveMessage";
-import RenderHelloAttachmentMessage from "../Hello/RenderHelloAttachmentMessage";
+import RenderHelloInteractiveMessage from "../../Hello/RenderHelloInteractiveMessage";
+import RenderHelloAttachmentMessage from "../../Hello/RenderHelloAttachmentMessage";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 const ResetHistoryLine = ({ text = "" }) => {

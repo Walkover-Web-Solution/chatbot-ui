@@ -1,7 +1,6 @@
 import { TrendingUp } from 'lucide-react';
-import { SendMessagePayloadType } from '../Chatbot/hooks/chatTypes';
 import { useContext } from 'react';
-import { MessageContext } from './InterfaceChatbot';
+import { MessageContext } from '../InterfaceChatbot';
 
 function StarterQuestions() {
     const {

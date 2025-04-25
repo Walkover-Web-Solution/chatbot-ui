@@ -2,7 +2,7 @@ import { Box, Grid, useTheme } from "@mui/material";
 import React, { useEffect } from "react";
 import { ChatbotHeaderPreview } from "../Interface-Chatbot/ChatbotHeader.tsx";
 import ChatbotTextField from "../Interface-Chatbot/ChatbotTextField.tsx";
-import MessageList from "../Interface-Chatbot/MessageList.tsx";
+import MessageList from "../Interface-Chatbot/Messages/MessageList.jsx";
 
 function ChatbotPreview({ onThemeChange }) {
   const theme = useTheme();
