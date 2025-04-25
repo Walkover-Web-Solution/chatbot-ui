@@ -18,8 +18,8 @@ import ChatbotDrawer from '../Interface-Chatbot/ChatbotDrawer';
 import ChatbotHeader from '../Interface-Chatbot/ChatbotHeader';
 import ChatbotHeaderTab from '../Interface-Chatbot/ChatbotHeaderTab';
 import ChatbotTextField from '../Interface-Chatbot/ChatbotTextField';
-import MessageList from '../Interface-Chatbot/MessageList';
-import StarterQuestions from '../Interface-Chatbot/StarterQuestions';
+import MessageList from '../Interface-Chatbot/Messages/MessageList';
+import StarterQuestions from '../Interface-Chatbot/Messages/StarterQuestions';
 
 // Utils
 import { ChatBotGif } from '@/assests/assestsIndex';
@@ -39,47 +39,47 @@ function Chatbot({ chatbotId }: ChatbotProps) {
 
   // State management
   const [chatState, chatDispatch] = useReducer(chatReducer, initialChatState);
-  const { 
-    openHelloForm, 
-    isToggledrawer, 
-    chatsLoading, 
-    messageIds, 
-    msgIdAndDataMap, 
-    subThreadId, 
-    helloMsgIds, 
-    isTyping 
+  const {
+    openHelloForm,
+    isToggledrawer,
+    chatsLoading,
+    messageIds,
+    msgIdAndDataMap,
+    subThreadId,
+    helloMsgIds,
+    isTyping
   } = chatState;
 
   // Custom hooks
-  const { sendMessageToHello, fetchHelloPreviousHistory, fetchChannels } = 
-    useHelloIntegration({ 
-      chatbotId, 
-      chatDispatch, 
-      chatState, 
-      messageRef 
+  const { sendMessageToHello, fetchHelloPreviousHistory, fetchChannels } =
+    useHelloIntegration({
+      chatbotId,
+      chatDispatch,
+      chatState,
+      messageRef
     });
 
-  const { IsHuman, isSmallScreen, currentChatId } = 
-    useReduxStateManagement({ 
-      chatbotId, 
-      chatDispatch 
+  const { IsHuman, isSmallScreen, currentChatId } =
+    useReduxStateManagement({
+      chatbotId,
+      chatDispatch
     });
 
-  const chatActions = useChatActions({ 
-    chatbotId, 
-    chatDispatch, 
-    chatState, 
-    messageRef, 
-    timeoutIdRef 
+  const chatActions = useChatActions({
+    chatbotId,
+    chatDispatch,
+    chatState,
+    messageRef,
+    timeoutIdRef
   });
 
   // Initialize RTLayer event listeners
-  useRtlayerEventManager({ 
-    chatbotId, 
-    chatDispatch, 
-    chatState, 
-    messageRef, 
-    timeoutIdRef 
+  useRtlayerEventManager({
+    chatbotId,
+    chatDispatch,
+    chatState,
+    messageRef,
+    timeoutIdRef
   });
 
   const theme = useTheme();
@@ -108,8 +108,8 @@ function Chatbot({ chatbotId }: ChatbotProps) {
   };
 
   // Check if chat is empty
-  const isChatEmpty = IsHuman 
-    ? helloMsgIds[subThreadId]?.length === 0 
+  const isChatEmpty = IsHuman
+    ? helloMsgIds[subThreadId]?.length === 0
     : messageIds[subThreadId]?.length === 0;
 
   return (
@@ -117,9 +117,9 @@ function Chatbot({ chatbotId }: ChatbotProps) {
       <div className="flex h-screen w-full overflow-hidden relative">
         {/* Sidebar - visible on large screens */}
         <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? 'w-64' : 'w-0'}`}>
-          <ChatbotDrawer 
-            setToggleDrawer={chatActions.setToggleDrawer} 
-            isToggledrawer={isToggledrawer} 
+          <ChatbotDrawer
+            setToggleDrawer={chatActions.setToggleDrawer}
+            isToggledrawer={isToggledrawer}
           />
         </div>
 
@@ -127,28 +127,28 @@ function Chatbot({ chatbotId }: ChatbotProps) {
         <div className="flex flex-col flex-1 w-full">
           {/* Mobile header */}
           <ChatbotHeader />
-          
+
           {/* Loading indicator */}
           {chatsLoading && (
             <div className="w-full">
-              <LinearProgress 
-                color="inherit" 
-                style={{ color: theme.palette.primary.main }} 
+              <LinearProgress
+                color="inherit"
+                style={{ color: theme.palette.primary.main }}
               />
             </div>
           )}
-          
+
           {/* Form and UI components */}
           {IsHuman && (
-            <FormComponent 
-              open={openHelloForm} 
-              setOpen={(isFormOpen: boolean) => 
-                chatDispatch({ 
-                  type: ChatActionTypes.SET_OPEN_HELLO_FORM, 
-                  payload: isFormOpen 
+            <FormComponent
+              open={openHelloForm}
+              setOpen={(isFormOpen: boolean) =>
+                chatDispatch({
+                  type: ChatActionTypes.SET_OPEN_HELLO_FORM,
+                  payload: isFormOpen
                 })
-              } 
-              isSmallScreen={isSmallScreen} 
+              }
+              isSmallScreen={isSmallScreen}
             />
           )}
           <CallUI />
@@ -157,10 +157,10 @@ function Chatbot({ chatbotId }: ChatbotProps) {
           {isChatEmpty ? (
             <EmptyChatView />
           ) : (
-            <ActiveChatView 
-              containerRef={containerRef} 
-              subThreadId={subThreadId} 
-              messageIds={messageIds} 
+            <ActiveChatView
+              containerRef={containerRef}
+              subThreadId={subThreadId}
+              messageIds={messageIds}
             />
           )}
         </div>
@@ -169,10 +169,10 @@ function Chatbot({ chatbotId }: ChatbotProps) {
   );
 }
 
-interface EmptyChatViewProps {}
+interface EmptyChatViewProps { }
 
 // Empty chat component
-function EmptyChatView({}: EmptyChatViewProps) {
+function EmptyChatView({ }: EmptyChatViewProps) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-70px] p-5">
       <div className="flex flex-col items-center w-full">
@@ -208,9 +208,8 @@ function ActiveChatView({ containerRef, subThreadId, messageIds }: ActiveChatVie
     <>
       {/* Messages container */}
       <div
-        className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1 ${
-          messageIds?.[subThreadId]?.length === 0 ? 'flex items-center justify-center' : 'pb-10'
-        }`}
+        className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1 ${messageIds?.[subThreadId]?.length === 0 ? 'flex items-center justify-center' : 'pb-10'
+          }`}
         id="message-container"
         ref={containerRef}
       >
