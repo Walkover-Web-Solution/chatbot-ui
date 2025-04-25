@@ -263,7 +263,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     if (!mountedRef.current) {
       fetchHelloPreviousHistory();
     }
-  }, [fetchHelloPreviousHistory]);
+  }, []);
 
 
 
@@ -272,33 +272,33 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     if (initializingRef.current || mountedRef.current) {
       return;
     }
-    
+
     initializingRef.current = true;
-    
+
     try {
       let helloClientId = localStorage.getItem("HelloClientId");
       let needsAnonymousRegistration = !helloClientId && !unique_id_hello && widgetToken && isHelloUser && !mail && !number;
-      
+
       // Step 1: Create anonymous user if needed (first time only)
       if (needsAnonymousRegistration) {
         await registerAnonymousUser();
         helloClientId = localStorage.getItem("HelloClientId"); // Should be set by registerAnonymousUser
       }
-      
+
       // Step 2: Handle domain (if needed)
       if (is_domain_enable) {
         await addDomainToHello(document.referrer, unique_id_hello, mail, userJwtToken, number);
       }
-      
+
       // Step 3: Get widget info and JWT token in parallel (they're independent)
-      const widgetInfoPromise = isHelloUser && widgetToken ? 
+      const widgetInfoPromise = isHelloUser && widgetToken ?
         initializeHelloChat(unique_id_hello).then(data => {
           dispatch(setWidgetInfo(data));
           handleThemeChange(data?.primary_color || "#000000");
           return data;
-        }) : 
+        }) :
         Promise.resolve(null);
-      
+
       const jwtTokenPromise = getJwtToken().then(data => {
         if (data !== null) {
           dispatch(setJwtToken(data));
@@ -306,33 +306,33 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         }
         return null;
       });
-      
+
       const [widgetData, jwtData] = await Promise.all([widgetInfoPromise, jwtTokenPromise]);
-      
+
       // Step 4: Get client token and call token (depend on JWT)
       if (jwtData) {
         const clientTokenPromise = getClientToken().then(() => {
           helloVoiceService.initialize();
         });
-        
+
         const callTokenPromise = getCallToken();
-        
+
         await Promise.all([clientTokenPromise, callTokenPromise]);
       }
-      
+
       // Step 5: Get greeting questions (depends on widget info for company/bot IDs)
       const greetingCompanyId = widgetData?.company_id || companyId;
       const greetingBotId = widgetData?.bot_id || botId;
-      
+
       if (greetingCompanyId && greetingBotId) {
         await getGreetingQuestions(greetingCompanyId, greetingBotId).then((data) => {
           dispatch(setGreeting({ ...data?.greeting }));
         });
       }
-      
+
       // Step 6: Fetch channels
       await fetchChannels();
-      
+
       mountedRef.current = true;
     } catch (error) {
       console.error("Error initializing Hello services:", error);
@@ -341,31 +341,31 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       initializingRef.current = false;
     }
   }, [
-    unique_id_hello, 
-    widgetToken, 
-    isHelloUser, 
-    mail, 
-    number, 
-    is_domain_enable, 
-    userJwtToken, 
-    companyId, 
-    botId, 
-    dispatch, 
-    handleThemeChange, 
+    unique_id_hello,
+    widgetToken,
+    isHelloUser,
+    mail,
+    number,
+    is_domain_enable,
+    userJwtToken,
+    companyId,
+    botId,
+    dispatch,
+    handleThemeChange,
     fetchChannels
   ]);
 
 
 
   useEffect(() => {
-    if (isHelloUser && 
-        !mountedRef.current && 
-        !initializingRef.current &&
-        (localStorage.getItem("HelloClientId") || 
-         helloConfig?.unique_id || 
-         helloConfig?.mail || 
-         helloConfig?.number ||
-         widgetToken)) {
+    if (isHelloUser &&
+      !mountedRef.current &&
+      !initializingRef.current &&
+      (localStorage.getItem("HelloClientId") ||
+        helloConfig?.unique_id ||
+        helloConfig?.mail ||
+        helloConfig?.number ||
+        widgetToken)) {
       initializeHelloServices();
     }
   }, [isHelloUser, helloConfig, widgetToken, initializeHelloServices]);
