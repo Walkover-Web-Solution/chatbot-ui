@@ -38,7 +38,7 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   const theme = useTheme();
   const { setNewMessage } = useContext(MessageContext);
   const isSmallScreen = useMediaQuery('(max-width:1023px)');
-  const { setOptions, chatDispatch, fetchHelloPreviousHistory, images, setImages ,fetchChannels} = useContext(MessageContext);
+  const { setOptions, chatDispatch, fetchHelloPreviousHistory, images, setImages, fetchChannels } = useContext(MessageContext);
   const { currentChatId, currentTeamId, } = useReduxStateManagement({ chatbotId, chatDispatch });
   const { callState } = useCallUI();
   const { reduxThreadId, subThreadList, reduxSubThreadId, reduxBridgeName, teamsList, channelList, isHuman, Name, tagline } =
@@ -133,7 +133,6 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
   const handleChangeTeam = (teamId: string) => {
     dispatch(setHelloKeysData({ currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
     dispatch(setDataInAppInfoReducer({ subThreadId: '' }));
-    chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: { teamId: teamId, data: [] } });
     isSmallScreen && setToggleDrawer(false)
     images?.length > 0 && setImages([])
   }
@@ -151,6 +150,14 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
 
   const handleVoiceCall = () => {
     helloVoiceService.initiateCall();
+    isSmallScreen && setToggleDrawer(false);
+  }
+
+  const handleSendMessageWithNoTeam = () => {
+    dispatch(setHelloKeysData({ currentTeamId: "", currentChannelId: "", currentChatId: "" }));
+    dispatch(setDataInAppInfoReducer({ subThreadId: '' }));
+    isSmallScreen && setToggleDrawer(false)
+    images?.length > 0 && setImages([])
   }
 
   const TeamsList = (
@@ -211,20 +218,29 @@ const ChatbotDrawer: React.FC<ChatbotDrawerProps> = ({ setLoading, chatbotId, se
           {/* <p className="text-xs text-gray-500">Connect with our experts</p> */}
         </div>
         <div className="teams-list space-y-0">
-          {teamsList.map((team: any, index: number) => (
-            <div
-              key={`${team?.id}-${index}`}
-              className={`team-card overflow-hidden text-ellipsis p-3 bg-white  shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start ${currentTeamId === team?.id ? '' : ''}`}
-              onClick={() => handleChangeTeam(team?.id)}
-            >
-              <div className="team-avatar mr-3 bg-primary/10 p-2 rounded-md flex-shrink-0">
-                {team?.icon || <Users size={12} className="text-primary" />}
-              </div>
-              <div className="team-info">
-                <div className="team-name font-medium break-words">{team?.name}</div>
-              </div>
+          {teamsList.length === 0 ? (
+            <div className="flex">
+              {/* <span>No Teams Available</span> */}
+              <button className="btn btn-outline w-full" onClick={handleSendMessageWithNoTeam}>Send us a message</button>
             </div>
-          ))}
+          ) : (
+            <div className="flex flex-col gap-2">
+              {teamsList.map((team: any, index: number) => (
+                <div
+                  key={`${team?.id}-${index}`}
+                  className={`team-card overflow-hidden text-ellipsis p-3 bg-white  shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start ${currentTeamId === team?.id ? '' : ''}`}
+                  onClick={() => handleChangeTeam(team?.id)}
+                >
+                  <div className="team-avatar mr-3 bg-primary/10 p-2 rounded-md flex-shrink-0">
+                    {team?.icon || <Users size={12} className="text-primary" />}
+                  </div>
+                  <div className="team-info">
+                    <div className="team-name font-medium break-words">{team?.name}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
