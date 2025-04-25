@@ -1,0 +1,18 @@
+version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - npm i --cache .npm --prefer-offline
+frontend:
+  phases:
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
