@@ -2,7 +2,7 @@
 class ChatbotEmbedManager {
     constructor() {
         this.props = {};
-        this.helloProps = {};
+        this.helloProps = null;
         this.parentContainer = null;
         this.config = {
             type: 'popup',
@@ -349,9 +349,8 @@ class ChatbotEmbedManager {
     }
 
     sendInitialData() {
-        if (this.state.tempDataToSend || this.helloProps) {
+        if (this.helloProps) {
             sendMessageToChatbot({ type: 'helloData', data: this.helloProps });
-            this.state.tempDataToSend = null;
         }
     }
 
@@ -361,6 +360,7 @@ class ChatbotEmbedManager {
             if (interfaceEmbed) {
                 interfaceEmbed.style.display = 'block';
             }
+            this.sendInitialData();
         }
     }
 

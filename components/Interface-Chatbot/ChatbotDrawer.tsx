@@ -1,7 +1,7 @@
 'use client';
 
 import { useMediaQuery, useTheme } from "@mui/material";
-import { AlignLeft, ChevronRight, SquarePen, Users } from "lucide-react";
+import { AlignLeft, ChevronRight, SquarePen, Users, X } from "lucide-react";
 import { memo, useContext, useMemo } from "react";
 import { useDispatch } from "react-redux";
 
@@ -72,7 +72,8 @@ const ChatbotDrawer = ({
     channelList,
     isHuman,
     Name,
-    tagline
+    tagline,
+    hideCloseButton
   } = useCustomSelector((state: $ReduxCoreType) => {
     const bridgeName = GetSessionStorageData("bridgeName") || state.appInfo?.bridgeName || "root";
     const threadId = GetSessionStorageData("threadId") || state.appInfo?.threadId || "";
@@ -86,7 +87,8 @@ const ChatbotDrawer = ({
       channelList: state.Hello?.channelListData?.channels || [],
       isHuman: state.Hello?.isHuman || false,
       Name: state.Hello?.channelListData?.customer_name || '',
-      tagline: state.Hello?.widgetInfo?.tagline || ''
+      tagline: state.Hello?.widgetInfo?.tagline || '',
+      hideCloseButton: state.Interface.hideCloseButton || false,
     };
   });
 
@@ -207,7 +209,7 @@ const ChatbotDrawer = ({
               .map((channel: any, index: number) => (
                 <div
                   key={`${channel?._id}-${index}`}
-                  className={`conversation-card overflow-hidden text-ellipsis p-3 ${channel?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center`}
+                  className={`conversation-card max-h-16 overflow-hidden text-ellipsis p-3 ${channel?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center`}
                   style={{
                     borderColor: channel?.id === currentChatId ? theme.palette.primary.main : ''
                   }}
@@ -218,9 +220,9 @@ const ChatbotDrawer = ({
                       Conversation
                     </div>
                     {channel?.last_message && (
-                      <div className="last-message text-sm text-black font-medium mt-1 truncate flex flex-row items-center gap-1">
+                      <div className="last-message text-sm text-black font-medium mt-1 truncate flex flex-row items-center gap-1 text-ellipsis overflow-hidden">
                         {!channel.last_message?.message?.sender_id ? "You: " : "Sender: "}
-                        <div dangerouslySetInnerHTML={{
+                        <div className="line-clamp-1" dangerouslySetInnerHTML={{
                           __html: channel.last_message.message?.content?.text ||
                             (channel.last_message.message?.content?.attachment?.length > 0 ? "Attachment" :
                               channel.last_message.message?.message_type ||
@@ -300,6 +302,24 @@ const ChatbotDrawer = ({
     handleVoiceCall
   ]);
 
+  const handleCloseChatbot = () => {
+    if (!window?.parent) return;
+    window.parent.postMessage({ type: "CLOSE_CHATBOT" }, "*");
+  };
+
+  const CloseButton = useMemo(() => {
+    if (hideCloseButton === true || hideCloseButton === "true") return null;
+
+    return (
+      <div
+        className="cursor-pointer p-2 hover:bg-gray-200 rounded-full transition-colors"
+        onClick={handleCloseChatbot}
+      >
+        <X size={22} color="#555555" />
+      </div>
+    );
+  }, [hideCloseButton, handleCloseChatbot]);
+
   return (
     <div className="drawer z-[10]">
       <input
@@ -350,6 +370,7 @@ const ChatbotDrawer = ({
                   </button>
                 </div>
               )}
+              {isHuman && CloseButton}
             </div>
           </div>
           {!isHuman ? DrawerList : TeamsList}

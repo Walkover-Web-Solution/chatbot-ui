@@ -269,7 +269,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
   const initializeHelloServices = useCallback(async () => {
     // Prevent duplicate initialization
-    if (initializingRef.current || mountedRef.current) {
+    if (!widgetToken || initializingRef.current || mountedRef.current) {
       return;
     }
 
@@ -283,6 +283,9 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       if (needsAnonymousRegistration) {
         await registerAnonymousUser();
         helloClientId = localStorage.getItem("HelloClientId"); // Should be set by registerAnonymousUser
+      } else {
+        // it gives the Hello Client Id for the registered user
+        await fetchChannels();
       }
 
       // Step 2: Handle domain (if needed)
@@ -299,18 +302,31 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         }) :
         Promise.resolve(null);
 
-      const jwtTokenPromise = getJwtToken().then(data => {
-        if (data !== null) {
-          dispatch(setJwtToken(data));
-          return data;
-        }
-        return null;
-      });
+      const jwtTokenPromise = localStorage.getItem("HelloClientId") ?
+        getJwtToken().then(data => {
+          if (data !== null) {
+            dispatch(setJwtToken(data));
+            return data;
+          }
+          return null;
+        }) :
+        Promise.resolve(null);
 
       const [widgetData, jwtData] = await Promise.all([widgetInfoPromise, jwtTokenPromise]);
 
-      // Step 4: Get client token and call token (depend on JWT)
-      if (jwtData) {
+
+      // Step 4: Get greeting questions (depends on widget info for company/bot IDs)
+      const greetingCompanyId = widgetData?.company_id || companyId;
+      const greetingBotId = widgetData?.bot_id || botId;
+
+      if (greetingCompanyId && greetingBotId && localStorage.getItem("HelloClientId")) {
+        await getGreetingQuestions(greetingCompanyId, greetingBotId).then((data) => {
+          dispatch(setGreeting({ ...data?.greeting }));
+        });
+      }
+
+      // Step 5: Get client token and call token (depend on JWT)
+      if (localStorage.getItem("HelloClientId") && widgetToken) {
         const clientTokenPromise = getClientToken().then(() => {
           helloVoiceService.initialize();
         });
@@ -320,18 +336,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         await Promise.all([clientTokenPromise, callTokenPromise]);
       }
 
-      // Step 5: Get greeting questions (depends on widget info for company/bot IDs)
-      const greetingCompanyId = widgetData?.company_id || companyId;
-      const greetingBotId = widgetData?.bot_id || botId;
-
-      if (greetingCompanyId && greetingBotId) {
-        await getGreetingQuestions(greetingCompanyId, greetingBotId).then((data) => {
-          dispatch(setGreeting({ ...data?.greeting }));
-        });
-      }
-
       // Step 6: Fetch channels
-      await fetchChannels();
+      needsAnonymousRegistration && fetchChannels();
 
       mountedRef.current = true;
     } catch (error) {
@@ -369,6 +375,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       initializeHelloServices();
     }
   }, [isHelloUser, helloConfig, widgetToken, initializeHelloServices]);
+
   return {
     helloMessages,
     loading,

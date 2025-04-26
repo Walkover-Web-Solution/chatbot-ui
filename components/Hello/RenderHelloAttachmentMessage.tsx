@@ -1,21 +1,19 @@
-import React from 'react'
-import { Download } from 'lucide-react'
-
 function RenderHelloAttachmentMessage({ message }: { message: any }) {
   const caption = message?.messageJson?.text;
-  
+
   const renderAttachment = (attachment: any) => {
     const { mime_type, path, name, extension } = attachment;
     if (mime_type?.startsWith('image/')) {
       return (
         <div className="w-full">
           <div className="flex gap-2">
-            <img 
-              src={path} 
-              alt={name || 'Image attachment'} 
+            <img
+              src={path}
+              alt={name || 'Image attachment'}
               className="max-w-full h-auto rounded-md"
               style={{ maxHeight: '300px' }}
             />
+            {/* Download button commented out
               <div className="flex justify-end mt-1">
                 <a 
                   href={path}
@@ -25,6 +23,7 @@ function RenderHelloAttachmentMessage({ message }: { message: any }) {
                   <Download className="w-4 h-4" />
                 </a>
               </div>
+              */}
 
           </div>
           {caption && (
@@ -38,15 +37,16 @@ function RenderHelloAttachmentMessage({ message }: { message: any }) {
       return (
         <div className="w-full">
           <div className="flex gap-2">
-          <video 
-            controls 
-            className="max-w-full rounded-md mb-1"
-            style={{ maxHeight: '300px' }}
-          >
-            <source src={path} type={mime_type} />
-            Your browser does not support the video tag.
-          </video>
+            <video
+              controls
+              className="max-w-full rounded-md mb-1"
+              style={{ maxHeight: '300px' }}
+            >
+              <source src={path} type={mime_type} />
+              Your browser does not support the video tag.
+            </video>
 
+            {/* Download button commented out
             <div className="flex justify-end mt-1">
               <a 
                 href={path}
@@ -56,6 +56,7 @@ function RenderHelloAttachmentMessage({ message }: { message: any }) {
                 <Download className="w-4 h-4" />
               </a>
             </div>
+            */}
           </div>
           {caption && (
             <div className="flex justify-between items-center w-full">
@@ -72,7 +73,8 @@ function RenderHelloAttachmentMessage({ message }: { message: any }) {
               <source src={path} type={mime_type} />
               Your browser does not support the audio element.
             </audio>
-            
+
+            {/* Download button commented out
             <div className="flex justify-center mt-4">
               <a 
                 href={path}
@@ -82,6 +84,7 @@ function RenderHelloAttachmentMessage({ message }: { message: any }) {
                 <Download className="w-4 h-4" />
               </a>
             </div>
+            */}
           </div>
           {caption && (
             <div className="flex justify-between items-center w-full">
@@ -100,6 +103,7 @@ function RenderHelloAttachmentMessage({ message }: { message: any }) {
               </div>
               <span className="text-sm truncate">{name || 'File attachment'}</span>
             </div>
+            {/* Download button commented out
             <a 
               href={path}
               download={name || 'file'}
@@ -107,6 +111,7 @@ function RenderHelloAttachmentMessage({ message }: { message: any }) {
             >
               <Download className="w-4 h-4" />
             </a>
+            */}
           </div>
           {caption && (
             <div className="flex justify-between items-center w-full">
