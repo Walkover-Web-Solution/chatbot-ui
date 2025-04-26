@@ -5,9 +5,9 @@ import {
   ChevronDown,
   EllipsisVertical,
   History,
-  Maximize,
+  Maximize2,
+  Minimize2,
   Phone,
-  PictureInPicture2,
   Settings,
   SquarePen,
   X
@@ -239,17 +239,19 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
 
     return fullScreen ? (
       <div
-        className="cursor-pointer p-1 rounded-full"
+        className="cursor-pointer p-2 rounded-full hover:bg-gray-200 transition-colors"
         onClick={() => toggleFullScreen(false)}
       >
-        <PictureInPicture2 size={22} color="#555555" />
+        {/* <PictureInPicture2 size={22} color="#555555" /> */}
+        <Minimize2 size={22} color="#555555" style={{ transform: 'rotate(90deg)' }} />
       </div>
     ) : (
       <div
-        className="cursor-pointer p-1 rounded-full"
+        className="cursor-pointer p-2 rounded-full transition-colors hover:bg-gray-200"
         onClick={() => toggleFullScreen(true)}
       >
-        <Maximize size={22} color="#555555" />
+        {/* <Maximize size={22} color="#555555" /> */}
+        <Maximize2 size={22} color="#555555" style={{ transform: 'rotate(90deg)' }} />
       </div>
     );
   }, [shouldToggleScreenSize, hideFullScreenButton, fullScreen, toggleFullScreen]);
@@ -260,7 +262,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
 
     return (
       <div
-        className="cursor-pointer p-1 py-3"
+        className="cursor-pointer p-2 py-2 rounded-full hover:bg-gray-200 transition-colors"
         onClick={handleCloseChatbot}
       >
         <X size={22} color="#555555" />
@@ -277,7 +279,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
     return (
       <div className="tooltip tooltip-bottom" data-tip="Call">
         <div
-          className={`p-2 mx-2 rounded-full transition-colors ${isCallDisabled
+          className={`p-2 mx-1 rounded-full transition-colors ${isCallDisabled
             ? "cursor-not-allowed opacity-50"
             : "cursor-pointer hover:bg-gray-200"
             }`}
@@ -290,7 +292,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   }, [isHuman, callState, handleVoiceCall]);
 
   return (
-    <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-2 py-1 w-full">
+    <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-3 py-1 w-full">
       <div className="flex items-center w-full relative">
         {/* Left side buttons */}
         <div className="sm:absolute left-0 flex items-center">
