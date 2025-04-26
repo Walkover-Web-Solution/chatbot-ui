@@ -57,7 +57,7 @@ export const useSocketEvents = ({
         const { message } = response || {};
         const { type } = message || {};
         
-        if (!isSameChannel(message?.channel)) {
+        if (!isSameChannel(message?.channel) && message?.new_event && type === 'chat') {
             // fetch channels when message is in a different channel
             fetchChannels()
         }
