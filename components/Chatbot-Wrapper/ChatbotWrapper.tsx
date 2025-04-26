@@ -40,6 +40,11 @@ interface ChatbotWrapperProps {
   chatbotId?: string;
 }
 
+const helloToChatbotPropsMap: Record<string, string> = {
+  show_close_button: 'hideCloseButton',
+  hideFullScreenButton: 'hideFullScreenButton'
+}
+
 function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
   const dispatch = useDispatch();
 
@@ -55,6 +60,19 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
         dispatch(setHelloKeysData({ showWidgetForm: false }))
       }
       dispatch(setHelloConfig(receivedHelloData));
+      Object.keys(receivedHelloData).forEach((key) => {
+        if (helloToChatbotPropsMap[key]) {
+          const mappedKey = helloToChatbotPropsMap[key];
+          let value = receivedHelloData[key as keyof HelloData];
+
+          // Special handling for hideCloseButton
+          if (mappedKey === 'hideCloseButton') {
+            // Invert the value since show_close_button is opposite of hideCloseButton
+            value = !value;
+          }
+          dispatch(setDataInInterfaceRedux({ [mappedKey]: value }));
+        }
+      })
       return;
     }
 

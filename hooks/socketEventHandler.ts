@@ -57,7 +57,7 @@ export const useSocketEvents = ({
         const { message } = response || {};
         const { type } = message || {};
         
-        if (!isSameChannel(message?.channel)) {
+        if (!isSameChannel(message?.channel) && message?.new_event && type === 'chat') {
             // fetch channels when message is in a different channel
             fetchChannels()
         }
@@ -86,6 +86,11 @@ export const useSocketEvents = ({
                 const { assignee_type, channel_details, assignee_id } = message || {};
                 if (isSameChannel(channel_details?.channel)) {
                     dispatch(changeChannelAssigned({ assigned_type: assignee_type, assignee_id }));
+                }
+                break;
+            case 'feedback':
+                if(message?.new_event){
+                    addHelloMessage({ ...message, id: response.id })
                 }
                 break;
             default:

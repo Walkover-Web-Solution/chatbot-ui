@@ -189,12 +189,22 @@ export async function initializeHelloChat(uniqueId: string | null = null): Promi
 
 // Function to send message to Hello chat
 export async function sendMessageToHelloApi(message: string, attachment: Array<object> = [], channelDetail?: any, chat_id?: string): Promise<any> {
+  let messageType = 'text'
+  // Determine message type based on attachment and message content
+  if (attachment?.length > 0) {
+    if (message === '') {
+      messageType = 'attachment'
+    } else {
+      messageType = 'text-attachment'
+    }
+  }
+
   try {
     const response = await axios.post(
       `${HELLO_HOST_URL}/v2/send/`,
       {
         type: "widget",
-        message_type: "text",
+        message_type: messageType,
         content: {
           text: message,
           attachment: attachment,
@@ -344,7 +354,6 @@ export async function submitFeedback(params: {
   rating: string; 
   token: string;
   id: number;
-  uniqueId: string;
 }): Promise<any> {
   try {
     const response = await axios.post(
@@ -356,7 +365,7 @@ export async function submitFeedback(params: {
         type: "post-feedback",
         id: params.id,
         user_data: {
-          unique_id: params.uniqueId
+          unique_id: localStorage.getItem("HelloClientId")
         },
         is_anon: localStorage.getItem("is_anon") == 'true'
       },

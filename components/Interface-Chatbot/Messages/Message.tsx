@@ -24,10 +24,11 @@ import dynamic from 'next/dynamic';
 import Image from "next/image";
 import React, { useContext } from "react";
 import ReactMarkdown from "react-markdown";
-import { MessageContext } from "./InterfaceChatbot";
+import { MessageContext } from "../InterfaceChatbot";
 import "./Message.css";
-import RenderHelloInteractiveMessage from "../Hello/RenderHelloInteractiveMessage";
-import RenderHelloAttachmentMessage from "../Hello/RenderHelloAttachmentMessage";
+import RenderHelloInteractiveMessage from "../../Hello/RenderHelloInteractiveMessage";
+import RenderHelloAttachmentMessage from "../../Hello/RenderHelloAttachmentMessage";
+import RenderHelloFeedbackMessage from "../../Hello/RenderHelloFeedbackMessage";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 const ResetHistoryLine = ({ text = "" }) => {
@@ -347,7 +348,7 @@ const HumanOrBotMessageCard = React.memo(
                 <div className="text-sm font-medium mb-1">{message.from_name}</div>
               )}
          
-              {message?.message_type === 'interactive' ? <RenderHelloInteractiveMessage message={message} /> : (message?.message_type === 'attachment' || message?.message_type === 'text-attachment') ? <RenderHelloAttachmentMessage message={message} /> : <div className="prose max-w-none">
+              {message?.message_type === 'interactive' ? <RenderHelloInteractiveMessage message={message} /> : (message?.message_type === 'attachment' || message?.message_type === 'text-attachment') ? <RenderHelloAttachmentMessage message={message} /> : message?.message_type === 'feedback' ? <RenderHelloFeedbackMessage message={message} /> : <div className="prose max-w-none">
                 <div dangerouslySetInnerHTML={{ __html: message?.content }}></div>
               </div>}
             </div>
