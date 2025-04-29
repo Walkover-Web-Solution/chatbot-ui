@@ -80,7 +80,7 @@ export const reducers: ValidateSliceCaseReducers<
 
   changeChannelAssigned(state, action: actionType<{ assigned_type: string, assignee_id: string, channelId?: string }>) {
     const { assigned_type, assignee_id , channelId = state.currentChannelId } = action.payload;
-    const channel = state.ChannelList?.channels?.find((channel: any) => channel?.channel === channelId);
+    const channel = state.channelListData?.channels?.find((channel: any) => channel?.channel === channelId);
     if (channel) {
       channel.assigned_type = assigned_type;
       channel.assignee_id = assignee_id;
@@ -90,7 +90,7 @@ export const reducers: ValidateSliceCaseReducers<
   },
 
   setUnReadCount(state, action: actionType<{ channel: string, resetCount?: boolean , channelId?: string }>) {
-      const { channelId = state.currentChannelId, resetCount = false } = action.payload;
+    const { channelId = state.currentChannelId, resetCount = false } = action.payload;
     const channel = state.channelListData?.channels?.find((channel: any) => channel?.channel === channelId);
     if (channel) {
       if (resetCount) {

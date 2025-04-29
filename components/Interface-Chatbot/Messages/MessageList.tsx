@@ -36,7 +36,7 @@ function MessageList() {
     IsHuman: state.Hello?.isHuman,
     assigned_type: state.Hello?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === state.Hello?.currentChannelId
-    )?.assigned_type || 'bot',
+    )?.assigned_type,
     currentChannelId: state.Hello?.currentChannelId,
     greetingMessage: state.Hello?.greeting
   }));
@@ -156,23 +156,23 @@ function MessageList() {
   }, [IsHuman, greetingMessage]);
 
   const renderThinkingIndicator = useMemo(() => {
-    if (!IsHuman || !loading || assigned_type !== 'bot' || !currentChannelId) {
-      return null;
+    if (loading && assigned_type === 'bot' && IsHuman) {
+      return (
+        <div className="w-full">
+          <div className="flex flex-wrap gap-2 items-center">
+            <p className="text-sm">Thinking...</p>
+          </div>
+          <div className="loading-indicator" style={themePalette}>
+            <div className="loading-bar"></div>
+            <div className="loading-bar"></div>
+            <div className="loading-bar"></div>
+          </div>
+        </div>
+      );
     }
-
-    return (
-      <div className="w-full">
-        <div className="flex flex-wrap gap-2 items-center">
-          <p className="text-sm">Thinking...</p>
-        </div>
-        <div className="loading-indicator" style={themePalette}>
-          <div className="loading-bar"></div>
-          <div className="loading-bar"></div>
-          <div className="loading-bar"></div>
-        </div>
-      </div>
-    );
+      return null
   }, [IsHuman, loading, assigned_type, currentChannelId, themePalette]);
+
 
   const renderedMessages = useMemo(() => {
     return messageIds.map((msgId, index) => (
