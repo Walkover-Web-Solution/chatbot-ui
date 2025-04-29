@@ -25,6 +25,8 @@ import StarterQuestions from '../Interface-Chatbot/Messages/StarterQuestions';
 import { ChatBotGif } from '@/assests/assestsIndex';
 import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { ParamsEnums } from '@/utils/enums';
+import { useCustomSelector } from '@/utils/deepCheckSelector';
+import { $ReduxCoreType } from '@/types/reduxCore';
 
 interface ChatbotProps {
   chatbotId: string;
@@ -64,6 +66,12 @@ function Chatbot({ chatbotId }: ChatbotProps) {
       chatbotId,
       chatDispatch
     });
+
+    const { show_widget_form } = useCustomSelector((state: $ReduxCoreType) => ({
+      show_widget_form: state.Hello?.widgetInfo?.show_widget_form
+    }));
+
+
 
   const chatActions = useChatActions({
     chatbotId,
@@ -141,7 +149,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
           )}
 
           {/* Form and UI components */}
-          {IsHuman && (
+          {IsHuman && show_widget_form && (
             <FormComponent
               open={openHelloForm}
               setOpen={(isFormOpen: boolean) =>

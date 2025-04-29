@@ -263,7 +263,7 @@ class ChatbotEmbedManager {
         const iframeComponent = document.getElementById('iframe-component-interfaceEmbed');
         if (!iframeComponent) return;
         let encodedData = '';
-        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true }));
+        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true, websiteUrl: window.location.href }));
         const modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
         iframeComponent.src = modifiedUrl;
 

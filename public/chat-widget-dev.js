@@ -263,12 +263,15 @@ class ChatbotEmbedManager {
         const iframeComponent = document.getElementById('iframe-component-interfaceEmbed');
         if (!iframeComponent) return;
         let encodedData = '';
-        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true }));
+        encodedData = encodeURIComponent(JSON.stringify({ 
+            isHelloUser: true,
+            websiteUrl: window.location.href
+        }));
         const modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
         iframeComponent.src = modifiedUrl;
 
         this.props.config = { ...this.config };
-        this.applyConfig(this.props?.config);
+        this.applyConfig(this?.props?.config);
     }
 
     applyConfig(config = {}) {
@@ -489,6 +492,10 @@ window.closeChatbot = () => chatbotManager.closeChatbot();
 function sendMessageToChatbot(messageObj) {
     const iframeComponent = document.getElementById('iframe-component-interfaceEmbed');
     if (iframeComponent?.contentWindow) {
+        // Add website URL to all messages
+        if (messageObj.data && typeof messageObj.data === 'object') {
+            messageObj.data.websiteUrl = window.location.href;
+        }
         iframeComponent?.contentWindow?.postMessage(messageObj, '*');
     }
 }

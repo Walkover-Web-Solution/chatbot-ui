@@ -290,7 +290,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
       // Step 2: Handle domain (if needed)
       if (is_domain_enable) {
-        await addDomainToHello(document.referrer, unique_id_hello, mail, userJwtToken, number);
+        await addDomainToHello(localStorage.getItem("websiteUrl") || document.referrer, unique_id_hello, mail, userJwtToken, number);
       }
 
       // Step 3: Get widget info and JWT token in parallel (they're independent)
