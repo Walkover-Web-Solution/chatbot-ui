@@ -101,6 +101,8 @@ function Chatbot({ chatbotId }: ChatbotProps) {
     chatDispatch,
     messageIds: messageIds?.[subThreadId] || [],
     msgIdAndDataMap: msgIdAndDataMap?.[subThreadId],
+    allMessages:messageIds,
+    allMessagesData:msgIdAndDataMap,
     isSmallScreen,
     isTyping: isTyping?.[subThreadId],
     fetchChannels,
