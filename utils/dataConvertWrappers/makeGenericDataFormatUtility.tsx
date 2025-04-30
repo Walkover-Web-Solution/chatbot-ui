@@ -1,5 +1,4 @@
 function convertChatHistoryToGenericFormat(history: any, isHello: boolean = false) {
-
     switch (isHello) {
         case true:
             return history
@@ -7,7 +6,7 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                     let role;
                     if (chat?.message?.from_name) {
                         role = "Human";
-                    } else if (!chat?.message?.from_name && chat?.message?.sender_id === "bot") {
+                    } else if (!chat?.message?.from_name && (chat?.message?.sender_id === "bot" || chat?.message?.sender_id === "workflow")) {
                         role = "Bot";
                     } else {
                         role = "user";
@@ -86,7 +85,7 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
 
     // Handle regular messages
     return [{
-        role: sender_id === "bot" ? "Bot" : "Human",
+        role: (sender_id === "bot" || sender_id === "workflow") ? "Bot" : "Human",
         from_name,
         content: content?.body?.text || content?.text,
         urls: content?.body?.attachment || content?.attachment,

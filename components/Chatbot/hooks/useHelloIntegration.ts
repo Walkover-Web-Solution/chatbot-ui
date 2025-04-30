@@ -190,6 +190,9 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
           }
         }
         fetchChannels();
+        if (data?.['channel']) {
+          fetchHelloPreviousHistory(data?.['channel']);
+        }
       }
     } catch (error) {
       if (isBot) {
