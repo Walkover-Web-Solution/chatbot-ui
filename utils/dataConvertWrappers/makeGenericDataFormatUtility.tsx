@@ -16,7 +16,7 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                     if (chat?.message?.type === 'feedback') {
                         return {
                             role: "Human",
-                            id: chat?.id,
+                            id: chat?.timetoken || chat?.id,
                             from_name: chat?.message?.dynamic_values?.agent_name,
                             message_type: 'feedback',
                             token: chat?.message?.token,
@@ -28,7 +28,7 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
 
                     return {
                         role,
-                        id: chat?.id,
+                        id: chat?.timetoken || chat?.id,
                         from_name: chat?.message?.from_name,
                         content: chat?.message?.message_type === 'interactive'
                             ? chat?.message?.content?.body?.text
@@ -74,7 +74,7 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
         return [{
             role: "Human",
             from_name:message?.dynamic_values?.agent_name,
-            id: message?.id,
+            id: message?.timetoken || message?.id,
             message_type: 'feedback',
             token: message?.token,
             dynamic_values: message?.dynamic_values,

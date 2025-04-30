@@ -87,7 +87,7 @@ export const useSocketEvents = ({
                         notificationSound.play().catch(error => {
                             console.log("Failed to play notification sound:", error);
                         });
-                        addHelloMessage({ ...message, id: response.id},channel)   
+                        addHelloMessage({ ...message, id: response.timetoken || response.id},channel)   
                         chatDispatch({ type: ChatActionTypes.SET_TYPING, payload: { data: false, subThreadId: channel } });
                     }
                 }
@@ -98,7 +98,7 @@ export const useSocketEvents = ({
                 break;
             case 'feedback':
                 if(message?.new_event){
-                    addHelloMessage({ ...message, id: response.id},channel_details?.channel)
+                    addHelloMessage({ ...message, id: response.timetoken || response.id},channel_details?.channel)
                 }
                 break;
             default:
