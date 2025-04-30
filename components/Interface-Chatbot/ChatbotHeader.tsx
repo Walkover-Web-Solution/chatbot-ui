@@ -88,9 +88,11 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
     isHuman,
     teams,
     currentTeamId
-  } = useCustomSelector((state: $ReduxCoreType) => ({
+  } = useCustomSelector((state: $ReduxCoreType) => {
+    const show_close_button=state.Hello?.helloConfig?.show_close_button
+    return ({
     allowModalSwitch: state.Interface.allowModalSwitch || false,
-    hideCloseButton: state.Interface.hideCloseButton || false,
+    hideCloseButton: typeof show_close_button === 'boolean' ? !show_close_button : state.Interface.hideCloseButton || false,
     hideFullScreenButton: state.Interface.hideFullScreenButton || false,
     chatTitle: state.Interface.chatTitle || "",
     chatSubTitle: state.Interface.chatSubTitle || "",
@@ -108,7 +110,9 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
       GetSessionStorageData("threadId") || state.appInfo?.threadId
       ] || [],
     isHuman: state.Hello?.isHuman || false,
-  }));
+
+  })});
+  console.log("hideCloseButton", hideCloseButton)
 
   // Determine if we should show the create thread button
   const showCreateThreadButton = useMemo(() => {

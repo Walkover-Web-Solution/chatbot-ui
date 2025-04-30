@@ -67,10 +67,12 @@ function Chatbot({ chatbotId }: ChatbotProps) {
       chatDispatch
     });
 
-    const { show_widget_form } = useCustomSelector((state: $ReduxCoreType) => ({
-      show_widget_form: state.Hello?.widgetInfo?.show_widget_form
-    }));
-
+    const { show_widget_form, helloConfig } = useCustomSelector((state: $ReduxCoreType) =>{
+      const helloConfig = state.Hello?.helloConfig
+      return  ({
+      show_widget_form: typeof helloConfig?.show_widget_form === 'boolean' ? helloConfig?.show_widget_form : state.Hello?.widgetInfo?.show_widget_form,
+      helloConfig
+    })});
 
 
   const chatActions = useChatActions({
