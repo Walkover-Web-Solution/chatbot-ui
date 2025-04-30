@@ -360,7 +360,7 @@ class ChatbotEmbedManager {
                 const interfaceEmbed = document.getElementById('interfaceEmbed');
                 if (interfaceEmbed)  interfaceEmbed.style.display = 'block';
             }
-            if(chatbotManager.helloProps?.hide_launcher || chatbotManager.helloProps?.launch_widget)  chatbotManager.openChatbot()
+            if( chatbotManager.helloProps?.launch_widget)  chatbotManager.openChatbot()
             this.sendInitialData();
         }
     }
