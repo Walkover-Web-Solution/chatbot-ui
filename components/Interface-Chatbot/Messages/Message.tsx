@@ -29,6 +29,7 @@ import "./Message.css";
 import RenderHelloInteractiveMessage from "../../Hello/RenderHelloInteractiveMessage";
 import RenderHelloAttachmentMessage from "../../Hello/RenderHelloAttachmentMessage";
 import RenderHelloFeedbackMessage from "../../Hello/RenderHelloFeedbackMessage";
+import RenderHelloVedioCallMessage from "@/components/Hello/RenderHelloVedioCallMessage";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 const ResetHistoryLine = ({ text = "" }) => {
@@ -348,7 +349,7 @@ const HumanOrBotMessageCard = React.memo(
                 <div className="text-sm font-medium mb-1">{message.from_name}</div>
               )}
          
-              {message?.message_type === 'interactive' ? <RenderHelloInteractiveMessage message={message} /> : (message?.message_type === 'attachment' || message?.message_type === 'text-attachment') ? <RenderHelloAttachmentMessage message={message} /> : message?.message_type === 'feedback' ? <RenderHelloFeedbackMessage message={message} /> : <div className="prose max-w-none">
+              { message?.message_type === "video_call" ? <RenderHelloVedioCallMessage message={message} /> : message?.message_type === 'interactive' ? <RenderHelloInteractiveMessage message={message} /> : (message?.message_type === 'attachment' || message?.message_type === 'text-attachment') ? <RenderHelloAttachmentMessage message={message} /> : message?.message_type === 'feedback' ? <RenderHelloFeedbackMessage message={message} /> : <div className="prose max-w-none">
                 <div dangerouslySetInnerHTML={{ __html: message?.content }}></div>
               </div>}
             </div>
