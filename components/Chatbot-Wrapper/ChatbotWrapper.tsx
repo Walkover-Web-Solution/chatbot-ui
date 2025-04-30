@@ -16,6 +16,7 @@ import { ALLOWED_EVENTS_TO_SUBSCRIBE, ParamsEnums } from "@/utils/enums";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Chatbot from "../Chatbot/Chatbot";
+import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 
 interface InterfaceData {
   threadId?: string | null;
@@ -53,13 +54,21 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
     if (event?.data?.type !== "interfaceData" && event?.data?.type !== "helloData") return;
     if (event?.data?.type === "helloData") {
       const receivedHelloData: HelloData = event.data.data;
-      localStorage.setItem('WidgetId', receivedHelloData?.widgetToken)
-      if (!localStorage.getItem('is_anon'))
-        localStorage.setItem('is_anon', (receivedHelloData?.unique_id || receivedHelloData?.mail || receivedHelloData?.number) ? 'false' : 'true')
+      dispatch(setHelloConfig(receivedHelloData));
+      if(receivedHelloData?.widgetToken !== getLocalStorage('WidgetId')){
+        dispatch(setHelloKeysData({ currentChannelId: '', currentChatId: '', currentTeamId: '' }));
+        dispatch(setDataInAppInfoReducer({subThreadId: ''}))
+        setLocalStorage(`${receivedHelloData?.widgetToken}_HelloClientId`, '')
+        setLocalStorage('is_anon', 'true')
+        setLocalStorage('client', null)
+      }
+      setLocalStorage('WidgetId', receivedHelloData?.widgetToken)
+      if (!getLocalStorage('is_anon'))
+        setLocalStorage('is_anon', (receivedHelloData?.unique_id || receivedHelloData?.mail || receivedHelloData?.number) ? 'false' : 'true')
       if (receivedHelloData?.unique_id || receivedHelloData?.mail || receivedHelloData?.number) {
         dispatch(setHelloKeysData({ showWidgetForm: false }))
       }
-      dispatch(setHelloConfig(receivedHelloData));
+      
       Object.keys(receivedHelloData).forEach((key) => {
         if (helloToChatbotPropsMap[key]) {
           const mappedKey = helloToChatbotPropsMap[key];

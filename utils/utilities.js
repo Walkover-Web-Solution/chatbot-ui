@@ -318,3 +318,14 @@ export const removeCookie = (cookieName) => {
   const domain = getDomain();
   document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain};`;
 };
+
+export const setLocalStorage = (key, value=null) => {
+  localStorage.setItem(key, value);
+  window.dispatchEvent(new CustomEvent("localstorage-updated", {
+    detail: { key, value }
+  }));
+}
+
+export const getLocalStorage = (key) => {
+  return key ? localStorage.getItem(key) : null;
+}

@@ -13,7 +13,8 @@ class ChatbotEmbedManager {
             buttonName: ''
         };
         this.urls = {
-            chatbotUrl: 'https://ctest.msg91.com/chatbot',
+            // chatbotUrl: 'https://ctest.msg91.com/chatbot',
+            chatbotUrl: 'http://192.168.1.33:3001/chatbot', //for running locally
             styleSheet: 'https://ctest.msg91.com/chat-widget-style.css',
         };
         this.icons = {
@@ -94,7 +95,6 @@ class ChatbotEmbedManager {
                 break;
             case 'interfaceLoaded':
                 this.state.interfaceLoaded = true;
-                this.sendInitialData();
                 this.showIconIfReady();
                 break;
         }
@@ -368,7 +368,6 @@ class ChatbotEmbedManager {
     }
 
 }
-
 // Function to get the subdomain from the current URL
 getSubdomain = () => {
     const hostname = window.location.hostname;
