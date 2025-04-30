@@ -1,4 +1,5 @@
 /* eslint-disable */
+let block_chatbot = false;
 class ChatbotEmbedManager {
     constructor() {
         this.props = {};
@@ -248,8 +249,12 @@ class ChatbotEmbedManager {
     }
 
     attachIconEvents(chatBotIcon) {
-        chatBotIcon.addEventListener('click', () => window.openChatbot());
+        const children = chatBotIcon.querySelectorAll('*'); // Select all descendant elements
+        children.forEach(child => {
+            child.addEventListener('click', () => window.openChatbot());
+        });
     }
+    
 
     async loadChatbotEmbed() {
         try {
@@ -360,7 +365,7 @@ class ChatbotEmbedManager {
                 const interfaceEmbed = document.getElementById('interfaceEmbed');
                 if (interfaceEmbed)  interfaceEmbed.style.display = 'block';
             }
-            if( chatbotManager.helloProps?.launch_widget)  chatbotManager.openChatbot()
+            if(chatbotManager.helloProps?.launch_widget)  chatbotManager.openChatbot()
             this.sendInitialData();
         }
     }
@@ -504,6 +509,7 @@ window.askAi = (data) => {
 
 // Initialize the widget function
 window.initChatWidget = (data, delay = 0) => {
+    if (block_chatbot) return;
     if (data) {
         chatbotManager.helloProps = { ...data };
     }
@@ -514,3 +520,12 @@ window.initChatWidget = (data, delay = 0) => {
 };
 
 chatbotManager.initializeChatbot();
+
+window.addEventListener('message', (event) => {
+    const receivedMessage = event.data;
+    if(receivedMessage.type === 'initializeHelloChat_failed'){
+        block_chatbot=true
+        chatbotManager.cleanupChatbot()
+    }
+});
+

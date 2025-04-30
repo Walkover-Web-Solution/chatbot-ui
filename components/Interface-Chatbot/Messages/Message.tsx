@@ -343,8 +343,8 @@ const HumanOrBotMessageCard = React.memo(
             </div>
           </div>
 
-          <div className="flex-1">
-            <div className="text-base-content p-1">
+          <div className="w-full flex  whitespace-pre-wrap  break-words">
+            <div className="text-base-content p-1  whitespace-pre-wrap w-full break-words">
               {message?.from_name && (
                 <div className="text-sm font-medium mb-1">{message.from_name}</div>
               )}
