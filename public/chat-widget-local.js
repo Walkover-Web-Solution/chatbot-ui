@@ -169,7 +169,7 @@ class ChatbotEmbedManager {
                 const interfaceEmbed = document.getElementById('interfaceEmbed');
                 if (interfaceEmbed) {
                     interfaceEmbed.style.display =
-                        (this.props.hideIcon === true || this.props.hideIcon === 'true')
+                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher)
                             ? 'none'
                             : 'unset';
                 }
@@ -356,10 +356,11 @@ class ChatbotEmbedManager {
 
     showIconIfReady() {
         if (this.state.interfaceLoaded && this.state.delayElapsed) {
-            const interfaceEmbed = document.getElementById('interfaceEmbed');
-            if (interfaceEmbed) {
-                interfaceEmbed.style.display = 'block';
+            if(!chatbotManager.helloProps?.hide_launcher) {
+                const interfaceEmbed = document.getElementById('interfaceEmbed');
+                if (interfaceEmbed)  interfaceEmbed.style.display = 'block';
             }
+            if(chatbotManager.helloProps?.hide_launcher || chatbotManager.helloProps?.launch_widget)  chatbotManager.openChatbot()
             this.sendInitialData();
         }
     }
