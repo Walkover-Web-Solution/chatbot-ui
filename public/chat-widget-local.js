@@ -1,4 +1,5 @@
 /* eslint-disable */
+let block_chatbot = false;
 class ChatbotEmbedManager {
     constructor() {
         this.props = {};
@@ -504,6 +505,7 @@ window.askAi = (data) => {
 
 // Initialize the widget function
 window.initChatWidget = (data, delay = 0) => {
+    if (block_chatbot) return;
     if (data) {
         chatbotManager.helloProps = { ...data };
     }
@@ -514,3 +516,12 @@ window.initChatWidget = (data, delay = 0) => {
 };
 
 chatbotManager.initializeChatbot();
+
+window.addEventListener('message', (event) => {
+    const receivedMessage = event.data;
+    if(receivedMessage.type === 'initializeHelloChat_failed'){
+        block_chatbot=true
+        chatbotManager.cleanupChatbot()
+    }
+});
+
