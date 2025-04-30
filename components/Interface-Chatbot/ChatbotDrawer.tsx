@@ -153,11 +153,7 @@ const ChatbotDrawer = ({
   };
 
   const closeToggleDrawer = (isOpen: boolean) => {
-    if (isHuman) {
-      if (currentTeamId) setToggleDrawer(isOpen);
-    } else {
       setToggleDrawer(isOpen);
-    }
   };
 
   const handleVoiceCall = () => {
@@ -341,7 +337,7 @@ const ChatbotDrawer = ({
   };
 
   const CloseButton = useMemo(() => {
-    if (hideCloseButton === true || hideCloseButton === "true") return null;
+    if (hideCloseButton === true || hideCloseButton === "true" || !isSmallScreen) return null;
 
     return (
       <div
