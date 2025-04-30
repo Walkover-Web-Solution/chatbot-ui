@@ -12,6 +12,7 @@ import { ChevronDown, Send, Upload, X } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { MessageContext } from "./InterfaceChatbot";
+import { useTypingStatus } from "@/hooks/socketEventEmitter";
 
 interface ChatbotTextFieldProps {
   className?: string;
@@ -25,7 +26,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
   const theme = useTheme();
   const isLight = isColorLight(theme.palette.primary.main);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const emitTypingStatus = useTypingStatus();
   const { IsHuman, mode, inbox_id, show_send_button } = useCustomSelector((state: $ReduxCoreType) => ({
     IsHuman: state.Hello?.isHuman,
     mode: state.Hello?.mode || [],
@@ -73,6 +74,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
   const handleSendMessage = useCallback((messageObj: { message?: string } = {}) => {
     if (IsHuman) {
       sendMessageToHello?.();
+      emitTypingStatus("not-typing");
     } else {
       sendMessage(messageObj);
     }
@@ -159,6 +161,13 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
       messageRef.current.value = value;
     }
     setInputValue(value);
+    if(IsHuman){
+      if (value.trim()) {
+        emitTypingStatus("typing");
+      } else {
+        emitTypingStatus("not-typing");
+      }
+    }
   }, [messageRef]);
 
   // Memoized option buttons
