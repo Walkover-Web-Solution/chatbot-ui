@@ -22,7 +22,7 @@ import copy from "copy-to-clipboard";
 import { AlertCircle, Check, CircleCheckBig, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
 import dynamic from 'next/dynamic';
 import Image from "next/image";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { MessageContext } from "../InterfaceChatbot";
 import "./Message.css";
@@ -30,6 +30,7 @@ import RenderHelloInteractiveMessage from "../../Hello/RenderHelloInteractiveMes
 import RenderHelloAttachmentMessage from "../../Hello/RenderHelloAttachmentMessage";
 import RenderHelloFeedbackMessage from "../../Hello/RenderHelloFeedbackMessage";
 import RenderHelloVedioCallMessage from "@/components/Hello/RenderHelloVedioCallMessage";
+import ImageWithFallback from "./ImageWithFallback";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 const ResetHistoryLine = ({ text = "" }) => {
@@ -45,28 +46,25 @@ const ResetHistoryLine = ({ text = "" }) => {
 };
 
 const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
-  const isSmallScreen = useMediaQuery('(max-width:1023px)');
   return (
     <>
       <div className="flex flex-col gap-2.5 items-end w-full mb-2.5 animate-slide-left mt-1">
-        {Array.isArray(message?.urls) && message.urls.length > 0 && (
-          <div className="flex flex-row-reverse flex-wrap gap-2.5 max-w-[80%] p-2.5 ">
-            {message.urls.map((url: any, index: number) => {
-              return (
-                <Image
-                  key={index}
-                  src={typeof url === 'object' ? url?.path : url}
-                  alt={`Image ${index + 1}`}
-                  className={`block ${isSmallScreen ? 'max-w-[80%]' : 'max-w-[40%]'} h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity`}
-                  onClick={() => window.open(typeof url === 'object' ? url?.path : url, "_blank")}
-                  width={20} // You should replace 0 with the actual width
-                  height={20} // You should replace 0 with the actual height
-                  layout="responsive"
-                />
-              )
-            })}
-          </div>
-        )}
+      {Array.isArray(message?.urls) && message.urls.length > 0 && (
+  <div className="flex flex-row-reverse flex-wrap gap-2.5 max-w-[80%] p-2.5">
+    {message.urls.map((url: any, index: number) => {
+      const imageUrl = typeof url === 'object' ? url?.path : url;
+
+      return (
+        <ImageWithFallback
+          key={index}
+          src={imageUrl}
+          alt={`Image ${index + 1}`}
+        />
+      );
+    })}
+  </div>
+)}
+
         {message?.content && <div
           className="p-2.5 min-w-[150px] sm:max-w-[80%] max-w-[90%] rounded-[10px_10px_1px_10px] break-words"
           style={{
@@ -306,7 +304,6 @@ const HumanOrBotMessageCard = React.memo(
       }, 1500);
     };
 
-    const isSmallScreen = useMediaQuery('(max-width:1023px)');
 
     return (
       <div className="w-full mb-2 animate-fade-in animate-slide-left">
