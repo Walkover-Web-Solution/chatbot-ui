@@ -197,26 +197,27 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
               <span className="label-text font-medium">Phone Number</span>
             </label>
             <div className="flex gap-2">
-              <div className="relative w-1/3">
+              <div className="relative">
                 <select
                   name="countryCode"
                   value={formData.countryCode}
                   onChange={handleChange}
-                  className={`select select-bordered w-full pl-10 ${errors.countryCode ? "select-error" : ""}`}
+                  className={`select select-bordered pl-10 ${errors.countryCode ? "select-error" : ""}`}
+                  style={{ width: 'auto' }}
                 >
                   {countryCodes
                     .filter(country => country.dial_code !== null && country.dial_code !== "")
                     .map((country) => (
                       <option key={country.code + country.dial_code} value={String(country.dial_code)}>
-                        {country.name} ({country.dial_code})
+                        {country.code} ({country.dial_code})
                       </option>
                     ))}
                 </select>
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
                   <Phone size={18} />
                 </div>
               </div>
-              <div className="relative w-2/3">
+              <div className="relative flex-1">
                 <input
                   type="text"
                   name="number"

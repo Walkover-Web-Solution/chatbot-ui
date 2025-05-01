@@ -107,6 +107,9 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     return getAllChannels(helloConfig)
       .then(data => {
         dispatch(setChannelListData(data));
+        if(data?.customer_name === null || data?.customer_number === null || data?.customer_mail === null){
+          dispatch(setHelloKeysData({ showWidgetForm: true }));
+        }
         return data;
       })
       .catch(error => {
