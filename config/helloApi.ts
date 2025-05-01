@@ -368,10 +368,9 @@ export async function submitFeedback(params: {
   rating: string;
   token: string;
   id: number;
-  helloConfig: any;
 }): Promise<any> {
   try {
-    const { uniqueId, mail, number, user_jwt_token } = params.helloConfig || {};
+    const {unique_id, mail, number, user_jwt_token} = JSON.parse(getLocalStorage('userData') || '{}');
     const response = await axios.post(
       `${HELLO_HOST_URL}/receive-feedback/`,
       {
@@ -381,7 +380,7 @@ export async function submitFeedback(params: {
         type: "post-feedback",
         id: params.id,
         user_data: {
-          "unique_id": uniqueId,
+          "unique_id": unique_id,
           "mail": mail,
           "number": number,
           "user_jwt_token": user_jwt_token
