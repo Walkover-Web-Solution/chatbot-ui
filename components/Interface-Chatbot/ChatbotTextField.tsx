@@ -12,6 +12,7 @@ import { ChevronDown, Send, Upload, X } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { MessageContext } from "./InterfaceChatbot";
+import { useTypingStatus } from "@/hooks/socketEventEmitter";
 
 interface ChatbotTextFieldProps {
   className?: string;
@@ -25,11 +26,12 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
   const theme = useTheme();
   const isLight = isColorLight(theme.palette.primary.main);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const { IsHuman, mode, inbox_id } = useCustomSelector((state: $ReduxCoreType) => ({
+  const emitTypingStatus = useTypingStatus();
+  const { IsHuman, mode, inbox_id, show_send_button } = useCustomSelector((state: $ReduxCoreType) => ({
     IsHuman: state.Hello?.isHuman,
     mode: state.Hello?.mode || [],
     inbox_id: state.Hello?.widgetInfo?.inbox_id,
+    show_send_button:  typeof state.Hello?.helloConfig?.show_send_button === 'boolean' ? state.Hello?.helloConfig?.show_send_button : true
   }));
 
   const reduxIsVision = useCustomSelector(
@@ -72,6 +74,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
   const handleSendMessage = useCallback((messageObj: { message?: string } = {}) => {
     if (IsHuman) {
       sendMessageToHello?.();
+      emitTypingStatus("not-typing");
     } else {
       sendMessage(messageObj);
     }
@@ -158,6 +161,13 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
       messageRef.current.value = value;
     }
     setInputValue(value);
+    if(IsHuman){
+      if (value.trim()) {
+        emitTypingStatus("typing");
+      } else {
+        emitTypingStatus("not-typing");
+      }
+    }
   }, [messageRef]);
 
   // Memoized option buttons
@@ -315,7 +325,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
               {uploadButton}
             </div>
 
-            <button
+           {show_send_button ? <button
               onClick={() => !buttonDisabled && handleSendMessage()}
               className="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:scale-105 transition-transform duration-200"
               disabled={buttonDisabled}
@@ -325,7 +335,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
               aria-label="Send message"
             >
               <Send className={`w-3 h-3 md:w-4 md:h-4 ${isLight ? 'text-black' : 'text-white'}`} />
-            </button>
+            </button> : null}
           </div>
         </div>
       </div>

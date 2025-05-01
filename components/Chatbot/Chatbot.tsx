@@ -25,6 +25,8 @@ import StarterQuestions from '../Interface-Chatbot/Messages/StarterQuestions';
 import { ChatBotGif } from '@/assests/assestsIndex';
 import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { ParamsEnums } from '@/utils/enums';
+import { useCustomSelector } from '@/utils/deepCheckSelector';
+import { $ReduxCoreType } from '@/types/reduxCore';
 
 interface ChatbotProps {
   chatbotId: string;
@@ -65,6 +67,14 @@ function Chatbot({ chatbotId }: ChatbotProps) {
       chatDispatch
     });
 
+    const { show_widget_form, helloConfig } = useCustomSelector((state: $ReduxCoreType) =>{
+      const helloConfig = state.Hello?.helloConfig
+      return  ({
+      show_widget_form: typeof helloConfig?.show_widget_form === 'boolean' ? helloConfig?.show_widget_form : state.Hello?.widgetInfo?.show_widget_form,
+      helloConfig
+    })});
+
+
   const chatActions = useChatActions({
     chatbotId,
     chatDispatch,
@@ -101,6 +111,8 @@ function Chatbot({ chatbotId }: ChatbotProps) {
     chatDispatch,
     messageIds: messageIds?.[subThreadId] || [],
     msgIdAndDataMap: msgIdAndDataMap?.[subThreadId],
+    allMessages:messageIds,
+    allMessagesData:msgIdAndDataMap,
     isSmallScreen,
     isTyping: isTyping?.[subThreadId],
     fetchChannels,
@@ -139,7 +151,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
           )}
 
           {/* Form and UI components */}
-          {IsHuman && (
+          {IsHuman && show_widget_form && (
             <FormComponent
               open={openHelloForm}
               setOpen={(isFormOpen: boolean) =>

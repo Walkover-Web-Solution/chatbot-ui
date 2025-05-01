@@ -1,5 +1,4 @@
 function convertChatHistoryToGenericFormat(history: any, isHello: boolean = false) {
-
     switch (isHello) {
         case true:
             return history
@@ -7,7 +6,7 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                     let role;
                     if (chat?.message?.from_name) {
                         role = "Human";
-                    } else if (!chat?.message?.from_name && chat?.message?.sender_id === "bot") {
+                    } else if (!chat?.message?.from_name && (chat?.message?.sender_id === "bot" || chat?.message?.sender_id === "workflow")) {
                         role = "Bot";
                     } else {
                         role = "user";
@@ -17,7 +16,7 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                     if (chat?.message?.type === 'feedback') {
                         return {
                             role: "Human",
-                            id: chat?.id,
+                            id: chat?.timetoken || chat?.id,
                             from_name: chat?.message?.dynamic_values?.agent_name,
                             message_type: 'feedback',
                             token: chat?.message?.token,
@@ -29,7 +28,7 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
 
                     return {
                         role,
-                        id: chat?.id,
+                        id: chat?.timetoken || chat?.id,
                         from_name: chat?.message?.from_name,
                         content: chat?.message?.message_type === 'interactive'
                             ? chat?.message?.content?.body?.text
@@ -75,7 +74,7 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
         return [{
             role: "Human",
             from_name:message?.dynamic_values?.agent_name,
-            id: message?.id,
+            id: message?.timetoken || message?.id,
             message_type: 'feedback',
             token: message?.token,
             dynamic_values: message?.dynamic_values,
@@ -86,7 +85,7 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
 
     // Handle regular messages
     return [{
-        role: sender_id === "bot" ? "Bot" : "Human",
+        role: (sender_id === "bot" || sender_id === "workflow") ? "Bot" : "Human",
         from_name,
         content: content?.body?.text || content?.text,
         urls: content?.body?.attachment || content?.attachment,

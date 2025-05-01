@@ -18,7 +18,7 @@ import { useReduxStateManagement } from "../Chatbot/hooks/useReduxManagement";
 
 // Redux Actions
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
-import { setHelloKeysData } from "@/store/hello/helloSlice";
+import { setHelloKeysData, setUnReadCount } from "@/store/hello/helloSlice";
 import { setThreadId, setThreads } from "@/store/interface/interfaceSlice";
 
 // Utils and Types
@@ -56,7 +56,9 @@ const ChatbotDrawer = ({
     fetchHelloPreviousHistory,
     images,
     setImages,
-    fetchChannels
+    fetchChannels,
+    allMessages,
+    allMessagesData
   } = useContext(MessageContext);
 
   const { currentChatId, currentTeamId } = useReduxStateManagement({ chatbotId, chatDispatch });
@@ -138,7 +140,7 @@ const ChatbotDrawer = ({
     // Handle unread messages
     if (widget_unread_count > 0) {
       await deleteReadReceipt(channelId);
-      fetchChannels();
+      dispatch(setUnReadCount({ channelId: channelId, resetCount: true }));
     }
   };
 
@@ -151,11 +153,7 @@ const ChatbotDrawer = ({
   };
 
   const closeToggleDrawer = (isOpen: boolean) => {
-    if (isHuman) {
-      if (currentTeamId) setToggleDrawer(isOpen);
-    } else {
       setToggleDrawer(isOpen);
-    }
   };
 
   const handleVoiceCall = () => {
@@ -219,15 +217,46 @@ const ChatbotDrawer = ({
                     <div className="conversation-name text-xs text-gray-400 break-words">
                       Conversation
                     </div>
-                    {channel?.last_message && (
+                    {channel?.channel && allMessages && allMessagesData && (
                       <div className="last-message text-sm text-black font-medium mt-1 truncate flex flex-row items-center gap-1 text-ellipsis overflow-hidden">
-                        {!channel.last_message?.message?.sender_id ? "You: " : "Sender: "}
-                        <div className="line-clamp-1" dangerouslySetInnerHTML={{
-                          __html: channel.last_message.message?.content?.text ||
-                            (channel.last_message.message?.content?.attachment?.length > 0 ? "Attachment" :
-                              channel.last_message.message?.message_type ||
-                              "New conversation")
-                        }}></div>
+                        {(() => {
+                          const channelMessages = allMessages[channel?.channel];
+                          if (channelMessages && channelMessages?.length > 0) {
+                            const lastMessageId = channelMessages[channelMessages?.length - 1];
+                            const lastMessage = allMessagesData[channel?.channel]?.[lastMessageId];
+                            if (lastMessage) {
+                              const isUserMessage = !lastMessage?.message?.sender_id;
+                              return (
+                                <>
+                                  {isUserMessage ? "You: " : "Sender: "}
+                                  <div className="line-clamp-1" dangerouslySetInnerHTML={{
+                                    __html: lastMessage.messageJson?.text ||
+                                      (lastMessage.messageJson?.attachment?.length > 0 ? "Attachment" :
+                                        lastMessage.messageJson?.message_type ||
+                                        "New conversation")
+                                  }}></div>
+                                </>
+                              );
+                            }
+                          }
+                          
+                          // Fallback to channel.last_message if no message found in allMessagesData
+                          if (channel?.last_message) {
+                            return (
+                              <>
+                                {!channel?.last_message?.message?.sender_id ? "You: " : "Sender: "}
+                                <div className="line-clamp-1" dangerouslySetInnerHTML={{
+                                      __html: channel?.last_message?.message?.content?.text ||
+                                    (channel?.last_message?.message?.content?.attachment?.length > 0 ? "Attachment" :
+                                      channel?.last_message?.message?.message_type ||
+                                      "New conversation")
+                                }}></div>
+                              </>
+                            );
+                          }
+                              
+                          return "New conversation";
+                        })()}
                       </div>
                     )}
                   </div>
@@ -308,7 +337,7 @@ const ChatbotDrawer = ({
   };
 
   const CloseButton = useMemo(() => {
-    if (hideCloseButton === true || hideCloseButton === "true") return null;
+    if (hideCloseButton === true || hideCloseButton === "true" || !isSmallScreen) return null;
 
     return (
       <div

@@ -1,4 +1,5 @@
 /* eslint-disable */
+let block_chatbot = false;
 class ChatbotEmbedManager {
     constructor() {
         this.props = {};
@@ -169,7 +170,7 @@ class ChatbotEmbedManager {
                 const interfaceEmbed = document.getElementById('interfaceEmbed');
                 if (interfaceEmbed) {
                     interfaceEmbed.style.display =
-                        (this.props.hideIcon === true || this.props.hideIcon === 'true')
+                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher)
                             ? 'none'
                             : 'unset';
                 }
@@ -248,8 +249,12 @@ class ChatbotEmbedManager {
     }
 
     attachIconEvents(chatBotIcon) {
-        chatBotIcon.addEventListener('click', () => window.openChatbot());
+        const children = chatBotIcon.querySelectorAll('*'); // Select all descendant elements
+        children.forEach(child => {
+            child.addEventListener('click', () => window.openChatbot());
+        });
     }
+    
 
     async loadChatbotEmbed() {
         try {
@@ -263,7 +268,7 @@ class ChatbotEmbedManager {
         const iframeComponent = document.getElementById('iframe-component-interfaceEmbed');
         if (!iframeComponent) return;
         let encodedData = '';
-        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true }));
+        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true, websiteUrl: window.location.href }));
         const modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
         iframeComponent.src = modifiedUrl;
 
@@ -356,10 +361,11 @@ class ChatbotEmbedManager {
 
     showIconIfReady() {
         if (this.state.interfaceLoaded && this.state.delayElapsed) {
-            const interfaceEmbed = document.getElementById('interfaceEmbed');
-            if (interfaceEmbed) {
-                interfaceEmbed.style.display = 'block';
+            if(!chatbotManager.helloProps?.hide_launcher) {
+                const interfaceEmbed = document.getElementById('interfaceEmbed');
+                if (interfaceEmbed)  interfaceEmbed.style.display = 'block';
             }
+            if(chatbotManager.helloProps?.launch_widget)  chatbotManager.openChatbot()
             this.sendInitialData();
         }
     }
@@ -503,6 +509,7 @@ window.askAi = (data) => {
 
 // Initialize the widget function
 window.initChatWidget = (data, delay = 0) => {
+    if (block_chatbot) return;
     if (data) {
         chatbotManager.helloProps = { ...data };
     }
@@ -513,3 +520,36 @@ window.initChatWidget = (data, delay = 0) => {
 };
 
 chatbotManager.initializeChatbot();
+
+    window.addEventListener('message', (event) => {
+        const receivedMessage = event.data;
+        if(receivedMessage.type === 'initializeHelloChat_failed'){
+            block_chatbot=true
+            chatbotManager.cleanupChatbot()
+        }
+        if (receivedMessage.type === 'downloadAttachment') {
+            const url = receivedMessage.url;
+          
+            fetch(url)
+              .then(response => response.blob())
+              .then(blob => {
+                const blobUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+          
+                // Try to extract filename from URL
+                const filename = url.split("/").pop()?.split("?")[0] || "download";
+          
+                link.href = blobUrl;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(blobUrl);
+              })
+              .catch(err => {
+                console.error("Download failed:", err);
+              });
+          }
+          
+    });
+

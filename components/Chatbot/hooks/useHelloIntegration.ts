@@ -190,6 +190,9 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
           }
         }
         fetchChannels();
+        if (data?.['channel']) {
+          fetchHelloPreviousHistory(data?.['channel']);
+        }
       }
     } catch (error) {
       if (isBot) {
@@ -290,36 +293,47 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
       // Step 2: Handle domain (if needed)
       if (is_domain_enable) {
-        await addDomainToHello(document.referrer, unique_id_hello, mail, userJwtToken, number);
+        await addDomainToHello(localStorage.getItem("websiteUrl") || document.referrer, unique_id_hello, mail, userJwtToken, number);
       }
 
-      // Step 3: Get widget info and JWT token in parallel (they're independent)
-      const widgetInfoPromise = isHelloUser && widgetToken ?
-        initializeHelloChat(unique_id_hello).then(data => {
-          dispatch(setWidgetInfo(data));
-          handleThemeChange(data?.primary_color || "#000000");
-          return data;
-        }) :
-        Promise.resolve(null);
-
-      const jwtTokenPromise = localStorage.getItem("HelloClientId") ?
-        getJwtToken().then(data => {
-          if (data !== null) {
-            dispatch(setJwtToken(data));
-            return data;
+      let widgetData = null;
+      let jwtData = null;
+      
+      if (isHelloUser && widgetToken) {
+        try {
+          widgetData = await initializeHelloChat(unique_id_hello);
+          if (!widgetData) {
+            window.parent.postMessage({ type: 'initializeHelloChat_failed' }, '*');
           }
-          return null;
-        }) :
-        Promise.resolve(null);
-
-      const [widgetData, jwtData] = await Promise.all([widgetInfoPromise, jwtTokenPromise]);
+      
+          dispatch(setWidgetInfo(widgetData));
+          handleThemeChange(widgetData?.primary_color || "#000000");
+        } catch (error) {
+          window.parent.postMessage({ type: 'initializeHelloChat_failed' }, '*');
+          console.error("Failed to initialize Hello Chat:", error);
+          return; // Exit early, don't proceed to getJwtToken
+        }
+      }
+      
+      // Only get JWT token if widgetData is valid and HelloClientId exists
+      if (widgetData && localStorage.getItem("HelloClientId")) {
+        try {
+          jwtData = await getJwtToken();
+          if (jwtData !== null) {
+            dispatch(setJwtToken(jwtData));
+          }
+        } catch (error) {
+          console.error("Failed to fetch JWT token:", error);
+        }
+      }
+      
 
 
       // Step 4: Get greeting questions (depends on widget info for company/bot IDs)
       const greetingCompanyId = widgetData?.company_id || companyId;
       const greetingBotId = widgetData?.bot_id || botId;
 
-      if (greetingCompanyId && greetingBotId && localStorage.getItem("HelloClientId")) {
+      if (widgetData && greetingCompanyId && greetingBotId && localStorage.getItem("HelloClientId")) {
         await getGreetingQuestions(greetingCompanyId, greetingBotId).then((data) => {
           dispatch(setGreeting({ ...data?.greeting }));
         });

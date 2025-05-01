@@ -78,14 +78,26 @@ export const reducers: ValidateSliceCaseReducers<
     }
   },
 
-  changeChannelAssigned(state, action: actionType<{ assigned_type: string, assignee_id: string }>) {
-    const { assigned_type, assignee_id } = action.payload;
-    const channel = state.channelListData?.channels?.find((channel: any) => channel?.channel === state.currentChannelId);
+  changeChannelAssigned(state, action: actionType<{ assigned_type: string, assignee_id: string, channelId?: string }>) {
+    const { assigned_type, assignee_id , channelId = state.currentChannelId } = action.payload;
+    const channel = state.channelListData?.channels?.find((channel: any) => channel?.channel === channelId);
     if (channel) {
       channel.assigned_type = assigned_type;
       channel.assignee_id = assignee_id;
     }
     // Remove the return statement as we're already modifying the draft state
     // When using Immer, we should either modify the draft OR return a new state, not both
+  },
+
+  setUnReadCount(state, action: actionType<{ channel: string, resetCount?: boolean , channelId?: string }>) {
+    const { channelId = state.currentChannelId, resetCount = false } = action.payload;
+    const channel = state.channelListData?.channels?.find((channel: any) => channel?.channel === channelId);
+    if (channel) {
+      if (resetCount) {
+        channel.widget_unread_count = 0;
+      } else {
+        channel.widget_unread_count = (channel.widget_unread_count || 0) + 1;
+      }
+    }
   }
 };
