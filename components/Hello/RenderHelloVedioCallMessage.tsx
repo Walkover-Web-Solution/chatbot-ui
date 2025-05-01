@@ -28,7 +28,7 @@ function RenderHelloVedioCallMessage({message}:any) {
     <div className="flex flex-col gap-2">
       <button 
         onClick={handleJoinCall}
-        style={{ maxWidth: '300px' }}
+        style={{ maxWidth: '220px' }}
         className={`px-4 py-2 ${isMeetExpired ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'} text-white rounded-md transition-colors flex items-center gap-2`}
         disabled={isMeetExpired}
       >
@@ -36,7 +36,7 @@ function RenderHelloVedioCallMessage({message}:any) {
           <path d="M23 7l-7 5 7 5V7z"></path>
           <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
         </svg>
-        Click here to join Hello Meet
+        Click here to join Meet
       </button>
       {expirationNote && (
         <div className={`text-sm ${isMeetExpired ? 'text-red-600' : 'text-gray-600'}`}>
