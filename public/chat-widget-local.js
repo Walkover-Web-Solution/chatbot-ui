@@ -521,11 +521,26 @@ window.initChatWidget = (data, delay = 0) => {
 
 chatbotManager.initializeChatbot();
 
-window.addEventListener('message', (event) => {
-    const receivedMessage = event.data;
-    if(receivedMessage.type === 'initializeHelloChat_failed'){
-        block_chatbot=true
-        chatbotManager.cleanupChatbot()
-    }
-});
+    window.addEventListener('message', (event) => {
+        const receivedMessage = event.data;
+        if(receivedMessage.type === 'initializeHelloChat_failed'){
+            block_chatbot=true
+            chatbotManager.cleanupChatbot()
+        }
+        if(receivedMessage.type === 'downloadImage'){
+            const url = receivedMessage.url;
+            fetch(url)
+            .then(response => response.blob())
+            .then(blob => {
+              const blobUrl = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = blobUrl;
+              link.download =  url.split("/").pop() || "image.jpg";
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              URL.revokeObjectURL(blobUrl);
+            });
+        }
+    });
 
