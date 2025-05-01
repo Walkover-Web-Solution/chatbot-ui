@@ -527,20 +527,29 @@ chatbotManager.initializeChatbot();
             block_chatbot=true
             chatbotManager.cleanupChatbot()
         }
-        if(receivedMessage.type === 'downloadImage'){
+        if (receivedMessage.type === 'downloadAttachment') {
             const url = receivedMessage.url;
+          
             fetch(url)
-            .then(response => response.blob())
-            .then(blob => {
-              const blobUrl = URL.createObjectURL(blob);
-              const link = document.createElement('a');
-              link.href = blobUrl;
-              link.download =  url.split("/").pop() || "image.jpg";
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-              URL.revokeObjectURL(blobUrl);
-            });
-        }
+              .then(response => response.blob())
+              .then(blob => {
+                const blobUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+          
+                // Try to extract filename from URL
+                const filename = url.split("/").pop()?.split("?")[0] || "download";
+          
+                link.href = blobUrl;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(blobUrl);
+              })
+              .catch(err => {
+                console.error("Download failed:", err);
+              });
+          }
+          
     });
 
