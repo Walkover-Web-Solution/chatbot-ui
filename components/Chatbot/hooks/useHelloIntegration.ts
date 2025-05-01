@@ -7,7 +7,7 @@ import socketManager from '@/hooks/socketManager';
 import { setChannelListData, setGreeting, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
-import { generateNewId } from '@/utils/utilities';
+import { generateNewId, getLocalStorage } from '@/utils/utilities';
 import { useCallback, useContext, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
@@ -36,34 +36,26 @@ interface UseHelloIntegrationProps {
 const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: UseHelloIntegrationProps) => {
   const { handleThemeChange } = useContext(ThemeContext);
   const { isHelloUser } = useContext(ChatbotContext);
-  const { loading, helloMessages, bridgeName, threadId, helloId, bridgeVersionId, images, isToggledrawer } = chatState;
-  const initializingRef = useRef(false);
+  const { loading, helloMessages,images } = chatState;
 
   const { setLoading, setChatsLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
   const {
     uuid,
     unique_id,
     presence_channel,
-    unique_id_hello = "",
-    widgetToken,
     currentChatId,
     currentTeamId,
-    currentChannelId,
-    isSmallScreen
+    currentChannelId
   } = useReduxStateManagement({ chatbotId, chatDispatch });
 
-  const { assigned_type, is_domain_enable, companyId, botId, mail, number, userJwtToken, helloConfig, showWidgetForm } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { assigned_type, is_domain_enable, companyId, botId, showWidgetForm } = useCustomSelector((state: $ReduxCoreType) => ({
     assigned_type: state.Hello?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === state?.Hello?.currentChannelId
     )?.assigned_type || 'bot',
     is_domain_enable: state.Hello?.widgetInfo?.is_domain_enable || false,
     companyId: state.Hello?.widgetInfo?.company_id || '',
     botId: state.Hello?.widgetInfo?.bot_id || '',
-    showWidgetForm: state.Hello?.showWidgetForm,
-    mail: state.Hello?.helloConfig?.mail,
-    number: state.Hello?.helloConfig?.number,
-    userJwtToken: state.Hello?.helloConfig?.user_jwt_token,
-    helloConfig: state.Hello?.helloConfig
+    showWidgetForm: state.Hello?.showWidgetForm
   }));
 
   const isBot = assigned_type === 'bot';
@@ -83,7 +75,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [chatDispatch]);
 
   // Fetch previous Hello chat history
-  const fetchHelloPreviousHistory = useCallback((channelId: string = currentChannelId) => {
+  const fetchHelloPreviousHistory = useCallback((dynamicChannelId?: string ) => {
+    const channelId = dynamicChannelId || currentChannelId;
     if (!channelId || !uuid) return;
 
     setChatsLoading(true);
@@ -104,7 +97,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
   // Fetch all channels
   const fetchChannels = useCallback(() => {
-    return getAllChannels(helloConfig)
+    return getAllChannels()
       .then(data => {
         dispatch(setChannelListData(data));
         if(data?.customer_name === null || data?.customer_number === null || data?.customer_mail === null){
@@ -115,7 +108,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       .catch(error => {
         console.error("Error fetching channels:", error);
       });
-  }, [dispatch, helloConfig]);
+  }, [dispatch]);
 
   useSocketEvents({ chatbotId, chatState, chatDispatch, messageRef, fetchChannels });
 
@@ -158,7 +151,6 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         team_id: currentTeamId,
         new: true,
       } : undefined;
-
       // show widget form only if in case of new chat and showWidgetForm is true i.e if all the fields are not filled
       if (!currentChatId && showWidgetForm) {
         chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true });
@@ -220,7 +212,6 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     showWidgetForm
   ]);
 
-  // Handle sending a message
   const sendMessageToHello = useCallback((message: string = '') => {
     // Handle different types of input elements
     let textMessage = '';
@@ -269,46 +260,59 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     if (!mountedRef.current) {
       fetchHelloPreviousHistory();
     }
+    
+    window.addEventListener("localstorage-updated", handleStorageUpdate);
+    return () => {
+      window.removeEventListener("localstorage-updated", handleStorageUpdate);
+    };
   }, []);
 
+  const handleStorageUpdate = (e: StorageEvent) => {
+    if (e.detail.key === 'WidgetId') {
+      initializeHelloServices(e.detail.value);
+    }
+  };
 
 
-  const initializeHelloServices = useCallback(async () => {
+  const initializeHelloServices = async (widgetToken: string = '') => {
     // Prevent duplicate initialization
-    if (!widgetToken || initializingRef.current || mountedRef.current) {
+    if (!widgetToken || widgetToken !== getLocalStorage("WidgetId")) {
       return;
     }
 
-    initializingRef.current = true;
-
     try {
-      let helloClientId = localStorage.getItem("HelloClientId");
-      let needsAnonymousRegistration = !helloClientId && !unique_id_hello && widgetToken && isHelloUser && !mail && !number;
+      let a_clientId = getLocalStorage('a_clientId');
+      let k_clientId = getLocalStorage('k_clientId');
+      let { mail, number, user_jwt_token, unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
 
-      // Step 1: Create anonymous user if needed (first time only)
+      let needsAnonymousRegistration = !a_clientId && !k_clientId && !unique_id && widgetToken && isHelloUser && !mail && !number && !user_jwt_token;
+
+      console.log("needsAnonymousRegistration ----------->", needsAnonymousRegistration);
+
       if (needsAnonymousRegistration) {
         await registerAnonymousUser();
-        helloClientId = localStorage.getItem("HelloClientId"); // Should be set by registerAnonymousUser
+        a_clientId = getLocalStorage(`a_clientId`);
       } else {
         // it gives the Hello Client Id for the registered user
         await fetchChannels();
+        k_clientId = getLocalStorage(`k_clientId`);
       }
 
       // Step 2: Handle domain (if needed)
       if (is_domain_enable) {
-        await addDomainToHello(localStorage.getItem("websiteUrl") || document.referrer, unique_id_hello, mail, userJwtToken, number);
+        await addDomainToHello(localStorage.getItem("websiteUrl") || document.referrer);
       }
 
       let widgetData = null;
       let jwtData = null;
-      
+
       if (isHelloUser && widgetToken) {
         try {
-          widgetData = await initializeHelloChat(unique_id_hello);
+          widgetData = await initializeHelloChat();
           if (!widgetData) {
             window.parent.postMessage({ type: 'initializeHelloChat_failed' }, '*');
           }
-      
+
           dispatch(setWidgetInfo(widgetData));
           handleThemeChange(widgetData?.primary_color || "#000000");
         } catch (error) {
@@ -317,9 +321,9 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
           return; // Exit early, don't proceed to getJwtToken
         }
       }
-      
+
       // Only get JWT token if widgetData is valid and HelloClientId exists
-      if (widgetData && localStorage.getItem("HelloClientId")) {
+      if (widgetData && (getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`))) {
         try {
           jwtData = await getJwtToken();
           if (jwtData !== null) {
@@ -329,21 +333,21 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
           console.error("Failed to fetch JWT token:", error);
         }
       }
-      
+
 
 
       // Step 4: Get greeting questions (depends on widget info for company/bot IDs)
       const greetingCompanyId = widgetData?.company_id || companyId;
       const greetingBotId = widgetData?.bot_id || botId;
 
-      if (widgetData && greetingCompanyId && greetingBotId && localStorage.getItem("HelloClientId")) {
+      if (widgetData && greetingCompanyId && greetingBotId && (getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`))) {
         await getGreetingQuestions(greetingCompanyId, greetingBotId).then((data) => {
           dispatch(setGreeting({ ...data?.greeting }));
         });
       }
 
       // Step 5: Get client token and call token (depend on JWT)
-      if (localStorage.getItem("HelloClientId") && widgetToken) {
+      if ((getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`)) && widgetToken) {
         const clientTokenPromise = getClientToken().then(() => {
           helloVoiceService.initialize();
         });
@@ -359,39 +363,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       mountedRef.current = true;
     } catch (error) {
       console.error("Error initializing Hello services:", error);
-    } finally {
-      // Ensure we reset the initializing flag even if there's an error
-      initializingRef.current = false;
-    }
-  }, [
-    unique_id_hello,
-    widgetToken,
-    isHelloUser,
-    mail,
-    number,
-    is_domain_enable,
-    userJwtToken,
-    companyId,
-    botId,
-    dispatch,
-    handleThemeChange,
-    fetchChannels
-  ]);
-
-
-
-  useEffect(() => {
-    if (isHelloUser &&
-      !mountedRef.current &&
-      !initializingRef.current &&
-      (localStorage.getItem("HelloClientId") ||
-        helloConfig?.unique_id ||
-        helloConfig?.mail ||
-        helloConfig?.number ||
-        widgetToken)) {
-      initializeHelloServices();
-    }
-  }, [isHelloUser, helloConfig, widgetToken, initializeHelloServices]);
+    } 
+  };
 
   return {
     helloMessages,

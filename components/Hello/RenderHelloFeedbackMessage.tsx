@@ -11,6 +11,7 @@ function RenderHelloFeedbackMessage({message}:{message:any}) {
   const {widgetLogo} = useCustomSelector((state:$ReduxCoreType)=>({
     widgetLogo: state?.Hello?.widgetInfo?.logo?.path
   }))
+  const helloConfig = useCustomSelector((state:$ReduxCoreType)=>state?.Hello?.helloConfig)
   const handleSubmitFeedback = useCallback(async () => {
     if (!selectedRating) return;
     
@@ -20,7 +21,8 @@ function RenderHelloFeedbackMessage({message}:{message:any}) {
         feedbackMsg: feedbackText,
         rating: selectedRating,
         token: message?.token || "",
-        id: message?.id || 0
+        id: message?.id || 0,
+        helloConfig
       });
       setFeedbackSubmitted(true);
     } catch (error) {

@@ -95,7 +95,6 @@ class ChatbotEmbedManager {
                 break;
             case 'interfaceLoaded':
                 this.state.interfaceLoaded = true;
-                this.sendInitialData();
                 this.showIconIfReady();
                 break;
         }
@@ -521,7 +520,7 @@ window.initChatWidget = (data, delay = 0) => {
 
 chatbotManager.initializeChatbot();
 
-    window.addEventListener('message', (event) => {
+window.addEventListener('message', (event) => {
         const receivedMessage = event.data;
         if(receivedMessage.type === 'initializeHelloChat_failed'){
             block_chatbot=true

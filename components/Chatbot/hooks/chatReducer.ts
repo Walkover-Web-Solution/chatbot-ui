@@ -339,18 +339,20 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
     case ChatActionTypes.SET_INTIAL_MESSAGES: {
       const subThreadId = action.payload?.subThreadId || state.subThreadId
       const messages = convertChatHistoryToGenericFormat(action.payload.messages, state.isHelloUser)  
-      return {
-        ...state,
-        messageIds: {
-          ...state.messageIds,
-          [subThreadId]: messages.map((item) => item.id)
-        },
-        msgIdAndDataMap: {
-          ...state.msgIdAndDataMap,
-          [subThreadId]: messages.reduce((acc: Record<string, unknown>, item) => {
-            acc[item.id] = item;
-            return acc;
-          }, {})
+      if(subThreadId){
+        return {
+          ...state,
+          messageIds: {
+            ...state.messageIds,
+            [subThreadId]: messages.map((item) => item.id)
+          },
+          msgIdAndDataMap: {
+            ...state.msgIdAndDataMap,
+            [subThreadId]: messages.reduce((acc: Record<string, unknown>, item) => {
+              acc[item.id] = item;
+              return acc;
+            }, {})
+          }
         }
       }
     }
@@ -359,52 +361,56 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
       const subThreadId = action.payload?.subThreadId || state.subThreadId
       const messages = action.payload.messages
       const messagesArray = convertChatHistoryToGenericFormat(messages, state.isHelloUser)
-      return {
-        ...state,
-        messageIds: {
-          ...state.messageIds,
-          [subThreadId]: [
-            ...(state.messageIds[subThreadId] || []),
-            ...messagesArray.map(msg => msg.id)
-          ]
-        },
-        msgIdAndDataMap: {
-          ...state.msgIdAndDataMap,
-          [subThreadId]: {
-            ...(state.msgIdAndDataMap[subThreadId] || {}),
-            ...messagesArray.reduce((acc: Record<string, unknown>, item) => {
-              acc[item.id] = item;
-              return acc;
-            }, {})
+      if(subThreadId){
+        return {
+          ...state,
+          messageIds: {
+            ...state.messageIds,
+            [subThreadId]: [
+              ...(state.messageIds[subThreadId] || []),
+              ...messagesArray.map(msg => msg.id)
+            ]
+          },
+          msgIdAndDataMap: {
+            ...state.msgIdAndDataMap,
+            [subThreadId]: {
+              ...(state.msgIdAndDataMap[subThreadId] || {}),
+              ...messagesArray.reduce((acc: Record<string, unknown>, item) => {
+                acc[item.id] = item;
+                return acc;
+              }, {})
+            }
           }
-        }
-      };
+        };
+      }
     }
 
     case ChatActionTypes.SET_HELLO_EVENT_MESSAGE: {
       const subThreadId = action.payload?.subThreadId || state.subThreadId
       const messagesArray = convertEventMessageToGenericFormat(action.payload.message, state.isHelloUser)
       // console.log(messagesArray[0],'messagesArray')
-      return {
-        ...state,
-        messageIds: {
-          ...state.messageIds,
-          [subThreadId]: [
-            ...(state.messageIds[subThreadId] || []),
-            ...messagesArray.map(msg => msg.id)
-          ]
-        },
-        msgIdAndDataMap: {
-          ...state.msgIdAndDataMap,
-          [subThreadId]: {
-            ...(state.msgIdAndDataMap[subThreadId] || {}),
-            ...messagesArray.reduce((acc: Record<string, unknown>, item) => {
-              acc[item.id] = item;
-              return acc;
-            }, {})
+      if(subThreadId){
+        return {
+          ...state,
+          messageIds: {
+            ...state.messageIds,
+            [subThreadId]: [
+              ...(state.messageIds[subThreadId] || []),
+              ...messagesArray.map(msg => msg.id)
+            ]
+          },
+          msgIdAndDataMap: {
+            ...state.msgIdAndDataMap,
+            [subThreadId]: {
+              ...(state.msgIdAndDataMap[subThreadId] || {}),
+              ...messagesArray.reduce((acc: Record<string, unknown>, item) => {
+                acc[item.id] = item;
+                return acc;
+              }, {})
+            }
           }
-        }
-      };
+        };
+      }
     }
 
     case ChatActionTypes.RESET_STATE:

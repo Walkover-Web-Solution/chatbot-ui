@@ -13,6 +13,7 @@ import {
 } from "@/store/interface/interfaceSlice";
 import { HelloData } from "@/types/hello/HelloReduxType";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE, ParamsEnums } from "@/utils/enums";
+import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Chatbot from "../Chatbot/Chatbot";
@@ -52,27 +53,72 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
   const handleMessage = useCallback((event: MessageEvent) => {
     if (event?.data?.type !== "interfaceData" && event?.data?.type !== "helloData") return;
     if (event?.data?.type === "helloData") {
-      const receivedHelloData: HelloData = event.data.data;
-      localStorage.setItem('WidgetId', receivedHelloData?.widgetToken)
-      if (!localStorage.getItem('is_anon'))
-        localStorage.setItem('is_anon', (receivedHelloData?.unique_id || receivedHelloData?.mail || receivedHelloData?.number) ? 'false' : 'true')
-      if (receivedHelloData?.unique_id || receivedHelloData?.mail || receivedHelloData?.number) {
-        dispatch(setHelloKeysData({ showWidgetForm: false }))
+      const {
+        widgetToken,
+        unique_id,
+        mail,
+        number,
+        user_jwt_token,
+        name,
+        ...restProps
+      } = event.data.data;
+    
+      const prevWidgetId = getLocalStorage('WidgetId');
+      const prevUser = JSON.parse(getLocalStorage('userData') || '{}');
+      const hasUserIdentity = Boolean(unique_id || mail || number || user_jwt_token);
+    
+      // Helper: reset Redux keys and sub-thread
+      const resetKeys = () => {
+        dispatch(setHelloKeysData({ currentChannelId: '', currentChatId: '', currentTeamId: '' }));
+        dispatch(setDataInAppInfoReducer({ subThreadId: '' }));
+      };
+    
+      // 1. Widget token changed
+      if (widgetToken !== prevWidgetId) {
+        resetKeys();
+        ['a_clientId', 'k_clientId', 'client', 'default_client_created'].forEach(key => setLocalStorage(key, ''));
+        setLocalStorage('is_anon', hasUserIdentity ? 'false' : 'true');
       }
-      dispatch(setHelloConfig(receivedHelloData));
-      Object.keys(receivedHelloData).forEach((key) => {
-        if (helloToChatbotPropsMap[key]) {
-          const mappedKey = helloToChatbotPropsMap[key];
-          let value = receivedHelloData[key as keyof HelloData];
-
-          // Special handling for hideCloseButton
-          if (mappedKey === 'hideCloseButton') {
-            // Invert the value since show_close_button is opposite of hideCloseButton
-            value = !value;
-          }
-          dispatch(setDataInInterfaceRedux({ [mappedKey]: value }));
-        }
-      })
+    
+      // 2. User identity changed
+      if (unique_id !== prevUser.unique_id) {
+        resetKeys();
+      }
+    
+      // 3. Update stored userData
+      setLocalStorage('userData', JSON.stringify({ unique_id, mail, number, user_jwt_token, name }));
+    
+      // 4. Anonymous cleanup when no identity
+      if (!hasUserIdentity && getLocalStorage('k_clientId')) {
+        resetKeys();
+        setLocalStorage('k_clientId', '');
+      }
+    
+      // 5. Determine anonymity status
+      const defaultClientCreated = getLocalStorage('default_client_created') === 'true';
+      const isAnon = hasUserIdentity || defaultClientCreated ? 'false' : 'true';
+      if (getLocalStorage('is_anon') !== isAnon) {
+        resetKeys();
+      }
+      setLocalStorage('is_anon', isAnon);
+    
+      // 6. Hide widget form for identified users
+      if (hasUserIdentity) {
+        dispatch(setHelloKeysData({ showWidgetForm: false }));
+      }
+    
+      // 7. Map additional interface props
+      Object.entries(restProps).forEach(([key, value]) => {
+        const mappedKey = helloToChatbotPropsMap[key];
+        if (!mappedKey) return;
+    
+        const finalValue = mappedKey === 'hideCloseButton' ? !value : value;
+        dispatch(setDataInInterfaceRedux({ [mappedKey]: finalValue }));
+      });
+    
+      // 8. Persist new widget token and config
+      setLocalStorage('WidgetId', widgetToken);
+      dispatch(setHelloConfig(event.data.data));
       return;
     }
 

@@ -1,4 +1,5 @@
 import { errorToast } from "@/components/customToast";
+import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 import axios from "axios";
 
 const HELLO_HOST_URL = process.env.NEXT_PUBLIC_MSG91_HOST_URL;
@@ -11,13 +12,13 @@ export async function registerAnonymousUser(): Promise<any> {
       {},
       {
         headers: {
-          authorization: localStorage.getItem("WidgetId"),
+          authorization: getLocalStorage('WidgetId'),
         },
       }
     );
 
     if (response?.data?.data?.uuid) {
-      localStorage.setItem("HelloClientId", response.data.data.uuid);
+      setLocalStorage('a_clientId', response.data.data.uuid);
     }
 
     return response?.data?.data;
@@ -30,14 +31,14 @@ export async function registerAnonymousUser(): Promise<any> {
 // Get JWT token for socket subscription
 export async function getJwtToken(): Promise<string | null> {
   try {
-    const response = await axios.get(`${HELLO_HOST_URL}/jwt-token/?is_anon=${localStorage.getItem("is_anon") == 'true'}`, {
+    const response = await axios.get(`${HELLO_HOST_URL}/jwt-token/?is_anon=${getLocalStorage("is_anon") == 'true'}`, {
       headers: {
-        authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+        authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
       },
     });
     const token = response?.data?.data?.jwt_token;
     if (token) {
-      localStorage.setItem("JwtTokenForSocket", token);
+      setLocalStorage("JwtTokenForSocket", token);
     }
     return token || null;
   } catch (error: any) {
@@ -47,33 +48,44 @@ export async function getJwtToken(): Promise<string | null> {
 }
 
 // Get all channels for registered user
-export async function getAllChannels(helloConfig?: any): Promise<any> {
+export async function getAllChannels(): Promise<any> {
   try {
-    const { mail, number, user_jwt_token, uniqueId, hide_launcher, show_widget_form, show_close_button, launch_widget, show_send_button, ...rest } = helloConfig;
+    const { mail, number, user_jwt_token, unique_id, name } = JSON.parse(getLocalStorage('userData') || '{}');
     const response = await axios.post(
       `${HELLO_HOST_URL}/pubnub-channels/list/`,
       {
-        ...rest,
-        mail, number,
-        uuid: localStorage.getItem("HelloClientId"),
+        name,
+        mail,
+        number,
+        unique_id,
         user_data: {
-          "unique_id": uniqueId,
+          "unique_id": unique_id,
           "mail": mail,
           "number": number,
           "user_jwt_token": user_jwt_token
         },
-        is_anon: localStorage.getItem("is_anon") == 'true',
-        ...(localStorage.getItem("client") ? {} : { anonymous_client_uuid: localStorage.getItem("HelloClientId") })
+        is_anon: getLocalStorage('is_anon') == 'true',
+        ...(getLocalStorage('is_anon') == 'true' ? { anonymous_client_uuid: getLocalStorage('a_clientId') , uuid: getLocalStorage('a_clientId')}:{})
       },
       {
         headers: {
-          authorization: localStorage.getItem("HelloClientId") ? `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}` : localStorage.getItem("WidgetId"),
+          authorization: (mail || number || user_jwt_token || unique_id)
+            ? (getLocalStorage('k_clientId')
+              ? `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId')}`
+              : getLocalStorage('WidgetId'))
+            : (getLocalStorage('a_clientId')
+              ? `${getLocalStorage('WidgetId')}:${getLocalStorage('a_clientId')}`
+              : getLocalStorage('WidgetId')),
         },
       }
     );
-    if (!localStorage.getItem("HelloClientId")) {
-      localStorage.setItem("HelloClientId", response?.data?.uuid);
+
+    if (unique_id || mail || number || user_jwt_token || name) {
+      setLocalStorage('k_clientId', response?.data?.uuid)
+    } else if(response?.data?.customer_name){
+      setLocalStorage('default_client_created', 'true')
     }
+
     return response?.data || [];
   } catch (error: any) {
     errorToast(error?.response?.data?.message || "Failed to get channels");
@@ -88,10 +100,10 @@ export async function getAgentTeamApi(uniqueId: string): Promise<any> {
       user_data: !uniqueId ? {} : {
         "unique_id": uniqueId
       },
-      is_anon: localStorage.getItem("is_anon") == 'true',
+      is_anon: getLocalStorage("is_anon") == 'true',
     }, {
       headers: {
-        authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+        authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
       },
     });
     return response?.data?.data || [];
@@ -105,9 +117,9 @@ export async function getAgentTeamApi(uniqueId: string): Promise<any> {
 export async function getGreetingQuestions(companyId: string, botId: string): Promise<any> {
   try {
     const response = await axios.get(
-      `${HELLO_HOST_URL}/chat-gpt/greeting/?company_id=${companyId}&bot_id=${botId}&is_anon=${localStorage.getItem("is_anon") == 'true'}`, {
+      `${HELLO_HOST_URL}/chat-gpt/greeting/?company_id=${companyId}&bot_id=${botId}&is_anon=${getLocalStorage("is_anon") == 'true'}`, {
       headers: {
-        authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+        authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
       },
     });
     return response?.data?.data || [];
@@ -122,11 +134,11 @@ export async function saveClientDetails(clientData: any): Promise<any> {
   try {
     const response = await axios.put(`${HELLO_HOST_URL}/client/`, clientData, {
       headers: {
-        authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+        authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
       },
     });
     if (response?.data) {
-      localStorage.setItem("client", response?.data);
+      setLocalStorage("client", response?.data);
     }
     return response?.data;
   } catch (error: any) {
@@ -146,11 +158,11 @@ export async function getHelloChatHistoryApi(channelId: string): Promise<any> {
         page_size: 30,
         start_from: 1,
         user_data: {},
-        is_anon: localStorage.getItem("is_anon") == 'true',
+        is_anon: getLocalStorage("is_anon") == 'true',
       },
       {
         headers: {
-          authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
           "content-type": "application/json",
         },
       }
@@ -165,17 +177,18 @@ export async function getHelloChatHistoryApi(channelId: string): Promise<any> {
 // Main function to initialize Hello chat
 export async function initializeHelloChat(uniqueId: string | null = null): Promise<any> {
   try {
+    const { unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
     const response = await axios.post(
       `${HELLO_HOST_URL}/widget-info/`,
       {
-        "user_data": uniqueId ? {
-          "unique_id": uniqueId
+        "user_data": unique_id ? {
+          "unique_id": unique_id
         } : {},
-        "is_anon": localStorage.getItem("is_anon") == 'true'
+        "is_anon": getLocalStorage("is_anon") == 'true'
       },
       {
         headers: {
-          authorization: `${localStorage.getItem("WidgetId")}`,
+          authorization: `${getLocalStorage('WidgetId')}`,
           "content-type": "application/json",
         },
       }
@@ -213,18 +226,18 @@ export async function sendMessageToHelloApi(message: string, attachment: Array<o
         chat_id: chat_id ? chat_id : null,
         session_id: null,
         user_data: {},
-        is_anon: localStorage.getItem("is_anon") == 'true',
+        is_anon: getLocalStorage("is_anon") == 'true',
       },
       {
         headers: {
-          authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
           "content-type": "application/json",
         },
       }
     );
 
-    if (channelDetail && localStorage.getItem("is_anon") === 'true') {
-      localStorage.setItem("is_anon", "false");
+    if (channelDetail) {
+      setLocalStorage("is_anon", "false");
     }
     return response?.data?.data;
   } catch (error: any) {
@@ -244,7 +257,7 @@ export async function uploadAttachmentToHello(file: any, inboxId: string): Promi
       formData,
       {
         headers: {
-          'authorization': `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          'authorization': `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
           'content-type': 'multipart/form-data',
         }
       }
@@ -259,17 +272,17 @@ export async function uploadAttachmentToHello(file: any, inboxId: string): Promi
 // Get client token for WebRTC
 export async function getClientToken(): Promise<any> {
   try {
-    const isAnon = localStorage.getItem("is_anon") == 'true';
+    const isAnon = getLocalStorage("is_anon") == 'true';
     const response = await axios.get(
       `${HELLO_HOST_URL}/web-rtc/get-client-token/?is_anon=${isAnon}`,
       {
         headers: {
-          authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
         },
       }
     );
     if (response?.data?.data?.jwt_token) {
-      localStorage.setItem("HelloClientToken", response?.data?.data?.jwt_token);
+      setLocalStorage("HelloClientToken", response?.data?.data?.jwt_token);
     }
     return response?.data?.data;
   } catch (error: any) {
@@ -281,17 +294,17 @@ export async function getClientToken(): Promise<any> {
 // Get call token for WebRTC
 export async function getCallToken(): Promise<any> {
   try {
-    const isAnon = localStorage.getItem("is_anon") == 'true';
+    const isAnon = getLocalStorage("is_anon") == 'true';
     const response = await axios.get(
       `${HELLO_HOST_URL}/web-rtc/get-call-token/?is_anon=${isAnon}`,
       {
         headers: {
-          authorization: `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
         },
       }
     );
     if (response?.data?.data?.jwt_token) {
-      localStorage.setItem("HelloCallToken", response?.data?.data?.jwt_token);
+      setLocalStorage("HelloCallToken", response?.data?.data?.jwt_token);
     }
     return response?.data?.data;
   } catch (error: any) {
@@ -301,7 +314,8 @@ export async function getCallToken(): Promise<any> {
 }
 
 // Function to add domain to Hello chat
-export async function addDomainToHello(domain?: string, mail?: string, uniqueId?: string, userJwtToken?: string, number?: string): Promise<any> {
+export async function addDomainToHello(domain?: string): Promise<any> {
+  const { mail, number, user_jwt_token, unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
   try {
     const response = await axios.put(
       `${HELLO_HOST_URL}/add-domain/`,
@@ -309,22 +323,22 @@ export async function addDomainToHello(domain?: string, mail?: string, uniqueId?
         dom: domain,
         user_data: {
           mail: mail,
-          unique_id: uniqueId,
-          user_jwt_token: userJwtToken,
+          unique_id: unique_id,
+          user_jwt_token: user_jwt_token,
           number: number,
         },
-        is_anon: localStorage.getItem("is_anon") == 'true'
+        is_anon: getLocalStorage("is_anon") == 'true'
       },
       {
         headers: {
-          'authorization': `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          'authorization': `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
           'content-type': 'application/json',
         }
       }
     );
     return response?.data;
   } catch (error: any) {
-    errorToast(error?.message || "Failed to add domain");
+    // errorToast(error?.message || "Failed to add domain");
     return null;
   }
 }
@@ -335,7 +349,7 @@ export async function deleteReadReceipt(channelId: string): Promise<any> {
       `${HELLO_HOST_URL}/read-receipt/${channelId}`,
       {
         headers: {
-          'authorization': `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          'authorization': `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
           'content-type': 'application/json'
         }
       }
@@ -351,11 +365,13 @@ export async function deleteReadReceipt(channelId: string): Promise<any> {
 // Submit feedback for a conversation
 export async function submitFeedback(params: {
   feedbackMsg: string;
-  rating: string; 
+  rating: string;
   token: string;
   id: number;
+  helloConfig: any;
 }): Promise<any> {
   try {
+    const { uniqueId, mail, number, user_jwt_token } = params.helloConfig || {};
     const response = await axios.post(
       `${HELLO_HOST_URL}/receive-feedback/`,
       {
@@ -365,13 +381,16 @@ export async function submitFeedback(params: {
         type: "post-feedback",
         id: params.id,
         user_data: {
-          unique_id: localStorage.getItem("HelloClientId")
+          "unique_id": uniqueId,
+          "mail": mail,
+          "number": number,
+          "user_jwt_token": user_jwt_token
         },
-        is_anon: localStorage.getItem("is_anon") == 'true'
+        is_anon: getLocalStorage("is_anon") == 'true'
       },
       {
         headers: {
-          'authorization': `${localStorage.getItem("WidgetId")}:${localStorage.getItem("HelloClientId")}`,
+          'authorization': `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
           'content-type': 'application/json'
         }
       }
