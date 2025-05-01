@@ -3,6 +3,7 @@ import { errorToast } from "@/components/customToast";
 import { InterFaceDataType } from "@/types/interface/InterfaceReduxType";
 import { UrlDataType } from "@/types/utility";
 import axios from "@/utils/interceptor";
+import { getLocalStorage } from "@/utils/utilities";
 
 const URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const PYTHON_URL = process.env.NEXT_PUBLIC_PYTHON_API_BASE_URL;
@@ -266,7 +267,7 @@ export async function getHelloChatsApi({
             },
             {
                 headers: {
-                    authorization: localStorage.getItem("HelloAgentAuth"),
+                    authorization: getLocalStorage("HelloAgentAuth"),
                     "content-type": "application/json",
                 },
             }

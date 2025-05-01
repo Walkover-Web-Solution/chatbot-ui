@@ -1,6 +1,7 @@
 // HelloVoiceService.ts
 import WebRTC from "msg91-webrtc-call";
 import { EventEmitter } from "events";
+import { getLocalStorage } from "@/utils/utilities";
 
 class HelloVoiceService {
     private static instance: HelloVoiceService | null = null;
@@ -25,7 +26,7 @@ class HelloVoiceService {
         // Only initialize if not already done
         if (this.webrtc) return;
 
-        const clientToken = localStorage.getItem('HelloClientToken');
+        const clientToken = getLocalStorage('HelloClientToken');
         if (!clientToken) return;
 
         this.webrtc = WebRTC(clientToken);
@@ -78,7 +79,7 @@ class HelloVoiceService {
             return;
         }
 
-        const callToken = localStorage.getItem('HelloCallToken');
+        const callToken = getLocalStorage('HelloCallToken');
         if (!callToken) {
             console.warn("No call token found in localStorage.");
             return;

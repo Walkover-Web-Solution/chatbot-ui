@@ -95,7 +95,6 @@ class ChatbotEmbedManager {
                 break;
             case 'interfaceLoaded':
                 this.state.interfaceLoaded = true;
-                this.sendInitialData();
                 this.showIconIfReady();
                 break;
         }

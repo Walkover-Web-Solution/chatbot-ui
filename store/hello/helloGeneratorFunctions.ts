@@ -5,6 +5,7 @@ import { getHelloDetailsApi } from "@/config/api";
 import { errorToast } from "@/components/customToast";
 import { getHelloDetailsSuccess } from "./helloSlice";
 import { setAvailableModelsToSwitch } from "../interface/interfaceSlice";
+import { setLocalStorage } from "@/utils/utilities";
 
 export function* getHelloDetailsSaga(
   action: PayloadAction<{
@@ -30,7 +31,7 @@ export function* getHelloDetailsSaga(
     const receivedHelloId = response?.widgetInfo?.helloId;
     const anonymousClientId = response?.ChannelList?.uuid;
     if (receivedHelloId && anonymousClientId) {
-      localStorage.setItem(
+      setLocalStorage(
         "HelloAgentAuth",
         `${receivedHelloId}:${anonymousClientId}`
       );

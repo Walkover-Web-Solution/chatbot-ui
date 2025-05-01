@@ -95,7 +95,6 @@ class ChatbotEmbedManager {
                 break;
             case 'interfaceLoaded':
                 this.state.interfaceLoaded = true;
-                this.sendInitialData();
                 this.showIconIfReady();
                 break;
         }
@@ -371,7 +370,6 @@ class ChatbotEmbedManager {
     }
 
 }
-
 // Function to get the subdomain from the current URL
 getSubdomain = () => {
     const hostname = window.location.hostname;

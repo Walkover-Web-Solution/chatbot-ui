@@ -43,9 +43,9 @@ export const useSocketEvents = ({
     // Reference to timeout for typing indicators
     const { setLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
     const { isToggledrawer } = chatState;
-    const { currentChannelId , isSmallScreen} = useReduxStateManagement({ chatbotId, chatDispatch });
-    const addHelloMessage = (message: HelloMessage,subThreadId:string='') => {
-        chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message ,subThreadId} });
+    const { currentChannelId, isSmallScreen } = useReduxStateManagement({ chatbotId, chatDispatch });
+    const addHelloMessage = (message: HelloMessage, subThreadId: string = '') => {
+        chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message, subThreadId } });
     }
 
     function isSameChannel(channelId: string) {
@@ -54,58 +54,69 @@ export const useSocketEvents = ({
     // Handler for new messages
     const handleNewMessage = useCallback((data: any) => {
         const { response } = data;
-        // console.log(data, 'data')
         const { message } = response || {};
         const { type } = message || {};
-        
+
+        // Handle unread count updates
         if (message?.new_event) {
-            if (isSameChannel(message?.channel)) {
-                // For same channel, reset count if drawer is open and screen is not small
-                // OR if small screen and drawer is closed (user is viewing the chat)
-                if ((isToggledrawer && !isSmallScreen) || (isSmallScreen && !isToggledrawer)) {
-                    dispatch(setUnReadCount({ channelId: message?.channel, resetCount: true }));
-                } else {
-                    // Same channel but conditions for reset not met
-                    dispatch(setUnReadCount({ channelId: message?.channel }));
-                }
-            } else {
-                // Not in same channel - always update count without resetting
-                dispatch(setUnReadCount({ channelId: message?.channel }));
-            }
+            const channelId = message?.channel;
+            const isCurrentChannel = isSameChannel(channelId);
+            const shouldResetCount = isCurrentChannel && 
+                ((isToggledrawer && !isSmallScreen) || (isSmallScreen && !isToggledrawer));
+            
+            dispatch(setUnReadCount({ 
+                channelId, 
+                resetCount: shouldResetCount || false 
+            }));
         }
 
         switch (type) {
-            case 'chat':
+            case 'chat': {
                 const { channel, chat_id, new_event } = message || {};
-                if (new_event) {
-                    if (!chat_id) {
-                        setLoading(false);
+                if (new_event && !chat_id) {
+                    setLoading(false);
 
-                        // Play notification sound when message is received
-                        const notificationSound = new Audio('/notification-sound.mp3'); // Path to notification sound file in public folder
-                        notificationSound.volume = 0.2;
-                        notificationSound.play().catch(error => {
-                            console.log("Failed to play notification sound:", error);
-                        });
-                        addHelloMessage({ ...message, id: response.timetoken || response.id},channel)   
-                        chatDispatch({ type: ChatActionTypes.SET_TYPING, payload: { data: false, subThreadId: channel } });
-                    }
+                    // Play notification sound when message is received
+                    const notificationSound = new Audio('/notification-sound.mp3');
+                    notificationSound.volume = 0.2;
+                    notificationSound.play().catch(error => {
+                        console.log("Failed to play notification sound:", error);
+                    });
+                    
+                    const messageId = response.timetoken || response.id;
+                    addHelloMessage({ ...message, id: messageId }, channel);
+                    chatDispatch({ 
+                        type: ChatActionTypes.SET_TYPING, 
+                        payload: { data: false, subThreadId: channel } 
+                    });
                 }
                 break;
-            case 'assign':
+            }
+            case 'assign': {
                 const { assignee_type, channel_details, assignee_id } = message || {};
-                dispatch(changeChannelAssigned({ assigned_type: assignee_type, assignee_id , channelId: channel_details?.channel }));
+                dispatch(changeChannelAssigned({ 
+                    assigned_type: assignee_type, 
+                    assignee_id, 
+                    channelId: channel_details?.channel 
+                }));
                 break;
-            case 'feedback':
-                if(message?.new_event){
-                    addHelloMessage({ ...message, id: response.timetoken || response.id},channel_details?.channel)
+            }
+            case 'feedback': {
+                const { channel, channel_details } = message || {};
+                if (message?.new_event) {
+                    const messageId = response.timetoken || response.id;
+                    addHelloMessage(
+                        { ...message, id: messageId }, 
+                        channel_details?.channel
+                    );
                 }
                 break;
+            }
             default:
                 // Handle other types if needed
                 break;
         }
-    }, [currentChannelId, setLoading, addHelloMessage,fetchChannels]);
+    }, [currentChannelId, setLoading, addHelloMessage, fetchChannels]);
 
     // Handler for typing events
     const handleTyping = useCallback((data: any) => {

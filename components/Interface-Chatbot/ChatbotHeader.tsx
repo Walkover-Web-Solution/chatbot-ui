@@ -112,7 +112,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
     isHuman: state.Hello?.isHuman || false,
 
   })});
-  console.log("hideCloseButton", hideCloseButton)
 
   // Determine if we should show the create thread button
   const showCreateThreadButton = useMemo(() => {
