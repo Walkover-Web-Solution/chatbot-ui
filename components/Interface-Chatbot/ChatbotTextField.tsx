@@ -209,40 +209,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
         {images.map((image, index) => (
           <div key={index} className="relative group">
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden shadow-md transition-transform hover:scale-105">
-              {/* {(() => {
-                const src = IsHuman ? image?.path : image;
-                console.log(src);
-                const fileType = typeof src === 'string' ? 
-                  src.split('.').pop()?.toLowerCase().split('?')[0] || "" : "";
-                
-                if (["mp4", "webm", "ogg"].includes(fileType)) {
-                  return (
-                    <video 
-                      src={src}
-                      className="w-full h-full object-cover"
-                      controls
-                    />
-                  );
-                } else if (["mp3", "wav", "aac", "flac"].includes(fileType)) {
-                  return (
-                    <audio 
-                      src={src}
-                      className="w-full h-full"
-                      controls
-                    />
-                  );
-                } else {
-                  return (
-                    <Image
-                      src={src}
-                      alt={`Uploaded Preview ${index + 1}`}
-                      className="w-full h-full object-cover"
-                      width={128}
-                      height={128}
-                    />
-                  );
-                }
-              })()} */}
                <ImageWithFallback 
                       src={IsHuman ? image?.path : image}
                       alt={`Uploaded Preview ${index + 1}`}
