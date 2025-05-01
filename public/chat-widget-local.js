@@ -15,7 +15,7 @@ class ChatbotEmbedManager {
         };
         this.urls = {
             chatbotUrl: 'http://localhost:3001/chatbot',
-            styleSheet: 'https://chatbot-embed.viasocket.com/style-dev.css',
+            styleSheet: 'http://localhost:3001/chat-widget-style.css',
         };
         this.icons = {
             white: this.makeImageUrl('b1357e23-2fc6-4dc3-855a-7a213b1fa100'),

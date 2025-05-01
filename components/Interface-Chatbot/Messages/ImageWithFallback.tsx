@@ -7,6 +7,7 @@ type ImageWithFallbackProps = {
   alt?: string;
   style?: React.CSSProperties;
   canDownload?: boolean;
+  preview?: boolean;
 };
 
 const getFileType = (url: string): string => {
@@ -18,7 +19,7 @@ const getFileType = (url: string): string => {
   return "other"; // e.g. xlsx, csv, html, zip, etc.
 };
 
-const ImageWithFallback = ({ src, alt = "attachment", style, canDownload = true }: ImageWithFallbackProps) => {
+const ImageWithFallback = ({ src, alt = "attachment", style, canDownload = true, preview = false }: ImageWithFallbackProps) => {
   const fileType = getFileType(src);
   const isSmallScreen = useMediaQuery('(max-width:1023px)');
   const [error, setError] = useState(false);
@@ -47,15 +48,34 @@ const ImageWithFallback = ({ src, alt = "attachment", style, canDownload = true 
             src={src}
             alt={alt}
             onError={() => setError(true)}
-            className={`block ${isSmallScreen ? 'max-w-[80%]' : 'max-w-[40%]'} h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity`}
+         
             onClick={() => window.open(src, "_blank")}
             style={style}
           />
         );
       case "video":
-        return (
-        
-            <video controls className="max-w-full rounded-md"      onError={() => setError(true)} style={style}>
+        return preview ? (
+          <div 
+            className="max-w-full rounded-md relative" 
+            style={style}
+            onClick={() => window.open(src, "_blank")}
+          >
+            <video 
+              className="w-full h-full object-cover rounded-md" 
+              onError={() => setError(true)}
+            >
+              <source src={src} type={`video/${src.split('.').pop()}`} />
+            </video>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-12 h-12 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <video controls className="max-w-full rounded-md" onError={() => setError(true)} style={style}>
             <source src={src} type={`video/${src.split('.').pop()}`} />
             Your browser does not support the video tag.
           </video>
@@ -73,7 +93,6 @@ const ImageWithFallback = ({ src, alt = "attachment", style, canDownload = true 
             src="https://cdn1.iconfinder.com/data/icons/leto-files/64/leto_files-68-128.png"
             alt={alt}
             onError={() => setError(true)}
-            className={`block ${isSmallScreen ? 'max-w-[80%]' : 'max-w-[40%]'} h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity`}
             onClick={() => window.open(src, "_blank")}
             style={style}
           />
@@ -82,7 +101,10 @@ const ImageWithFallback = ({ src, alt = "attachment", style, canDownload = true 
   };
 
   return (
-    <div className="relative flex justify-end w-fit group">
+    <div  
+    
+    className={`flex relative group ${isSmallScreen ? 'max-w-[80%]' : 'max-w-[40%]'} h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity`}
+    >
       {renderContent()}
       {!error && canDownload && (
         <button

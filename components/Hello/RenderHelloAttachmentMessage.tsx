@@ -7,7 +7,7 @@ function RenderHelloAttachmentMessage({ message }: { message: any }) {
 
   const renderAttachment = (attachment: any) => {
     const {path, name } = attachment;
-    return     <div className="w-full">
+    return     <div className="w-full my-2">
     <div className="flex gap-2">
   
 <ImageWithFallback
@@ -18,11 +18,7 @@ function RenderHelloAttachmentMessage({ message }: { message: any }) {
 
 
     </div>
-    {caption && (
-      <div className="flex justify-between items-center w-full mt-1">
-        <span className="text-sm text-gray-600 truncate max-w-[70%]">{caption}</span>
-      </div>
-    )}
+
   </div>
   };
 
@@ -33,6 +29,13 @@ function RenderHelloAttachmentMessage({ message }: { message: any }) {
           {renderAttachment(item)}
         </div>
       ))}
+          {caption && (
+      <div className="flex justify-between items-center w-full mt-1">
+        <div className="prose max-w-none">
+                <div dangerouslySetInnerHTML={{ __html: message?.content }}></div>
+              </div>
+      </div>
+    )}
     </div>
   );
 }
