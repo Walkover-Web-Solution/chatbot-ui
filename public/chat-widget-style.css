@@ -4,7 +4,7 @@
 .right_slider-interfaceEmbed,
 .popup-interfaceEmbed {
   height: 45px;
-  width: 100px;
+  width: fit-content;
   position: fixed;
   border-radius: 5px 5px 0px 0px !important;
   /* background-color: #3d7bef !important; */

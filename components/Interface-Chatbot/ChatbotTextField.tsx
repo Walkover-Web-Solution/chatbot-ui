@@ -13,6 +13,7 @@ import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { MessageContext } from "./InterfaceChatbot";
 import { useTypingStatus } from "@/hooks/socketEventEmitter";
+import ImageWithFallback from "./Messages/ImageWithFallback";
 
 interface ChatbotTextFieldProps {
   className?: string;
@@ -208,13 +209,13 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
         {images.map((image, index) => (
           <div key={index} className="relative group">
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden shadow-md transition-transform hover:scale-105">
-              <Image
-                src={IsHuman ? image?.path : image}
-                alt={`Uploaded Preview ${index + 1}`}
-                className="w-full h-full object-cover"
-                width={128}
-                height={128}
-              />
+               <ImageWithFallback 
+                      src={IsHuman ? image?.path : image}
+                      alt={`Uploaded Preview ${index + 1}`}
+                      style={{width:128,height:128}}
+                     canDownload={false}
+                     preview={true}
+                    />
             </div>
             <button
               onClick={() => handleRemoveImage(index)}
@@ -270,7 +271,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
       <>
         <input
           type="file"
-          accept="image/*"
+          accept="image/*,video/*,audio/*,application/pdf"
           onChange={handleImageUpload}
           className="hidden"
           id="upload-image"
@@ -287,7 +288,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
             ) : (
               <div className="flex items-center gap-1.5">
                 <Upload className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform duration-200" />
-                <span className="text-[10px] font-medium text-gray-700">Upload Img</span>
+                <span className="text-[10px] font-medium text-gray-700">Upload Files</span>
               </div>
             )}
           </div>

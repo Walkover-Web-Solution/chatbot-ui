@@ -7,6 +7,7 @@ import { useTheme } from "@mui/material";
 import { Mail, Phone, Send, User } from "lucide-react";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
+import countryCodes from "@/assests/countryCode.json";
 
 interface FormComponentProps {
   open: boolean;
@@ -18,12 +19,14 @@ interface FormData {
   name: string;
   email: string;
   number: string;
+  countryCode: string;
 }
 
 interface FormErrors {
   name: string;
   email: string;
   number: string;
+  countryCode: string;
 }
 
 function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
@@ -38,22 +41,24 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
     name: "",
     email: "",
     number: "",
+    countryCode: "+91"
   });
 
   const [errors, setErrors] = useState<FormErrors>({
     name: "",
     email: "",
     number: "",
+    countryCode: ""
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     setErrors({ ...errors, [name]: "" }); // Clear error on change
   };
 
   const validate = () => {
-    const tempErrors: FormErrors = { name: "", email: "", number: "" };
+    const tempErrors: FormErrors = { name: "", email: "", number: "", countryCode: "" };
     let isValid = true;
 
     if (!formData.name) {
@@ -84,7 +89,7 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
     if (validate()) {
       const clientData = {
         n: formData.name,
-        p: formData.number,
+        p: `${formData.countryCode}${formData.number}`,
         e: formData.email || "demo@gmail.com",
         user_data: {},
         is_anon: false,
@@ -191,18 +196,36 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
             <label className="label">
               <span className="label-text font-medium">Phone Number</span>
             </label>
-            <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                <Phone size={18} />
+            <div className="flex gap-2">
+              <div className="relative w-1/3">
+                <select
+                  name="countryCode"
+                  value={formData.countryCode}
+                  onChange={handleChange}
+                  className={`select select-bordered w-full pl-10 ${errors.countryCode ? "select-error" : ""}`}
+                >
+                  {countryCodes
+                    .filter(country => country.dial_code !== null && country.dial_code !== "")
+                    .map((country) => (
+                      <option key={country.code + country.dial_code} value={String(country.dial_code)}>
+                        {country.name} ({country.dial_code})
+                      </option>
+                    ))}
+                </select>
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                  <Phone size={18} />
+                </div>
               </div>
-              <input
-                type="text"
-                name="number"
-                value={formData.number}
-                onChange={handleChange}
-                placeholder="Enter your phone number"
-                className={`input input-bordered w-full pl-10 ${errors.number ? "input-error" : ""}`}
-              />
+              <div className="relative w-2/3">
+                <input
+                  type="text"
+                  name="number"
+                  value={formData.number}
+                  onChange={handleChange}
+                  placeholder="Enter your phone number"
+                  className={`input input-bordered w-full ${errors.number ? "input-error" : ""}`}
+                />
+              </div>
             </div>
             {errors.number && (
               <label className="label">
