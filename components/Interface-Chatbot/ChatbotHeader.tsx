@@ -162,7 +162,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
 
   // Close chatbot handler
   const handleCloseChatbot = () => {
-    if (!window?.parent || isMobileSDK) return;
+    if (!window?.parent) return;
     window.parent.postMessage({ type: "CLOSE_CHATBOT" }, "*");
   };
 
