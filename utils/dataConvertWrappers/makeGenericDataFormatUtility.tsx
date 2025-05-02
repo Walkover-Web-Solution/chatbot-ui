@@ -1,15 +1,17 @@
 function convertChatHistoryToGenericFormat(history: any, isHello: boolean = false) {
+    console.log(history, 'history')
     switch (isHello) {
         case true:
             return history
                 .map((chat: any) => {
                     let role;
-                    if (chat?.message?.from_name) {
-                        role = "Human";
-                    } else if (!chat?.message?.from_name && (chat?.message?.sender_id === "bot" || chat?.message?.sender_id === "workflow")) {
-                        role = "Bot";
-                    } else {
-                        role = "user";
+
+                    if(chat?.message?.sender_id === 'workflow' || chat?.message?.sender_id === 'bot') {
+                        role = "Bot"
+                    } else if(!chat?.message?.sender_id) {
+                        role = "user"
+                    }else{
+                        role = "Human"
                     }
 
                     // Handle feedback type messages
