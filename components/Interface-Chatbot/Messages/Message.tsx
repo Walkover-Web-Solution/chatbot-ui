@@ -50,7 +50,7 @@ const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
     <>
       <div className="flex flex-col gap-2.5 items-end w-full mb-2.5 animate-slide-left mt-1">
       {Array.isArray(message?.urls) && message.urls.length > 0 && (
-  <div className="flex flex-row-reverse flex-wrap gap-2.5 max-w-[80%] p-2.5">
+  <div className="flex flex-row-reverse flex-wrap gap-2.5 w-full">
     {message.urls.map((url: any, index: number) => {
       const imageUrl = typeof url === 'object' ? url?.path : url;
 

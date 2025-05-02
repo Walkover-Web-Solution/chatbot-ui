@@ -536,6 +536,14 @@ window.chatWidget = {
                     ? 'none'
                     : 'unset';
         }
+    },
+    toggleWidget: () => {
+        const iframeContainer = document.getElementById('iframe-parent-container');
+        if (iframeContainer?.style?.display === 'block') {
+            chatbotManager.closeChatbot();
+        } else {
+            chatbotManager.openChatbot();
+        }
     }
 };
 

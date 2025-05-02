@@ -82,10 +82,15 @@ const ImageWithFallback = ({ src, alt = "attachment", style, canDownload = true,
         );
       case "audio":
         return (
-          <audio controls onError={() => setError(true)}>
-            <source src={src} type={`audio/${src.split('.').pop()}`} />
-            {/* Your browser does not support the audio element. */}
-          </audio>
+          <div className="w-full min-w-[300px] pr-10 relative">
+            <audio 
+              controls 
+              onError={() => setError(true)}
+              className="w-full"
+            >
+              <source src={src} type={`audio/${src.split('.').pop()}`} />
+            </audio>
+          </div>
         );
       default:
         return (
@@ -109,7 +114,7 @@ const ImageWithFallback = ({ src, alt = "attachment", style, canDownload = true,
       {!error && canDownload && (
         <button
           onClick={downloadFile}
-          className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md"
           title="Download"
         >
           <Download size={16} className="text-gray-800" />
