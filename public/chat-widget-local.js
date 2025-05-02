@@ -148,6 +148,10 @@ class ChatbotEmbedManager {
     }
 
     closeChatbot() {
+        if(chatbotManager.helloProps?.isMobileSDK && window.ReactNativeWebView){
+            window.ReactNativeWebView.postMessage?.(JSON.stringify({ type: 'close', data: {} }));
+            return
+        }
         const iframeContainer = document.getElementById('iframe-parent-container');
 
         if (iframeContainer?.style?.display === 'block') {
