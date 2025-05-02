@@ -75,7 +75,8 @@ const ChatbotDrawer = ({
     isHuman,
     Name,
     tagline,
-    hideCloseButton
+    hideCloseButton,
+    isMobileSDK
   } = useCustomSelector((state: $ReduxCoreType) => {
     const bridgeName = GetSessionStorageData("bridgeName") || state.appInfo?.bridgeName || "root";
     const threadId = GetSessionStorageData("threadId") || state.appInfo?.threadId || "";
@@ -91,6 +92,7 @@ const ChatbotDrawer = ({
       Name: state.Hello?.channelListData?.customer_name || '',
       tagline: state.Hello?.widgetInfo?.tagline || '',
       hideCloseButton: state.Interface.hideCloseButton || false,
+      isMobileSDK: state.Hello?.helloConfig?.isMobileSDK || false,
     };
   });
 
@@ -332,7 +334,7 @@ const ChatbotDrawer = ({
   ]);
 
   const handleCloseChatbot = () => {
-    if (!window?.parent) return;
+    if (!window?.parent || isMobileSDK) return;
     window.parent.postMessage({ type: "CLOSE_CHATBOT" }, "*");
   };
 
