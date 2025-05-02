@@ -169,7 +169,7 @@ class ChatbotEmbedManager {
                 const interfaceEmbed = document.getElementById('interfaceEmbed');
                 if (interfaceEmbed) {
                     interfaceEmbed.style.display =
-                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher)
+                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher || chatbotManager.helloProps?.isMobileSDK)
                             ? 'none'
                             : 'unset';
                 }
@@ -360,7 +360,7 @@ class ChatbotEmbedManager {
 
     showIconIfReady() {
         if (this.state.interfaceLoaded && this.state.delayElapsed) {
-            if(!chatbotManager.helloProps?.hide_launcher) {
+            if(!chatbotManager.helloProps?.hide_launcher && !chatbotManager.helloProps?.isMobileSDK) {
                 const interfaceEmbed = document.getElementById('interfaceEmbed');
                 if (interfaceEmbed)  interfaceEmbed.style.display = 'block';
             }
@@ -535,6 +535,14 @@ window.chatWidget = {
                 (chatbotManager.props.hideIcon === true || chatbotManager.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher)
                     ? 'none'
                     : 'unset';
+        }
+    },
+    toggleWidget: () => {
+        const iframeContainer = document.getElementById('iframe-parent-container');
+        if (iframeContainer?.style?.display === 'block') {
+            chatbotManager.closeChatbot();
+        } else {
+            chatbotManager.openChatbot();
         }
     }
 };
