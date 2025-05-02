@@ -87,10 +87,12 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
     hideFullScreenButton,
     isHuman,
     teams,
-    currentTeamId
+    currentTeamId,
+    isMobileSDK
   } = useCustomSelector((state: $ReduxCoreType) => {
     const show_close_button=state.Hello?.helloConfig?.show_close_button
     return ({
+    isMobileSDK: state.Hello?.helloConfig?.isMobileSDK || false,
     allowModalSwitch: state.Interface.allowModalSwitch || false,
     hideCloseButton: typeof show_close_button === 'boolean' ? !show_close_button : state.Interface.hideCloseButton || false,
     hideFullScreenButton: state.Interface.hideFullScreenButton || false,
@@ -160,7 +162,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
 
   // Close chatbot handler
   const handleCloseChatbot = () => {
-    if (!window?.parent) return;
+    if (!window?.parent || isMobileSDK) return;
     window.parent.postMessage({ type: "CLOSE_CHATBOT" }, "*");
   };
 
@@ -236,7 +238,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
 
   // Memoized fullscreen toggle button
   const ScreenSizeToggleButton = useMemo(() => {
-    if (!shouldToggleScreenSize || hideFullScreenButton === true || hideFullScreenButton === "true") {
+    if (!shouldToggleScreenSize || hideFullScreenButton === true || hideFullScreenButton === "true" || isMobileSDK) {
       return null;
     }
 

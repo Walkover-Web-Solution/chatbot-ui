@@ -19,6 +19,7 @@ export interface $HelloReduxType {
 
 
 export interface HelloData {
+  isMobileSDK?: boolean;
   widgetToken: string;
   hide_launcher?: boolean;
   show_widget_form?: boolean;
