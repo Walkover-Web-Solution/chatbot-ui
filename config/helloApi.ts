@@ -175,16 +175,25 @@ export async function getHelloChatHistoryApi(channelId: string): Promise<any> {
 }
 
 // Main function to initialize Hello chat
-export async function initializeHelloChat(uniqueId: string | null = null): Promise<any> {
+export async function initializeHelloChat(): Promise<any> {
   try {
-    const { unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
+    // Parse user data from local storage with fallback to empty object
+    const userData = JSON.parse(getLocalStorage('userData') || '{}');
+    const { unique_id, mail, number, user_jwt_token } = userData;
+    // Check if we have any user identification data
+    const hasUserIdentifiers = unique_id || mail || number || user_jwt_token;
+    // Make API request
     const response = await axios.post(
       `${HELLO_HOST_URL}/widget-info/`,
       {
-        "user_data": unique_id ? {
-          "unique_id": unique_id
-        } : {},
-        "is_anon": getLocalStorage("is_anon") == 'true'
+        "user_data": hasUserIdentifiers ? 
+          { 
+            unique_id,
+            mail, 
+            number, 
+            user_jwt_token 
+          } : {},
+        "is_anon": getLocalStorage("is_anon") === 'true'
       },
       {
         headers: {

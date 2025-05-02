@@ -89,7 +89,7 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
     if (validate()) {
       const clientData = {
         n: formData.name,
-        p: `${formData.countryCode}${formData.number}`,
+        p: formData.number ? `${formData.countryCode}${formData.number}` : undefined,
         e: formData.email || "demo@gmail.com",
         user_data: {},
         is_anon: false,
