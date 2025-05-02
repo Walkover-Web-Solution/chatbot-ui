@@ -518,6 +518,27 @@ window.initChatWidget = (data, delay = 0) => {
     }, delay);
 };
 
+// Create chatWidget object with all widget control functions
+window.chatWidget = {
+    open: () => chatbotManager.openChatbot(),
+    close: () => chatbotManager.closeChatbot(),
+    hide: () => {
+        const interfaceEmbed = document.getElementById('interfaceEmbed');
+        const iframeContainer = document.getElementById('iframe-parent-container');
+        if (interfaceEmbed) interfaceEmbed.style.display = 'none';
+        if (iframeContainer) iframeContainer.style.display = 'none';
+    },
+    show: () => {
+        const interfaceEmbed = document.getElementById('interfaceEmbed');
+        if (interfaceEmbed) {
+            interfaceEmbed.style.display = 
+                (chatbotManager.props.hideIcon === true || chatbotManager.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher)
+                    ? 'none'
+                    : 'unset';
+        }
+    }
+};
+
 chatbotManager.initializeChatbot();
 
     window.addEventListener('message', (event) => {
