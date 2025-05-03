@@ -155,6 +155,7 @@ function MessageList() {
     );
   }, [IsHuman, greetingMessage]);
 
+  
   const renderThinkingIndicator = useMemo(() => {
     if (loading && assigned_type === 'bot' && IsHuman) {
       return (
