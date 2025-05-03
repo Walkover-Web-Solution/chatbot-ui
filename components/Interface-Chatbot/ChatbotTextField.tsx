@@ -111,6 +111,10 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
       const uploadPromises = filesArray.map(async (file) => {
         if (IsHuman) {
           const response = await uploadAttachmentToHello(file, inbox_id);
+          if(!response) {
+            errorToast("Failed to upload images. Please try again.");
+            return null;
+          }
           return response?.data?.[0];
         } else {
           const formData = new FormData();
