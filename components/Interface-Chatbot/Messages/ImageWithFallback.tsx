@@ -27,7 +27,9 @@ const ImageWithFallback = ({ src, alt = "attachment", style, canDownload = true,
   const downloadFile = () => {
     window.parent.postMessage({
       type: "downloadAttachment",
-      url: src
+      data:{
+        url: src
+      }
     }, "*");
   };
 

@@ -321,7 +321,7 @@ export const removeCookie = (cookieName) => {
 
 export const setLocalStorage = (key, value='') => {
   localStorage.setItem(key, value);
-  if(key === 'WidgetId'){
+  if(key === 'WidgetId' || key === 'k_clientId' || key === 'a_clientId'){
     window.dispatchEvent(new CustomEvent("localstorage-updated", {
       detail: { key, value }
     }));
