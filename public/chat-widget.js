@@ -82,7 +82,6 @@ class ChatbotEmbedManager {
 
     handleIncomingMessages(event) {
         const { type, data } = event.data || {};
-
         switch (type) {
             case 'CLOSE_CHATBOT':
                 this.closeChatbot();
@@ -100,6 +99,13 @@ class ChatbotEmbedManager {
             case 'initializeHelloChat_failed':
                 block_chatbot = true;
                 this.cleanupChatbot();
+                break;
+            case 'hide_widget':
+                block_chatbot = true;
+                this.cleanupChatbot();
+                break;
+            case 'launch_widget':
+                this.openChatbot();
                 break;
             case 'downloadAttachment':
                 this.handleDownloadAttachment(data);

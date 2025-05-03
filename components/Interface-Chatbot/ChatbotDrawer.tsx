@@ -75,7 +75,8 @@ const ChatbotDrawer = ({
     isHuman,
     Name,
     tagline,
-    hideCloseButton
+    hideCloseButton,
+    enable_call
   } = useCustomSelector((state: $ReduxCoreType) => {
     const bridgeName = GetSessionStorageData("bridgeName") || state.appInfo?.bridgeName || "root";
     const threadId = GetSessionStorageData("threadId") || state.appInfo?.threadId || "";
@@ -90,10 +91,11 @@ const ChatbotDrawer = ({
       isHuman: state.Hello?.isHuman || false,
       Name: state.Hello?.channelListData?.customer_name || '',
       tagline: state.Hello?.widgetInfo?.tagline || '',
-      hideCloseButton: state.Interface.hideCloseButton || false
+      hideCloseButton: state.Interface.hideCloseButton || false,
+      enable_call: state.Hello?.widgetInfo?.enable_call || false
     };
   });
-
+  
   // Handlers
   const handleCreateNewSubThread = async () => {
     if (preview) return;
@@ -306,7 +308,7 @@ const ChatbotDrawer = ({
         </div>
       </div>
 
-      <div className="marketing-banner mt-4 p-3 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg">
+      {enable_call && <div className="marketing-banner mt-4 p-3 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg">
         <p className="text-sm font-medium">Need specialized help?</p>
         <p className="text-xs">Our teams are ready to assist you with any questions</p>
         <button
@@ -316,7 +318,7 @@ const ChatbotDrawer = ({
         >
           Call Us
         </button>
-      </div>
+      </div>}
     </div>
   ), [
     channelList,
@@ -324,6 +326,7 @@ const ChatbotDrawer = ({
     currentChatId,
     currentTeamId,
     callState,
+    enable_call,
     theme.palette.primary.main,
     handleChangeChannel,
     handleChangeTeam,

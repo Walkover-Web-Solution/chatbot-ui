@@ -88,7 +88,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
     isHuman,
     teams,
     currentTeamId,
-    isMobileSDK
+    isMobileSDK,
+    enable_call
   } = useCustomSelector((state: $ReduxCoreType) => {
     const show_close_button=state.Hello?.helloConfig?.show_close_button
     return ({
@@ -112,9 +113,9 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
       GetSessionStorageData("threadId") || state.appInfo?.threadId
       ] || [],
     isHuman: state.Hello?.isHuman || false,
-
+    enable_call: state.Hello?.widgetInfo?.enable_call 
   })});
-
+  console.log(enable_call,'enable_call');
   // Determine if we should show the create thread button
   const showCreateThreadButton = useMemo(() => {
     return !isHuman && !(subThreadList?.length < 2 && (!messageIds || messageIds.length === 0));
@@ -277,7 +278,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
 
   // Memoized call button
   const CallButton = useMemo(() => {
-    if (!isHuman) return null;
+    if (!isHuman ) return null;
+    if(!enable_call) return null;
 
     const isCallDisabled = callState !== "idle";
 
@@ -294,7 +296,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
         </div>
       </div>
     );
-  }, [isHuman, callState, handleVoiceCall]);
+  }, [isHuman, callState, handleVoiceCall, enable_call]);
 
   return (
     <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-3 py-1 w-full">
