@@ -62,7 +62,8 @@ export async function getAllChannels(): Promise<any> {
           "unique_id": unique_id,
           "mail": mail,
           "number": number,
-          "user_jwt_token": user_jwt_token
+          "user_jwt_token": user_jwt_token,
+          "name": name
         },
         is_anon: getLocalStorage('is_anon') == 'true',
         ...(getLocalStorage('is_anon') == 'true' ? { anonymous_client_uuid: getLocalStorage('a_clientId') , uuid: getLocalStorage('a_clientId')}:{})
@@ -94,11 +95,16 @@ export async function getAllChannels(): Promise<any> {
 }
 
 // Get agent team list
-export async function getAgentTeamApi(uniqueId: string): Promise<any> {
+export async function getAgentTeamApi(): Promise<any> {
   try {
+    const { name, mail, number, user_jwt_token ,unique_id} = JSON.parse(getLocalStorage('userData') || '{}');
     const response = await axios.post(`${HELLO_HOST_URL}/agent-team/`, {
-      user_data: !uniqueId ? {} : {
-        "unique_id": uniqueId
+      user_data: {
+        "unique_id": unique_id,
+        "name": name,
+        "mail": mail,
+        "number": number,
+        "user_jwt_token": user_jwt_token
       },
       is_anon: getLocalStorage("is_anon") == 'true',
     }, {
@@ -138,7 +144,13 @@ export async function saveClientDetails(clientData: any): Promise<any> {
       },
     });
     if (response?.data) {
-      setLocalStorage("client", response?.data);
+      const existingUserData = JSON.parse(getLocalStorage('userData') || '{}');
+      setLocalStorage("userData", JSON.stringify({
+        ...existingUserData,
+        name: response.data.n || clientData.n,
+        email: response.data.e || clientData.e,
+        number: response.data.p ? response.data.p.replace(/^\+/, '') : (clientData.p ? clientData.p.replace(/^\+/, '') : ''),
+      }));
     }
     return response?.data;
   } catch (error: any) {
@@ -150,6 +162,7 @@ export async function saveClientDetails(clientData: any): Promise<any> {
 // Get chat history
 export async function getHelloChatHistoryApi(channelId: string): Promise<any> {
   try {
+    const { name, mail, number, user_jwt_token ,unique_id} = JSON.parse(getLocalStorage('userData') || '{}');
     const response = await axios.post(
       `${HELLO_HOST_URL}/get-history/`,
       {
@@ -157,7 +170,13 @@ export async function getHelloChatHistoryApi(channelId: string): Promise<any> {
         origin: "chat",
         page_size: 30,
         start_from: 1,
-        user_data: {},
+        user_data: {
+          "unique_id": unique_id,
+          "name": name,
+          "mail": mail,
+          "number": number,
+          "user_jwt_token": user_jwt_token
+        },
         is_anon: getLocalStorage("is_anon") == 'true',
       },
       {
@@ -179,7 +198,7 @@ export async function initializeHelloChat(): Promise<any> {
   try {
     // Parse user data from local storage with fallback to empty object
     const userData = JSON.parse(getLocalStorage('userData') || '{}');
-    const { unique_id, mail, number, user_jwt_token } = userData;
+    const { unique_id, mail, number, user_jwt_token ,name} = userData;
     // Check if we have any user identification data
     const hasUserIdentifiers = unique_id || mail || number || user_jwt_token;
     // Make API request
@@ -191,7 +210,8 @@ export async function initializeHelloChat(): Promise<any> {
             unique_id,
             mail, 
             number, 
-            user_jwt_token 
+            user_jwt_token,
+            name
           } : {},
         "is_anon": getLocalStorage("is_anon") === 'true'
       },
@@ -211,6 +231,7 @@ export async function initializeHelloChat(): Promise<any> {
 
 // Function to send message to Hello chat
 export async function sendMessageToHelloApi(message: string, attachment: Array<object> = [], channelDetail?: any, chat_id?: string): Promise<any> {
+  const { name, mail, number, user_jwt_token ,unique_id} = JSON.parse(getLocalStorage('userData') || '{}');
   let messageType = 'text'
   // Determine message type based on attachment and message content
   if (attachment?.length > 0) {
@@ -234,7 +255,13 @@ export async function sendMessageToHelloApi(message: string, attachment: Array<o
         ...(!chat_id ? { channelDetail } : {}),
         chat_id: chat_id ? chat_id : null,
         session_id: null,
-        user_data: {},
+        user_data: {
+          "unique_id": unique_id,
+          "name": name,
+          "mail": mail,
+          "number": number,
+          "user_jwt_token": user_jwt_token  
+        },
         is_anon: getLocalStorage("is_anon") == 'true',
       },
       {
@@ -324,7 +351,7 @@ export async function getCallToken(): Promise<any> {
 
 // Function to add domain to Hello chat
 export async function addDomainToHello(domain?: string): Promise<any> {
-  const { mail, number, user_jwt_token, unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
+  const { mail, number, user_jwt_token, unique_id ,name} = JSON.parse(getLocalStorage('userData') || '{}');
   try {
     const response = await axios.put(
       `${HELLO_HOST_URL}/add-domain/`,
@@ -335,6 +362,7 @@ export async function addDomainToHello(domain?: string): Promise<any> {
           unique_id: unique_id,
           user_jwt_token: user_jwt_token,
           number: number,
+          name: name
         },
         is_anon: getLocalStorage("is_anon") == 'true'
       },
@@ -379,7 +407,7 @@ export async function submitFeedback(params: {
   id: number;
 }): Promise<any> {
   try {
-    const {unique_id, mail, number, user_jwt_token} = JSON.parse(getLocalStorage('userData') || '{}');
+    const {unique_id, mail, number, user_jwt_token,name} = JSON.parse(getLocalStorage('userData') || '{}');
     const response = await axios.post(
       `${HELLO_HOST_URL}/receive-feedback/`,
       {
@@ -392,7 +420,8 @@ export async function submitFeedback(params: {
           "unique_id": unique_id,
           "mail": mail,
           "number": number,
-          "user_jwt_token": user_jwt_token
+          "user_jwt_token": user_jwt_token,
+          "name": name
         },
         is_anon: getLocalStorage("is_anon") == 'true'
       },
