@@ -173,7 +173,7 @@ class ChatbotEmbedManager {
                 const interfaceEmbed = document.getElementById('interfaceEmbed');
                 if (interfaceEmbed) {
                     interfaceEmbed.style.display =
-                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher || chatbotManager.helloProps?.isMobileSDK)
+                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher)
                             ? 'none'
                             : 'unset';
                 }
@@ -364,40 +364,11 @@ class ChatbotEmbedManager {
 
     showIconIfReady() {
         if (this.state.interfaceLoaded && this.state.delayElapsed) {
-            if(!chatbotManager.helloProps?.hide_launcher && !chatbotManager.helloProps?.isMobileSDK) {
+            if(!chatbotManager.helloProps?.hide_launcher) {
                 const interfaceEmbed = document.getElementById('interfaceEmbed');
                 if (interfaceEmbed)  interfaceEmbed.style.display = 'block';
             }
             if(chatbotManager.helloProps?.launch_widget)  chatbotManager.openChatbot()
-            if(chatbotManager.helloProps?.icon_position==='left') {
-                interfaceEmbed.classList.add('left_all_child')
-                document.getElementById('iframe-parent-container').classList.add('left_all_child')
-            }
-            if(chatbotManager.helloProps?.icon_position==='right') {
-                interfaceEmbed.classList.add('right_all_child')
-                document.getElementById('iframe-parent-container').classList.add('right_all_child')
-            }
-            const bottomMargin = chatbotManager.helloProps?.icon_bottom_margin
-            if(bottomMargin) {
-                interfaceEmbed.style.bottom = typeof bottomMargin === 'number' 
-                ? `${bottomMargin}px` 
-                : bottomMargin;
-              
-              // Apply to all children
-              Array.from(interfaceEmbed.children).forEach(child => {
-                child.style.bottom = typeof bottomMargin === 'number' 
-                  ? `${bottomMargin}px` 
-                  : bottomMargin;
-              });
-
-
-                document.getElementById('iframe-parent-container').style.bottom = typeof bottomMargin === 'number'   ? `${bottomMargin}px` : bottomMargin;
-            }
-
-
-
-
-
             this.sendInitialData();
         }
     }
@@ -582,7 +553,7 @@ window.chatWidget = {
 
 chatbotManager.initializeChatbot();
 
-window.addEventListener('message', (event) => {
+    window.addEventListener('message', (event) => {
         const receivedMessage = event.data;
         if(receivedMessage.type === 'initializeHelloChat_failed'){
             block_chatbot=true
