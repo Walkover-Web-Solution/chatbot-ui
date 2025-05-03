@@ -14,8 +14,8 @@ class ChatbotEmbedManager {
             buttonName: ''
         };
         this.urls = {
-            chatbotUrl: 'https://blacksea.msg91.com/chatbot',
-            styleSheet: 'https://blacksea.msg91.com/chat-widget-style.css',
+            chatbotUrl: 'https://shubhendraagrawal.msg91.com/chatbot',
+            styleSheet: 'https://shubhendraagrawal.msg91.com/chat-widget-style.css',
         };
         this.icons = {
             white: this.makeImageUrl('b1357e23-2fc6-4dc3-855a-7a213b1fa100'),
