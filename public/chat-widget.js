@@ -224,7 +224,7 @@ class ChatbotEmbedManager {
                 const interfaceEmbed = document.getElementById('interfaceEmbed');
                 if (interfaceEmbed) {
                     interfaceEmbed.style.display =
-                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher || chatbotManager.helloProps?.isMobileSDK)
+                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher)
                             ? 'none'
                             : 'unset';
                 }
@@ -630,4 +630,3 @@ window.chatWidget = {
 };
 
 chatbotManager.initializeChatbot();
-
