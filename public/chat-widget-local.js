@@ -369,35 +369,6 @@ class ChatbotEmbedManager {
                 if (interfaceEmbed)  interfaceEmbed.style.display = 'block';
             }
             if(chatbotManager.helloProps?.launch_widget)  chatbotManager.openChatbot()
-            if(chatbotManager.helloProps?.icon_position==='left') {
-                interfaceEmbed.classList.add('left_all_child')
-                document.getElementById('iframe-parent-container').classList.add('left_all_child')
-            }
-            if(chatbotManager.helloProps?.icon_position==='right') {
-                interfaceEmbed.classList.add('right_all_child')
-                document.getElementById('iframe-parent-container').classList.add('right_all_child')
-            }
-            const bottomMargin = chatbotManager.helloProps?.icon_bottom_margin
-            if(bottomMargin) {
-                interfaceEmbed.style.bottom = typeof bottomMargin === 'number' 
-                ? `${bottomMargin}px` 
-                : bottomMargin;
-              
-              // Apply to all children
-              Array.from(interfaceEmbed.children).forEach(child => {
-                child.style.bottom = typeof bottomMargin === 'number' 
-                  ? `${bottomMargin}px` 
-                  : bottomMargin;
-              });
-
-
-                document.getElementById('iframe-parent-container').style.bottom = typeof bottomMargin === 'number'   ? `${bottomMargin}px` : bottomMargin;
-            }
-
-
-
-
-
             this.sendInitialData();
         }
     }

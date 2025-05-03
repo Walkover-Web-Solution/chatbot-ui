@@ -158,7 +158,7 @@ function MessageList() {
   const renderThinkingIndicator = useMemo(() => {
     if (loading && assigned_type === 'bot' && IsHuman) {
       return (
-        <div className="w-full flex flex-col px-1">
+        <div className="w-full">
           <div className="flex flex-wrap gap-2 items-center">
             <p className="text-sm">Thinking...</p>
           </div>
@@ -194,7 +194,6 @@ function MessageList() {
           dataLength={messageIds.length}
           next={getMoreChats}
           hasMore={hasMoreMessages}
-          style={{overflowX: 'hidden'}}
           inverse={true}
           scrollableTarget="message-container"
           scrollThreshold="200px"
