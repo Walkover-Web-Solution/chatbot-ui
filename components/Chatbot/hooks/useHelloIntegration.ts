@@ -316,6 +316,12 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
           if (!widgetData) {
             window.parent.postMessage({ type: 'initializeHelloChat_failed' }, '*');
           }
+          if (widgetData?.hide_launcher) {
+            window.parent.postMessage({ type: 'hide_widget' }, '*');
+          }
+          if (widgetData?.launch_widget) {
+            window.parent.postMessage({ type: 'launch_widget' }, '*');
+          }
 
           dispatch(setWidgetInfo(widgetData));
           handleThemeChange(widgetData?.primary_color || "#000000");

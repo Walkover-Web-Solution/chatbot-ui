@@ -66,6 +66,9 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
     if (!formData.name) {
       tempErrors.name = "Name is required";
       isValid = false;
+    } else if (formData.name.length > 26) {
+      tempErrors.name = "Name cannot exceed 26 characters";
+      isValid = false;
     }
 
     // Email is optional, but validate if present
