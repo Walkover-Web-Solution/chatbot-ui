@@ -194,7 +194,6 @@ function MessageList() {
           dataLength={messageIds.length}
           next={getMoreChats}
           hasMore={hasMoreMessages}
-          style={{overflowX: 'hidden'}}
           inverse={true}
           scrollableTarget="message-container"
           scrollThreshold="200px"
