@@ -16,7 +16,8 @@ export const initialState: $HelloReduxType = {
   currentChatId: '',
   currentTeamId: '',
   greeting: {},
-  showWidgetForm: null
+  showWidgetForm: null,
+  is_anon: false
 };
 
 export const reducers: ValidateSliceCaseReducers<
@@ -69,11 +70,10 @@ export const reducers: ValidateSliceCaseReducers<
     const payload = action.payload;
     if (payload && typeof payload === 'object') {
       Object.keys(payload).forEach(key => {
-        if (key in state) {
           // This ensures we only set properties that exist in $HelloReduxType
           (state as Record<keyof $HelloReduxType, any>)[key as keyof $HelloReduxType] =
             payload[key as keyof $HelloReduxType];
-        }
+
       });
     }
   },

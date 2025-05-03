@@ -86,7 +86,18 @@ export async function getAllChannels(): Promise<any> {
     } else if(response?.data?.customer_name){
       setLocalStorage('default_client_created', 'true')
     }
-
+    
+    // Update userData with customer details from response if available
+    if (response?.data?.customer_name || response?.data?.customer_number || response?.data?.customer_mail) {
+      const userData = JSON.parse(getLocalStorage('client') || '{}');
+      const updatedUserData = {
+        ...userData,
+        name: response?.data?.customer_name || userData.name,
+        number: response?.data?.customer_number?.replace(/^\+/, '') || userData.number,
+        mail: response?.data?.customer_mail || userData.mail
+      };
+      setLocalStorage('client', JSON.stringify(updatedUserData));
+    }
     return response?.data || [];
   } catch (error: any) {
     errorToast(error?.response?.data?.message || "Failed to get channels");
@@ -138,18 +149,21 @@ export async function getGreetingQuestions(companyId: string, botId: string): Pr
 // Save client details
 export async function saveClientDetails(clientData: any): Promise<any> {
   try {
+    const countryCode = clientData?.country_code;
+    delete clientData?.country_code;
     const response = await axios.put(`${HELLO_HOST_URL}/client/`, clientData, {
       headers: {
         authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
       },
     });
     if (response?.data) {
-      const existingUserData = JSON.parse(getLocalStorage('userData') || '{}');
-      setLocalStorage("userData", JSON.stringify({
+      const existingUserData = JSON.parse(getLocalStorage('client') || '{}');
+      setLocalStorage("client", JSON.stringify({
         ...existingUserData,
-        name: response.data.n || clientData.n,
-        email: response.data.e || clientData.e,
-        number: response.data.p ? response.data.p.replace(/^\+/, '') : (clientData.p ? clientData.p.replace(/^\+/, '') : ''),
+        name: response?.data?.n || clientData?.n,
+        email: response?.data?.e || clientData?.e,
+        number: response?.data?.p ? response?.data?.p?.replace(/^\+/, '') : (clientData?.p ? clientData?.p?.replace(/^\+/, '') : ''),
+        country_code: countryCode,
       }));
     }
     return response?.data;
@@ -273,7 +287,7 @@ export async function sendMessageToHelloApi(message: string, attachment: Array<o
     );
 
     if (channelDetail) {
-      setLocalStorage("is_anon", "false");
+      setLocalStorage('is_anon', "false");
     }
     return response?.data?.data;
   } catch (error: any) {

@@ -62,60 +62,65 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
         name,
         ...restProps
       } = event.data.data;
-    
+
       const prevWidgetId = getLocalStorage('WidgetId');
       const prevUser = JSON.parse(getLocalStorage('userData') || '{}');
-      const hasUserIdentity = Boolean(unique_id || mail || number || user_jwt_token);
-    
+      const hasUserIdentity = Boolean(unique_id || mail || number || user_jwt_token || name);
+
       // Helper: reset Redux keys and sub-thread
       const resetKeys = () => {
         dispatch(setHelloKeysData({ currentChannelId: '', currentChatId: '', currentTeamId: '' }));
         dispatch(setDataInAppInfoReducer({ subThreadId: '' }));
       };
-    
+
       // 1. Widget token changed
       if (widgetToken !== prevWidgetId) {
         resetKeys();
-        ['a_clientId', 'k_clientId', 'userData', 'default_client_created'].forEach(key => setLocalStorage(key, ''));
+        ['a_clientId', 'k_clientId', 'userData', 'client', 'default_client_created'].forEach(key => setLocalStorage(key, ''));
         setLocalStorage('is_anon', hasUserIdentity ? 'false' : 'true');
       }
-    
+
       // 2. User identity changed
       if (unique_id !== prevUser.unique_id) {
         resetKeys();
       }
-    
+
       // 3. Update stored userData
+      const { mail: clientMail, number: clientNumber, name: clientName, country_code: clientCountryCode } = JSON.parse(getLocalStorage('client') || '{}');
+
+      setLocalStorage('client', JSON.stringify({ mail: clientMail || mail, number: clientNumber || number, name: clientName || name, country_code: clientCountryCode || "+91" }));
+
       setLocalStorage('userData', JSON.stringify({ unique_id, mail, number, user_jwt_token, name }));
-    
+
       // 4. Anonymous cleanup when no identity
       if (!hasUserIdentity && getLocalStorage('k_clientId')) {
         resetKeys();
         setLocalStorage('k_clientId', '');
       }
-    
+
       // 5. Determine anonymity status
       const defaultClientCreated = getLocalStorage('default_client_created') === 'true';
       const isAnon = hasUserIdentity || defaultClientCreated ? 'false' : 'true';
+
       if (getLocalStorage('is_anon') !== isAnon) {
         resetKeys();
       }
       setLocalStorage('is_anon', isAnon);
-    
+
       // 6. Hide widget form for identified users
       if (hasUserIdentity) {
         dispatch(setHelloKeysData({ showWidgetForm: false }));
       }
-    
+
       // 7. Map additional interface props
       Object.entries(restProps).forEach(([key, value]) => {
         const mappedKey = helloToChatbotPropsMap[key];
         if (!mappedKey) return;
-    
+
         const finalValue = mappedKey === 'hideCloseButton' ? !value : value;
         dispatch(setDataInInterfaceRedux({ [mappedKey]: finalValue }));
       });
-    
+
       // 8. Persist new widget token and config
       setLocalStorage('WidgetId', widgetToken);
       dispatch(setHelloConfig(event.data.data));
