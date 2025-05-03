@@ -89,15 +89,31 @@ export const reducers: ValidateSliceCaseReducers<
     // When using Immer, we should either modify the draft OR return a new state, not both
   },
 
-  setUnReadCount(state, action: actionType<{ channel: string, resetCount?: boolean , channelId?: string }>) {
+  setUnReadCount(state, action: actionType<{ channelId?: string, resetCount?: boolean }>) {
     const { channelId = state.currentChannelId, resetCount = false } = action.payload;
-    const channel = state.channelListData?.channels?.find((channel: any) => channel?.channel === channelId);
-    if (channel) {
-      if (resetCount) {
-        channel.widget_unread_count = 0;
-      } else {
-        channel.widget_unread_count = (channel.widget_unread_count || 0) + 1;
-      }
+    
+    if (!state.channelListData?.channels?.length) return;
+    
+    const channelIndex = state.channelListData.channels.findIndex(
+      (channel: any) => channel.channel === channelId
+    );
+    
+    if (channelIndex === -1) return;
+    
+    const channel = state.channelListData.channels[channelIndex];
+    
+    // Update unread count
+    if (resetCount) {
+      channel.widget_unread_count = 0;
+    } else {
+      channel.widget_unread_count = (channel.widget_unread_count || 0) + 1;
+    }
+    
+    // Always move channel to top of the list regardless of reset status
+    if (channelIndex > 0) {
+      // Remove channel from current position and add to beginning
+      const [movedChannel] = state.channelListData.channels.splice(channelIndex, 1);
+      state.channelListData.channels.unshift(movedChannel);
     }
   }
 };

@@ -58,12 +58,11 @@ export const useSocketEvents = ({
         const { type } = message || {};
 
         // Handle unread count updates
-        if (message?.new_event) {
+        if (message?.new_event && (type === 'chat' || type === 'feedback')) {
             const channelId = message?.channel;
             const isCurrentChannel = isSameChannel(channelId);
             const shouldResetCount = isCurrentChannel && 
                 ((isToggledrawer && !isSmallScreen) || (isSmallScreen && !isToggledrawer));
-            
             dispatch(setUnReadCount({ 
                 channelId, 
                 resetCount: shouldResetCount || false 

@@ -8,6 +8,7 @@ import { Mail, Phone, Send, User } from "lucide-react";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import countryCodes from "@/assests/countryCode.json";
+import { getLocalStorage } from "@/utils/utilities";
 
 interface FormComponentProps {
   open: boolean;
@@ -37,10 +38,11 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
   const dispatch = useDispatch();
   const backgroundColor = theme.palette.primary.main;
   const textColor = isColorLight(backgroundColor) ? "black" : "white";
+  const userData = JSON.parse(getLocalStorage("userData") || "{}");
   const [formData, setFormData] = useState<FormData>({
-    name: "",
-    email: "",
-    number: "",
+    name: userData?.name || "",
+    email: userData?.email || "",
+    number: userData?.number || "",
     countryCode: "+91"
   });
 
@@ -88,10 +90,12 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
     e.preventDefault();
     if (validate()) {
       const clientData = {
-        n: formData.name,
-        p: formData.number ? `${formData.countryCode}${formData.number}` : undefined,
-        e: formData.email || "demo@gmail.com",
-        user_data: {},
+        n: formData?.name,
+        p: formData?.number ? `${formData?.countryCode}${formData?.number}` : undefined,
+        e: formData?.email,
+        user_data: {
+          
+        },
         is_anon: false,
       }
 
