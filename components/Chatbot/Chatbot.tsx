@@ -151,7 +151,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
           )}
 
           {/* Form and UI components */}
-          {IsHuman && show_widget_form && (
+          {IsHuman && show_widget_form && subThreadId &&(
             <FormComponent
               open={openHelloForm}
               setOpen={(isFormOpen: boolean) =>

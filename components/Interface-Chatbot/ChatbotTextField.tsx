@@ -14,6 +14,7 @@ import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } 
 import { MessageContext } from "./InterfaceChatbot";
 import { useTypingStatus } from "@/hooks/socketEventEmitter";
 import ImageWithFallback from "./Messages/ImageWithFallback";
+import { debounce } from "lodash";
 
 interface ChatbotTextFieldProps {
   className?: string;
@@ -28,11 +29,13 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
   const isLight = isColorLight(theme.palette.primary.main);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const emitTypingStatus = useTypingStatus();
-  const { IsHuman, mode, inbox_id, show_send_button } = useCustomSelector((state: $ReduxCoreType) => ({
+
+  const { IsHuman, mode, inbox_id, show_send_button, subThreadId } = useCustomSelector((state: $ReduxCoreType) => ({
     IsHuman: state.Hello?.isHuman,
     mode: state.Hello?.mode || [],
     inbox_id: state.Hello?.widgetInfo?.inbox_id,
-    show_send_button:  typeof state.Hello?.helloConfig?.show_send_button === 'boolean' ? state.Hello?.helloConfig?.show_send_button : true
+    show_send_button: typeof state.Hello?.helloConfig?.show_send_button === 'boolean' ? state.Hello?.helloConfig?.show_send_button : true,
+    subThreadId: state.appInfo?.subThreadId
   }));
 
   const reduxIsVision = useCustomSelector(
@@ -51,19 +54,16 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
     isTyping
   } = useContext(MessageContext);
 
-  // Determine if vision is enabled based on various conditions
   const isVisionEnabled = useMemo(() =>
     (reduxIsVision?.vision || mode?.includes("vision")) || IsHuman,
     [reduxIsVision, mode, IsHuman]
   );
 
-  // Determine if the send button should be disabled
   const buttonDisabled = useMemo(() =>
     loading || isUploading || (!inputValue.trim() && images.length === 0),
     [loading, isUploading, inputValue, images]
   );
 
-  // Handle Enter key press to send message
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey && !buttonDisabled) {
       event.preventDefault();
@@ -71,7 +71,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
     }
   };
 
-  // Function to send messages based on user type
   const handleSendMessage = useCallback((messageObj: { message?: string } = {}) => {
     if (IsHuman) {
       sendMessageToHello?.();
@@ -81,7 +80,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
     }
   }, [IsHuman, sendMessage, sendMessageToHello]);
 
-  // Listen for "open" message events to focus the input field
   const handleMessage = useCallback((event: MessageEvent) => {
     if (event?.data?.type === "open") {
       messageRef?.current?.focus();
@@ -95,7 +93,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
     };
   }, [handleMessage]);
 
-  // Handle image upload function
   const handleImageUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
@@ -136,17 +133,14 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
     }
   }, [images, setImages, IsHuman, inbox_id]);
 
-  // Handle removing an image from the preview
   const handleRemoveImage = useCallback((index: number) => {
     setImages(images.filter((_, i) => i !== index));
   }, [images, setImages]);
 
-  // Focus the text field when the container is clicked
   const focusTextField = useCallback(() => {
     messageRef?.current?.focus();
   }, [messageRef]);
 
-  // Scroll options horizontally on mobile
   const scrollOptions = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     const container = e.currentTarget.parentElement?.querySelector('.overflow-x-auto');
@@ -155,23 +149,35 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
     }
   }, []);
 
-  // Handle text input changes
+  const debouncedStopTyping = useMemo(
+    () => debounce(() => emitTypingStatus("not-typing"), 2000),
+    [emitTypingStatus]
+  );
+
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (messageRef.current) {
       messageRef.current.value = value;
     }
     setInputValue(value);
-    if(IsHuman){
+
+    if (IsHuman) {
       if (value.trim()) {
         emitTypingStatus("typing");
+        debouncedStopTyping();
       } else {
         emitTypingStatus("not-typing");
+        debouncedStopTyping.cancel();
       }
     }
-  }, [messageRef]);
+  }, [messageRef, IsHuman, emitTypingStatus, debouncedStopTyping]);
 
-  // Memoized option buttons
+  useEffect(() => {
+    return () => {
+      debouncedStopTyping.cancel();
+    };
+  }, [debouncedStopTyping]);
+
   const optionButtons = useMemo(() => {
     if (!options || options.length === 0) return null;
 
@@ -200,7 +206,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
     );
   }, [options, handleSendMessage, scrollOptions]);
 
-  // Memoized image previews
   const imagePreviewsSection = useMemo(() => {
     if (images.length === 0) return null;
 
@@ -209,13 +214,13 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
         {images.map((image, index) => (
           <div key={index} className="relative group">
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden shadow-md transition-transform hover:scale-105">
-               <ImageWithFallback 
-                      src={IsHuman ? image?.path : image}
-                      alt={`Uploaded Preview ${index + 1}`}
-                      style={{width:128,height:128}}
-                     canDownload={false}
-                     preview={true}
-                    />
+              <ImageWithFallback 
+                src={IsHuman ? image?.path : image}
+                alt={`Uploaded Preview ${index + 1}`}
+                style={{ width: 128, height: 128 }}
+                canDownload={false}
+                preview={true}
+              />
             </div>
             <button
               onClick={() => handleRemoveImage(index)}
@@ -230,7 +235,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
     );
   }, [images, IsHuman, handleRemoveImage]);
 
-  // Memoized text field styles
   const textFieldStyles = useMemo(() => ({
     '& .MuiOutlinedInput-root': {
       padding: '8px',
@@ -246,7 +250,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
     },
   }), []);
 
-  // Memoized AI icon for the input area
   const aiIconElement = useMemo(() => {
     if (IsHuman) return null;
 
@@ -263,9 +266,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
     );
   }, [IsHuman]);
 
-  // Memoized upload button
   const uploadButton = useMemo(() => {
-    if (!isVisionEnabled) return null;
+    if (!isVisionEnabled || (IsHuman && !subThreadId)) return null;
 
     return (
       <>
@@ -278,7 +280,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
           multiple
           ref={fileInputRef}
         />
-        <label htmlFor="upload-image" className="cursor-pointer">
+      <label htmlFor="upload-image" className="cursor-pointer">
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-gray-300 bg-white shadow-sm hover:bg-gray-100 transition-all duration-200 group">
             {isUploading ? (
               <div className="flex items-center gap-1.5">
@@ -326,17 +328,19 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
               {uploadButton}
             </div>
 
-           {show_send_button ? <button
-              onClick={() => !buttonDisabled && handleSendMessage()}
-              className="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:scale-105 transition-transform duration-200"
-              disabled={buttonDisabled}
-              style={{
-                backgroundColor: buttonDisabled ? '#d1d5db' : theme.palette.primary.main
-              }}
-              aria-label="Send message"
-            >
-              <Send className={`w-3 h-3 md:w-4 md:h-4 ${isLight ? 'text-black' : 'text-white'}`} />
-            </button> : null}
+            {show_send_button ? (
+              <button
+                onClick={() => !buttonDisabled && handleSendMessage()}
+                className="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:scale-105 transition-transform duration-200"
+                disabled={buttonDisabled}
+                style={{
+                  backgroundColor: buttonDisabled ? '#d1d5db' : theme.palette.primary.main
+                }}
+                aria-label="Send message"
+              >
+                <Send className={`w-3 h-3 md:w-4 md:h-4 ${isLight ? 'text-black' : 'text-white'}`} />
+              </button>
+            ) : null}
           </div>
         </div>
       </div>

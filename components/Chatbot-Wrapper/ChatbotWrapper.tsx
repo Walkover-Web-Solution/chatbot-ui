@@ -76,7 +76,7 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
       // 1. Widget token changed
       if (widgetToken !== prevWidgetId) {
         resetKeys();
-        ['a_clientId', 'k_clientId', 'client', 'default_client_created'].forEach(key => setLocalStorage(key, ''));
+        ['a_clientId', 'k_clientId', 'userData', 'default_client_created'].forEach(key => setLocalStorage(key, ''));
         setLocalStorage('is_anon', hasUserIdentity ? 'false' : 'true');
       }
     
