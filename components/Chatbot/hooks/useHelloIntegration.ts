@@ -15,6 +15,7 @@ import helloVoiceService from './HelloVoiceService';
 import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
+import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 
 interface HelloMessage {
   role: string;
@@ -267,9 +268,12 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     };
   }, []);
 
-  const handleStorageUpdate = (e: StorageEvent) => {
+  const handleStorageUpdate = (e: CustomEvent<{ key: string, value: string }>) => {
     if (e.detail.key === 'WidgetId') {
       initializeHelloServices(e.detail.value);
+    }
+    if(e.detail.key === 'k_clientId' || e.detail.key === 'a_clientId'){
+      emitEventToParent('uuid', { uuid: e.detail?.value });
     }
   };
 

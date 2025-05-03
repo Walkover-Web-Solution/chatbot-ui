@@ -97,7 +97,52 @@ class ChatbotEmbedManager {
                 this.state.interfaceLoaded = true;
                 this.showIconIfReady();
                 break;
+            case 'initializeHelloChat_failed':
+                block_chatbot = true;
+                this.cleanupChatbot();
+                break;
+            case 'downloadAttachment':
+                this.handleDownloadAttachment(data);
+                break;
+            case 'uuid':
+                this.setUUID(data?.uuid);
+                break;
         }
+    }
+
+    handleDownloadAttachment(data) {
+        if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'downloadAttachment', data: data?.url }));
+            return
+        }
+        const url = data?.url;
+
+        fetch(url)
+            .then(response => response.blob())
+            .then(blob => {
+                const blobUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+
+                // Try to extract filename from URL
+                const filename = url.split("/").pop()?.split("?")[0] || "download";
+
+                link.href = blobUrl;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(blobUrl);
+            })
+            .catch(err => {
+                console.error("Download failed:", err);
+            });
+    }
+
+    setUUID(uuid) {
+            this.uuid = uuid;
+            if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'uuid', data: { uuid } }));
+            }
     }
 
     setupResizeObserver() {
@@ -148,7 +193,7 @@ class ChatbotEmbedManager {
     }
 
     closeChatbot() {
-        if(chatbotManager.helloProps?.isMobileSDK && window.ReactNativeWebView){
+        if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage?.(JSON.stringify({ type: 'close', data: {} }));
             return
         }
@@ -257,7 +302,7 @@ class ChatbotEmbedManager {
             child.addEventListener('click', () => window.openChatbot());
         });
     }
-    
+
 
     async loadChatbotEmbed() {
         try {
@@ -364,11 +409,35 @@ class ChatbotEmbedManager {
 
     showIconIfReady() {
         if (this.state.interfaceLoaded && this.state.delayElapsed) {
-            if(!chatbotManager.helloProps?.hide_launcher) {
+            if (!chatbotManager.helloProps?.hide_launcher && !chatbotManager.helloProps?.isMobileSDK) {
                 const interfaceEmbed = document.getElementById('interfaceEmbed');
-                if (interfaceEmbed)  interfaceEmbed.style.display = 'block';
+                if (interfaceEmbed) interfaceEmbed.style.display = 'block';
             }
-            if(chatbotManager.helloProps?.launch_widget)  chatbotManager.openChatbot()
+            if (chatbotManager.helloProps?.launch_widget) chatbotManager.openChatbot()
+            if (chatbotManager.helloProps?.icon_position === 'left') {
+                interfaceEmbed.classList.add('left_all_child')
+                document.getElementById('iframe-parent-container').classList.add('left_all_child')
+            }
+            if (chatbotManager.helloProps?.icon_position === 'right') {
+                interfaceEmbed.classList.add('right_all_child')
+                document.getElementById('iframe-parent-container').classList.add('right_all_child')
+            }
+            const bottomMargin = chatbotManager.helloProps?.icon_bottom_margin
+            if (bottomMargin) {
+                interfaceEmbed.style.bottom = typeof bottomMargin === 'number'
+                    ? `${bottomMargin}px`
+                    : bottomMargin;
+
+                // Apply to all children
+                Array.from(interfaceEmbed.children).forEach(child => {
+                    child.style.bottom = typeof bottomMargin === 'number'
+                        ? `${bottomMargin}px`
+                        : bottomMargin;
+                });
+
+
+                document.getElementById('iframe-parent-container').style.bottom = typeof bottomMargin === 'number' ? `${bottomMargin}px` : bottomMargin;
+            }
             this.sendInitialData();
         }
     }
@@ -516,6 +585,9 @@ window.initChatWidget = (data, delay = 0) => {
     if (data) {
         chatbotManager.helloProps = { ...data };
     }
+    if(window.ReactNativeWebView){
+        chatbotManager.state.fullscreen = true;
+    }
     setTimeout(() => {
         chatbotManager.state.delayElapsed = true;
         chatbotManager.showIconIfReady(); // Check if both conditions are met
@@ -535,7 +607,7 @@ window.chatWidget = {
     show: () => {
         const interfaceEmbed = document.getElementById('interfaceEmbed');
         if (interfaceEmbed) {
-            interfaceEmbed.style.display = 
+            interfaceEmbed.style.display =
                 (chatbotManager.props.hideIcon === true || chatbotManager.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher)
                     ? 'none'
                     : 'unset';
@@ -552,36 +624,3 @@ window.chatWidget = {
 };
 
 chatbotManager.initializeChatbot();
-
-    window.addEventListener('message', (event) => {
-        const receivedMessage = event.data;
-        if(receivedMessage.type === 'initializeHelloChat_failed'){
-            block_chatbot=true
-            chatbotManager.cleanupChatbot()
-        }
-        if (receivedMessage.type === 'downloadAttachment') {
-            const url = receivedMessage.url;
-          
-            fetch(url)
-              .then(response => response.blob())
-              .then(blob => {
-                const blobUrl = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-          
-                // Try to extract filename from URL
-                const filename = url.split("/").pop()?.split("?")[0] || "download";
-          
-                link.href = blobUrl;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(blobUrl);
-              })
-              .catch(err => {
-                console.error("Download failed:", err);
-              });
-          }
-          
-    });
-
