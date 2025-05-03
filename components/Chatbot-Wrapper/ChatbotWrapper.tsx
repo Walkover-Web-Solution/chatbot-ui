@@ -65,7 +65,7 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
 
       const prevWidgetId = getLocalStorage('WidgetId');
       const prevUser = JSON.parse(getLocalStorage('userData') || '{}');
-      const hasUserIdentity = Boolean(unique_id || mail || number || user_jwt_token || name);
+      const hasUserIdentity = Boolean(unique_id || mail || number || user_jwt_token);
 
       // Helper: reset Redux keys and sub-thread
       const resetKeys = () => {
