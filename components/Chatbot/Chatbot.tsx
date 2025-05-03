@@ -67,13 +67,12 @@ function Chatbot({ chatbotId }: ChatbotProps) {
       chatDispatch
     });
 
-    const { show_widget_form, helloConfig } = useCustomSelector((state: $ReduxCoreType) =>{
+    const { show_widget_form, is_anon } = useCustomSelector((state: $ReduxCoreType) =>{
       const helloConfig = state.Hello?.helloConfig
       return  ({
       show_widget_form: typeof helloConfig?.show_widget_form === 'boolean' ? helloConfig?.show_widget_form : state.Hello?.widgetInfo?.show_widget_form,
-      helloConfig
+      is_anon : state.Hello?.is_anon == 'true'
     })});
-
 
   const chatActions = useChatActions({
     chatbotId,
@@ -151,7 +150,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
           )}
 
           {/* Form and UI components */}
-          {IsHuman && show_widget_form && subThreadId &&(
+          {IsHuman && show_widget_form && !is_anon &&(
             <FormComponent
               open={openHelloForm}
               setOpen={(isFormOpen: boolean) =>

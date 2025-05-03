@@ -38,12 +38,12 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
   const dispatch = useDispatch();
   const backgroundColor = theme.palette.primary.main;
   const textColor = isColorLight(backgroundColor) ? "black" : "white";
-  const userData = JSON.parse(getLocalStorage("userData") || "{}");
+  const userData = JSON.parse(getLocalStorage("client") || "{}");
   const [formData, setFormData] = useState<FormData>({
     name: userData?.name || "",
     email: userData?.email || "",
     number: userData?.number || "",
-    countryCode: "+91"
+    countryCode: userData?.country_code || "+91"
   });
 
   const [errors, setErrors] = useState<FormErrors>({
@@ -92,13 +92,12 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validate()) {
-      const clientData = {
+      let clientData = {
         n: formData?.name,
         p: formData?.number ? `${formData?.countryCode}${formData?.number}` : undefined,
         e: formData?.email,
-        user_data: {
-          
-        },
+        country_code: formData?.countryCode,
+        user_data: {},
         is_anon: false,
       }
 
