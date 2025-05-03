@@ -268,12 +268,15 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     };
   }, []);
 
-  const handleStorageUpdate = (e: CustomEvent<{ key: string, value: string }>) => {
+  const handleStorageUpdate = (e: CustomEvent<{ key: string, value: string | boolean }>) => {
     if (e.detail.key === 'WidgetId') {
       initializeHelloServices(e.detail.value);
     }
     if(e.detail.key === 'k_clientId' || e.detail.key === 'a_clientId'){
       emitEventToParent('uuid', { uuid: e.detail?.value });
+    }
+    if(e.detail.key === 'is_anon'){
+      dispatch(setHelloKeysData({ is_anon: e.detail.value }));
     }
   };
 
