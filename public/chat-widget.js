@@ -439,44 +439,6 @@ class ChatbotEmbedManager {
                 document.getElementById('iframe-parent-container').style.bottom = typeof bottomMargin === 'number' ? `${bottomMargin}px` : bottomMargin;
             }
             this.sendInitialData();
-            if (this.helloProps?.isMobileSDK) {
-                const interfaceEmbed = document.getElementById('interfaceEmbed');
-                const iframeContainer = document.getElementById('iframe-parent-container');
-            
-                // Update interface embed styles
-                if (interfaceEmbed) {
-                    interfaceEmbed.style.position = 'fixed';
-                    interfaceEmbed.style.bottom = '0';
-                    interfaceEmbed.style.right = '0';
-                    interfaceEmbed.style.margin = '0';
-                    interfaceEmbed.style.padding = '0';
-                    interfaceEmbed.style.width = 'fit-content';
-                    interfaceEmbed.style.borderRadius = '0'; // remove border curves
-                }
-            
-                // Update iframe container styles
-                if (iframeContainer) {
-                    iframeContainer.style.position = 'fixed';
-                    iframeContainer.style.bottom = '0';
-                    iframeContainer.style.right = '0';
-                    iframeContainer.style.margin = '0';
-                    iframeContainer.style.padding = '0';
-                    iframeContainer.style.width = 'fit-content';
-                    iframeContainer.style.borderRadius = '0'; // remove border curves
-                }
-            
-                // Remove bottom margin applied by previous logic
-                const popupIcon = document.getElementById('popup-interfaceEmbed');
-                if (popupIcon) {
-                    popupIcon.style.setProperty('bottom', '0', 'important');
-                    popupIcon.style.setProperty('border-radius', '0', 'important');
-                }
-            
-                Array.from(interfaceEmbed?.children || []).forEach(child => {
-                    child.style.setProperty('bottom', '0', 'important');
-                    child.style.setProperty('border-radius', '0', 'important');
-                });
-            }
         }
     }
 
@@ -622,6 +584,9 @@ window.initChatWidget = (data, delay = 0) => {
     if (block_chatbot) return;
     if (data) {
         chatbotManager.helloProps = { ...data };
+    }
+    if(window.ReactNativeWebView){
+        chatbotManager.state.fullscreen = true;
     }
     setTimeout(() => {
         chatbotManager.state.delayElapsed = true;
