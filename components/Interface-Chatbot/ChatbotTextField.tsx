@@ -30,12 +30,15 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const emitTypingStatus = useTypingStatus();
 
-  const { IsHuman, mode, inbox_id, show_send_button, subThreadId } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { IsHuman, mode, inbox_id, show_send_button, subThreadId ,assigned_type} = useCustomSelector((state: $ReduxCoreType) => ({
     IsHuman: state.Hello?.isHuman,
     mode: state.Hello?.mode || [],
     inbox_id: state.Hello?.widgetInfo?.inbox_id,
     show_send_button: typeof state.Hello?.helloConfig?.show_send_button === 'boolean' ? state.Hello?.helloConfig?.show_send_button : true,
-    subThreadId: state.appInfo?.subThreadId
+    subThreadId: state.appInfo?.subThreadId,
+    assigned_type: state.Hello?.channelListData?.channels?.find(
+      (channel: any) => channel?.channel === state?.Hello?.currentChannelId
+    )?.assigned_type,
   }));
 
   const reduxIsVision = useCustomSelector(
@@ -60,8 +63,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
   );
 
   const buttonDisabled = useMemo(() =>
-    loading || isUploading || (!inputValue.trim() && images.length === 0),
-    [loading, isUploading, inputValue, images]
+    ( (IsHuman && (assigned_type !== 'bot' || assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0),
+    [loading, isUploading, inputValue, images, assigned_type , IsHuman]
   );
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
