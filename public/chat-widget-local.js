@@ -14,8 +14,8 @@ class ChatbotEmbedManager {
             buttonName: ''
         };
         this.urls = {
-            chatbotUrl: 'http://192.168.1.33:3001/chatbot',
-            styleSheet: 'http://192.168.1.33:3001/chat-widget-style.css',
+            chatbotUrl: 'http://localhost:3001/chatbot',
+            styleSheet: 'http://localhost:3001/chat-widget-style.css',
         };
         this.icons = {
             white: this.makeImageUrl('b1357e23-2fc6-4dc3-855a-7a213b1fa100'),
