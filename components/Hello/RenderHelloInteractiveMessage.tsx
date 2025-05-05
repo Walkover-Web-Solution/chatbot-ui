@@ -10,7 +10,6 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
   } = useContext(MessageContext);
 
   const renderHeader = (header: any) => {
-    console.log(header, "header")
     if (header?.type === "text") {
       return <div className="font-medium mb-2">{header?.text}</div>;
     } else if (header?.type === 'video') {
@@ -55,7 +54,6 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
         );
 
       case 'cta_url':
-        console.log(messageJson, "messageJson")
         return (
           <div className="flex flex-col gap-2">
                   {messageJson.header && renderHeader(messageJson.header)}

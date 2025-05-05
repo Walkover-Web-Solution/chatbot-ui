@@ -241,7 +241,7 @@ const ChatbotDrawer = ({
                             const lastMessageId = channelMessages[channelMessages?.length - 1];
                             const lastMessage = allMessagesData[channel?.channel]?.[lastMessageId];
                             if (lastMessage) {
-                              const isUserMessage = !lastMessage?.message?.sender_id;
+                              const isUserMessage = lastMessage?.role == "user";
                               return (
                                 <>
                                   {isUserMessage ? "You: " : "Sender: "}
@@ -345,7 +345,9 @@ const ChatbotDrawer = ({
     handleChangeChannel,
     handleChangeTeam,
     handleSendMessageWithNoTeam,
-    handleVoiceCall
+    handleVoiceCall,
+    allMessages,
+    allMessagesData
   ]);
 
   const handleCloseChatbot = () => {
