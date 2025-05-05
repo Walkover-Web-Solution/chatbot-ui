@@ -82,6 +82,8 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
 
       // 2. User identity changed
       if (unique_id !== prevUser.unique_id) {
+        setLocalStorage('client', '{}');
+        setLocalStorage('userData', '{}');
         resetKeys();
       }
 

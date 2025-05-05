@@ -115,7 +115,7 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
   if (!open && !showWidgetForm) return null;
   if (!open && showWidgetForm) return (
     <div
-      className={`bg-white p-2 px-4 cursor-pointer hover:shadow-xl transition-all borde border-gray-300 mx-auto ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
+      className={`bg-white p-2 px-4 cursor-pointer hover:shadow-xl transition-all borde border-gray-300 mx-auto rounded-br-md rounded-bl-md ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
       onClick={() => setOpen(true)}
       style={{
         backgroundColor: backgroundColor,
@@ -130,7 +130,7 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
     </div>
   );
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[9999]">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 relative">
         {/* Card header */}
         <div className="bg-primary text-white p-6 rounded-t-lg" style={{
@@ -202,13 +202,13 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
             <label className="label">
               <span className="label-text font-medium">Phone Number</span>
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative">
                 <select
                   name="countryCode"
                   value={formData.countryCode}
                   onChange={handleChange}
-                  className={`select select-bordered pl-10 ${errors.countryCode ? "select-error" : ""}`}
+                  className={`select select-bordered select-md max-w-36 pl-10 ${errors.countryCode ? "select-error" : ""}`}
                   style={{ width: 'auto' }}
                 >
                   {countryCodes
