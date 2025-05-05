@@ -297,10 +297,10 @@ const ChatbotDrawer = ({
         <div className="teams-list space-y-0">
           {teamsList.length === 0 ? (
             <div className="flex">
-              <button className="btn btn-outline w-full" onClick={handleSendMessageWithNoTeam}>Send us a message</button>
+              <button className="btn w-full" style={{backgroundColor: theme.palette.primary.main, color: '#fff'}} onClick={handleSendMessageWithNoTeam}>Send us a message</button>
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1">
               {teamsList.map((team: any, index: number) => (
                 <div
                   key={`${team?.id}-${index}`}

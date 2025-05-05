@@ -26,7 +26,7 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
                 {messageJson.action.buttons.map((button: any, index: number) => (
                   <button
                     key={index}
-                    className="btn btn-sm btn-outline w-full"
+                    className="btn btn-sm btn-outline w-full max-w-lg"
                     onClick={() => sendMessageToHello?.(button?.reply?.title)}
                   >
                     {button.reply?.title}

@@ -225,7 +225,7 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
               </div>
               <div className="relative flex-1">
                 <input
-                  type="text"
+                  type="number"
                   name="number"
                   value={formData.number}
                   onChange={handleChange}
