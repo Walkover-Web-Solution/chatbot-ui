@@ -131,15 +131,47 @@ export async function getAgentTeamApi(): Promise<any> {
 }
 
 // Get greeting/starter questions
-export async function getGreetingQuestions(companyId: string, botId: string): Promise<any> {
+export async function getGreetingQuestions(companyId: string, botId: string, botType: 'lex'|'chatgpt'): Promise<any> {
   try {
-    const response = await axios.get(
-      `${HELLO_HOST_URL}/chat-gpt/greeting/?company_id=${companyId}&bot_id=${botId}&is_anon=${getLocalStorage("is_anon") == 'true'}`, {
-      headers: {
-        authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
-      },
-    });
-    return response?.data?.data || [];
+    const isAnonymousUser = getLocalStorage("is_anon") == 'true';
+    const widgetId = getLocalStorage('WidgetId');
+    const clientId = getLocalStorage('k_clientId') || getLocalStorage('a_clientId');
+    const authorization = clientId ? `${widgetId}:${clientId}` : widgetId;
+    if (botType === 'lex') {
+      // For Lex bot type, use POST request
+      const greetingResponse = await axios.post(
+        `${HELLO_HOST_URL}/chat-bot/welcome/get-welcome/`,
+        {
+          company_id: companyId,
+          bot_id: botId,
+          is_anon: isAnonymousUser
+        },
+        {
+          headers: {
+            authorization: authorization,
+          },
+        }
+      );
+      
+      return greetingResponse?.data?.data || [];
+    } else {
+      // For ChatGPT or other bot types, use GET request
+      const greetingResponse = await axios.get(
+        `${HELLO_HOST_URL}/chat-gpt/greeting/`,
+        {
+          params: {
+            company_id: companyId,
+            bot_id: botId,
+            is_anon: isAnonymousUser
+          },
+          headers: {
+            authorization: authorization,
+          },
+        }
+      );
+      
+      return greetingResponse?.data?.data || [];
+    }
   } catch (error: any) {
     errorToast(error?.response?.data?.message || "Failed to get greeting questions");
     return [];

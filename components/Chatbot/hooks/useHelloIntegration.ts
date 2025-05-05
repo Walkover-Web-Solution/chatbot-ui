@@ -49,14 +49,15 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     currentChannelId
   } = useReduxStateManagement({ chatbotId, chatDispatch });
 
-  const { assigned_type, is_domain_enable, companyId, botId, showWidgetForm } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { assigned_type, is_domain_enable, companyId, botId, showWidgetForm, enable_call } = useCustomSelector((state: $ReduxCoreType) => ({
     assigned_type: state.Hello?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === state?.Hello?.currentChannelId
     )?.assigned_type || 'bot',
     is_domain_enable: state.Hello?.widgetInfo?.is_domain_enable || false,
     companyId: state.Hello?.widgetInfo?.company_id || '',
     botId: state.Hello?.widgetInfo?.bot_id || '',
-    showWidgetForm: state.Hello?.showWidgetForm
+    showWidgetForm: state.Hello?.showWidgetForm,
+    enable_call: state.Hello?.widgetInfo?.enable_call || false
   }));
 
   const isBot = assigned_type === 'bot';
@@ -312,7 +313,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
       let widgetData = null;
       let jwtData = null;
-
+      let botType = '';
       if (isHelloUser && widgetToken) {
         try {
           widgetData = await initializeHelloChat();
@@ -325,7 +326,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
           if (widgetData?.launch_widget) {
             window.parent.postMessage({ type: 'launch_widget' }, '*');
           }
-
+          botType = widgetData?.bot_type;
           dispatch(setWidgetInfo(widgetData));
           handleThemeChange(widgetData?.primary_color || "#000000");
         } catch (error) {
@@ -346,21 +347,17 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
           console.error("Failed to fetch JWT token:", error);
         }
       }
-
-
-
       // Step 4: Get greeting questions (depends on widget info for company/bot IDs)
       const greetingCompanyId = widgetData?.company_id || companyId;
       const greetingBotId = widgetData?.bot_id || botId;
-
-      if (widgetData && greetingCompanyId && greetingBotId && (getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`))) {
-        await getGreetingQuestions(greetingCompanyId, greetingBotId).then((data) => {
+      if (widgetData && greetingCompanyId && greetingBotId && (getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`)) && (botType === 'lex' || botType === 'chatgpt')) {
+        await getGreetingQuestions(greetingCompanyId, greetingBotId, botType).then((data) => {
           dispatch(setGreeting({ ...data?.greeting }));
         });
       }
 
       // Step 5: Get client token and call token (depend on JWT)
-      if ((getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`)) && widgetToken) {
+      if ((getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`)) && widgetToken && enable_call) {
         const clientTokenPromise = getClientToken().then(() => {
           helloVoiceService.initialize();
         });
