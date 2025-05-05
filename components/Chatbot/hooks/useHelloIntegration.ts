@@ -52,7 +52,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   const { assigned_type, is_domain_enable, companyId, botId, showWidgetForm, enable_call } = useCustomSelector((state: $ReduxCoreType) => ({
     assigned_type: state.Hello?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === state?.Hello?.currentChannelId
-    )?.assigned_type || 'bot',
+    )?.assigned_type,
     is_domain_enable: state.Hello?.widgetInfo?.is_domain_enable || false,
     companyId: state.Hello?.widgetInfo?.company_id || '',
     botId: state.Hello?.widgetInfo?.bot_id || '',
@@ -102,7 +102,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     return getAllChannels()
       .then(data => {
         dispatch(setChannelListData(data));
-        if(data?.customer_name === null || data?.customer_number === null || data?.customer_mail === null){
+        if (data?.customer_name === null || data?.customer_number === null || data?.customer_mail === null) {
           dispatch(setHelloKeysData({ showWidgetForm: true }));
         }
         return data;
@@ -164,7 +164,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload: [] });
       }
 
-      if (isBot) {
+      if (isBot || !assigned_type) {
         setLoading(true);
       }
 
@@ -262,7 +262,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     if (!mountedRef.current) {
       fetchHelloPreviousHistory();
     }
-    
+
     window.addEventListener("localstorage-updated", handleStorageUpdate);
     return () => {
       window.removeEventListener("localstorage-updated", handleStorageUpdate);
@@ -273,10 +273,10 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     if (e.detail.key === 'WidgetId') {
       initializeHelloServices(e.detail.value);
     }
-    if(e.detail.key === 'k_clientId' || e.detail.key === 'a_clientId'){
+    if (e.detail.key === 'k_clientId' || e.detail.key === 'a_clientId') {
       emitEventToParent('uuid', { uuid: e.detail?.value });
     }
-    if(e.detail.key === 'is_anon'){
+    if (e.detail.key === 'is_anon') {
       dispatch(setHelloKeysData({ is_anon: e.detail.value }));
     }
   };
@@ -373,7 +373,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       mountedRef.current = true;
     } catch (error) {
       console.error("Error initializing Hello services:", error);
-    } 
+    }
   };
 
   return {

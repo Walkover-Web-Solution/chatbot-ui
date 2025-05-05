@@ -38,7 +38,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
     subThreadId: state.appInfo?.subThreadId,
     assigned_type: state.Hello?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === state?.Hello?.currentChannelId
-    )?.assigned_type,
+    )?.assigned_type || '',
   }));
 
   const reduxIsVision = useCustomSelector(
@@ -63,7 +63,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
   );
 
   const buttonDisabled = useMemo(() =>
-    ( (IsHuman && (assigned_type !== 'bot' || assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0),
+    ( (IsHuman && (assigned_type && assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0),
     [loading, isUploading, inputValue, images, assigned_type , IsHuman]
   );
 
