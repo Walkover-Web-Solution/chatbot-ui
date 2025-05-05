@@ -59,7 +59,8 @@ const ChatbotDrawer = ({
     setImages,
     fetchChannels,
     allMessages,
-    allMessagesData
+    allMessagesData,
+    messageRef
   } = useContext(MessageContext);
 
   const { currentChatId, currentTeamId } = useReduxStateManagement({ chatbotId, chatDispatch });
@@ -124,11 +125,18 @@ const ChatbotDrawer = ({
     dispatch(setDataInAppInfoReducer({ subThreadId: sub_thread_id }));
     setNewMessage(true);
     setOptions([]);
+    focusTextField();
 
     if (isSmallScreen) {
       setToggleDrawer(false);
     }
   };
+
+  const focusTextField = () => {
+    if(messageRef.current){
+      messageRef.current?.focus();
+    }
+  }
 
   const handleChangeChannel = async (channelId: string, chatId: string, teamId: string, widget_unread_count: number) => {
     // Update redux state
@@ -145,6 +153,7 @@ const ChatbotDrawer = ({
       await deleteReadReceipt(channelId);
       dispatch(setUnReadCount({ channelId: channelId, resetCount: true }));
     }
+    focusTextField();
   };
 
   const handleChangeTeam = (teamId: string) => {
@@ -153,6 +162,7 @@ const ChatbotDrawer = ({
 
     if (isSmallScreen) setToggleDrawer(false);
     if (images?.length > 0) setImages([]);
+    focusTextField();
   };
 
   const closeToggleDrawer = (isOpen: boolean) => {
@@ -170,6 +180,7 @@ const ChatbotDrawer = ({
 
     if (isSmallScreen) setToggleDrawer(false);
     if (images?.length > 0) setImages([]);
+    focusTextField();
   };
 
   // Memoized components
