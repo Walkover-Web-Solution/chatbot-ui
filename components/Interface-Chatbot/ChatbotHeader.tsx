@@ -115,7 +115,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
     isHuman: state.Hello?.isHuman || false,
     enable_call: state.Hello?.widgetInfo?.enable_call 
   })});
-  console.log(enable_call,'enable_call');
   // Determine if we should show the create thread button
   const showCreateThreadButton = useMemo(() => {
     return !isHuman && !(subThreadList?.length < 2 && (!messageIds || messageIds.length === 0));
