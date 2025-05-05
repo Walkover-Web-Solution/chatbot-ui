@@ -293,7 +293,6 @@ const ChatbotDrawer = ({
       {/* Teams Section */}
       <div className="teams-section">
         <div className="teams-header mb-1 border-b pb-2 flex items-center">
-          <SquarePen size={22} color="#555555" className="mr-2" />
           <h3 className="text-lg font-semibold">Talk to our experts</h3>
         </div>
         <div className="teams-list space-y-0">
@@ -306,14 +305,19 @@ const ChatbotDrawer = ({
               {teamsList.map((team: any, index: number) => (
                 <div
                   key={`${team?.id}-${index}`}
-                  className={`team-card overflow-hidden text-ellipsis p-3 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start ${currentTeamId === team?.id ? '' : ''}`}
+                  className={`team-card p-3 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer rounded-lg flex items-center justify-between ${currentTeamId === team?.id ? '' : ''}`}
                   onClick={() => handleChangeTeam(team?.id)}
                 >
-                  <div className="team-avatar mr-3 bg-primary/10 p-2 rounded-md flex-shrink-0">
-                    {team?.icon || <Users size={12} className="text-primary" />}
+                  <div className="flex items-center overflow-hidden">
+                    <div className="team-avatar mr-3 bg-primary/10 p-2 rounded-md flex-shrink-0">
+                      {team?.icon || <Users size={12} className="text-primary" />}
+                    </div>
+                    <div className="team-info overflow-hidden">
+                      <div className="team-name font-medium truncate max-w-full">{team?.name}</div>
+                    </div>
                   </div>
-                  <div className="team-info">
-                    <div className="team-name font-medium break-words">{team?.name}</div>
+                  <div className="flex-shrink-0 ml-2">
+                    <SquarePen size={16} color="#555555" />
                   </div>
                 </div>
               ))}
@@ -401,7 +405,7 @@ const ChatbotDrawer = ({
             </div>
             <div className="flex flex-col items-center justify-center flex-1">
               <h2 className="text-lg font-bold text-center">
-                {Name ? `Hello ${Name}` : 'Hello There!'}
+                {Name ? `Hello ${Name.split(' ')[0]}` : 'Hello There!'}
               </h2>
               {tagline && Name && (
                 <p className="text-xs text-gray-500 text-center">{tagline}</p>
