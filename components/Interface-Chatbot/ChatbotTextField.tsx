@@ -30,7 +30,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const emitTypingStatus = useTypingStatus();
 
-  const { IsHuman, mode, inbox_id, show_send_button, subThreadId ,assigned_type} = useCustomSelector((state: $ReduxCoreType) => ({
+  const { IsHuman, mode, inbox_id, show_send_button, subThreadId, assigned_type, currentTeamId } = useCustomSelector((state: $ReduxCoreType) => ({
     IsHuman: state.Hello?.isHuman,
     mode: state.Hello?.mode || [],
     inbox_id: state.Hello?.widgetInfo?.inbox_id,
@@ -39,6 +39,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
     assigned_type: state.Hello?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === state?.Hello?.currentChannelId
     )?.assigned_type || '',
+    currentTeamId: state.Hello.currentTeamId
   }));
 
   const reduxIsVision = useCustomSelector(
@@ -63,8 +64,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
   );
 
   const buttonDisabled = useMemo(() =>
-    ( (IsHuman && (assigned_type && assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0),
-    [loading, isUploading, inputValue, images, assigned_type , IsHuman]
+    ((IsHuman && (assigned_type && assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0),
+    [loading, isUploading, inputValue, images, assigned_type, IsHuman]
   );
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -114,7 +115,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
       const uploadPromises = filesArray.map(async (file) => {
         if (IsHuman) {
           const response = await uploadAttachmentToHello(file, inbox_id);
-          if(!response) {
+          if (!response) {
             errorToast("Failed to upload images. Please try again.");
             return null;
           }
@@ -221,7 +222,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
         {images.map((image, index) => (
           <div key={index} className="relative group">
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden shadow-md transition-transform hover:scale-105">
-              <ImageWithFallback 
+              <ImageWithFallback
                 src={IsHuman ? image?.path : image}
                 alt={`Uploaded Preview ${index + 1}`}
                 style={{ width: 128, height: 128 }}
@@ -287,7 +288,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
           multiple
           ref={fileInputRef}
         />
-      <label htmlFor="upload-image" className="cursor-pointer">
+        <label htmlFor="upload-image" className="cursor-pointer">
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-gray-300 bg-white shadow-sm hover:bg-gray-100 transition-all duration-200 group">
             {isUploading ? (
               <div className="flex items-center gap-1.5">
@@ -317,6 +318,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
           style={{ outlineColor: theme.palette.primary.main }}
         >
           <TextField
+            key={subThreadId || currentTeamId}
             inputRef={messageRef}
             onChange={handleInputChange}
             multiline
@@ -327,6 +329,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className }) => {
             className="p-1 h-full min-h-[40px] max-h-[400px] bg-transparent focus:outline-none disabled:cursor-not-allowed"
             maxRows={6}
             sx={textFieldStyles}
+            autoFocus
           />
 
           <div className="flex flex-row justify-between gap-2 h-full self-end mr-2">

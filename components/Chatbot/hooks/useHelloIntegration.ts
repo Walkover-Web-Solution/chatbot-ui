@@ -235,7 +235,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         content: {
           text: textMessage,
           attachment: images || []
-        }
+        },
+        chat_id: currentChatId
       }
     };
 
