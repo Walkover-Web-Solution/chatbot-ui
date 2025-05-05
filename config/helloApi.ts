@@ -79,7 +79,7 @@ export async function getAllChannels(): Promise<any> {
       }
     );
 
-    if (unique_id) {
+    if (unique_id || mail || number || user_jwt_token) {
       setLocalStorage('k_clientId', response?.data?.uuid)
     } else if(response?.data?.customer_name){
       setLocalStorage('default_client_created', 'true')

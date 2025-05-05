@@ -89,6 +89,7 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
       const { mail: clientMail, number: clientNumber, name: clientName, country_code: clientCountryCode } = JSON.parse(getLocalStorage('client') || '{}');
       if(mail && number && name){
         setLocalStorage('client', JSON.stringify({ mail:mail, number:number, name: name, country_code: clientCountryCode || "+91" }));
+        dispatch(setHelloKeysData({ showWidgetForm: false }));
       } else{
         setLocalStorage('client', JSON.stringify({ mail:clientMail, number:clientNumber, name: clientName, country_code: clientCountryCode || "+91" }));
       }
@@ -110,11 +111,6 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
       }
 
       setLocalStorage('is_anon', isAnon);
-
-      // 6. Hide widget form for identified users
-      if (hasUserIdentity) {
-        dispatch(setHelloKeysData({ showWidgetForm: false }));
-      }
 
       // 7. Map additional interface props
       Object.entries(restProps).forEach(([key, value]) => {
