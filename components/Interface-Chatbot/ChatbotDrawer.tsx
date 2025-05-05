@@ -39,7 +39,6 @@ interface ChatbotDrawerProps {
 }
 
 const ChatbotDrawer = ({
-  setLoading,
   chatbotId,
   setToggleDrawer,
   isToggledrawer,
@@ -60,7 +59,8 @@ const ChatbotDrawer = ({
     fetchChannels,
     allMessages,
     allMessagesData,
-    messageRef
+    messageRef,
+    setLoading,
   } = useContext(MessageContext);
 
   const { currentChatId, currentTeamId } = useReduxStateManagement({ chatbotId, chatDispatch });
@@ -97,7 +97,7 @@ const ChatbotDrawer = ({
       voice_call_widget: state.Hello?.widgetInfo?.voice_call_widget || false
     };
   });
-  
+
   // Handlers
   const handleCreateNewSubThread = async () => {
     if (preview) return;
@@ -133,7 +133,7 @@ const ChatbotDrawer = ({
   };
 
   const focusTextField = () => {
-    if(messageRef.current){
+    if (messageRef.current) {
       messageRef.current?.focus();
     }
   }
@@ -154,6 +154,7 @@ const ChatbotDrawer = ({
       dispatch(setUnReadCount({ channelId: channelId, resetCount: true }));
     }
     focusTextField();
+    setLoading(false);
   };
 
   const handleChangeTeam = (teamId: string) => {
@@ -163,10 +164,11 @@ const ChatbotDrawer = ({
     if (isSmallScreen) setToggleDrawer(false);
     if (images?.length > 0) setImages([]);
     focusTextField();
+    setLoading(false);
   };
 
   const closeToggleDrawer = (isOpen: boolean) => {
-      setToggleDrawer(isOpen);
+    setToggleDrawer(isOpen);
   };
 
   const handleVoiceCall = () => {
@@ -239,7 +241,7 @@ const ChatbotDrawer = ({
                             const lastMessageId = channelMessages[channelMessages?.length - 1];
                             const lastMessage = allMessagesData[channel?.channel]?.[lastMessageId];
                             if (lastMessage) {
-                              const isUserMessage = !lastMessage?.message?.sender_id;
+                              const isUserMessage = lastMessage?.role == "user";
                               return (
                                 <>
                                   {isUserMessage ? "You: " : "Sender: "}
@@ -253,14 +255,14 @@ const ChatbotDrawer = ({
                               );
                             }
                           }
-                          
+
                           // Fallback to channel.last_message if no message found in allMessagesData
                           if (channel?.last_message) {
                             return (
                               <>
                                 {!channel?.last_message?.message?.sender_id ? "You: " : "Sender: "}
                                 <div className="line-clamp-1" dangerouslySetInnerHTML={{
-                                      __html: channel?.last_message?.message?.content?.text ||
+                                  __html: channel?.last_message?.message?.content?.text ||
                                     (channel?.last_message?.message?.content?.attachment?.length > 0 ? "Attachment" :
                                       channel?.last_message?.message?.message_type ||
                                       "New conversation")
@@ -268,7 +270,7 @@ const ChatbotDrawer = ({
                               </>
                             );
                           }
-                              
+
                           return "New conversation";
                         })()}
                       </div>
@@ -297,7 +299,7 @@ const ChatbotDrawer = ({
         <div className="teams-list space-y-0">
           {teamsList.length === 0 ? (
             <div className="flex">
-              <button className="btn w-full" style={{backgroundColor: theme.palette.primary.main, color: '#fff'}} onClick={handleSendMessageWithNoTeam}>Send us a message</button>
+              <button className="btn w-full" style={{ backgroundColor: theme.palette.primary.main, color: '#fff' }} onClick={handleSendMessageWithNoTeam}>Send us a message</button>
             </div>
           ) : (
             <div className="flex flex-col gap-1">
@@ -343,7 +345,9 @@ const ChatbotDrawer = ({
     handleChangeChannel,
     handleChangeTeam,
     handleSendMessageWithNoTeam,
-    handleVoiceCall
+    handleVoiceCall,
+    allMessages,
+    allMessagesData
   ]);
 
   const handleCloseChatbot = () => {
