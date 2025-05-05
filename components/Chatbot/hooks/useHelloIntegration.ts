@@ -25,6 +25,7 @@ interface HelloMessage {
   id?: string;
   chat_id?: string;
   urls?: string[];
+  channel?: string;
 }
 
 interface UseHelloIntegrationProps {
@@ -68,7 +69,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   useSocket();
 
   const setHelloMessages = useCallback((messages: HelloMessage[]) => {
-    chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages } });
+    chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages, subThreadId: messages?.[0]?.channel || "" } });
     // chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: { data: messages } });
   }, [chatDispatch]);
 
