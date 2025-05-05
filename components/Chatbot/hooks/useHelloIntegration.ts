@@ -50,15 +50,14 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     currentChannelId
   } = useReduxStateManagement({ chatbotId, chatDispatch });
 
-  const { assigned_type, is_domain_enable, companyId, botId, showWidgetForm, voice_call_widget } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { assigned_type, is_domain_enable, companyId, botId, showWidgetForm } = useCustomSelector((state: $ReduxCoreType) => ({
     assigned_type: state.Hello?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === state?.Hello?.currentChannelId
     )?.assigned_type,
     is_domain_enable: state.Hello?.widgetInfo?.is_domain_enable || false,
     companyId: state.Hello?.widgetInfo?.company_id || '',
     botId: state.Hello?.widgetInfo?.bot_id || '',
-    showWidgetForm: state.Hello?.showWidgetForm,
-    voice_call_widget: state.Hello?.widgetInfo?.voice_call_widget || false
+    showWidgetForm: state.Hello?.showWidgetForm
   }));
 
   const isBot = assigned_type === 'bot';
@@ -293,6 +292,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     try {
       let a_clientId = getLocalStorage('a_clientId');
       let k_clientId = getLocalStorage('k_clientId');
+      let enable_call = false
       let { mail, number, user_jwt_token, unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
 
       let needsAnonymousRegistration = !a_clientId && !k_clientId && !unique_id && widgetToken && isHelloUser && !mail && !number && !user_jwt_token;
@@ -326,6 +326,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
           window.parent.postMessage({ type: 'hide_widget', data: widgetData?.hide_launcher }, '*');
           window.parent.postMessage({ type: 'launch_widget', data: widgetData?.launch_widget }, '*');
           botType = widgetData?.bot_type;
+          enable_call = widgetData?.voice_call_widget;
           dispatch(setWidgetInfo(widgetData));
           handleThemeChange(widgetData?.primary_color || "#000000");
         } catch (error) {
@@ -356,7 +357,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       }
 
       // Step 5: Get client token and call token (depend on JWT)
-      if ((getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`)) && widgetToken && voice_call_widget) {
+      if ((getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`)) && widgetToken && enable_call) {
         const clientTokenPromise = getClientToken().then(() => {
           helloVoiceService.initialize();
         });
