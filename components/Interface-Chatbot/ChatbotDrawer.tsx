@@ -77,7 +77,7 @@ const ChatbotDrawer = ({
     Name,
     tagline,
     hideCloseButton,
-    enable_call
+    voice_call_widget
   } = useCustomSelector((state: $ReduxCoreType) => {
     const bridgeName = GetSessionStorageData("bridgeName") || state.appInfo?.bridgeName || "root";
     const threadId = GetSessionStorageData("threadId") || state.appInfo?.threadId || "";
@@ -93,7 +93,7 @@ const ChatbotDrawer = ({
       Name: JSON.parse(getLocalStorage("client") || '{}')?.name || state.Hello?.channelListData?.customer_name || '',
       tagline: state.Hello?.widgetInfo?.tagline || '',
       hideCloseButton: state.Interface.hideCloseButton || false,
-      enable_call: state.Hello?.widgetInfo?.enable_call || false
+      voice_call_widget: state.Hello?.widgetInfo?.voice_call_widget || false
     };
   });
   
@@ -309,7 +309,7 @@ const ChatbotDrawer = ({
         </div>
       </div>
 
-      {enable_call && <div className="marketing-banner mt-4 p-3 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg">
+      {voice_call_widget && <div className="marketing-banner mt-4 p-3 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg">
         <p className="text-sm font-medium">Need specialized help?</p>
         <p className="text-xs">Our teams are ready to assist you with any questions</p>
         <button
@@ -327,7 +327,7 @@ const ChatbotDrawer = ({
     currentChatId,
     currentTeamId,
     callState,
-    enable_call,
+    voice_call_widget,
     theme.palette.primary.main,
     handleChangeChannel,
     handleChangeTeam,
