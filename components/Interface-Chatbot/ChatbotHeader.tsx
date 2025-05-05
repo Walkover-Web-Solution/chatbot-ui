@@ -113,7 +113,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
       GetSessionStorageData("threadId") || state.appInfo?.threadId
       ] || [],
     isHuman: state.Hello?.isHuman || false,
-    voice_call_widget: state.Hello?.widgetInfo?.voice_call_widget 
+    voice_call_widget: state.Hello?.widgetInfo?.voice_call_widget  || false
   })});
   // Determine if we should show the create thread button
   const showCreateThreadButton = useMemo(() => {

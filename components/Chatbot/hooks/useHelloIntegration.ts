@@ -318,16 +318,13 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       let botType = '';
       if (isHelloUser && widgetToken) {
         try {
+          // debugger;
           widgetData = await initializeHelloChat();
           if (!widgetData) {
             window.parent.postMessage({ type: 'initializeHelloChat_failed' }, '*');
           }
-          if (widgetData?.hide_launcher) {
-            window.parent.postMessage({ type: 'hide_widget', data: widgetData?.hide_launcher }, '*');
-          }
-          if (widgetData?.launch_widget) {
-            window.parent.postMessage({ type: 'launch_widget', data: widgetData?.launch_widget }, '*');
-          }
+          window.parent.postMessage({ type: 'hide_widget', data: widgetData?.hide_launcher }, '*');
+          window.parent.postMessage({ type: 'launch_widget', data: widgetData?.launch_widget }, '*');
           botType = widgetData?.bot_type;
           dispatch(setWidgetInfo(widgetData));
           handleThemeChange(widgetData?.primary_color || "#000000");
