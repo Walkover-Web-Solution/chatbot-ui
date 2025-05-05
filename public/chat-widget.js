@@ -101,11 +101,17 @@ class ChatbotEmbedManager {
                 this.cleanupChatbot();
                 break;
             case 'hide_widget':
-                block_chatbot = true;
-                this.cleanupChatbot();
+                if (data === true) {
+                    block_chatbot = true;
+                    this.cleanupChatbot();
+                }
                 break;
             case 'launch_widget':
-                this.openChatbot();
+                if (data === true) {
+                    this.openChatbot();
+                } else {
+                    this.closeChatbot();
+                }
                 break;
             case 'downloadAttachment':
                 this.handleDownloadAttachment(data);
