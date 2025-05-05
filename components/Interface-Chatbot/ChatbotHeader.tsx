@@ -208,7 +208,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
 
   // Memoized header title section
   const HeaderTitleSection = useMemo(() => {
-    const displayTitle = chatTitle || chatbotTitle || teamName || "AI Assistant";
+    const displayTitle = chatTitle || chatbotTitle || teamName || (isHuman ? "Conversation" : "AI Assistant");
     const displaySubtitle = chatSubTitle || chatbotSubtitle || "Do you have any questions? Ask us!";
 
     return (

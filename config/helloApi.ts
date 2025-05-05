@@ -70,10 +70,8 @@ export async function getAllChannels(): Promise<any> {
       },
       {
         headers: {
-          authorization: (mail || number || user_jwt_token || unique_id)
-            ? (getLocalStorage('k_clientId')
-              ? `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId')}`
-              : getLocalStorage('WidgetId'))
+          authorization: unique_id
+            ? getLocalStorage('WidgetId')
             : (getLocalStorage('a_clientId')
               ? `${getLocalStorage('WidgetId')}:${getLocalStorage('a_clientId')}`
               : getLocalStorage('WidgetId')),
@@ -81,7 +79,7 @@ export async function getAllChannels(): Promise<any> {
       }
     );
 
-    if (unique_id || mail || number || user_jwt_token || name) {
+    if (unique_id || mail || number || user_jwt_token) {
       setLocalStorage('k_clientId', response?.data?.uuid)
     } else if(response?.data?.customer_name){
       setLocalStorage('default_client_created', 'true')
