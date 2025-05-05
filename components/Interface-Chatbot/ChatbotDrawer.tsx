@@ -26,6 +26,7 @@ import { $ReduxCoreType } from "@/types/reduxCore";
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { ParamsEnums } from "@/utils/enums";
 import { MessageContext } from "./InterfaceChatbot";
+import { getLocalStorage } from "@/utils/utilities";
 
 const createRandomId = () => Math.random().toString(36).substring(2, 15);
 
@@ -89,7 +90,7 @@ const ChatbotDrawer = ({
       teamsList: state.Hello?.widgetInfo?.teams || [],
       channelList: state.Hello?.channelListData?.channels || [],
       isHuman: state.Hello?.isHuman || false,
-      Name: state.Hello?.channelListData?.customer_name || '',
+      Name: JSON.parse(getLocalStorage("client") || '{}')?.name || state.Hello?.channelListData?.customer_name || '',
       tagline: state.Hello?.widgetInfo?.tagline || '',
       hideCloseButton: state.Interface.hideCloseButton || false,
       enable_call: state.Hello?.widgetInfo?.enable_call || false

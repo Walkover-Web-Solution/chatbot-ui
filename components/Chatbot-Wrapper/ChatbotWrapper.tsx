@@ -87,8 +87,11 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
 
       // 3. Update stored userData
       const { mail: clientMail, number: clientNumber, name: clientName, country_code: clientCountryCode } = JSON.parse(getLocalStorage('client') || '{}');
-
-      setLocalStorage('client', JSON.stringify({ mail: clientMail || mail, number: clientNumber || number, name: clientName || name, country_code: clientCountryCode || "+91" }));
+      if(mail && number && name){
+        setLocalStorage('client', JSON.stringify({ mail:mail, number:number, name: name, country_code: clientCountryCode || "+91" }));
+      } else{
+        setLocalStorage('client', JSON.stringify({ mail:clientMail, number:clientNumber, name: clientName, country_code: clientCountryCode || "+91" }));
+      }
 
       setLocalStorage('userData', JSON.stringify({ unique_id, mail, number, user_jwt_token, name }));
 
@@ -102,9 +105,10 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
       const defaultClientCreated = getLocalStorage('default_client_created') === 'true';
       const isAnon = hasUserIdentity || defaultClientCreated ? 'false' : 'true';
 
-      if (getLocalStorage('is_anon') !== isAnon) {
+      if (getLocalStorage('is_anon') != isAnon) {
         resetKeys();
       }
+
       setLocalStorage('is_anon', isAnon);
 
       // 6. Hide widget form for identified users
