@@ -50,7 +50,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     currentChannelId
   } = useReduxStateManagement({ chatbotId, chatDispatch });
 
-  const { assigned_type, is_domain_enable, companyId, botId, showWidgetForm, enable_call } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { assigned_type, is_domain_enable, companyId, botId, showWidgetForm, voice_call_widget } = useCustomSelector((state: $ReduxCoreType) => ({
     assigned_type: state.Hello?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === state?.Hello?.currentChannelId
     )?.assigned_type,
@@ -58,7 +58,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     companyId: state.Hello?.widgetInfo?.company_id || '',
     botId: state.Hello?.widgetInfo?.bot_id || '',
     showWidgetForm: state.Hello?.showWidgetForm,
-    enable_call: state.Hello?.widgetInfo?.enable_call || false
+    voice_call_widget: state.Hello?.widgetInfo?.voice_call_widget || false
   }));
 
   const isBot = assigned_type === 'bot';
@@ -318,16 +318,13 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       let botType = '';
       if (isHelloUser && widgetToken) {
         try {
+          // debugger;
           widgetData = await initializeHelloChat();
           if (!widgetData) {
             window.parent.postMessage({ type: 'initializeHelloChat_failed' }, '*');
           }
-          if (widgetData?.hide_launcher) {
-            window.parent.postMessage({ type: 'hide_widget' }, '*');
-          }
-          if (widgetData?.launch_widget) {
-            window.parent.postMessage({ type: 'launch_widget' }, '*');
-          }
+          window.parent.postMessage({ type: 'hide_widget', data: widgetData?.hide_launcher }, '*');
+          window.parent.postMessage({ type: 'launch_widget', data: widgetData?.launch_widget }, '*');
           botType = widgetData?.bot_type;
           dispatch(setWidgetInfo(widgetData));
           handleThemeChange(widgetData?.primary_color || "#000000");
@@ -359,7 +356,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       }
 
       // Step 5: Get client token and call token (depend on JWT)
-      if ((getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`)) && widgetToken && enable_call) {
+      if ((getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`)) && widgetToken && voice_call_widget) {
         const clientTokenPromise = getClientToken().then(() => {
           helloVoiceService.initialize();
         });
