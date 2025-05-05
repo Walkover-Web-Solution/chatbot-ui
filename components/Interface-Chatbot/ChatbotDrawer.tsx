@@ -369,7 +369,7 @@ const ChatbotDrawer = ({
   }, [hideCloseButton, handleCloseChatbot]);
 
   return (
-    <div className="drawer z-[10]">
+    <div className="drawer z-[999]">
       <input
         id="chatbot-drawer"
         type="checkbox"
