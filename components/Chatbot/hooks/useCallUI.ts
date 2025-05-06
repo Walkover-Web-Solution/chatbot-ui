@@ -9,9 +9,9 @@ export const useCallUI = () => {
 
   useEffect(() => {
     // Initialize service if not already done
-    if (!helloVoiceService.isInitialized()) {
-      helloVoiceService.initialize();
-    }
+    // if (!helloVoiceService.isInitialized()) {
+      // helloVoiceService.initialize();
+    // }
 
     // Set initial state
     setCallState(helloVoiceService.getCallState());
