@@ -4,7 +4,7 @@ import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { isColorLight } from "@/utils/themeUtility";
 import { useTheme } from "@mui/material";
-import { Mail, Phone, Send, User } from "lucide-react";
+import { BookText, Mail, Phone, Send, User } from "lucide-react";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import countryCodes from "@/assests/countryCode.json";
@@ -122,11 +122,15 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
         color: textColor
       }}
     >
-      <div className="flex items-center gap-2">
-        <User size={18} />
-        <span className="font-medium">Enter your details</span>
+      <div className="flex items-center">
+        <div className="flex-shrink-0">
+          <BookText className="h-7 w-7 mr-1" />
+        </div>
+        <div className="ml-2">
+          <span className="font-medium block">Enter your details</span>
+          <p className="text-xs opacity-80">Click here to provide your information</p>
+        </div>
       </div>
-      <p className="text-xs mt-1 opacity-80">Click here to provide your information</p>
     </div>
   );
   return (
