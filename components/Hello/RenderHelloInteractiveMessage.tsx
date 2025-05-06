@@ -54,7 +54,7 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
                 {messageJson.action.buttons.map((button: any, index: number) => (
                   <button
                     key={index}
-                    className="btn btn-sm btn-outline w-full max-w-lg rounded-md"
+                    className="btn btn-sm btn-outline w-full max-w-md rounded-md normal-case"
                     onClick={() => sendMessageToHello?.(button?.reply?.title)}
                   >
                     {button.reply?.title}
@@ -121,7 +121,7 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
                         {section?.rows?.map((row: any, rowIndex: number) => (
                           <button
                             key={row?.id || rowIndex}
-                            className="btn btn-sm btn-outline w-full justify-start text-left px-4 py-3 rounded-md"
+                            className="btn btn-sm btn-outline w-full justify-center normal-case max-w-md"
                             onClick={() => sendMessageToHello?.(row?.title)}
                           >
                             <div className="flex flex-col">

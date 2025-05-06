@@ -115,7 +115,7 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
   if (!open && !showWidgetForm) return null;
   if (!open && showWidgetForm) return (
     <div
-      className={`bg-white p-2 px-4 cursor-pointer hover:shadow-xl transition-all borde border-gray-300 mx-auto rounded-br-md rounded-bl-md ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
+      className={`bg-white p-2 px-4 cursor-pointer hover:shadow-md transition-all border border-gray-300 mx-auto rounded-br-md rounded-bl-md ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
       onClick={() => setOpen(true)}
       style={{
         backgroundColor: backgroundColor,

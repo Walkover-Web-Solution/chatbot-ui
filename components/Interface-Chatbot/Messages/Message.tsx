@@ -31,6 +31,7 @@ import RenderHelloAttachmentMessage from "../../Hello/RenderHelloAttachmentMessa
 import RenderHelloFeedbackMessage from "../../Hello/RenderHelloFeedbackMessage";
 import RenderHelloVedioCallMessage from "@/components/Hello/RenderHelloVedioCallMessage";
 import ImageWithFallback from "./ImageWithFallback";
+import { linkify } from "@/utils/utilities";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 const ResetHistoryLine = ({ text = "" }) => {
@@ -354,7 +355,7 @@ const HumanOrBotMessageCard = React.memo(
                 <RenderHelloFeedbackMessage message={message} />
               ) : (
                 <div className="prose max-w-none">
-                  <div dangerouslySetInnerHTML={{ __html: message?.content }}></div>
+                  <div dangerouslySetInnerHTML={{ __html: linkify(message?.content) }}></div>
                 </div>
               )}
             </div>
