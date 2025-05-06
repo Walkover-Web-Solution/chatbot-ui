@@ -14,8 +14,8 @@ class ChatbotEmbedManager {
             buttonName: ''
         };
         this.urls = {
-            chatbotUrl: 'http://localhost:3001/chatbot',
-            styleSheet: 'http://localhost:3001/chat-widget-style.css',
+            chatbotUrl: 'http://192.168.1.33:3001/chatbot',
+            styleSheet: 'http://192.168.1.33:3001/chat-widget-style.css',
         };
         this.icons = {
             white: this.makeImageUrl('b1357e23-2fc6-4dc3-855a-7a213b1fa100'),
@@ -107,10 +107,12 @@ class ChatbotEmbedManager {
                 }
                 break;
             case 'launch_widget':
-                if (data === true) {
-                    this.openChatbot();
-                } else {
-                    this.closeChatbot();
+                if (window.ReactNativeWebView && this.state.isMobileSDK) {
+                    if (data === true) {
+                        this.openChatbot();
+                    } else {
+                        this.closeChatbot();
+                    }
                 }
                 break;
             case 'downloadAttachment':
