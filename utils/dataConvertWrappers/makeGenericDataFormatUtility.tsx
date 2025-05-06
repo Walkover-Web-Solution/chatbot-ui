@@ -1,5 +1,4 @@
 function convertChatHistoryToGenericFormat(history: any, isHello: boolean = false) {
-    console.log(history, 'history')
     switch (isHello) {
         case true:
             return history
