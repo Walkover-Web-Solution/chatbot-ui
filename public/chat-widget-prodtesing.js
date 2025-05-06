@@ -151,10 +151,10 @@ class ChatbotEmbedManager {
     }
 
     setUUID(uuid) {
-            this.uuid = uuid;
-            if (window.ReactNativeWebView) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'uuid', data: { uuid } }));
-            }
+        this.uuid = uuid;
+        if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'uuid', data: { uuid } }));
+        }
     }
 
     setupResizeObserver() {
@@ -163,13 +163,18 @@ class ChatbotEmbedManager {
 
             if (!iframeParentContainer || this.state.fullscreen) return;
 
-            const { width } = entries[0].contentRect;
-
-            if (width < 600) {
+            if (!window.ReactNativeWebView || !this.helloProps?.isMobileSDK) {
+                const { width } = entries[0].contentRect;
+                if (width < 600) {
+                    iframeParentContainer.style.height = '100%';
+                    iframeParentContainer.style.width = '100%';
+                } else {
+                    this.applyConfig(this?.props?.config || {});
+                }
+            } else {
                 iframeParentContainer.style.height = '100%';
                 iframeParentContainer.style.width = '100%';
-            } else {
-                this.applyConfig(this?.props?.config || {});
+                iframeParentContainer.classList.add('full-screen-interfaceEmbed')
             }
         });
 
@@ -230,7 +235,7 @@ class ChatbotEmbedManager {
                 const interfaceEmbed = document.getElementById('interfaceEmbed');
                 if (interfaceEmbed) {
                     interfaceEmbed.style.display =
-                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher)
+                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher || chatbotManager.helloProps?.isMobileSDK)
                             ? 'none'
                             : 'unset';
                 }
@@ -452,32 +457,12 @@ class ChatbotEmbedManager {
             }
             this.sendInitialData();
         }
+
+
+
     }
 
 }
-
-// Function to get the subdomain from the current URL
-getSubdomain = () => {
-    const hostname = window.location.hostname;
-
-    // Check if it's an IP address or localhost
-    if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(hostname) ||
-        hostname === 'localhost' ||
-        hostname === '127.0.0.1') {
-        return '';
-    }
-
-    // Split the hostname by dots
-    const parts = hostname.split('.');
-
-    // If we have a standard domain (e.g., example.com)
-    if (parts.length === 2) {
-        return '';
-    }
-
-    // Return the subdomain (first part of the hostname)
-    return parts[0];
-};
 
 const chatbotManager = new ChatbotEmbedManager();
 
@@ -596,9 +581,6 @@ window.initChatWidget = (data, delay = 0) => {
     if (block_chatbot) return;
     if (data) {
         chatbotManager.helloProps = { ...data };
-    }
-    if(window.ReactNativeWebView){
-        chatbotManager.state.fullscreen = true;
     }
     setTimeout(() => {
         chatbotManager.state.delayElapsed = true;
