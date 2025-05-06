@@ -107,10 +107,12 @@ class ChatbotEmbedManager {
                 }
                 break;
             case 'launch_widget':
-                if (data === true) {
-                    this.openChatbot();
-                } else {
-                    this.closeChatbot();
+                if (window.ReactNativeWebView && this.state.isMobileSDK) {
+                    if (data === true) {
+                        this.openChatbot();
+                    } else {
+                        this.closeChatbot();
+                    }
                 }
                 break;
             case 'downloadAttachment':
