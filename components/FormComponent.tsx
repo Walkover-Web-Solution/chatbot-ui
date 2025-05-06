@@ -4,7 +4,7 @@ import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { isColorLight } from "@/utils/themeUtility";
 import { useTheme } from "@mui/material";
-import { Mail, Phone, Send, User } from "lucide-react";
+import { BookText, Mail, Phone, Send, User } from "lucide-react";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import countryCodes from "@/assests/countryCode.json";
@@ -115,18 +115,22 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
   if (!open && !showWidgetForm) return null;
   if (!open && showWidgetForm) return (
     <div
-      className={`bg-white p-2 px-4 cursor-pointer hover:shadow-xl transition-all borde border-gray-300 mx-auto rounded-br-md rounded-bl-md ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
+      className={`bg-white p-2 px-4 cursor-pointer hover:shadow-md transition-all border border-gray-300 mx-auto rounded-br-md rounded-bl-md ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
       onClick={() => setOpen(true)}
       style={{
         backgroundColor: backgroundColor,
         color: textColor
       }}
     >
-      <div className="flex items-center gap-2">
-        <User size={18} />
-        <span className="font-medium">Enter your details</span>
+      <div className="flex items-center">
+        <div className="flex-shrink-0">
+          <BookText className="h-7 w-7 mr-1" />
+        </div>
+        <div className="ml-2">
+          <span className="font-medium block">Enter your details</span>
+          <p className="text-xs opacity-80">Click here to provide your information</p>
+        </div>
       </div>
-      <p className="text-xs mt-1 opacity-80">Click here to provide your information</p>
     </div>
   );
   return (

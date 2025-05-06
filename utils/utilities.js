@@ -1,6 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import { customAlphabet } from "nanoid";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import linkifyHtml from "linkify-html";
 
 export const generateNewId = (length = 8) => {
   const nanoid = customAlphabet(
@@ -319,9 +320,9 @@ export const removeCookie = (cookieName) => {
   document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain};`;
 };
 
-export const setLocalStorage = (key, value='') => {
+export const setLocalStorage = (key, value = '') => {
   localStorage.setItem(key, value);
-  if(key === 'WidgetId' || key === 'k_clientId' || key === 'a_clientId' || key === 'is_anon'){
+  if (key === 'WidgetId' || key === 'k_clientId' || key === 'a_clientId' || key === 'is_anon') {
     window.dispatchEvent(new CustomEvent("localstorage-updated", {
       detail: { key, value }
     }));
@@ -330,4 +331,14 @@ export const setLocalStorage = (key, value='') => {
 
 export const getLocalStorage = (key) => {
   return key ? localStorage.getItem(key) : null;
+}
+
+
+export const linkify = (str) => {
+  return str ? linkifyHtml(str, {
+    className: 'link-text',
+    target: {
+      url: '_blank',
+    },
+  }) : str;
 }

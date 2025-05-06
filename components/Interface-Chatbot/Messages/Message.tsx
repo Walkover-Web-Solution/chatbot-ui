@@ -31,6 +31,7 @@ import RenderHelloAttachmentMessage from "../../Hello/RenderHelloAttachmentMessa
 import RenderHelloFeedbackMessage from "../../Hello/RenderHelloFeedbackMessage";
 import RenderHelloVedioCallMessage from "@/components/Hello/RenderHelloVedioCallMessage";
 import ImageWithFallback from "./ImageWithFallback";
+import { linkify } from "@/utils/utilities";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 const ResetHistoryLine = ({ text = "" }) => {
@@ -49,21 +50,21 @@ const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
   return (
     <>
       <div className="flex flex-col gap-2.5 items-end w-full mb-2.5 animate-slide-left mt-1">
-      {Array.isArray(message?.urls) && message.urls.length > 0 && (
-  <div className="flex flex-row-reverse flex-wrap gap-2.5 w-full">
-    {message.urls.map((url: any, index: number) => {
-      const imageUrl = typeof url === 'object' ? url?.path : url;
+        {Array.isArray(message?.urls) && message.urls.length > 0 && (
+          <div className="flex flex-row-reverse flex-wrap gap-2.5 w-full">
+            {message.urls.map((url: any, index: number) => {
+              const imageUrl = typeof url === 'object' ? url?.path : url;
 
-      return (
-        <ImageWithFallback
-          key={index}
-          src={imageUrl}
-          alt={`Image ${index + 1}`}
-        />
-      );
-    })}
-  </div>
-)}
+              return (
+                <ImageWithFallback
+                  key={index}
+                  src={imageUrl}
+                  alt={`Image ${index + 1}`}
+                />
+              );
+            })}
+          </div>
+        )}
 
         {message?.content && <div
           className="p-2.5 min-w-[150px] sm:max-w-[80%] max-w-[90%] rounded-[10px_10px_1px_10px] break-words"
@@ -308,47 +309,55 @@ const HumanOrBotMessageCard = React.memo(
     return (
       <div className="w-full mb-2 animate-fade-in animate-slide-left">
         <div className="flex items-start gap-2 max-w-[90%]">
-          <div className="">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-base-200">
-              {!isBot ? (
-                <div className="rounded-full" style={{ backgroundColor: lighten(backgroundColor, 0.3) }}>
-                  {message?.from_name ? (
-                    <div className="w-7 h-7 flex items-center justify-center text-xs font-bold rounded-full" style={{ color: textColor }}>
-                      {message?.from_name?.charAt(0)?.toUpperCase()}
-                    </div>
-                  ) : (
-                    <Image
-                      width={24}
-                      height={24}
-                      src={UserAssistant}
-                      alt="User"
-                      className="opacity-70"
-                    />
-                  )}
-                </div>
-              ) : (
-                <div className="rounded-full p-1 shadow-inner transform active:scale-95 transition-transform active:bg-primary/20">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-base-200">
+            {!isBot ? (
+              <div className="rounded-full" style={{ backgroundColor: "#e0e0e0" }}>
+                {message?.from_name ? (
+                  <div className="w-7 h-7 flex items-center justify-center text-xs font-bold rounded-full" style={{ color: "#606060" }}>
+                    {message?.from_name?.charAt(0)?.toUpperCase()}
+                  </div>
+                ) : (
                   <Image
                     width={24}
                     height={24}
-                    src="https://img.icons8.com/ios/50/message-bot.png"
-                    alt="Bot"
+                    src={UserAssistant}
+                    alt="User"
                     className="opacity-70"
                   />
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-full p-1 shadow-inner">
+                <Image
+                  width={24}
+                  height={24}
+                  src="https://img.icons8.com/ios/50/message-bot.png"
+                  alt="Bot"
+                  className="opacity-70"
+                />
+              </div>
+            )}
           </div>
 
-          <div className="w-full flex  whitespace-pre-wrap  break-words">
-            <div className="text-base-content p-1  whitespace-pre-wrap w-full break-words">
+          <div className="w-fit flex  whitespace-pre-wrap  break-words">
+            <div className="text-base-content p-1 whitespace-pre-wrap w-full break-words">
               {message?.from_name && (
                 <div className="text-sm font-medium mb-1">{message.from_name}</div>
               )}
-         
-              { message?.message_type === "video_call" ? <RenderHelloVedioCallMessage message={message} /> : message?.message_type === 'interactive' ? <RenderHelloInteractiveMessage message={message} /> : (message?.message_type === 'attachment' || message?.message_type === 'text-attachment') ? <RenderHelloAttachmentMessage message={message} /> : message?.message_type === 'feedback' ? <RenderHelloFeedbackMessage message={message} /> : <div className="prose max-w-none">
-                <div dangerouslySetInnerHTML={{ __html: message?.content }}></div>
-              </div>}
+
+              {message?.message_type === "video_call" ? (
+                <RenderHelloVedioCallMessage message={message} />
+              ) : message?.message_type === 'interactive' ? (
+                <RenderHelloInteractiveMessage message={message} />
+              ) : (message?.message_type === 'attachment' || message?.message_type === 'text-attachment') ? (
+                <RenderHelloAttachmentMessage message={message} />
+              ) : message?.message_type === 'feedback' ? (
+                <RenderHelloFeedbackMessage message={message} />
+              ) : (
+                <div className="prose max-w-none">
+                  <div dangerouslySetInnerHTML={{ __html: linkify(message?.content) }}></div>
+                </div>
+              )}
             </div>
 
             {/* <div className="flex items-center gap-2 mt-1 ml-1">
