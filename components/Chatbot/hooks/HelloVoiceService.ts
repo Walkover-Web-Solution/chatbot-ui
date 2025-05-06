@@ -2,6 +2,7 @@
 import WebRTC from "msg91-webrtc-call";
 import { EventEmitter } from "events";
 import { getLocalStorage } from "@/utils/utilities";
+import { errorToast } from "@/components/customToast";
 
 class HelloVoiceService {
     private static instance: HelloVoiceService | null = null;
@@ -41,6 +42,15 @@ class HelloVoiceService {
         this.callState = "ringing";
         this.eventEmitter.emit("callStateChanged", { state: this.callState });
 
+        call.on("error", (error: any) => {
+            console.log("call error", error);
+            errorToast(error?.message || "Something went wrong");
+            this.callState = "idle";
+            this.isMuted = false;
+            this.eventEmitter.emit("callStateChanged", { state: this.callState });
+            this.eventEmitter.emit("muteStatusChanged", { muted: false });
+            this.currentCall = null;
+        });
         // Set up event listeners for this call
         call.on("answered", (data: any) => {
             this.callState = "connected";
