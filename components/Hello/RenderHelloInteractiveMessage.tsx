@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { MessageContext } from '../Interface-Chatbot/InterfaceChatbot';
 import ImageWithFallback from '../Interface-Chatbot/Messages/ImageWithFallback';
+import { linkify } from '@/utils/utilities';
 
 function RenderHelloInteractiveMessage({ message }: { message: any }) {
   const messageJson = message?.messageJson || {};
@@ -42,11 +43,15 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
             {messageJson.header && renderHeader(messageJson.header)}
 
             {messageJson.body?.text && (
-              <p className="mb-1">{messageJson?.body?.text}</p>
+              <p className="mb-1">
+                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.body?.text) }}></div>
+              </p>
             )}
 
             {messageJson.footer?.text && (
-              <p className="text-xs text-gray-800 mb-1">{messageJson?.footer?.text}</p>
+              <p className="text-xs text-gray-800 mb-1">
+                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.footer?.text) }}></div>
+              </p>
             )}
 
             {messageJson.action?.buttons && (
@@ -71,11 +76,15 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
             {messageJson.header && renderHeader(messageJson.header)}
 
             {messageJson.body?.text && (
-              <div className="mb-1">{messageJson?.body?.text}</div>
+              <div className="mb-1">
+                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.body?.text) }}></div>
+              </div>
             )}
 
             {messageJson.footer?.text && (
-              <div className="text-xs text-gray-800 mb-1">{messageJson?.footer?.text}</div>
+              <div className="text-xs text-gray-800 mb-1">
+                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.footer?.text) }}></div>
+              </div>
             )}
 
             {messageJson.action?.parameters && (
@@ -104,7 +113,9 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
             {messageJson?.header && renderHeader(messageJson?.header)}
 
             {messageJson?.body?.text && (
-              <div className="mb-1">{messageJson?.body?.text}</div>
+              <div className="mb-1">
+                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.body?.text) }}></div>
+              </div>
             )}
 
             {messageJson?.action?.sections && (
@@ -127,7 +138,9 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
                             <div className="flex flex-col">
                               <div className="font-medium">{row?.title}</div>
                               {row?.description && (
-                                <div className="text-xs text-gray-500 mt-1">{row?.description}</div>
+                                <div className="text-xs text-gray-500 mt-1">
+                                  <div dangerouslySetInnerHTML={{ __html: linkify(row?.description) }}></div>
+                                </div>
                               )}
                             </div>
                           </button>
@@ -140,7 +153,9 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
             )}
 
             {messageJson?.footer?.text && (
-              <div className="text-xs text-gray-800 mt-2 italic">{messageJson?.footer?.text}</div>
+              <div className="text-xs text-gray-800 mt-2 italic">
+                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.footer?.text) }}></div>
+              </div>
             )}
           </div>
         );
