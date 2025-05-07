@@ -37,7 +37,7 @@ class HelloVoiceService {
     }
 
     private handleOutgoingCall = (call: any) => {
-        if (call.type !== "outgoing-call") return;
+        if (call.type === "incoming-call") return;
         this.currentCall = call;
         this.callState = "ringing";
         this.eventEmitter.emit("callStateChanged", { state: this.callState });
