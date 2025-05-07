@@ -5,6 +5,8 @@ class ChatbotEmbedManager {
         this.props = {};
         this.helloProps = null;
         this.parentContainer = null;
+        this.hideHelloIcon = null;
+        this.helloLaunchWidget = null;
         this.config = {
             type: 'popup',
             height: '80',
@@ -41,10 +43,23 @@ class ChatbotEmbedManager {
         chatBotIcon.id = 'interfaceEmbed';
         chatBotIcon.style.display = 'none';
 
-        const imgElement = document.createElement('img');
+        // const imgElement = document.createElement('img');
+        // imgElement.id = 'popup-interfaceEmbed';
+        // imgElement.alt = 'Ask Ai';
+        // imgElement.src = this.icons.black;
+        // chatBotIcon.appendChild(imgElement);
+
+        const imgElement = document.createElement('div');
         imgElement.id = 'popup-interfaceEmbed';
-        imgElement.alt = 'Ask Ai';
-        imgElement.src = this.icons.black;
+        imgElement.innerHTML = `
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" rx="24" fill="white"/>
+            <path d="M10.667 16C10.667 13.7909 12.4579 12 14.667 12H33.3337C35.5428 12 37.3337 13.7909 37.3337 16V28C37.3337 30.2091 35.5428 32 33.3337 32H14.667C12.4579 32 10.667 30.2091 10.667 28V16Z" fill="#F2CA55"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M21.1339 22.6665C21.1339 24.2497 22.4173 25.5332 24.0005 25.5332C25.5837 25.5332 26.8672 24.2497 26.8672 22.6665H29.1339C29.1339 25.5016 26.8356 27.7998 24.0005 27.7998C21.1655 27.7998 18.8672 25.5016 18.8672 22.6665H21.1339Z" fill="#8C5D00"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M20.2002 19.9998V16.6665H22.4669V19.9998H20.2002ZM25.5335 19.9998V16.6665H27.8002V19.9998H25.5335Z" fill="#8C5D00"/>
+            <path d="M26.6663 32V36L21.333 32H26.6663Z" fill="#8C5D00"/>
+        </svg>
+        `;
         chatBotIcon.appendChild(imgElement);
 
         const textElement = document.createElement('span');
@@ -101,16 +116,23 @@ class ChatbotEmbedManager {
                 this.cleanupChatbot();
                 break;
             case 'hide_widget':
-                if (data === true) {
-                    block_chatbot = true;
-                    this.cleanupChatbot();
+                if (!('hide_launcher' in this.helloProps) && !this.state.isMobileSDK) {
+                    if (data === true || data === 'true') {
+                        this.hideHelloIcon = true;
+                        this.hideChatbotWithIcon();
+                    } else {
+                        this.hideHelloIcon = false;
+                        this.showChatbotIcon();
+                    }
                 }
                 break;
             case 'launch_widget':
-                if (window.ReactNativeWebView && this.state.isMobileSDK) {
-                    if (data === true) {
+                if (!('launch_widget' in this.helloProps) && !this.state.isMobileSDK) {
+                    if (data === true || data === 'true') {
+                        this.helloLaunchWidget = true;
                         this.openChatbot();
                     } else {
+                        this.helloLaunchWidget = false;
                         this.closeChatbot();
                     }
                 }
@@ -237,7 +259,7 @@ class ChatbotEmbedManager {
                 const interfaceEmbed = document.getElementById('interfaceEmbed');
                 if (interfaceEmbed) {
                     interfaceEmbed.style.display =
-                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher || chatbotManager.helloProps?.isMobileSDK)
+                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || this.hideHelloIcon || chatbotManager.helloProps?.isMobileSDK)
                             ? 'none'
                             : 'unset';
                 }
@@ -428,11 +450,11 @@ class ChatbotEmbedManager {
 
     showIconIfReady() {
         if (this.state.interfaceLoaded && this.state.delayElapsed) {
-            if (!chatbotManager.helloProps?.hide_launcher && !chatbotManager.helloProps?.isMobileSDK) {
+            if (!this.hideHelloIcon && !chatbotManager.helloProps?.isMobileSDK) {
                 const interfaceEmbed = document.getElementById('interfaceEmbed');
                 if (interfaceEmbed) interfaceEmbed.style.display = 'block';
             }
-            if (chatbotManager.helloProps?.launch_widget) chatbotManager.openChatbot()
+            if (this.helloLaunchWidget) chatbotManager.openChatbot()
             if (chatbotManager.helloProps?.icon_position === 'left') {
                 interfaceEmbed.classList.add('left_all_child')
                 document.getElementById('iframe-parent-container').classList.add('left_all_child')
@@ -459,11 +481,23 @@ class ChatbotEmbedManager {
             }
             this.sendInitialData();
         }
-
-
-
     }
 
+    hideChatbotWithIcon() {
+        this.hideHelloIcon = true;
+        const interfaceEmbed = document.getElementById('interfaceEmbed');
+        const iframeContainer = document.getElementById('iframe-parent-container');
+        if (interfaceEmbed) interfaceEmbed.style.display = 'none';
+        if (iframeContainer) iframeContainer.style.display = 'none';
+    }
+
+    showChatbotIcon() {
+        this.hideHelloIcon = false;
+        const interfaceEmbed = document.getElementById('interfaceEmbed');
+        if (interfaceEmbed) {
+            interfaceEmbed.style.display = 'unset';
+        }
+    }
 }
 
 const chatbotManager = new ChatbotEmbedManager();
@@ -583,6 +617,12 @@ window.initChatWidget = (data, delay = 0) => {
     if (block_chatbot) return;
     if (data) {
         chatbotManager.helloProps = { ...data };
+        if ('hide_launcher' in data) {
+            chatbotManager.hideHelloIcon = data.hide_launcher || false;
+        }
+        if ('launch_widget' in data) {
+            chatbotManager.helloLaunchWidget = data.launch_widget || false;
+        }
     }
     setTimeout(() => {
         chatbotManager.state.delayElapsed = true;
@@ -595,19 +635,10 @@ window.chatWidget = {
     open: () => chatbotManager.openChatbot(),
     close: () => chatbotManager.closeChatbot(),
     hide: () => {
-        const interfaceEmbed = document.getElementById('interfaceEmbed');
-        const iframeContainer = document.getElementById('iframe-parent-container');
-        if (interfaceEmbed) interfaceEmbed.style.display = 'none';
-        if (iframeContainer) iframeContainer.style.display = 'none';
+        chatbotManager.hideChatbotWithIcon();
     },
     show: () => {
-        const interfaceEmbed = document.getElementById('interfaceEmbed');
-        if (interfaceEmbed) {
-            interfaceEmbed.style.display =
-                (chatbotManager.props.hideIcon === true || chatbotManager.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher)
-                    ? 'none'
-                    : 'unset';
-        }
+        chatbotManager.showChatbotIcon();
     },
     toggleWidget: () => {
         const iframeContainer = document.getElementById('iframe-parent-container');
