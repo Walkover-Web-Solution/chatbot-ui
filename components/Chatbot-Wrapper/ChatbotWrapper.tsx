@@ -42,7 +42,7 @@ interface ChatbotWrapperProps {
 }
 
 const helloToChatbotPropsMap: Record<string, string> = {
-  show_close_button: 'hideCloseButton',
+  // show_close_button: 'hideCloseButton',
   hideFullScreenButton: 'hideFullScreenButton'
 }
 
