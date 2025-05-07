@@ -38,7 +38,7 @@ interface UseHelloIntegrationProps {
 const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: UseHelloIntegrationProps) => {
   const { handleThemeChange } = useContext(ThemeContext);
   const { isHelloUser } = useContext(ChatbotContext);
-  const { loading, helloMessages,images } = chatState;
+  const { loading, helloMessages, images } = chatState;
 
   const { setLoading, setChatsLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
   const {
@@ -77,7 +77,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [chatDispatch]);
 
   // Fetch previous Hello chat history
-  const fetchHelloPreviousHistory = useCallback((dynamicChannelId?: string ) => {
+  const fetchHelloPreviousHistory = useCallback((dynamicChannelId?: string) => {
     const channelId = dynamicChannelId || currentChannelId;
     if (!channelId || !uuid) return;
 
@@ -324,6 +324,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
             window.parent.postMessage({ type: 'initializeHelloChat_failed' }, '*');
           }
           window.parent.postMessage({ type: 'hide_widget', data: widgetData?.hide_launcher }, '*');
+          window.parent.postMessage({ type: 'setDataInLocal', data: { additionalData: { widgetToken } } }, '*');
           window.parent.postMessage({ type: 'launch_widget', data: widgetData?.launch_widget }, '*');
           botType = widgetData?.bot_type;
           enable_call = widgetData?.voice_call_widget;
