@@ -41,10 +41,23 @@ class ChatbotEmbedManager {
         chatBotIcon.id = 'interfaceEmbed';
         chatBotIcon.style.display = 'none';
 
-        const imgElement = document.createElement('img');
+        // const imgElement = document.createElement('img');
+        // imgElement.id = 'popup-interfaceEmbed';
+        // imgElement.alt = 'Ask Ai';
+        // imgElement.src = this.icons.black;
+        // chatBotIcon.appendChild(imgElement);
+
+        const imgElement = document.createElement('div');
         imgElement.id = 'popup-interfaceEmbed';
-        imgElement.alt = 'Ask Ai';
-        imgElement.src = this.icons.black;
+        imgElement.innerHTML = `
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" rx="24" fill="white"/>
+            <path d="M10.667 16C10.667 13.7909 12.4579 12 14.667 12H33.3337C35.5428 12 37.3337 13.7909 37.3337 16V28C37.3337 30.2091 35.5428 32 33.3337 32H14.667C12.4579 32 10.667 30.2091 10.667 28V16Z" fill="#F2CA55"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M21.1339 22.6665C21.1339 24.2497 22.4173 25.5332 24.0005 25.5332C25.5837 25.5332 26.8672 24.2497 26.8672 22.6665H29.1339C29.1339 25.5016 26.8356 27.7998 24.0005 27.7998C21.1655 27.7998 18.8672 25.5016 18.8672 22.6665H21.1339Z" fill="#8C5D00"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M20.2002 19.9998V16.6665H22.4669V19.9998H20.2002ZM25.5335 19.9998V16.6665H27.8002V19.9998H25.5335Z" fill="#8C5D00"/>
+            <path d="M26.6663 32V36L21.333 32H26.6663Z" fill="#8C5D00"/>
+        </svg>
+        `;
         chatBotIcon.appendChild(imgElement);
 
         const textElement = document.createElement('span');
