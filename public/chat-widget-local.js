@@ -9,8 +9,8 @@ class ChatbotEmbedManager {
         this.helloLaunchWidget = null;
         this.config = {
             type: 'popup',
-            height: '80',
-            heightUnit: '%',
+            height: 'min(804px, calc(100% - 40px))',
+            heightUnit: '',
             width: '480',
             widthUnit: 'px',
             buttonName: ''
@@ -140,7 +140,7 @@ class ChatbotEmbedManager {
             case 'downloadAttachment':
                 this.handleDownloadAttachment(data);
                 break;
-            case 'setDataInLocal':                
+            case 'setDataInLocal':
                 localStorage.setItem("widgetInfo", JSON.stringify(data));
                 break;
             case 'uuid':
@@ -195,8 +195,10 @@ class ChatbotEmbedManager {
                 if (width < 600) {
                     iframeParentContainer.style.height = '100%';
                     iframeParentContainer.style.width = '100%';
+                    iframeParentContainer.classList.add('full-screen-interfaceEmbed')
                 } else {
                     this.applyConfig(this?.props?.config || {});
+                    iframeParentContainer.classList.remove('full-screen-interfaceEmbed');
                 }
             } else {
                 iframeParentContainer.style.height = '100%';
@@ -421,7 +423,11 @@ class ChatbotEmbedManager {
             iframeParentContainer.style.width = '100%';
             iframeParentContainer.style.display = 'block';
         } else {
-            iframeParentContainer.style.height = `${config?.height}${config?.heightUnit || ''}` || '70vh';
+            const isFunctionalHeight = config.height?.includes('(');
+            iframeParentContainer.style.height = isFunctionalHeight
+                ? config.height  // use as-is
+                : `${config.height}${config.heightUnit || ''}` || '70vh';
+            // iframeParentContainer.style.height = `${config?.height}${config?.heightUnit || ''}` || '70vh';
             iframeParentContainer.style.width = `${config?.width}${config?.widthUnit || ''}` || '40vw';
         }
     }

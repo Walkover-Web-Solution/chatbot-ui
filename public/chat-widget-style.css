@@ -57,8 +57,8 @@
 /* popup */
 .popup-parent-container {
   position: fixed;
-  bottom: 5px;
-  right: 5px;
+  bottom: 10px;
+  right: 10px;
   background-color: #fff;
   z-index: 9999;
   display: none;
