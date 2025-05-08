@@ -272,6 +272,7 @@ function InterfaceChatbot({
             // this is for when sending from SendDataToChatbot method window.SendDataToChatbot({bridgeName: 'asdlfj', askAi: "hello"})
             sendMessage(
               data.askAi || "",
+              data?.images || [],
               data?.variables || {},
               data?.threadId || null,
               data?.bridgeName || null
