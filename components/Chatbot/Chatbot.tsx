@@ -219,7 +219,7 @@ function ActiveChatView({ containerRef, subThreadId, messageIds }: ActiveChatVie
     <>
       {/* Messages container */}
       <div
-        className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1 ${messageIds?.[subThreadId]?.length === 0 ? 'flex items-center justify-center' : 'pb-10'
+        className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1 ${messageIds?.[subThreadId]?.length === 0 ? 'flex items-center justify-center' : 'pb-6'
           }`}
         id="message-container"
         ref={containerRef}
