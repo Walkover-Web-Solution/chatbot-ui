@@ -87,11 +87,15 @@
   z-index: 999999999 !important;
 }
 
+#iframe-parent-container {
+  z-index: 99999;
+}
+
 #interfaceEmbed {
   /* background-color: transparent; */
   object-fit: contain;
   cursor: pointer;
-  z-index: 999999999 !important;
+  z-index: 9999 !important;
 }
 
 /* left slider */
