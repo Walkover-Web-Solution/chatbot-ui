@@ -43,15 +43,15 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
             {messageJson.header && renderHeader(messageJson.header)}
 
             {messageJson.body?.text && (
-              <p className="mb-1">
+              <div className="mb-1">
                 <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.body?.text) }}></div>
-              </p>
+              </div>
             )}
 
             {messageJson.footer?.text && (
-              <p className="text-xs text-gray-800 mb-1">
+              <div className="text-xs text-gray-800 mb-1">
                 <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.footer?.text) }}></div>
-              </p>
+              </div>
             )}
 
             {messageJson.action?.buttons && (
