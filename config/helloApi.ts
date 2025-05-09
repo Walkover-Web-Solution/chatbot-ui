@@ -70,7 +70,7 @@ export async function getAllChannels(): Promise<any> {
       },
       {
         headers: {
-          authorization: unique_id
+          authorization: (unique_id || mail || number)
             ? getLocalStorage('WidgetId')
             : (getLocalStorage('a_clientId')
               ? `${getLocalStorage('WidgetId')}:${getLocalStorage('a_clientId')}`
