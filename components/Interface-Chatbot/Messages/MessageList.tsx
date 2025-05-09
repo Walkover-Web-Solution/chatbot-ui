@@ -155,7 +155,7 @@ function MessageList() {
     );
   }, [IsHuman, greetingMessage]);
 
-  
+
   const renderThinkingIndicator = useMemo(() => {
     if (loading && assigned_type === 'bot' && IsHuman) {
       return (
@@ -171,7 +171,7 @@ function MessageList() {
         </div>
       );
     }
-      return null
+    return null
   }, [IsHuman, loading, assigned_type, currentChannelId, themePalette]);
 
 
@@ -189,7 +189,7 @@ function MessageList() {
       <div
         ref={containerRef}
         id="scrollableDiv"
-        className="h-full overflow-y-auto flex flex-col p-2 sm:p-3 w-full"
+        className="h-full overflow-y-auto flex flex-col p-3 sm:p-4 w-full"
       >
         <InfiniteScroll
           dataLength={messageIds.length}
@@ -207,6 +207,7 @@ function MessageList() {
       <MoveToDownButton
         movetoDown={moveToDown}
         showScrollButton={showScrollButton}
+        backgroundColor={lighten(theme.palette.secondary.main, 0.1)}
       />
     </div>
   );
