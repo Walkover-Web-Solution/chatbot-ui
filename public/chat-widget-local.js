@@ -146,9 +146,67 @@ class ChatbotEmbedManager {
             case 'uuid':
                 this.setUUID(data?.uuid);
                 break;
+            case 'PUSH_NOTIFICATION':
+                if(this.state.isMobileSDK){
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'PUSH_NOTIFICATION', data }));
+                }else{
+                    this.handlePushNotification(data)
+                }
+                break;    
         }
     }
 
+    handlePushNotification(data) {
+        // Create a full-screen transparent overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'notification-overlay';
+        overlay.classList.add('notification-overlay');
+        
+        // Set position classes based on horizontal and vertical position values
+        const horizontalPosition = data.horizontal_position || 'center';
+        const verticalPosition = data.vertical_position || 'center';
+        
+        // Add position classes
+        overlay.classList.add(`h-${horizontalPosition}`, `v-${verticalPosition}`);
+        
+        // Create the modal container
+        const modalContainer = document.createElement('div');
+        modalContainer.classList.add('notification-modal');
+        
+        // Create close button (cross icon)
+        const closeButton = document.createElement('div');
+        closeButton.innerHTML = '&times;';
+        closeButton.classList.add('notification-close-btn');
+        
+        // Add click event to close button
+        closeButton.addEventListener('click', () => {
+            this.removeNotification(overlay);
+        });
+        
+        // Set the content from data.content
+        modalContainer.innerHTML = data.content;
+        
+        // Add the close button to the modal container after content
+        modalContainer.appendChild(closeButton);
+        
+        // Append the modal to the overlay
+        overlay.appendChild(modalContainer);
+        
+        // Append the overlay to the body
+        document.body.appendChild(overlay);
+    }
+
+    removeNotification(overlayElement) {
+        if (overlayElement && document.body.contains(overlayElement)) {
+            // Add fade-out animation
+            overlayElement.classList.add('notification-fade-out');
+            
+            // Remove after animation completes
+            setTimeout(() => {
+                document.body.removeChild(overlayElement);
+            }, 300); // Match this with CSS transition duration
+        }
+    }
     handleDownloadAttachment(data) {
         if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'downloadAttachment', data: data?.url }));
