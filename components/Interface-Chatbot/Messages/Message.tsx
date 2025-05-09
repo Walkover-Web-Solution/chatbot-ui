@@ -67,7 +67,7 @@ const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
         )}
 
         {message?.content && <div
-          className="p-2.5 min-w-[150px] sm:max-w-[80%] max-w-[90%] rounded-[10px_10px_1px_10px] break-words"
+          className="p-2.5 min-w-[40px] sm:max-w-[80%] max-w-[90%] rounded-[10px_10px_1px_10px] break-words"
           style={{
             backgroundColor: theme.palette.primary.main,
             color: textColor

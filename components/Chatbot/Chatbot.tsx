@@ -61,18 +61,19 @@ function Chatbot({ chatbotId }: ChatbotProps) {
       messageRef
     });
 
-  const { IsHuman, isSmallScreen, currentChatId } =
+  const { IsHuman, isSmallScreen, currentChatId, isDefaultNavigateToChatScreen } =
     useReduxStateManagement({
       chatbotId,
       chatDispatch
     });
 
-    const { show_widget_form, is_anon } = useCustomSelector((state: $ReduxCoreType) =>{
-      const helloConfig = state.Hello?.helloConfig
-      return  ({
+  const { show_widget_form, is_anon } = useCustomSelector((state: $ReduxCoreType) => {
+    const helloConfig = state.Hello?.helloConfig
+    return ({
       show_widget_form: typeof helloConfig?.show_widget_form === 'boolean' ? helloConfig?.show_widget_form : state.Hello?.widgetInfo?.show_widget_form,
-      is_anon : state.Hello?.is_anon == 'true'
-    })});
+      is_anon: state.Hello?.is_anon == 'true'
+    })
+  });
 
   const chatActions = useChatActions({
     chatbotId,
@@ -101,6 +102,16 @@ function Chatbot({ chatbotId }: ChatbotProps) {
     mountedRef.current = true;
   }, [IsHuman, currentChatId, chatActions]);
 
+  // open Chat directly if no team or one team exista
+  useEffect(() => {
+    if (isDefaultNavigateToChatScreen) {
+      chatActions.setToggleDrawer(false);
+      if (messageRef.current) {
+        messageRef.current.focus();
+      }
+    }
+  }, [isDefaultNavigateToChatScreen])
+
   // Context value
   const contextValue = {
     ...chatState,
@@ -110,8 +121,8 @@ function Chatbot({ chatbotId }: ChatbotProps) {
     chatDispatch,
     messageIds: messageIds?.[subThreadId] || [],
     msgIdAndDataMap: msgIdAndDataMap?.[subThreadId],
-    allMessages:messageIds,
-    allMessagesData:msgIdAndDataMap,
+    allMessages: messageIds,
+    allMessagesData: msgIdAndDataMap,
     isSmallScreen,
     isTyping: isTyping?.[subThreadId],
     fetchChannels,
@@ -150,7 +161,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
           )}
 
           {/* Form and UI components */}
-          {IsHuman && show_widget_form && !is_anon &&(
+          {IsHuman && show_widget_form && !is_anon && (
             <FormComponent
               open={openHelloForm}
               setOpen={(isFormOpen: boolean) =>
@@ -219,7 +230,7 @@ function ActiveChatView({ containerRef, subThreadId, messageIds }: ActiveChatVie
     <>
       {/* Messages container */}
       <div
-        className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1 ${messageIds?.[subThreadId]?.length === 0 ? 'flex items-center justify-center' : 'pb-10'
+        className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1 ${messageIds?.[subThreadId]?.length === 0 ? 'flex items-center justify-center' : 'pb-6'
           }`}
         id="message-container"
         ref={containerRef}

@@ -324,12 +324,15 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
             window.parent.postMessage({ type: 'initializeHelloChat_failed' }, '*');
           }
           window.parent.postMessage({ type: 'hide_widget', data: widgetData?.hide_launcher }, '*');
-          window.parent.postMessage({ type: 'setDataInLocal', data: { additionalData: { widgetToken } } }, '*');
+          window.parent.postMessage({ type: 'setDataInLocal', data: { key: 'widgetInfo', payload: JSON.stringify({ additionalData: { widgetToken } }) } }, '*');
           window.parent.postMessage({ type: 'launch_widget', data: widgetData?.launch_widget }, '*');
           botType = widgetData?.bot_type;
           enable_call = widgetData?.voice_call_widget;
           dispatch(setWidgetInfo(widgetData));
           handleThemeChange(widgetData?.primary_color || "#000000");
+          if (widgetData?.teams && widgetData?.teams.length <= 1) {
+            dispatch(setHelloKeysData({ currentTeamId: widgetData?.teams?.[0]?.id || null }));
+          }
         } catch (error) {
           window.parent.postMessage({ type: 'initializeHelloChat_failed' }, '*');
           console.error("Failed to initialize Hello Chat:", error);

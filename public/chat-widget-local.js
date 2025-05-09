@@ -140,8 +140,8 @@ class ChatbotEmbedManager {
             case 'downloadAttachment':
                 this.handleDownloadAttachment(data);
                 break;
-            case 'setDataInLocal':
-                localStorage.setItem("widgetInfo", JSON.stringify(data));
+            case 'setDataInLocal':                
+                localStorage.setItem(data.key, data?.payload);
                 break;
             case 'uuid':
                 this.setUUID(data?.uuid);
