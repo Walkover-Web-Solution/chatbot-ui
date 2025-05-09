@@ -11,7 +11,7 @@ export const initialState: $HelloReduxType = {
   isLoading: false,
   mode: [],
   helloConfig: {} as HelloData,
-  channelListData: {},
+  channelListData: {} as ChannelListData,
   currentChannelId: '',
   currentChatId: '',
   currentTeamId: '',

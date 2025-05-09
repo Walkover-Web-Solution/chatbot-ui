@@ -330,6 +330,9 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
           enable_call = widgetData?.voice_call_widget;
           dispatch(setWidgetInfo(widgetData));
           handleThemeChange(widgetData?.primary_color || "#000000");
+          if (widgetData?.teams && widgetData?.teams.length <= 1) {
+            dispatch(setHelloKeysData({ currentTeamId: widgetData?.teams?.[0]?.id || null }));
+          }
         } catch (error) {
           window.parent.postMessage({ type: 'initializeHelloChat_failed' }, '*');
           console.error("Failed to initialize Hello Chat:", error);
