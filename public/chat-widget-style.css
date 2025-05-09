@@ -169,20 +169,107 @@
 }
 
 .full-screen-without-border {
-    width: 100% !important;
-    height: 100% !important;
-    border-radius: 0%;
-    border: none !important;
-    right: 0;
-    bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0%;
+  border: none !important;
+  right: 0;
+  bottom: 0 !important;
 }
 
-.left_all_child, .left_all_child *{
+.left_all_child,
+.left_all_child * {
   left: 10px !important;
   right: unset !important;
 }
 
-.right_all_child, .right_all_child *{
+.right_all_child,
+.right_all_child * {
   left: unset !important;
   right: 10px !important;
+}
+
+/* Notification Overlay Styles */
+.notification-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  z-index: 999999;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* Horizontal position classes */
+.notification-overlay.h-left {
+  justify-content: flex-start;
+}
+
+.notification-overlay.h-center {
+  justify-content: center;
+}
+
+.notification-overlay.h-right {
+  justify-content: flex-end;
+}
+
+/* Vertical position classes */
+.notification-overlay.v-top {
+  align-items: flex-start;
+}
+
+.notification-overlay.v-center {
+  align-items: center;
+}
+
+.notification-overlay.v-bottom {
+  align-items: flex-end;
+}
+
+/* Modal Container Styles */
+.notification-modal {
+  background-color: white;
+  padding: 4px;
+  border-radius: 10px;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  /* Single overflow property */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+  margin: 20px;
+  box-sizing: border-box;
+  /* Ensures padding doesn't affect max dimensions */
+}
+
+/* Close Button Styles */
+.notification-close-btn {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  cursor: pointer;
+  color: #ffffff;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  line-height: 1;
+  border-radius: 50%;
+  background-color: #000000;
+  color: #ffffff;
+  padding: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.notification-close-btn:hover {
+  background-color: #444444;
+}
+
+/* Fade-out animation */
+.notification-fade-out {
+  opacity: 0;
 }

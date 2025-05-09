@@ -246,10 +246,12 @@ const ChatbotDrawer = ({
                                 <>
                                   {isUserMessage ? "You: " : "Sender: "}
                                   <div className="line-clamp-1" dangerouslySetInnerHTML={{
-                                    __html: lastMessage.messageJson?.text ||
-                                      (lastMessage.messageJson?.attachment?.length > 0 ? "Attachment" :
-                                        lastMessage.messageJson?.message_type ||
-                                        "New conversation")
+                                    __html: lastMessage?.message_type === 'pushNotification'
+                                      ? "Custom Notification"
+                                      : (lastMessage.messageJson?.text ||
+                                        (lastMessage.messageJson?.attachment?.length > 0 ? "Attachment" :
+                                          lastMessage.messageJson?.message_type ||
+                                          "New conversation"))
                                   }}></div>
                                 </>
                               );
