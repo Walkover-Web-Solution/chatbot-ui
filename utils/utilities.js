@@ -323,6 +323,9 @@ export const removeCookie = (cookieName) => {
 export const setLocalStorage = (key, value = '') => {
   localStorage.setItem(key, value);
   if (key === 'WidgetId' || key === 'k_clientId' || key === 'a_clientId' || key === 'is_anon') {
+    if (key === 'k_clientId') window.parent.postMessage({ type: 'setDataInLocal', data: { key: 'hello-widget-uuid', payload: value } }, '*');
+    if (key === 'a_clientId') window.parent.postMessage({ type: 'setDataInLocal', data: { key: 'hello-widget-anonymoud-uuid', payload: value } }, '*');
+
     window.dispatchEvent(new CustomEvent("localstorage-updated", {
       detail: { key, value }
     }));
