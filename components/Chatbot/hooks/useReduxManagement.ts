@@ -12,6 +12,12 @@ const getStoredValueOrDefault = (key: string, defaultValue: any, isJson = false)
   return isJson ? JSON.parse(storedValue) : storedValue;
 };
 
+function isDefaultNavigateToChatScreenFn(state: $ReduxCoreType) {
+  const teams = state.Hello?.widgetInfo?.teams || [];
+  const channels = state.Hello?.channelListData?.channels || [];
+  return teams && teams.length <= 1 && channels?.length <= 1 && !channels?.[0]?.id;
+}
+
 export const useReduxStateManagement = ({ chatbotId, chatDispatch }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction> }) => {
   const theme = useTheme();
   const isLargeScreen = useMediaQuery('(max-width: 1024px)');
@@ -40,6 +46,7 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch }: { chatbotId
     currentChatId,
     currentChannelId,
     currentTeamId,
+    isDefaultNavigateToChatScreen
   } = useCustomSelector((state: $ReduxCoreType) => ({
     interfaceContextData: state.Interface?.interfaceContext?.[chatbotId]?.variables,
     reduxThreadId: state.appInfo?.threadId || "",
@@ -53,6 +60,7 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch }: { chatbotId
     unique_id: state.Hello?.channelListData?.unique_id,
     presence_channel: state.Hello?.channelListData?.presence_channel,
     team_id: state.Hello?.widgetInfo?.team?.[0]?.id,
+    isDefaultNavigateToChatScreen: isDefaultNavigateToChatScreenFn(state),
     chat_id: state.Hello?.Channel?.id,
     channelId: state.Hello?.Channel?.channel || null,
     mode: state.Hello?.mode || [],
@@ -137,6 +145,7 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch }: { chatbotId
     unique_id,
     presence_channel,
     team_id,
+    isDefaultNavigateToChatScreen,
     chat_id,
     channelId,
     mode,
