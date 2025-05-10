@@ -237,7 +237,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
           attachment: images || []
         },
         chat_id: currentChatId
-      }
+      },
+      timetoken: Date.now()
     };
 
     // Add message to chat

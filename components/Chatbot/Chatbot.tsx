@@ -131,8 +131,8 @@ function Chatbot({ chatbotId }: ChatbotProps) {
 
   // Check if chat is empty
   const isChatEmpty = IsHuman
-    ? helloMsgIds[subThreadId]?.length === 0
-    : messageIds[subThreadId]?.length === 0;
+    ? !subThreadId || helloMsgIds[subThreadId]?.length === 0
+    : !subThreadId || messageIds[subThreadId]?.length === 0;
 
   return (
     <MessageContext.Provider value={contextValue}>
