@@ -13,7 +13,7 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
     const { themeColor, handleThemeChange } = useContext(ThemeContext);
     const dispatch = useDispatch();
     // Use useMemo to parse interfaceDetails once and avoid repeated parsing
-    const { chatbot_id, userId, token, config, isHelloUser = false, websiteUrl } = useMemo(() => {
+    const { chatbot_id, userId, token, config, isHelloUser = false, websiteUrl , origin } = useMemo(() => {
         const interfaceDetails = search.get("interfaceDetails");
         // Default values if parsing fails or interfaceDetails is not provided
         const defaultValues = {
@@ -42,6 +42,7 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
         }
     }, []);
     localStorage.setItem("websiteUrl", websiteUrl);
+    localStorage.setItem("origin",origin)
     useEffect(() => {
         if (chatbot_id && userId) {
             dispatch(setDataInAppInfoReducer({

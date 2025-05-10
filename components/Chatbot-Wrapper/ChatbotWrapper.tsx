@@ -52,6 +52,9 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
   // Handle messages from parent window
   const handleMessage = useCallback((event: MessageEvent) => {
     if (event?.data?.type !== "interfaceData" && event?.data?.type !== "helloData") return;
+    if(event?.data?.type === 'coBrowserLoaded'){
+        console.log("cobrowser loaded in parent")
+    }
     if (event?.data?.type === "helloData") {
       const {
         widgetToken,

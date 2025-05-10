@@ -16,6 +16,7 @@ import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
+import useCBManger from '@/hooks/coBrowser/useCBManger';
 
 interface HelloMessage {
   role: string;
@@ -66,7 +67,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
   useSocket();
-
+  useCBManger()
   const setHelloMessages = useCallback((messages: HelloMessage[]) => {
     chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages, subThreadId: messages?.[0]?.channel || "" } });
     // chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: { data: messages } });
@@ -275,6 +276,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       initializeHelloServices(e.detail.value);
     }
     if (e.detail.key === 'k_clientId' || e.detail.key === 'a_clientId') {
+      dispatch(setHelloKeysData({ [e.detail.key]: e.detail.value }))
       emitEventToParent('uuid', { uuid: e.detail?.value });
     }
     if (e.detail.key === 'is_anon') {
