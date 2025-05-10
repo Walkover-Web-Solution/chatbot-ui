@@ -40,7 +40,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   const { isHelloUser } = useContext(ChatbotContext);
   const { loading, helloMessages, images } = chatState;
 
-  const { setLoading, setChatsLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
+  const { setLoading, setChatsLoading, setNewMessage } = useChatActions({ chatbotId, chatDispatch, chatState });
   const {
     uuid,
     unique_id,
@@ -245,6 +245,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
     // Send message to API
     onSendHello(textMessage, newMessage);
+    setNewMessage(true);
 
     // Clear input field
     if (messageRef?.current) {
