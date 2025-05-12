@@ -1,5 +1,5 @@
 'use client';
-import { addDomainToHello } from "@/config/helloApi";
+import { addDomainToHello, saveClientDetails } from "@/config/helloApi";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
@@ -51,7 +51,7 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
 
   // Handle messages from parent window
   const handleMessage = useCallback((event: MessageEvent) => {
-    if (event?.data?.type !== "interfaceData" && event?.data?.type !== "helloData" && event?.data?.type !== 'parent-route-changed') return;
+    if (event?.data?.type !== "interfaceData" && event?.data?.type !== "helloData" && event?.data?.type !== 'parent-route-changed' && event?.data?.type !== 'ADD_CLIENT_DATA_TO_SEGMENTO') return;
     if (event?.data?.type === "helloData") {
       const {
         widgetToken,
@@ -131,6 +131,9 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
     if(event?.data?.type == 'parent-route-changed' && event?.data?.data?.websiteUrl){
       addDomainToHello(event?.data?.data?.websiteUrl);
       return;
+    }
+    if(event?.data?.type == 'ADD_CLIENT_DATA_TO_SEGMENTO' && event?.data?.data){
+      saveClientDetails(event?.data?.data)
     }
     const receivedData: InterfaceData = event.data.data;
     if (Object.keys(receivedData || {}).length === 0) return;
