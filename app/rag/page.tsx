@@ -115,9 +115,10 @@ function RagCompoonent() {
                         message: "Document updated successfully!",
                         severity: "success",
                     });
+                    window?.parent?.postMessage({ type: "rag_embed", name: response?.data?.name, description: response?.data?.description}, "*");
                     setKnowledgeBases((prevKnowledgeBases) =>
                         prevKnowledgeBases.map((kb) =>
-                            kb._id === editingKnowledgeBase._id ? response.data : kb
+                            kb._id === editingKnowledgeBase._id ? response?.data : kb
                         )
                     );
                 }
