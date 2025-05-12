@@ -180,6 +180,11 @@ function MessageList() {
       <Message
         key={`${msgId}-${index}`}
         message={msgIdAndDataMap[msgId]}
+        prevTime={
+          index > 0 && messageIds[index - 1] && msgIdAndDataMap[messageIds[index - 1]]
+            ? msgIdAndDataMap[messageIds[index - 1]]?.time || null
+            : null
+        }
       />
     ));
   }, [messageIds, msgIdAndDataMap]);

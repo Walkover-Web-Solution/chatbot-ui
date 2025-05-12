@@ -403,7 +403,7 @@ export const formatTime = (value, format) => {
       ) {
         return 'Yesterday';
       }
-      return dayjs(timeToken).format('Do MMM, YYYY');
+      return dayjs(timeToken).format('DD MMM, YYYY');
     }
     case 'shortTime': {
       return dayjs(timeToken).format('hh:mm a');

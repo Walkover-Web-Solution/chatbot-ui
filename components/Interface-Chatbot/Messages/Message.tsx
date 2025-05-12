@@ -27,6 +27,7 @@ import RenderHelloAttachmentMessage from "../../Hello/RenderHelloAttachmentMessa
 import RenderHelloFeedbackMessage from "../../Hello/RenderHelloFeedbackMessage";
 import RenderHelloInteractiveMessage from "../../Hello/RenderHelloInteractiveMessage";
 import { MessageContext } from "../InterfaceChatbot";
+import DateGroup from "./DateGroup";
 import ImageWithFallback from "./ImageWithFallback";
 import "./Message.css";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
@@ -370,7 +371,7 @@ const HumanOrBotMessageCard = React.memo(
   }
 );
 
-function Message({ testKey, message, addMessage }: any) {
+function Message({ message, addMessage, prevTime }: { message: any, addMessage?: any, prevTime?: string | number | null }) {
   const theme = useTheme();
   const backgroundColor = theme.palette.primary.main;
   const textColor = isColorLight(backgroundColor) ? "#000000" : "#ffffff";
@@ -380,8 +381,10 @@ function Message({ testKey, message, addMessage }: any) {
 
   return (
     <Box className="w-100">
+      {message?.time && <DateGroup prevTime={prevTime} messageTime={message?.time} key={message?.time} backgroundColor={backgroundColor} textColor={textColor} />}
       {message?.role === "user" ? (
         <>
+
           <UserMessageCard
             message={message}
             theme={theme}
