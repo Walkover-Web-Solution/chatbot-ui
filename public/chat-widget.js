@@ -674,6 +674,7 @@ window.initChatWidget = (data, delay = 0) => {
 
 // Create chatWidget object with all widget control functions
 window.chatWidget = {
+    addCustomData: (data) => sendMessageToChatbot({ type: 'ADD_CLIENT_DATA_TO_SEGMENTO', data }),
     open: () => chatbotManager.openChatbot(),
     close: () => chatbotManager.closeChatbot(),
     hide: () => {

@@ -97,8 +97,6 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
         p: formData?.number ? `${formData?.countryCode}${formData?.number}` : undefined,
         e: formData?.email,
         country_code: formData?.countryCode,
-        user_data: {},
-        is_anon: false,
       }
 
       // Dispatch setHelloKeysData if all three fields are filled

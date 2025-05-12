@@ -156,29 +156,29 @@ class ChatbotEmbedManager {
         sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: window?.location?.href } });
 
         (function () {
-                const originalPushState = history.pushState;
-                const originalReplaceState = history.replaceState;
+            const originalPushState = history.pushState;
+            const originalReplaceState = history.replaceState;
 
-                function handleUrlChange() {
-                    const fullUrl = window.location.href;
+            function handleUrlChange() {
+                const fullUrl = window.location.href;
 
-                    // Only call API if it's not a hash-only change
-                    if (window.location.hash === '') {
-                        sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: fullUrl } })
-                    }
+                // Only call API if it's not a hash-only change
+                if (window.location.hash === '') {
+                    sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: fullUrl } })
                 }
+            }
 
-                history.pushState = function () {
-                    originalPushState.apply(this, arguments);
-                    handleUrlChange();
-                };
+            history.pushState = function () {
+                originalPushState.apply(this, arguments);
+                handleUrlChange();
+            };
 
-                history.replaceState = function () {
-                    originalReplaceState.apply(this, arguments);
-                    handleUrlChange();
-                };
+            history.replaceState = function () {
+                originalReplaceState.apply(this, arguments);
+                handleUrlChange();
+            };
 
-                window.addEventListener('popstate', handleUrlChange);
+            window.addEventListener('popstate', handleUrlChange);
         })();
     }
 
@@ -674,6 +674,7 @@ window.initChatWidget = (data, delay = 0) => {
 
 // Create chatWidget object with all widget control functions
 window.chatWidget = {
+    addCustomData: (data) => sendMessageToChatbot({ type: 'ADD_CLIENT_DATA_TO_SEGMENTO', data }),
     open: () => chatbotManager.openChatbot(),
     close: () => chatbotManager.closeChatbot(),
     hide: () => {

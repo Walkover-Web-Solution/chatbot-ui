@@ -179,9 +179,13 @@ export async function getGreetingQuestions(companyId: string, botId: string, bot
 // Save client details
 export async function saveClientDetails(clientData: any): Promise<any> {
   try {
+    if(getLocalStorage("is_anon") == 'true') return {}
     const countryCode = clientData?.country_code;
-    delete clientData?.country_code;
-    const response = await axios.put(`${HELLO_HOST_URL}/client/`, clientData, {
+    const payload = {...clientData}
+    delete payload?.country_code;
+    payload.userData = JSON.parse(getLocalStorage('userData') || '{}') || {}
+    payload.is_anon  = false
+    const response = await axios.put(`${HELLO_HOST_URL}/client/`, payload, {
       headers: {
         authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
       },
