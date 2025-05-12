@@ -146,9 +146,42 @@ class ChatbotEmbedManager {
             case 'uuid':
                 this.setUUID(data?.uuid);
                 break;
+            case 'ENABLE_DOMAIN_TRACKING':
+                this.enableDomainTracking();
+                break;
         }
     }
 
+    enableDomainTracking() {
+        sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: window?.location?.href } });
+
+        (function () {
+                const originalPushState = history.pushState;
+                const originalReplaceState = history.replaceState;
+
+                function handleUrlChange() {
+                    const fullUrl = window.location.href;
+
+                    // Only call API if it's not a hash-only change
+                    if (window.location.hash === '') {
+                        sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: fullUrl } })
+                    }
+                }
+
+                history.pushState = function () {
+                    originalPushState.apply(this, arguments);
+                    handleUrlChange();
+                };
+
+                history.replaceState = function () {
+                    originalReplaceState.apply(this, arguments);
+                    handleUrlChange();
+                };
+
+                window.addEventListener('popstate', handleUrlChange);
+        })();
+    }
+    
     handleDownloadAttachment(data) {
         if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'downloadAttachment', data: data?.url }));
@@ -362,7 +395,7 @@ class ChatbotEmbedManager {
         const iframeComponent = document.getElementById('iframe-component-interfaceEmbed');
         if (!iframeComponent) return;
         let encodedData = '';
-        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true, websiteUrl: window.location.href }));
+        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true }));
         const modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
         iframeComponent.src = modifiedUrl;
 
