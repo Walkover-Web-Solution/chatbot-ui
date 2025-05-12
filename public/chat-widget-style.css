@@ -161,7 +161,7 @@
 .full-screen-interfaceEmbed {
   width: 100% !important;
   height: 100% !important;
-  position: absolute !important;
+  position: fixed !important;
   border: none !important;
   border-radius: 0%;
   right: 0;
@@ -169,20 +169,22 @@
 }
 
 .full-screen-without-border {
-    width: 100% !important;
-    height: 100% !important;
-    border-radius: 0%;
-    border: none !important;
-    right: 0;
-    bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0%;
+  border: none !important;
+  right: 0;
+  bottom: 0 !important;
 }
 
-.left_all_child, .left_all_child *{
+.left_all_child,
+.left_all_child * {
   left: 10px !important;
   right: unset !important;
 }
 
-.right_all_child, .right_all_child *{
+.right_all_child,
+.right_all_child * {
   left: unset !important;
   right: 10px !important;
 }

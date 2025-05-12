@@ -13,6 +13,7 @@ interface MessageType {
   function?: () => void;
   id?: string;
   images?: string[]; // Added images property to MessageType
+  time?: string | number;
 }
 export const MessageContext = createContext<{
   fetchChannels: () => void,

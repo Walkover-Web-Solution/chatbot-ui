@@ -14,6 +14,7 @@ export interface MessageType {
   Name?: any[];
   mode?: string;
   isTyping?: boolean;
+  time?: string | number;
 }
 
 export interface ChatState {
