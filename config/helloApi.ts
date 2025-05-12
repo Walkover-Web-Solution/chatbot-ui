@@ -1,6 +1,6 @@
 import { errorToast } from "@/components/customToast";
 import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
-import axios from "axios";
+import axios from "@/utils/helloInterceptor";
 
 const HELLO_HOST_URL = process.env.NEXT_PUBLIC_MSG91_HOST_URL;
 

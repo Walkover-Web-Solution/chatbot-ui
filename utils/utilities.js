@@ -1,8 +1,8 @@
-import { Box, Typography } from "@mui/material";
-import { customAlphabet } from "nanoid";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import linkifyHtml from "linkify-html";
+import { Box, Typography } from "@mui/material";
 import dayjs from "dayjs";
+import linkifyHtml from "linkify-html";
+import { customAlphabet } from "nanoid";
 
 export const generateNewId = (length = 8) => {
   const nanoid = customAlphabet(
