@@ -66,7 +66,7 @@ export async function getAllChannels(): Promise<any> {
           "name": name
         },
         is_anon: getLocalStorage('is_anon') == 'true',
-        ...(getLocalStorage('is_anon') == 'true' ? { anonymous_client_uuid: getLocalStorage('a_clientId') , uuid: getLocalStorage('a_clientId')}:{})
+        ...(getLocalStorage('is_anon') == 'true' ? { anonymous_client_uuid: getLocalStorage('a_clientId'), uuid: getLocalStorage('a_clientId') } : {})
       },
       {
         headers: {
@@ -81,10 +81,10 @@ export async function getAllChannels(): Promise<any> {
 
     if (unique_id || mail || number || user_jwt_token) {
       setLocalStorage('k_clientId', response?.data?.uuid)
-    } else if(response?.data?.customer_name){
+    } else if (response?.data?.customer_name) {
       setLocalStorage('default_client_created', 'true')
     }
-    
+
     // Update userData with customer details from response if available
     if (response?.data?.customer_name || response?.data?.customer_number || response?.data?.customer_mail) {
       const userData = JSON.parse(getLocalStorage('client') || '{}');
@@ -106,7 +106,7 @@ export async function getAllChannels(): Promise<any> {
 // Get agent team list
 export async function getAgentTeamApi(): Promise<any> {
   try {
-    const { name, mail, number, user_jwt_token ,unique_id} = JSON.parse(getLocalStorage('userData') || '{}');
+    const { name, mail, number, user_jwt_token, unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
     const response = await axios.post(`${HELLO_HOST_URL}/agent-team/`, {
       user_data: {
         "unique_id": unique_id,
@@ -129,7 +129,7 @@ export async function getAgentTeamApi(): Promise<any> {
 }
 
 // Get greeting/starter questions
-export async function getGreetingQuestions(companyId: string, botId: string, botType: 'lex'|'chatgpt'): Promise<any> {
+export async function getGreetingQuestions(companyId: string, botId: string, botType: 'lex' | 'chatgpt'): Promise<any> {
   try {
     const isAnonymousUser = getLocalStorage("is_anon") == 'true';
     const widgetId = getLocalStorage('WidgetId');
@@ -150,7 +150,7 @@ export async function getGreetingQuestions(companyId: string, botId: string, bot
           },
         }
       );
-      
+
       return greetingResponse?.data?.data || [];
     } else {
       // For ChatGPT or other bot types, use GET request
@@ -167,7 +167,7 @@ export async function getGreetingQuestions(companyId: string, botId: string, bot
           },
         }
       );
-      
+
       return greetingResponse?.data?.data || [];
     }
   } catch (error: any) {
@@ -204,16 +204,16 @@ export async function saveClientDetails(clientData: any): Promise<any> {
 }
 
 // Get chat history
-export async function getHelloChatHistoryApi(channelId: string): Promise<any> {
+export async function getHelloChatHistoryApi(channelId: string, skip?: number): Promise<any> {
   try {
-    const { name, mail, number, user_jwt_token ,unique_id} = JSON.parse(getLocalStorage('userData') || '{}');
+    const { name, mail, number, user_jwt_token, unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
     const response = await axios.post(
       `${HELLO_HOST_URL}/get-history/`,
       {
         channel: channelId,
         origin: "chat",
         page_size: 30,
-        start_from: 1,
+        start_from: skip || 1,
         user_data: {
           "unique_id": unique_id,
           "name": name,
@@ -242,18 +242,18 @@ export async function initializeHelloChat(): Promise<any> {
   try {
     // Parse user data from local storage with fallback to empty object
     const userData = JSON.parse(getLocalStorage('userData') || '{}');
-    const { unique_id, mail, number, user_jwt_token ,name} = userData;
+    const { unique_id, mail, number, user_jwt_token, name } = userData;
     // Check if we have any user identification data
     const hasUserIdentifiers = unique_id || mail || number || user_jwt_token;
     // Make API request
     const response = await axios.post(
       `${HELLO_HOST_URL}/widget-info/`,
       {
-        "user_data": hasUserIdentifiers ? 
-          { 
+        "user_data": hasUserIdentifiers ?
+          {
             unique_id,
-            mail, 
-            number, 
+            mail,
+            number,
             user_jwt_token,
             name
           } : {},
@@ -275,7 +275,7 @@ export async function initializeHelloChat(): Promise<any> {
 
 // Function to send message to Hello chat
 export async function sendMessageToHelloApi(message: string, attachment: Array<object> = [], channelDetail?: any, chat_id?: string): Promise<any> {
-  const { name, mail, number, user_jwt_token ,unique_id} = JSON.parse(getLocalStorage('userData') || '{}');
+  const { name, mail, number, user_jwt_token, unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
   let messageType = 'text'
   // Determine message type based on attachment and message content
   if (attachment?.length > 0) {
@@ -304,7 +304,7 @@ export async function sendMessageToHelloApi(message: string, attachment: Array<o
           "name": name,
           "mail": mail,
           "number": number,
-          "user_jwt_token": user_jwt_token  
+          "user_jwt_token": user_jwt_token
         },
         is_anon: getLocalStorage("is_anon") == 'true',
       },
@@ -395,7 +395,7 @@ export async function getCallToken(): Promise<any> {
 
 // Function to add domain to Hello chat
 export async function addDomainToHello(domain?: string): Promise<any> {
-  const { mail, number, user_jwt_token, unique_id ,name} = JSON.parse(getLocalStorage('userData') || '{}');
+  const { mail, number, user_jwt_token, unique_id, name } = JSON.parse(getLocalStorage('userData') || '{}');
   try {
     const response = await axios.put(
       `${HELLO_HOST_URL}/add-domain/`,
@@ -451,7 +451,7 @@ export async function submitFeedback(params: {
   id: number;
 }): Promise<any> {
   try {
-    const {unique_id, mail, number, user_jwt_token,name} = JSON.parse(getLocalStorage('userData') || '{}');
+    const { unique_id, mail, number, user_jwt_token, name } = JSON.parse(getLocalStorage('userData') || '{}');
     const response = await axios.post(
       `${HELLO_HOST_URL}/receive-feedback/`,
       {

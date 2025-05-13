@@ -35,6 +35,7 @@ export const initialChatState: ChatState = {
   currentPage: 1,
   hasMoreMessages: true,
   newMessage: false,
+  skip: 1,
 
   // Options & Media
   options: [],
@@ -338,8 +339,8 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
 
     case ChatActionTypes.SET_INTIAL_MESSAGES: {
       const subThreadId = action.payload?.subThreadId || state.subThreadId
-      const messages = convertChatHistoryToGenericFormat(action.payload.messages, state.isHelloUser)  
-      if(subThreadId){
+      const messages = convertChatHistoryToGenericFormat(action.payload.messages, state.isHelloUser)
+      if (subThreadId) {
         return {
           ...state,
           messageIds: {
@@ -361,7 +362,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
       const subThreadId = action.payload?.subThreadId || state.subThreadId
       const messages = action.payload.messages
       const messagesArray = convertChatHistoryToGenericFormat(messages, state.isHelloUser)
-      if(subThreadId){
+      if (subThreadId) {
         return {
           ...state,
           messageIds: {
@@ -389,7 +390,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
       const subThreadId = action.payload?.subThreadId || state.subThreadId
       const messagesArray = convertEventMessageToGenericFormat(action.payload.message, state.isHelloUser)
       // console.log(messagesArray[0],'messagesArray')
-      if(subThreadId){
+      if (subThreadId) {
         return {
           ...state,
           messageIds: {

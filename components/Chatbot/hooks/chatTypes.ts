@@ -42,6 +42,7 @@ export interface ChatState {
   openHelloForm: boolean;
   isToggledrawer: boolean;
   isTyping: Record<string, boolean>;
+  skip: number;
 }
 
 

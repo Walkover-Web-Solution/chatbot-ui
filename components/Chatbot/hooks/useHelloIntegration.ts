@@ -68,10 +68,13 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
   const setHelloMessages = useCallback((messages: HelloMessage[]) => {
     chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages, subThreadId: messages?.[0]?.channel || "" } });
-    // chatDispatch({ type: ChatActionTypes.SET_HELLO_MESSAGES, payload: { data: messages } });
   }, [chatDispatch]);
 
   const addHelloMessage = useCallback((message: HelloMessage) => {
+    if (Array.isArray(message)) {
+      chatDispatch({ type: ChatActionTypes.SET_PAGINATE_MESSAGES, payload: { messages: message } });
+      return
+    }
     chatDispatch({ type: ChatActionTypes.SET_PAGINATE_MESSAGES, payload: { messages: [message] } });
   }, [chatDispatch]);
 
@@ -85,11 +88,47 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       .then((response) => {
         const helloChats = response?.data?.data;
         if (Array.isArray(helloChats) && helloChats.length > 0) {
-          setHelloMessages(helloChats);
+          const chatsToStore = helloChats?.reverse();
+          setHelloMessages(chatsToStore);
+          chatDispatch({
+            type: ChatActionTypes.SET_DATA, payload: {
+              hasMoreMessages: helloChats.length >= 30,
+              skip: helloChats.length,
+            }
+          });
         }
       })
       .catch((error) => {
         console.error("Error fetching Hello chat history:", error);
+      })
+      .finally(() => {
+        setChatsLoading(false);
+      });
+  }, [currentChannelId, uuid, setChatsLoading, setHelloMessages]);
+
+
+  const getMoreHelloChats = useCallback(() => {
+    if (!currentChannelId || !uuid) return;
+    const { hasMoreMessages, skip } = chatState;
+    if (!hasMoreMessages) return;
+
+    setChatsLoading(true);
+    getHelloChatHistoryApi(currentChannelId, skip)
+      .then((response) => {
+        const helloChats = response?.data?.data;
+        if (Array.isArray(helloChats) && helloChats.length > 0) {
+          const chatsToStore = helloChats?.reverse();
+          addHelloMessage(chatsToStore);
+          chatDispatch({
+            type: ChatActionTypes.SET_DATA, payload: {
+              hasMoreMessages: helloChats.length >= 30,
+              skip: skip + helloChats.length,
+            }
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching more Hello chat history:", error);
       })
       .finally(() => {
         setChatsLoading(false);
@@ -391,7 +430,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     sendMessageToHello,
     fetchHelloPreviousHistory,
     addHelloMessage,
-    fetchChannels
+    fetchChannels,
+    getMoreHelloChats
   };
 };
 
