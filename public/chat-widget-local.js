@@ -162,21 +162,6 @@ class ChatbotEmbedManager {
     }
 
     handlePushNotification(data) {
-        // Create a shadow DOM container
-        const shadowContainer = document.createElement('div');
-        shadowContainer.id = 'notification-shadow-container';
-        document.body.appendChild(shadowContainer);
-        
-        // Create shadow root
-        const shadowRoot = shadowContainer.attachShadow({ mode: 'open' });
-        
-        // Create a link element to import the stylesheet instead of inline styles
-        const styleLink = document.createElement('link');
-        styleLink.rel = 'stylesheet';
-        styleLink.href = this.urls?.styleSheet || 'https://chatbot-embed.viasocket.com/style-local.css';
-        styleLink.type = 'text/css';
-        shadowRoot.appendChild(styleLink);
-        
         // Create a full-screen transparent overlay
         const overlay = document.createElement('div');
         overlay.id = 'notification-overlay';
@@ -194,9 +179,11 @@ class ChatbotEmbedManager {
         modalContainer.classList.add('notification-modal');
 
         const iframe = document.createElement('iframe');
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
         iframe.style.border = 'none';
-        iframe.style.minHeight = '400px';
-        iframe.style.minWidth = '400px';
+        iframe.style.minHeight = '500px';
+        iframe.style.minWidth = '500px';
         iframe.style.background = 'transparent';
 
         modalContainer.appendChild(iframe);
@@ -208,7 +195,7 @@ class ChatbotEmbedManager {
 
         // Add click event to close button
         closeButton.addEventListener('click', () => {
-            this.removeNotification(overlay, shadowContainer);
+            this.removeNotification(overlay);
         });
 
         // Add the close button to the modal container after content
@@ -217,8 +204,9 @@ class ChatbotEmbedManager {
         // Append the modal to the overlay
         overlay.appendChild(modalContainer);
 
-        // Append the overlay to the shadow root
-        shadowRoot.appendChild(overlay);
+        // Append the overlay to the body
+        document.body.appendChild(overlay);
+
 
         // Once the iframe is added to the DOM, we can access its document
         setTimeout(() => {
@@ -241,16 +229,14 @@ class ChatbotEmbedManager {
         }, 0);
     }
 
-    removeNotification(overlayElement, shadowContainer) {
-        if (overlayElement) {
+    removeNotification(overlayElement) {
+        if (overlayElement && document.body.contains(overlayElement)) {
             // Add fade-out animation
             overlayElement.classList.add('notification-fade-out');
 
             // Remove after animation completes
             setTimeout(() => {
-                if (shadowContainer && document.body.contains(shadowContainer)) {
-                    document.body.removeChild(shadowContainer);
-                }
+                document.body.removeChild(overlayElement);
             }, 300); // Match this with CSS transition duration
         }
     }

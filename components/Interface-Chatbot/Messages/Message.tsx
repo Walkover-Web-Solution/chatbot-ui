@@ -479,7 +479,7 @@ const ShadowDomComponent = ({ htmlContent, messageId }:{htmlContent:string, mess
   return (
     <div
       ref={containerRef}
-      className="shadow-dom-container"
+      className="shadow-dom-container bg-white"
       data-message-id={messageId} // Adding a data attribute to uniquely identify this container
       style={{
         width: '100%',

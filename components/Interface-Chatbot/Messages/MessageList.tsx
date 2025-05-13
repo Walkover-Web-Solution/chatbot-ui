@@ -2,7 +2,7 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 // MUI Components
-import { Button, lighten, useTheme } from "@mui/material";
+import { lighten, useTheme } from "@mui/material";
 
 // Third-party libraries
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -14,7 +14,6 @@ import { generateNewId } from "@/utils/utilities";
 import { MessageContext } from "../InterfaceChatbot";
 import MoveToDownButton from "../MoveToDownButton";
 import Message from "./Message";
-import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 
 function MessageList() {
   const {
