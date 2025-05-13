@@ -146,9 +146,98 @@ class ChatbotEmbedManager {
             case 'uuid':
                 this.setUUID(data?.uuid);
                 break;
+            case 'PUSH_NOTIFICATION':
+                if (this.state.isMobileSDK) {
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'PUSH_NOTIFICATION', data }));
+                } else {
+                    this.handlePushNotification(data)
+                }
+                break;
             case 'ENABLE_DOMAIN_TRACKING':
                 this.enableDomainTracking();
                 break;
+            default:
+                break;
+        }
+    }
+
+    handlePushNotification(data) {
+        // Create a full-screen transparent overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'notification-overlay';
+        overlay.classList.add('notification-overlay');
+
+        // Set position classes based on horizontal and vertical position values
+        const horizontalPosition = data.horizontal_position || 'center';
+        const verticalPosition = data.vertical_position || 'center';
+
+        // Add position classes
+        overlay.classList.add(`h-${horizontalPosition}`, `v-${verticalPosition}`);
+
+        // Create the modal container
+        const modalContainer = document.createElement('div');
+        modalContainer.classList.add('notification-modal');
+
+        const iframe = document.createElement('iframe');
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        iframe.style.minHeight = '500px';
+        iframe.style.minWidth = '500px';
+        iframe.style.background = 'transparent';
+
+        modalContainer.appendChild(iframe);
+
+        // Create close button (cross icon)
+        const closeButton = document.createElement('div');
+        closeButton.innerHTML = '&times;';
+        closeButton.classList.add('notification-close-btn');
+
+        // Add click event to close button
+        closeButton.addEventListener('click', () => {
+            this.removeNotification(overlay);
+        });
+
+        // Add the close button to the modal container after content
+        modalContainer.appendChild(closeButton);
+
+        // Append the modal to the overlay
+        overlay.appendChild(modalContainer);
+
+        // Append the overlay to the body
+        document.body.appendChild(overlay);
+
+
+        // Once the iframe is added to the DOM, we can access its document
+        setTimeout(() => {
+            // Get reference to the iframe's document
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            // Write the content to the iframe
+            iframeDoc.open();
+            iframeDoc.write(data.content);
+            iframeDoc.close();
+
+            // Add external stylesheet if needed
+            if (this.urls && this.urls.styleSheet) {
+                const externalStyle = iframeDoc.createElement('link');
+                externalStyle.rel = 'stylesheet';
+                externalStyle.href = this.urls.styleSheet;
+                externalStyle.type = 'text/css';
+                iframeDoc.head.appendChild(externalStyle);
+            }
+        }, 0);
+    }
+
+    removeNotification(overlayElement) {
+        if (overlayElement && document.body.contains(overlayElement)) {
+            // Add fade-out animation
+            overlayElement.classList.add('notification-fade-out');
+
+            // Remove after animation completes
+            setTimeout(() => {
+                document.body.removeChild(overlayElement);
+            }, 300); // Match this with CSS transition duration
         }
     }
 
@@ -156,29 +245,29 @@ class ChatbotEmbedManager {
         sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: window?.location?.href } });
 
         (function () {
-                const originalPushState = history.pushState;
-                const originalReplaceState = history.replaceState;
+            const originalPushState = history.pushState;
+            const originalReplaceState = history.replaceState;
 
-                function handleUrlChange() {
-                    const fullUrl = window.location.href;
+            function handleUrlChange() {
+                const fullUrl = window.location.href;
 
-                    // Only call API if it's not a hash-only change
-                    if (window.location.hash === '') {
-                        sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: fullUrl } })
-                    }
+                // Only call API if it's not a hash-only change
+                if (window.location.hash === '') {
+                    sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: fullUrl } })
                 }
+            }
 
-                history.pushState = function () {
-                    originalPushState.apply(this, arguments);
-                    handleUrlChange();
-                };
+            history.pushState = function () {
+                originalPushState.apply(this, arguments);
+                handleUrlChange();
+            };
 
-                history.replaceState = function () {
-                    originalReplaceState.apply(this, arguments);
-                    handleUrlChange();
-                };
+            history.replaceState = function () {
+                originalReplaceState.apply(this, arguments);
+                handleUrlChange();
+            };
 
-                window.addEventListener('popstate', handleUrlChange);
+            window.addEventListener('popstate', handleUrlChange);
         })();
     }
 
@@ -395,7 +484,7 @@ class ChatbotEmbedManager {
         const iframeComponent = document.getElementById('iframe-component-interfaceEmbed');
         if (!iframeComponent) return;
         let encodedData = '';
-        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true}));
+        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true }));
         const modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
         iframeComponent.src = modifiedUrl;
 

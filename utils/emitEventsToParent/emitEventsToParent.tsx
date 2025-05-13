@@ -1,7 +1,28 @@
-export function emitEventToParent(type: 'FRONT_END_ACTION' | 'HEADER_BUTTON_PRESS' | 'MESSAGE_CLICK' | 'BRIDGE_SWITCH' | 'CLOSE_CHATBOT' |'uuid' | 'ENABLE_DOMAIN_TRACKING', data?: any) {
+/**
+ * Event types that can be emitted to the parent window
+ */
+export type ParentEventType = 
+  | 'PUSH_NOTIFICATION'
+  | 'FRONT_END_ACTION'
+  | 'HEADER_BUTTON_PRESS'
+  | 'MESSAGE_CLICK'
+  | 'BRIDGE_SWITCH'
+  | 'CLOSE_CHATBOT'
+  | 'uuid'
+  | 'ENABLE_DOMAIN_TRACKING';
+
+/**
+ * Emits an event to the parent window using postMessage
+ * @param type - The type of event to emit
+ * @param data - The data to send with the event
+ */
+export function emitEventToParent(type: ParentEventType, data: any = null): void {
   const eventData = {
     type,
-    data:data,
+    data,
   };
-  window?.parent?.postMessage(eventData, "*");
+  
+  if (window?.parent) {
+    window.parent.postMessage(eventData, "*");
+  }
 }

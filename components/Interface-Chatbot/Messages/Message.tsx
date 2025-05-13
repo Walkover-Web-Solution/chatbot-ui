@@ -21,7 +21,7 @@ import copy from "copy-to-clipboard";
 import { AlertCircle, Check, CircleCheckBig, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
 import dynamic from 'next/dynamic';
 import Image from "next/image";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import RenderHelloAttachmentMessage from "../../Hello/RenderHelloAttachmentMessage";
 import RenderHelloFeedbackMessage from "../../Hello/RenderHelloFeedbackMessage";
@@ -336,6 +336,12 @@ const HumanOrBotMessageCard = React.memo(
                 <RenderHelloAttachmentMessage message={message} />
               ) : message?.message_type === 'feedback' ? (
                 <RenderHelloFeedbackMessage message={message} />
+              ) : message?.message_type === 'pushNotification' ? (
+                <ShadowDomComponent
+                  htmlContent={message?.content}
+                  messageId={message?.id}
+                  key={message?.id}
+                />
               ) : (
                 <div className="prose max-w-none">
                   <div dangerouslySetInnerHTML={{ __html: linkify(message?.content) }}></div>
@@ -370,6 +376,120 @@ const HumanOrBotMessageCard = React.memo(
     );
   }
 );
+
+const ShadowDomComponent = ({ htmlContent, messageId }:{htmlContent:string, messageId:string}) => {
+  const containerRef = useRef(null);
+  const [contentHeight, setContentHeight] = useState('auto');
+  const shadowRootRef = useRef(null);
+  const resizeObserverRef = useRef(null);
+
+  useEffect(() => {
+    // Cleanup previous observer if it exists
+    if (resizeObserverRef.current) {
+      resizeObserverRef.current.disconnect();
+      resizeObserverRef.current = null;
+    }
+
+    if (containerRef.current) {
+      // Create a shadow root only if one doesn't exist
+      if (!shadowRootRef.current) {
+        shadowRootRef.current = containerRef.current.attachShadow({ mode: 'open' });
+      } else {
+        // Clear existing content if shadow root already exists
+        while (shadowRootRef.current.firstChild) {
+          shadowRootRef.current.removeChild(shadowRootRef.current.firstChild);
+        }
+      }
+
+      // Create container for the HTML content
+      const contentContainer = document.createElement('div');
+      contentContainer.className = 'shadow-content-container';
+      contentContainer.style.width = '100%';
+      contentContainer.style.minHeight = 'auto';
+      contentContainer.style.overflow = 'visible';
+
+      // Insert the HTML content
+      contentContainer.innerHTML = htmlContent;
+
+      // Create a style element for base styles
+      const styleElement = document.createElement('style');
+      styleElement.textContent = `
+        :host {
+          all: initial;
+          display: block;
+          width: 100%;
+          min-height: auto;
+          height: auto;
+        }
+        .shadow-content-container {
+          width: 100%;
+          min-height: auto;
+          height: auto;
+          box-sizing: border-box;
+          background-color: white;
+        }
+      `;
+
+      // Append style and content container to shadow root
+      shadowRootRef.current.appendChild(styleElement);
+      shadowRootRef.current.appendChild(contentContainer);
+
+      // Set up a resize observer to track content height changes
+      resizeObserverRef.current = new ResizeObserver(entries => {
+        for (let entry of entries) {
+          // Update the parent container height based on content
+          const height = entry.contentRect.height;
+          setContentHeight(`${height}px`);
+
+          // Also update the host element directly
+          if (containerRef.current) {
+            containerRef.current.style.height = `${height}px`;
+          }
+        }
+      });
+
+      // Observe the content container for size changes
+      resizeObserverRef.current.observe(contentContainer);
+
+      // Execute scripts if needed
+      if (htmlContent.includes('<script>')) {
+        setTimeout(() => {
+          const scripts = contentContainer.querySelectorAll('script');
+          scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attr => {
+              newScript.setAttribute(attr.name, attr.value);
+            });
+            newScript.textContent = oldScript.textContent;
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+          });
+        }, 0);
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+        resizeObserverRef.current = null;
+      }
+    };
+  }, [htmlContent, messageId]); // Adding messageId dependency to ensure rerender on message change
+
+  return (
+    <div
+      ref={containerRef}
+      className="shadow-dom-container bg-white"
+      data-message-id={messageId} // Adding a data attribute to uniquely identify this container
+      style={{
+        width: '100%',
+        height: contentHeight,
+        minHeight: 'auto',
+        transition: 'height 0.2s ease-in-out'
+      }}
+    />
+  );
+};
 
 function Message({ message, addMessage, prevTime }: { message: any, addMessage?: any, prevTime?: string | number | null }) {
   const theme = useTheme();

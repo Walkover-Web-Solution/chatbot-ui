@@ -16,6 +16,8 @@ import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import helloVoiceService from './HelloVoiceService';
 import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
+import useNotificationSocket from '@/hooks/notifications/notificationSocket';
+import useNotificationSocketEventHandler from '@/hooks/notifications/notificationSocketEventHandler';
 
 interface HelloMessage {
   role: string;
@@ -65,6 +67,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
   useSocket();
+  useNotificationSocket();
 
   const setHelloMessages = useCallback((messages: HelloMessage[]) => {
     chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages, subThreadId: messages?.[0]?.channel || "" } });
@@ -112,6 +115,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [dispatch]);
 
   useSocketEvents({ chatbotId, chatState, chatDispatch, messageRef, fetchChannels });
+  useNotificationSocketEventHandler({chatDispatch})
 
   // Start timeout timer for response waiting
   const startTimeoutTimer = useCallback(() => {
