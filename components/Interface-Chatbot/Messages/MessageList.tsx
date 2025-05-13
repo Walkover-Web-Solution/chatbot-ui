@@ -2,7 +2,7 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 // MUI Components
-import { lighten, useTheme } from "@mui/material";
+import { Button, lighten, useTheme } from "@mui/material";
 
 // Third-party libraries
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -14,6 +14,7 @@ import { generateNewId } from "@/utils/utilities";
 import { MessageContext } from "../InterfaceChatbot";
 import MoveToDownButton from "../MoveToDownButton";
 import Message from "./Message";
+import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 
 function MessageList() {
   const {
@@ -180,6 +181,11 @@ function MessageList() {
       <Message
         key={`${msgId}-${index}`}
         message={msgIdAndDataMap[msgId]}
+        prevTime={
+          index > 0 && messageIds[index - 1] && msgIdAndDataMap[messageIds[index - 1]]
+            ? msgIdAndDataMap[messageIds[index - 1]]?.time || null
+            : null
+        }
       />
     ));
   }, [messageIds, msgIdAndDataMap]);

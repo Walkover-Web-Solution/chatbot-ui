@@ -20,6 +20,7 @@
     "@reduxjs/toolkit": "^2.5.1",
     "axios": "^1.7.9",
     "copy-to-clipboard": "^3.3.3",
+    "dayjs": "^1.11.13",
     "linkify-html": "^4.2.0",
     "lodash": "^4.17.21",
     "lodash.debounce": "^4.0.8",

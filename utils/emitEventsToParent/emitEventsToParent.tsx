@@ -8,7 +8,8 @@ export type ParentEventType =
   | 'MESSAGE_CLICK'
   | 'BRIDGE_SWITCH'
   | 'CLOSE_CHATBOT'
-  | 'uuid';
+  | 'uuid'
+  | 'ENABLE_DOMAIN_TRACKING';
 
 /**
  * Emits an event to the parent window using postMessage

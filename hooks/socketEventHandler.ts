@@ -1,12 +1,12 @@
 // useSocketEvents.ts
-import { useEffect, useCallback, useRef, useContext } from 'react';
-import socketManager from './socketManager';
 import { ChatActionTypes, ChatState } from '@/components/Chatbot/hooks/chatTypes';
-import { useReduxStateManagement } from '@/components/Chatbot/hooks/useReduxManagement';
 import { useChatActions } from '@/components/Chatbot/hooks/useChatActions';
-import { useDispatch } from 'react-redux';
+import { useReduxStateManagement } from '@/components/Chatbot/hooks/useReduxManagement';
 import { changeChannelAssigned, setUnReadCount } from '@/store/hello/helloSlice';
-import { MessageContext } from '@/components/Interface-Chatbot/InterfaceChatbot';
+import { playMessageRecivedSound } from '@/utils/utilities';
+import { useCallback, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import socketManager from './socketManager';
 
 // Define types for better type safety
 export interface HelloMessage {
@@ -54,18 +54,21 @@ export const useSocketEvents = ({
     // Handler for new messages
     const handleNewMessage = useCallback((data: any) => {
         const { response } = data;
-        const { message } = response || {};
+        const { message, timetoken } = response || {};
+        if (message && timetoken) {
+            message.timetoken = timetoken;
+        }
         const { type } = message || {};
 
         // Handle unread count updates
         if (message?.new_event && (type === 'chat' || type === 'feedback')) {
             const channelId = message?.channel;
             const isCurrentChannel = isSameChannel(channelId);
-            const shouldResetCount = isCurrentChannel && 
+            const shouldResetCount = isCurrentChannel &&
                 ((isToggledrawer && !isSmallScreen) || (isSmallScreen && !isToggledrawer));
-            dispatch(setUnReadCount({ 
-                channelId, 
-                resetCount: shouldResetCount || false 
+            dispatch(setUnReadCount({
+                channelId,
+                resetCount: shouldResetCount || false
             }));
         }
 
@@ -76,27 +79,23 @@ export const useSocketEvents = ({
                     setLoading(false);
 
                     // Play notification sound when message is received
-                    const notificationSound = new Audio('/notification-sound.mp3');
-                    notificationSound.volume = 0.2;
-                    notificationSound.play().catch(error => {
-                        console.log("Failed to play notification sound:", error);
-                    });
-                    
+                    playMessageRecivedSound();
+
                     const messageId = response.timetoken || response.id;
                     addHelloMessage({ ...message, id: messageId }, channel);
-                    chatDispatch({ 
-                        type: ChatActionTypes.SET_TYPING, 
-                        payload: { data: false, subThreadId: channel } 
+                    chatDispatch({
+                        type: ChatActionTypes.SET_TYPING,
+                        payload: { data: false, subThreadId: channel }
                     });
                 }
                 break;
             }
             case 'assign': {
                 const { assignee_type, channel_details, assignee_id } = message || {};
-                dispatch(changeChannelAssigned({ 
-                    assigned_type: assignee_type, 
-                    assignee_id, 
-                    channelId: channel_details?.channel 
+                dispatch(changeChannelAssigned({
+                    assigned_type: assignee_type,
+                    assignee_id,
+                    channelId: channel_details?.channel
                 }));
                 break;
             }
@@ -105,7 +104,7 @@ export const useSocketEvents = ({
                 if (message?.new_event) {
                     const messageId = response.timetoken || response.id;
                     addHelloMessage(
-                        { ...message, id: messageId }, 
+                        { ...message, id: messageId },
                         channel_details?.channel
                     );
                 }

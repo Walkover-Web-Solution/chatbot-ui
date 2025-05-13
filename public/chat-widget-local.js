@@ -153,6 +153,8 @@ class ChatbotEmbedManager {
                     this.handlePushNotification(data)
                 }
                 break;
+            case 'ENABLE_DOMAIN_TRACKING':
+                this.enableDomainTracking();
                 break;
             default:
                 break;
@@ -160,6 +162,21 @@ class ChatbotEmbedManager {
     }
 
     handlePushNotification(data) {
+        // Create a shadow DOM container
+        const shadowContainer = document.createElement('div');
+        shadowContainer.id = 'notification-shadow-container';
+        document.body.appendChild(shadowContainer);
+        
+        // Create shadow root
+        const shadowRoot = shadowContainer.attachShadow({ mode: 'open' });
+        
+        // Create a link element to import the stylesheet instead of inline styles
+        const styleLink = document.createElement('link');
+        styleLink.rel = 'stylesheet';
+        styleLink.href = this.urls?.styleSheet || 'https://chatbot-embed.viasocket.com/style-local.css';
+        styleLink.type = 'text/css';
+        shadowRoot.appendChild(styleLink);
+        
         // Create a full-screen transparent overlay
         const overlay = document.createElement('div');
         overlay.id = 'notification-overlay';
@@ -177,11 +194,9 @@ class ChatbotEmbedManager {
         modalContainer.classList.add('notification-modal');
 
         const iframe = document.createElement('iframe');
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
         iframe.style.border = 'none';
-        iframe.style.minHeight = '500px';
-        iframe.style.minWidth = '500px';
+        iframe.style.minHeight = '400px';
+        iframe.style.minWidth = '400px';
         iframe.style.background = 'transparent';
 
         modalContainer.appendChild(iframe);
@@ -193,7 +208,7 @@ class ChatbotEmbedManager {
 
         // Add click event to close button
         closeButton.addEventListener('click', () => {
-            this.removeNotification(overlay);
+            this.removeNotification(overlay, shadowContainer);
         });
 
         // Add the close button to the modal container after content
@@ -202,9 +217,8 @@ class ChatbotEmbedManager {
         // Append the modal to the overlay
         overlay.appendChild(modalContainer);
 
-        // Append the overlay to the body
-        document.body.appendChild(overlay);
-
+        // Append the overlay to the shadow root
+        shadowRoot.appendChild(overlay);
 
         // Once the iframe is added to the DOM, we can access its document
         setTimeout(() => {
@@ -227,16 +241,48 @@ class ChatbotEmbedManager {
         }, 0);
     }
 
-    removeNotification(overlayElement) {
-        if (overlayElement && document.body.contains(overlayElement)) {
+    removeNotification(overlayElement, shadowContainer) {
+        if (overlayElement) {
             // Add fade-out animation
             overlayElement.classList.add('notification-fade-out');
 
             // Remove after animation completes
             setTimeout(() => {
-                document.body.removeChild(overlayElement);
+                if (shadowContainer && document.body.contains(shadowContainer)) {
+                    document.body.removeChild(shadowContainer);
+                }
             }, 300); // Match this with CSS transition duration
         }
+    }
+
+    enableDomainTracking() {
+        sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: window?.location?.href } });
+
+        (function () {
+            const originalPushState = history.pushState;
+            const originalReplaceState = history.replaceState;
+
+            function handleUrlChange() {
+                const fullUrl = window.location.href;
+
+                // Only call API if it's not a hash-only change
+                if (window.location.hash === '') {
+                    sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: fullUrl } })
+                }
+            }
+
+            history.pushState = function () {
+                originalPushState.apply(this, arguments);
+                handleUrlChange();
+            };
+
+            history.replaceState = function () {
+                originalReplaceState.apply(this, arguments);
+                handleUrlChange();
+            };
+
+            window.addEventListener('popstate', handleUrlChange);
+        })();
     }
 
     handleDownloadAttachment(data) {
@@ -452,7 +498,7 @@ class ChatbotEmbedManager {
         const iframeComponent = document.getElementById('iframe-component-interfaceEmbed');
         if (!iframeComponent) return;
         let encodedData = '';
-        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true, websiteUrl: window.location.href }));
+        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true }));
         const modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
         iframeComponent.src = modifiedUrl;
 
