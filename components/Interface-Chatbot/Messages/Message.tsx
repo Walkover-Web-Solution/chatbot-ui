@@ -2,6 +2,7 @@
 /* eslint-disable */
 import { AiIcon, UserAssistant } from "@/assests/assestsIndex";
 import InterfaceGrid from "@/components/Grid/Grid";
+import RenderHelloVedioCallMessage from "@/components/Hello/RenderHelloVedioCallMessage";
 import { Anchor, Code } from "@/components/Interface-Chatbot/Interface-Markdown/MarkdownUtitily";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { supportsLookbehind } from "@/utils/appUtility";
@@ -10,62 +11,47 @@ import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
+import { formatTime, linkify } from "@/utils/utilities";
 import {
   Box,
-  Chip,
-  Divider,
   lighten,
-  useMediaQuery,
   useTheme
 } from "@mui/material";
 import copy from "copy-to-clipboard";
 import { AlertCircle, Check, CircleCheckBig, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
 import dynamic from 'next/dynamic';
 import Image from "next/image";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { MessageContext } from "../InterfaceChatbot";
-import "./Message.css";
-import RenderHelloInteractiveMessage from "../../Hello/RenderHelloInteractiveMessage";
 import RenderHelloAttachmentMessage from "../../Hello/RenderHelloAttachmentMessage";
 import RenderHelloFeedbackMessage from "../../Hello/RenderHelloFeedbackMessage";
-import RenderHelloVedioCallMessage from "@/components/Hello/RenderHelloVedioCallMessage";
+import RenderHelloInteractiveMessage from "../../Hello/RenderHelloInteractiveMessage";
+import { MessageContext } from "../InterfaceChatbot";
+import DateGroup from "./DateGroup";
 import ImageWithFallback from "./ImageWithFallback";
-import { linkify } from "@/utils/utilities";
+import "./Message.css";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
-
-const ResetHistoryLine = ({ text = "" }) => {
-  return (
-    <Divider className="mb-2">
-      <Chip
-        label={text || "History cleared"}
-        size="small"
-        color={!text ? "error" : "success"}
-      />
-    </Divider>
-  );
-};
 
 const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
   return (
-    <>
-      <div className="flex flex-col gap-2.5 items-end w-full mb-2.5 animate-slide-left mt-1">
-        {Array.isArray(message?.urls) && message.urls.length > 0 && (
-          <div className="flex flex-row-reverse flex-wrap gap-2.5 w-full">
-            {message.urls.map((url: any, index: number) => {
-              const imageUrl = typeof url === 'object' ? url?.path : url;
+    <div className="flex flex-col gap-2.5 items-end w-full mb-2.5 animate-slide-left mt-1">
+      {Array.isArray(message?.urls) && message.urls.length > 0 && (
+        <div className="flex flex-row-reverse flex-wrap gap-2.5 w-full">
+          {message.urls.map((url: any, index: number) => {
+            const imageUrl = typeof url === 'object' ? url?.path : url;
 
-              return (
-                <ImageWithFallback
-                  key={index}
-                  src={imageUrl}
-                  alt={`Image ${index + 1}`}
-                />
-              );
-            })}
-          </div>
-        )}
+            return (
+              <ImageWithFallback
+                key={index}
+                src={imageUrl}
+                alt={`Image ${index + 1}`}
+              />
+            );
+          })}
+        </div>
+      )}
 
+      <div className="flex flex-col items-end w-full">
         {message?.content && <div
           className="p-2.5 min-w-[40px] sm:max-w-[80%] max-w-[90%] rounded-[10px_10px_1px_10px] break-words"
           style={{
@@ -79,10 +65,9 @@ const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
             </p>
           </div>
         </div>}
+        {message?.time && <p className="text-xs text-gray-500">{formatTime(message?.time, 'shortTime')}</p>}
       </div>
-
-      {message?.is_reset && <ResetHistoryLine />}
-    </>
+    </div>
   );
 });
 
@@ -278,8 +263,6 @@ const AssistantMessageCard = React.memo(
             </div>
           )}
         </div>
-
-        {message?.is_reset && <ResetHistoryLine />}
       </div>
     );
   }
@@ -307,7 +290,7 @@ const HumanOrBotMessageCard = React.memo(
 
 
     return (
-      <div className="w-full mb-2 animate-fade-in animate-slide-left">
+      <div className="w-full mb-3 animate-fade-in animate-slide-left">
         <div className="flex items-start gap-2 max-w-[90%]">
           <div className="w-8 h-8 rounded-full flex items-center justify-center bg-base-200">
             {!isBot ? (
@@ -339,7 +322,7 @@ const HumanOrBotMessageCard = React.memo(
             )}
           </div>
 
-          <div className="w-fit flex  whitespace-pre-wrap  break-words">
+          <div className="w-fit whitespace-pre-wrap  break-words">
             <div className="text-base-content p-1 whitespace-pre-wrap w-full break-words">
               {message?.from_name && (
                 <div className="text-sm font-medium mb-1">{message.from_name}</div>
@@ -353,12 +336,20 @@ const HumanOrBotMessageCard = React.memo(
                 <RenderHelloAttachmentMessage message={message} />
               ) : message?.message_type === 'feedback' ? (
                 <RenderHelloFeedbackMessage message={message} />
+              ) : message?.message_type === 'pushNotification' ? (
+                <ShadowDomComponent
+                  htmlContent={message?.content}
+                  messageId={message?.id}
+                  key={message?.id}
+                />
               ) : (
                 <div className="prose max-w-none">
                   <div dangerouslySetInnerHTML={{ __html: linkify(message?.content) }}></div>
                 </div>
               )}
+              {message?.time && <p className="text-xs text-gray-500">{formatTime(message?.time, 'shortTime')}</p>}
             </div>
+
 
             {/* <div className="flex items-center gap-2 mt-1 ml-1">
               <button
@@ -386,7 +377,121 @@ const HumanOrBotMessageCard = React.memo(
   }
 );
 
-function Message({ testKey, message, addMessage }: any) {
+const ShadowDomComponent = ({ htmlContent, messageId }:{htmlContent:string, messageId:string}) => {
+  const containerRef = useRef(null);
+  const [contentHeight, setContentHeight] = useState('auto');
+  const shadowRootRef = useRef(null);
+  const resizeObserverRef = useRef(null);
+
+  useEffect(() => {
+    // Cleanup previous observer if it exists
+    if (resizeObserverRef.current) {
+      resizeObserverRef.current.disconnect();
+      resizeObserverRef.current = null;
+    }
+
+    if (containerRef.current) {
+      // Create a shadow root only if one doesn't exist
+      if (!shadowRootRef.current) {
+        shadowRootRef.current = containerRef.current.attachShadow({ mode: 'open' });
+      } else {
+        // Clear existing content if shadow root already exists
+        while (shadowRootRef.current.firstChild) {
+          shadowRootRef.current.removeChild(shadowRootRef.current.firstChild);
+        }
+      }
+
+      // Create container for the HTML content
+      const contentContainer = document.createElement('div');
+      contentContainer.className = 'shadow-content-container';
+      contentContainer.style.width = '100%';
+      contentContainer.style.minHeight = 'auto';
+      contentContainer.style.overflow = 'visible';
+
+      // Insert the HTML content
+      contentContainer.innerHTML = htmlContent;
+
+      // Create a style element for base styles
+      const styleElement = document.createElement('style');
+      styleElement.textContent = `
+        :host {
+          all: initial;
+          display: block;
+          width: 100%;
+          min-height: auto;
+          height: auto;
+        }
+        .shadow-content-container {
+          width: 100%;
+          min-height: auto;
+          height: auto;
+          box-sizing: border-box;
+          background-color: white;
+        }
+      `;
+
+      // Append style and content container to shadow root
+      shadowRootRef.current.appendChild(styleElement);
+      shadowRootRef.current.appendChild(contentContainer);
+
+      // Set up a resize observer to track content height changes
+      resizeObserverRef.current = new ResizeObserver(entries => {
+        for (let entry of entries) {
+          // Update the parent container height based on content
+          const height = entry.contentRect.height;
+          setContentHeight(`${height}px`);
+
+          // Also update the host element directly
+          if (containerRef.current) {
+            containerRef.current.style.height = `${height}px`;
+          }
+        }
+      });
+
+      // Observe the content container for size changes
+      resizeObserverRef.current.observe(contentContainer);
+
+      // Execute scripts if needed
+      if (htmlContent.includes('<script>')) {
+        setTimeout(() => {
+          const scripts = contentContainer.querySelectorAll('script');
+          scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attr => {
+              newScript.setAttribute(attr.name, attr.value);
+            });
+            newScript.textContent = oldScript.textContent;
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+          });
+        }, 0);
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+        resizeObserverRef.current = null;
+      }
+    };
+  }, [htmlContent, messageId]); // Adding messageId dependency to ensure rerender on message change
+
+  return (
+    <div
+      ref={containerRef}
+      className="shadow-dom-container bg-white"
+      data-message-id={messageId} // Adding a data attribute to uniquely identify this container
+      style={{
+        width: '100%',
+        height: contentHeight,
+        minHeight: 'auto',
+        transition: 'height 0.2s ease-in-out'
+      }}
+    />
+  );
+};
+
+function Message({ message, addMessage, prevTime }: { message: any, addMessage?: any, prevTime?: string | number | null }) {
   const theme = useTheme();
   const backgroundColor = theme.palette.primary.main;
   const textColor = isColorLight(backgroundColor) ? "#000000" : "#ffffff";
@@ -396,8 +501,10 @@ function Message({ testKey, message, addMessage }: any) {
 
   return (
     <Box className="w-100">
+      {message?.time && <DateGroup prevTime={prevTime} messageTime={message?.time} key={message?.time} backgroundColor={backgroundColor} textColor={textColor} />}
       {message?.role === "user" ? (
         <>
+
           <UserMessageCard
             message={message}
             theme={theme}
@@ -470,8 +577,6 @@ function Message({ testKey, message, addMessage }: any) {
             </div>
           </div>
         </div>
-      ) : message?.role === "reset" ? (
-        <ResetHistoryLine text={message?.mode ? "Talk to human" : ""} />
       ) : null}
     </Box>
   );
