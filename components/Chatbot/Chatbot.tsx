@@ -24,9 +24,9 @@ import StarterQuestions from '../Interface-Chatbot/Messages/StarterQuestions';
 // Utils
 import { ChatBotGif } from '@/assests/assestsIndex';
 import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
-import { ParamsEnums } from '@/utils/enums';
-import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { $ReduxCoreType } from '@/types/reduxCore';
+import { useCustomSelector } from '@/utils/deepCheckSelector';
+import { ParamsEnums } from '@/utils/enums';
 
 interface ChatbotProps {
   chatbotId: string;
