@@ -9,8 +9,8 @@ import { ChatActionTypes } from './hooks/chatTypes';
 import { useChatActions } from './hooks/useChatActions';
 import useHelloIntegration from './hooks/useHelloIntegration';
 import { useReduxStateManagement } from './hooks/useReduxManagement';
-import dynamic from 'next/dynamic';
-const useRtlayerEventManager = dynamic(() => import('./hooks/useRtlayerEventManager'), { ssr: false });
+import useRtlayerEventManager from './hooks/useRtlayerEventManager';
+
 
 // Components
 import FormComponent from '../FormComponent';
@@ -25,9 +25,9 @@ import StarterQuestions from '../Interface-Chatbot/Messages/StarterQuestions';
 // Utils
 import { ChatBotGif } from '@/assests/assestsIndex';
 import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
-import { ParamsEnums } from '@/utils/enums';
-import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { $ReduxCoreType } from '@/types/reduxCore';
+import { useCustomSelector } from '@/utils/deepCheckSelector';
+import { ParamsEnums } from '@/utils/enums';
 
 interface ChatbotProps {
   chatbotId: string;
@@ -86,7 +86,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
   });
 
   // Initialize RTLayer event listeners
-  !IsHuman && useRtlayerEventManager({
+  useRtlayerEventManager({
     chatbotId,
     chatDispatch,
     chatState,
