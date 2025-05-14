@@ -58,7 +58,7 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
       case function_call && !!responseMessage:
         chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Talking with AI" } });
         break;
-
+ 
       // Case: Error is present without response data
       case !data && !!parsedMessage?.error:
         chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", content: `${parsedMessage?.error || error || "Error while talking to AI"}` } });
@@ -69,10 +69,12 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
       // Case: Reset role is present without mode
       case data?.role === "reset" && !data?.mode:
         chatDispatch({
-          type: ChatActionTypes.ADD_MESSAGE, payload: {
-            role: "reset",
-            mode: data?.mode,
-            content: "Resetting the chat",
+          type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: {
+            message:{
+              role: "reset",
+              mode: data?.mode,
+              content: "Resetting the chat",
+            }
           }
         })
         break;

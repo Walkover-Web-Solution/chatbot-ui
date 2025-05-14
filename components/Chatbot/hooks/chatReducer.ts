@@ -44,95 +44,7 @@ export const initialChatState: ChatState = {
 
 export const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
   switch (action.type) {
-    case ChatActionTypes.SET_MESSAGES: {
-      const subThreadId = state.subThreadId;
-      const { messages, initial } = action.payload;
 
-      if (initial) {
-        // First empty the messages, messageIds and msgIdAndDataMap in initial case
-        return {
-          ...state,
-          messages: messages || [],
-          messageIds: {
-            ...(initial ? {} : state.messageIds),
-            [subThreadId]: Array.isArray(messages) ? messages.map(msg => msg.Id) : []
-          },
-          msgIdAndDataMap: {
-            ...(initial ? {} : state.msgIdAndDataMap),
-            [subThreadId]: Array.isArray(messages) ? messages.reduce((acc: Record<string, any>, item) => {
-              acc[item.Id] = item;
-              return acc;
-            }, {}) : {}
-          }
-        };
-      } else {
-        // Check if messages is an array before spreading it
-        const messagesArray = Array.isArray(messages) ? messages : [];
-
-        return {
-          ...state,
-          messages: [...messagesArray, ...state.messages],
-          messageIds: {
-            ...state.messageIds,
-            [subThreadId]: [
-              ...messagesArray.map(msg => msg.Id),
-              ...(state.messageIds[subThreadId] || [])
-
-            ]
-          },
-          msgIdAndDataMap: {
-            ...state.msgIdAndDataMap,
-            [subThreadId]: {
-              ...(state.msgIdAndDataMap[subThreadId] || {}),
-              ...messagesArray.reduce((acc: Record<string, MessageData>, item) => {
-                acc[item.Id] = item;
-                return acc;
-              }, {})
-            }
-          }
-        };
-      }
-    }
-    case ChatActionTypes.ADD_MESSAGE: {
-      const subThreadId = state.subThreadId;
-      const id = generateNewId();
-      return {
-        ...state,
-        messageIds: {
-          ...state.messageIds,
-          [subThreadId]: [...state.messageIds[subThreadId], id]
-        },
-        msgIdAndDataMap: {
-          ...state.msgIdAndDataMap,
-          [subThreadId]: {
-            ...state.msgIdAndDataMap[subThreadId],
-            [id]: action.payload
-          }
-        }
-      };
-    }
-    case ChatActionTypes.ADD_ASSISTANT_WAITING_MESSAGE: {
-      const subThreadId = state.subThreadId;
-      const id = generateNewId();
-      return {
-        ...state,
-        messageIds: {
-          ...state.messageIds,
-          [subThreadId]: [...state.messageIds[subThreadId], id]
-        },
-        msgIdAndDataMap: {
-          ...state.msgIdAndDataMap,
-          [subThreadId]: {
-            ...state.msgIdAndDataMap[subThreadId],
-            [id]: {
-              role: "assistant",
-              wait: true,
-              content: action.payload?.content || "Talking with AI"
-            }
-          }
-        }
-      };
-    }
     case ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE: {
       const subThreadId = state.subThreadId
       return {
@@ -150,6 +62,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         }
       }
     }
+    
     case ChatActionTypes.REMOVE_MESSAGES: {
       const { numberOfMessages } = action.payload;
       const subThreadId = state.subThreadId;
@@ -265,28 +178,6 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         ...state,
         isToggledrawer: action.payload
       };
-    case ChatActionTypes.SET_HELLO_MESSAGES: {
-      const subThreadId = action.payload?.teamId || state.subThreadId
-      return {
-        ...state,
-        helloMsgIds: {
-          ...state.helloMsgIds,
-          [subThreadId]: Array.from(new Set(action.payload?.data?.map((item) => item?.message_id))) as string[]
-        },
-        helloMsgIdAndDataMap: {
-          ...state.helloMsgIdAndDataMap,
-          [subThreadId]: {
-            ...state.helloMsgIdAndDataMap?.[subThreadId],
-            ...action.payload?.data?.reduce((acc, item) => {
-              if (item.message_id) {
-                acc[item?.message_id] = item
-                return acc
-              }
-            }, {})
-          }
-        }
-      };
-    }
 
     case ChatActionTypes.SET_TYPING: {
       const subThreadId = action.payload?.subThreadId || state.subThreadId
@@ -396,7 +287,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
           messageIds: {
             ...state.messageIds,
             [subThreadId]: [
-              ...messagesArray.map(msg => msg?.id),
+              ...messagesArray?.map(msg => msg?.id),
               ...(state.messageIds[subThreadId] || [])
             ]
           },

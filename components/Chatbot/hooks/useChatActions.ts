@@ -21,7 +21,6 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             setImages: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload }),
             setOptions: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_OPTIONS, payload }),
             setNewMessage: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload }),
-            setMessages: (payload: any) => chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload }),
             handleMessageFeedback: () => { }
         }
     }
@@ -40,7 +39,6 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
     }, [threadId, bridgeName]);
 
     useEffect(() => {
-        setMessages([])
         getIntialChatHistory();
     }, [threadId, bridgeName, subThreadId]);
 
@@ -77,7 +75,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                     chatDispatch({
                         type: ChatActionTypes.SET_DATA, payload: {
                             currentPage: 1,
-                            hasMoreMessages: previousChats?.length >= 20
+                            hasMoreMessages: previousChats?.length >= 40
                         }
                     });
                 } else {
@@ -129,7 +127,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                 chatDispatch({
                     type: ChatActionTypes.SET_DATA, payload: {
                         currentPage: nextPage,
-                        hasMoreMessages: previousChats?.length >= 20
+                        hasMoreMessages: previousChats?.length >= 40
                     }
                 });
             } else {
@@ -169,8 +167,16 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                 images: []
             }
         });
-        chatDispatch({ type: ChatActionTypes.ADD_MESSAGE, payload: { role: "user", content: textMessage, urls: imageUrls } });
-        chatDispatch({ type: ChatActionTypes.ADD_ASSISTANT_WAITING_MESSAGE, payload: { content: "Talking with AI" } });
+        chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message: { role: "user", content: textMessage, urls: imageUrls } } });
+        chatDispatch({
+            type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: {
+                message: {
+                    content: "Talking with AI", 
+                    role: "assistant",
+                    wait: true,
+                }
+            }
+        });
 
         const payload = {
             message: textMessage,
@@ -194,8 +200,6 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             return
         }
     }
-
-    const setMessages = (payload: MessageType[]) => chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload: { messages: payload, initial: false } })
 
     const handleMessageFeedback = async (payload: { msgId: string, feedback: number, reduxMsgId: string }) => {
         const { msgId, feedback, reduxMsgId } = payload;
@@ -262,7 +266,6 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         setImages: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload }),
         setOptions: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_OPTIONS, payload }),
         setNewMessage: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload }),
-        setMessages,
         handleMessageFeedback,
     };
 }
