@@ -88,12 +88,18 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       .then((response) => {
         const helloChats = response?.data?.data;
         if (Array.isArray(helloChats) && helloChats.length > 0) {
-          const chatsToStore = helloChats?.reverse();
+          const chatsToStore = helloChats
           setHelloMessages(chatsToStore);
           chatDispatch({
             type: ChatActionTypes.SET_DATA, payload: {
-              hasMoreMessages: helloChats.length >= 30,
+              hasMoreMessages: helloChats.length >= 10,
               skip: helloChats.length,
+            }
+          });
+        } else {
+          chatDispatch({
+            type: ChatActionTypes.SET_DATA, payload: {
+              hasMoreMessages: false,
             }
           });
         }
@@ -117,12 +123,18 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       .then((response) => {
         const helloChats = response?.data?.data;
         if (Array.isArray(helloChats) && helloChats.length > 0) {
-          const chatsToStore = helloChats?.reverse();
+          const chatsToStore = helloChats;
           addHelloMessage(chatsToStore);
           chatDispatch({
             type: ChatActionTypes.SET_DATA, payload: {
-              hasMoreMessages: helloChats.length >= 30,
+              hasMoreMessages: helloChats.length >= 10,
               skip: skip + helloChats.length,
+            }
+          });
+        } else {
+          chatDispatch({
+            type: ChatActionTypes.SET_DATA, payload: {
+              hasMoreMessages: false,
             }
           });
         }

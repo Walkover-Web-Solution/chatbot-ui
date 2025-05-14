@@ -204,7 +204,7 @@ export async function saveClientDetails(clientData: any): Promise<any> {
 }
 
 // Get chat history
-export async function getHelloChatHistoryApi(channelId: string, skip?: number): Promise<any> {
+export async function getHelloChatHistoryApi(channelId: string, skip: number = 0): Promise<any> {
   try {
     const { name, mail, number, user_jwt_token, unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
     const response = await axios.post(
@@ -212,8 +212,8 @@ export async function getHelloChatHistoryApi(channelId: string, skip?: number): 
       {
         channel: channelId,
         origin: "chat",
-        page_size: 30,
-        start_from: skip || 1,
+        page_size: 10,
+        start_from: skip + 1 || 1,
         user_data: {
           "unique_id": unique_id,
           "name": name,

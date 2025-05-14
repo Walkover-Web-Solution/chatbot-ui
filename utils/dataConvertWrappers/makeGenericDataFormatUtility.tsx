@@ -40,7 +40,7 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                         time: chat?.timetoken
                     };
                 })
-                .reverse();
+                // .reverse();
 
         case false:
             return (Array.isArray(history) ? history : []).map((msgObj: any) => {

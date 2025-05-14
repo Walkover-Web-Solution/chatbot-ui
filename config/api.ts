@@ -126,7 +126,7 @@ export async function getPreviousMessage(
     bridgeName: string | null,
     pageNo: number | null,
     subThreadId: string | null = threadId,
-    limit = 20
+    limit = 40
 ): Promise<{ previousChats: any; starterQuestion: string[] }> {
     if (currentController) {
         currentController.abort();
@@ -140,7 +140,7 @@ export async function getPreviousMessage(
             { signal: currentController.signal }
         );
         return {
-            previousChats: response?.data?.data || [],
+            previousChats: response?.data?.data?.reverse() || [],
             starterQuestion: response?.data?.starterQuestion || [],
         };
     } catch (error) {
@@ -170,7 +170,7 @@ export async function sendDataToAction(data: any): Promise<any> {
             error?.response?.data?.detail ||
             "Something went wrong!"
         );
-        return { success: false};
+        return { success: false };
     }
 }
 
