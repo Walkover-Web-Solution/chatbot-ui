@@ -303,8 +303,6 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
 
       let needsAnonymousRegistration = !a_clientId && !k_clientId && !unique_id && widgetToken && isHelloUser && !mail && !number && !user_jwt_token;
 
-      console.log("needsAnonymousRegistration ----------->", needsAnonymousRegistration);
-
       if (needsAnonymousRegistration) {
         await registerAnonymousUser();
         a_clientId = getLocalStorage(`a_clientId`);
