@@ -9,7 +9,8 @@ import { ChatActionTypes } from './hooks/chatTypes';
 import { useChatActions } from './hooks/useChatActions';
 import useHelloIntegration from './hooks/useHelloIntegration';
 import { useReduxStateManagement } from './hooks/useReduxManagement';
-import useRtlayerEventManager from './hooks/useRtlayerEventManager';
+import dynamic from 'next/dynamic';
+const useRtlayerEventManager = dynamic(() => import('./hooks/useRtlayerEventManager'), { ssr: false });
 
 // Components
 import FormComponent from '../FormComponent';
@@ -67,11 +68,12 @@ function Chatbot({ chatbotId }: ChatbotProps) {
       chatDispatch
     });
 
-  const { show_widget_form, is_anon } = useCustomSelector((state: $ReduxCoreType) => {
+  const { show_widget_form, is_anon, greetingMessage } = useCustomSelector((state: $ReduxCoreType) => {
     const helloConfig = state.Hello?.helloConfig
     return ({
       show_widget_form: typeof helloConfig?.show_widget_form === 'boolean' ? helloConfig?.show_widget_form : state.Hello?.widgetInfo?.show_widget_form,
-      is_anon: state.Hello?.is_anon == 'true'
+      is_anon: state.Hello?.is_anon == 'true',
+      greetingMessage: state.Hello?.greeting
     })
   });
 
@@ -84,7 +86,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
   });
 
   // Initialize RTLayer event listeners
-  useRtlayerEventManager({
+  !IsHuman && useRtlayerEventManager({
     chatbotId,
     chatDispatch,
     chatState,
@@ -131,8 +133,9 @@ function Chatbot({ chatbotId }: ChatbotProps) {
 
   // Check if chat is empty
   const isChatEmpty = IsHuman
-    ? helloMsgIds[subThreadId]?.length === 0
-    : messageIds[subThreadId]?.length === 0;
+    ? (!subThreadId || helloMsgIds[subThreadId]?.length === 0) &&
+    (!greetingMessage || (!greetingMessage.text && !greetingMessage?.options?.length))
+    : !subThreadId || messageIds[subThreadId]?.length === 0;
 
   return (
     <MessageContext.Provider value={contextValue}>
