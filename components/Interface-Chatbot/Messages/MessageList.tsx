@@ -183,18 +183,18 @@ function MessageList() {
   }, [IsHuman, loading, assigned_type, currentChannelId, themePalette]);
 
   const renderedMessages = useMemo(() => {
-    console.log(messageIds, 2323)
-    return messageIds.map((msgId, index) => (
-      <Message
-        key={`${msgId}-${index}`}
-        message={msgIdAndDataMap[msgId]}
-        prevTime={
-          index > 0 && messageIds[index - 1] && msgIdAndDataMap[messageIds[index - 1]]
-            ? msgIdAndDataMap[messageIds[index - 1]]?.time || null
-            : null
-        }
-      />
-    ));
+    return messageIds.map((msgId, index) => {
+      const prevTime = messageIds[index + 1] && msgIdAndDataMap[messageIds[index + 1]]
+        ? msgIdAndDataMap[messageIds[index + 1]]?.time || null
+        : null;
+      return (
+        <Message
+          key={`${msgId}`}
+          message={msgIdAndDataMap[msgId]}
+          prevTime={prevTime}
+        />
+      );
+    });
   }, [messageIds, msgIdAndDataMap]);
 
   // return (
@@ -239,7 +239,6 @@ function MessageList() {
     </div>
   );
 
-
   return (
     <div
       id="scrollableDiv"
@@ -264,9 +263,9 @@ function MessageList() {
           flexDirection: 'column-reverse'
         }}
       >
-        {renderGreetingMessage}
-        {renderedMessages}
         {renderThinkingIndicator}
+        {renderedMessages}
+        {renderGreetingMessage}
       </InfiniteScroll>
     </div>
   );

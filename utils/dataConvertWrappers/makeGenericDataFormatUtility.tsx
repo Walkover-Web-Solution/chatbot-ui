@@ -88,11 +88,11 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
 
     // Handle regular messages
     return [{
-        role: (sender_id === "bot" || sender_id === "workflow") ? "Bot" : "Human",
+        role: (sender_id === "bot" || sender_id === "workflow") ? "Bot" : sender_id === "user" ? "user" : "Human",
         from_name,
         content: content?.body?.text || content?.text,
         urls: content?.body?.attachment || content?.attachment,
-        id: message?.id,
+        id: message?.timetoken || message?.id,
         message_type: message?.message_type,
         messageJson: message?.content,
         time: message?.timetoken || null

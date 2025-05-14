@@ -70,12 +70,12 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages, subThreadId: messages?.[0]?.channel || "" } });
   }, [chatDispatch]);
 
-  const addHelloMessage = useCallback((message: HelloMessage) => {
+  const addHelloMessage = useCallback((message: HelloMessage , subThreadId?:string) => {
     if (Array.isArray(message)) {
       chatDispatch({ type: ChatActionTypes.SET_PAGINATE_MESSAGES, payload: { messages: message } });
       return
     }
-    chatDispatch({ type: ChatActionTypes.SET_PAGINATE_MESSAGES, payload: { messages: [message] } });
+    chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message: message , subThreadId} });
   }, [chatDispatch]);
 
   // Fetch previous Hello chat history
@@ -227,8 +227,12 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
           currentChannelId: data?.['channel']
         }));
         dispatch(setDataInAppInfoReducer({ subThreadId: data?.['channel'] }));
-        chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages: [newMessage], subThreadId: data?.['channel'] } })
-
+        addHelloMessage(newMessage,data?.['channel'])
+        // chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages: [newMessage], subThreadId: data?.['channel'] } })
+        fetchChannels();
+        if (data?.['channel']) {
+          fetchHelloPreviousHistory(data?.['channel']);
+        }
         if (data?.['presence_channel'] && data?.['channel']) {
           try {
             await socketManager.subscribe([data?.['presence_channel'], data?.['channel']]);
@@ -236,10 +240,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
             console.error("Failed to subscribe to channels:", error);
           }
         }
-        fetchChannels();
-        if (data?.['channel']) {
-          fetchHelloPreviousHistory(data?.['channel']);
-        }
+ 
       }
     } catch (error) {
       if (isBot) {
@@ -281,14 +282,13 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     const newMessage = {
       id: messageId,
       role: "user",
-      message: {
-        content: {
+      chat_id: currentChatId || generateNewId(),
+      content: {
           text: textMessage,
           attachment: images || []
-        },
-        chat_id: currentChatId
       },
-      timetoken: Date.now()
+      timetoken: Date.now(),
+      sender_id:"user"
     };
 
     // Add message to chat
