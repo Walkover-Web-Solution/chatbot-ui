@@ -142,7 +142,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
     <MessageContext.Provider value={contextValue}>
       <div className="flex h-screen w-full overflow-hidden relative">
         {/* Sidebar - visible on large screens */}
-        <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? 'w-64' : 'w-0'}`}>
+        <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? 'w-96 max-w-[286px]' : 'w-0'}`}>
           <ChatbotDrawer
             setToggleDrawer={chatActions.setToggleDrawer}
             isToggledrawer={isToggledrawer}

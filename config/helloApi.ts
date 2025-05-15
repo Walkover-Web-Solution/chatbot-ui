@@ -212,7 +212,7 @@ export async function getHelloChatHistoryApi(channelId: string, skip: number = 0
       {
         channel: channelId,
         origin: "chat",
-        page_size: 10,
+        page_size: 30,
         start_from: skip + 1 || 1,
         user_data: {
           "unique_id": unique_id,
