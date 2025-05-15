@@ -11,6 +11,7 @@ import useHelloIntegration from './hooks/useHelloIntegration';
 import { useReduxStateManagement } from './hooks/useReduxManagement';
 import useRtlayerEventManager from './hooks/useRtlayerEventManager';
 
+
 // Components
 import FormComponent from '../FormComponent';
 import CallUI from '../Hello/callUI';
@@ -24,9 +25,9 @@ import StarterQuestions from '../Interface-Chatbot/Messages/StarterQuestions';
 // Utils
 import { ChatBotGif } from '@/assests/assestsIndex';
 import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
-import { ParamsEnums } from '@/utils/enums';
-import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { $ReduxCoreType } from '@/types/reduxCore';
+import { useCustomSelector } from '@/utils/deepCheckSelector';
+import { ParamsEnums } from '@/utils/enums';
 
 interface ChatbotProps {
   chatbotId: string;
@@ -61,18 +62,20 @@ function Chatbot({ chatbotId }: ChatbotProps) {
       messageRef
     });
 
-  const { IsHuman, isSmallScreen, currentChatId } =
+  const { IsHuman, isSmallScreen, currentChatId, isDefaultNavigateToChatScreen } =
     useReduxStateManagement({
       chatbotId,
       chatDispatch
     });
 
-    const { show_widget_form, is_anon } = useCustomSelector((state: $ReduxCoreType) =>{
-      const helloConfig = state.Hello?.helloConfig
-      return  ({
+  const { show_widget_form, is_anon, greetingMessage } = useCustomSelector((state: $ReduxCoreType) => {
+    const helloConfig = state.Hello?.helloConfig
+    return ({
       show_widget_form: typeof helloConfig?.show_widget_form === 'boolean' ? helloConfig?.show_widget_form : state.Hello?.widgetInfo?.show_widget_form,
-      is_anon : state.Hello?.is_anon == 'true'
-    })});
+      is_anon: state.Hello?.is_anon == 'true',
+      greetingMessage: state.Hello?.greeting
+    })
+  });
 
   const chatActions = useChatActions({
     chatbotId,
@@ -101,6 +104,16 @@ function Chatbot({ chatbotId }: ChatbotProps) {
     mountedRef.current = true;
   }, [IsHuman, currentChatId, chatActions]);
 
+  // open Chat directly if no team or one team exista
+  useEffect(() => {
+    if (isDefaultNavigateToChatScreen) {
+      chatActions.setToggleDrawer(false);
+      if (messageRef.current) {
+        messageRef.current.focus();
+      }
+    }
+  }, [isDefaultNavigateToChatScreen])
+
   // Context value
   const contextValue = {
     ...chatState,
@@ -110,8 +123,8 @@ function Chatbot({ chatbotId }: ChatbotProps) {
     chatDispatch,
     messageIds: messageIds?.[subThreadId] || [],
     msgIdAndDataMap: msgIdAndDataMap?.[subThreadId],
-    allMessages:messageIds,
-    allMessagesData:msgIdAndDataMap,
+    allMessages: messageIds,
+    allMessagesData: msgIdAndDataMap,
     isSmallScreen,
     isTyping: isTyping?.[subThreadId],
     fetchChannels,
@@ -120,8 +133,9 @@ function Chatbot({ chatbotId }: ChatbotProps) {
 
   // Check if chat is empty
   const isChatEmpty = IsHuman
-    ? helloMsgIds[subThreadId]?.length === 0
-    : messageIds[subThreadId]?.length === 0;
+    ? (!subThreadId || helloMsgIds[subThreadId]?.length === 0) &&
+    (!greetingMessage || (!greetingMessage.text && !greetingMessage?.options?.length))
+    : !subThreadId || messageIds[subThreadId]?.length === 0;
 
   return (
     <MessageContext.Provider value={contextValue}>
@@ -150,7 +164,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
           )}
 
           {/* Form and UI components */}
-          {IsHuman && show_widget_form && !is_anon &&(
+          {IsHuman && show_widget_form && !is_anon && (
             <FormComponent
               open={openHelloForm}
               setOpen={(isFormOpen: boolean) =>
@@ -219,7 +233,7 @@ function ActiveChatView({ containerRef, subThreadId, messageIds }: ActiveChatVie
     <>
       {/* Messages container */}
       <div
-        className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1 ${messageIds?.[subThreadId]?.length === 0 ? 'flex items-center justify-center' : 'pb-10'
+        className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1 ${messageIds?.[subThreadId]?.length === 0 ? 'flex items-center justify-center' : 'pb-6'
           }`}
         id="message-container"
         ref={containerRef}

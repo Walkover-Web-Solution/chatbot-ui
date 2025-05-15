@@ -1,4 +1,5 @@
 'use client';
+import { addDomainToHello } from "@/config/helloApi";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
@@ -11,12 +12,12 @@ import {
   setModalConfig,
   setThreadId
 } from "@/store/interface/interfaceSlice";
-import { HelloData } from "@/types/hello/HelloReduxType";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE, ParamsEnums } from "@/utils/enums";
 import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Chatbot from "../Chatbot/Chatbot";
+import { CBManger } from "@/hooks/coBrowser/CBManger";
 
 interface InterfaceData {
   threadId?: string | null;
@@ -42,7 +43,7 @@ interface ChatbotWrapperProps {
 }
 
 const helloToChatbotPropsMap: Record<string, string> = {
-  show_close_button: 'hideCloseButton',
+  // show_close_button: 'hideCloseButton',
   hideFullScreenButton: 'hideFullScreenButton'
 }
 
@@ -51,7 +52,10 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
 
   // Handle messages from parent window
   const handleMessage = useCallback((event: MessageEvent) => {
-    if (event?.data?.type !== "interfaceData" && event?.data?.type !== "helloData") return;
+    if (event?.data?.type !== "interfaceData" && event?.data?.type !== "helloData" && event?.data?.type !== 'parent-route-changed' && event?.data?.type !=='ADD_COBROWSE_SCRIPT') return;
+    if(event?.data?.type  === 'ADD_COBROWSE_SCRIPT'){
+        CBManger.injectScript(event?.data?.data?.origin)
+    }
     if (event?.data?.type === "helloData") {
       const {
         widgetToken,
@@ -128,7 +132,10 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
       dispatch(setHelloConfig(event.data.data));
       return;
     }
-
+    if(event?.data?.type == 'parent-route-changed' && event?.data?.data?.websiteUrl){
+      addDomainToHello(event?.data?.data?.websiteUrl);
+      return;
+    }
     const receivedData: InterfaceData = event.data.data;
     if (Object.keys(receivedData || {}).length === 0) return;
     // Process thread-related data

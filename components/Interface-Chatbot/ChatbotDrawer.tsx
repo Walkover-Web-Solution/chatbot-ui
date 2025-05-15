@@ -246,10 +246,12 @@ const ChatbotDrawer = ({
                                 <>
                                   {isUserMessage ? "You: " : "Sender: "}
                                   <div className="line-clamp-1" dangerouslySetInnerHTML={{
-                                    __html: lastMessage.messageJson?.text ||
-                                      (lastMessage.messageJson?.attachment?.length > 0 ? "Attachment" :
-                                        lastMessage.messageJson?.message_type ||
-                                        "New conversation")
+                                    __html: lastMessage?.message_type === 'pushNotification'
+                                      ? "Custom Notification"
+                                      : (lastMessage.messageJson?.text ||
+                                        (lastMessage.messageJson?.attachment?.length > 0 ? "Attachment" :
+                                          lastMessage.messageJson?.message_type ||
+                                          "New conversation"))
                                   }}></div>
                                 </>
                               );
@@ -391,41 +393,60 @@ const ChatbotDrawer = ({
       )}
 
       <div className={`drawer-side ${isHuman && isSmallScreen ? '100%' : 'max-w-[286px]'} ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
-        <div className="p-4 w-full min-h-full text-base-content relative bg-base-200 border-r-base-300 border overflow-hidden">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10">
-              {isToggledrawer && (
-                <button
-                  className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-                  onClick={() => closeToggleDrawer(!isToggledrawer)}
-                >
-                  <AlignLeft size={22} color="#555555" />
-                </button>
-              )}
-            </div>
-            <div className="flex flex-col items-center justify-center flex-1">
-              <h2 className="text-lg font-bold text-center">
-                {Name ? `Hello ${Name.split(' ')[0]}` : 'Hello There!'}
-              </h2>
-              {tagline && Name && (
-                <p className="text-xs text-gray-500 text-center">{tagline}</p>
-              )}
-            </div>
-            <div className="w-10 flex items-center justify-end">
-              {isToggledrawer && !isHuman && (
-                <div className="tooltip tooltip-bottom z-[9999]" data-tip="New Chat">
+        <div className="w-full h-full text-base-content relative bg-base-200 border-r-base-300 border flex flex-col">
+          {/* Header with padding */}
+          <div className="px-4 pt-4 pb-4">
+            <div className="flex items-center justify-between">
+              <div className="w-10">
+                {isToggledrawer && (
                   <button
                     className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-                    onClick={handleCreateNewSubThread}
+                    onClick={() => closeToggleDrawer(!isToggledrawer)}
                   >
-                    <SquarePen size={22} color="#555555" />
+                    <AlignLeft size={22} color="#555555" />
                   </button>
-                </div>
-              )}
-              {isHuman && CloseButton}
+                )}
+              </div>
+              <div className="flex flex-col items-center justify-center flex-1">
+                <h2 className="text-lg font-bold text-center">
+                  {Name ? `Hello ${Name.split(' ')[0]}` : 'Hello There!'}
+                </h2>
+                {tagline && Name && (
+                  <p className="text-xs text-gray-500 text-center">{tagline}</p>
+                )}
+              </div>
+              <div className="w-10 flex items-center justify-end">
+                {isToggledrawer && !isHuman && (
+                  <div className="tooltip tooltip-bottom z-[9999]" data-tip="New Chat">
+                    <button
+                      className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                      onClick={handleCreateNewSubThread}
+                    >
+                      <SquarePen size={22} color="#555555" />
+                    </button>
+                  </div>
+                )}
+                {isHuman && CloseButton}
+              </div>
             </div>
           </div>
-          {!isHuman ? DrawerList : TeamsList}
+
+          {/* Content area with overflow handling - the scrollbar will appear at the edge */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="px-4">
+              {!isHuman ? DrawerList : TeamsList}
+            </div>
+          </div>
+
+          {/* Footer with branding - always stays at bottom */}
+          <div className="px-4 pt-2 pb-2 flex items-center justify-center mt-auto">
+            <div className="text-xs text-gray-500 flex items-baseline gap-1">
+              Powered by
+              {isHuman ? <a href="https://msg91.com" target="_blank" rel="noopener noreferrer" className="flex hover:opacity-80 transition-opacity ml-1">
+                <img src="/msg91-logo.svg" alt="MSG91" className="h-4" />
+              </a> : <a href="https://gtwy.ai" target="_blank" rel="noopener noreferrer" className="flex hover:opacity-80 transition-opacity"><span className="font-bold">GTWY</span></a>}
+            </div>
+          </div>
         </div>
       </div>
     </div>

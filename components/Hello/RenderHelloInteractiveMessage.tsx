@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { MessageContext } from '../Interface-Chatbot/InterfaceChatbot';
 import ImageWithFallback from '../Interface-Chatbot/Messages/ImageWithFallback';
+import { linkify } from '@/utils/utilities';
 
 function RenderHelloInteractiveMessage({ message }: { message: any }) {
   const messageJson = message?.messageJson || {};
@@ -42,11 +43,15 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
             {messageJson.header && renderHeader(messageJson.header)}
 
             {messageJson.body?.text && (
-              <p className="mb-1">{messageJson?.body?.text}</p>
+              <div className="mb-1">
+                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.body?.text) }}></div>
+              </div>
             )}
 
             {messageJson.footer?.text && (
-              <p className="text-xs text-gray-800 mb-1">{messageJson?.footer?.text}</p>
+              <div className="text-xs text-gray-800 mb-1">
+                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.footer?.text) }}></div>
+              </div>
             )}
 
             {messageJson.action?.buttons && (
@@ -71,11 +76,15 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
             {messageJson.header && renderHeader(messageJson.header)}
 
             {messageJson.body?.text && (
-              <div className="mb-1">{messageJson?.body?.text}</div>
+              <div className="mb-1">
+                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.body?.text) }}></div>
+              </div>
             )}
 
             {messageJson.footer?.text && (
-              <div className="text-xs text-gray-800 mb-1">{messageJson?.footer?.text}</div>
+              <div className="text-xs text-gray-800 mb-1">
+                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.footer?.text) }}></div>
+              </div>
             )}
 
             {messageJson.action?.parameters && (
@@ -104,43 +113,47 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
             {messageJson?.header && renderHeader(messageJson?.header)}
 
             {messageJson?.body?.text && (
-              <div className="mb-1">{messageJson?.body?.text}</div>
+              <div className="mb-1">
+                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.body?.text) }}></div>
+              </div>
             )}
 
             {messageJson?.action?.sections && (
-              <div className="mt-2">
-                <div className="border rounded-lg overflow-hidden">
-                  {messageJson?.action?.sections?.map((section: any, sectionIndex: number) => (
-                    <div key={sectionIndex} className="mb-2">
-                      {section?.title && (
-                        <div className="bg-gray-100 px-4 py-2 font-medium text-sm">
-                          {section?.title}
-                        </div>
-                      )}
-                      <div className="grid gap-2 p-3">
-                        {section?.rows?.map((row: any, rowIndex: number) => (
-                          <button
-                            key={row?.id || rowIndex}
-                            className="btn btn-sm btn-outline w-full justify-center normal-case max-w-md"
-                            onClick={() => sendMessageToHello?.(row?.title)}
-                          >
-                            <div className="flex flex-col">
-                              <div className="font-medium">{row?.title}</div>
-                              {row?.description && (
-                                <div className="text-xs text-gray-500 mt-1">{row?.description}</div>
-                              )}
-                            </div>
-                          </button>
-                        ))}
+              <div className="overflow-hidden">
+                {messageJson?.action?.sections?.map((section: any, sectionIndex: number) => (
+                  <div key={sectionIndex} className="mb-2">
+                    {section?.title && (
+                      <div className="px-4 py-2 font-semibold text-md self-center">
+                        {section?.title}
                       </div>
+                    )}
+                    <div className="grid gap-2 p-3">
+                      {section?.rows?.map((row: any, rowIndex: number) => (
+                        <button
+                          key={row?.id || rowIndex}
+                          className="btn btn-sm btn-outline w-full justify-center normal-case max-w-md"
+                          onClick={() => sendMessageToHello?.(row?.title)}
+                        >
+                          <div className="flex flex-col">
+                            <div className="font-medium">{row?.title}</div>
+                            {row?.description && (
+                              <div className="text-xs text-gray-500 mt-1">
+                                <div dangerouslySetInnerHTML={{ __html: linkify(row?.description) }}></div>
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             )}
 
             {messageJson?.footer?.text && (
-              <div className="text-xs text-gray-800 mt-2 italic">{messageJson?.footer?.text}</div>
+              <div className="text-xs text-gray-800 mt-2 italic">
+                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.footer?.text) }}></div>
+              </div>
             )}
           </div>
         );

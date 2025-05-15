@@ -91,30 +91,31 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
     isMobileSDK,
     voice_call_widget
   } = useCustomSelector((state: $ReduxCoreType) => {
-    const show_close_button=state.Hello?.helloConfig?.show_close_button
+    const show_close_button = state.Hello?.helloConfig?.show_close_button
     return ({
-    isMobileSDK: state.Hello?.helloConfig?.isMobileSDK || false,
-    allowModalSwitch: state.Interface.allowModalSwitch || false,
-    hideCloseButton: typeof show_close_button === 'boolean' ? !show_close_button : state.Interface.hideCloseButton || false,
-    hideFullScreenButton: state.Interface.hideFullScreenButton || false,
-    chatTitle: state.Interface.chatTitle || "",
-    chatSubTitle: state.Interface.chatSubTitle || "",
-    chatIcon: state.Interface.chatIcon || "",
-    currentSelectedBridgeSlug: state?.Interface?.bridgeName,
-    allowBridgeSwitchViaProp: state?.Interface?.allowBridgeSwitch,
-    teams: state.Hello?.widgetInfo?.teams || [],
-    currentTeamId: state.Hello?.currentTeamId || "",
-    subThreadList:
-      state.Interface?.interfaceContext?.[chatbotId]?.[
-        GetSessionStorageData("bridgeName") ||
-        state.appInfo?.bridgeName ||
-        "root"
-      ]?.threadList?.[
-      GetSessionStorageData("threadId") || state.appInfo?.threadId
-      ] || [],
-    isHuman: state.Hello?.isHuman || false,
-    voice_call_widget: state.Hello?.widgetInfo?.voice_call_widget  || false
-  })});
+      isMobileSDK: state.Hello?.helloConfig?.isMobileSDK || false,
+      allowModalSwitch: state.Interface.allowModalSwitch || false,
+      hideCloseButton: typeof show_close_button === 'boolean' ? !show_close_button : state.Interface.hideCloseButton || false,
+      hideFullScreenButton: state.Interface.hideFullScreenButton || false,
+      chatTitle: state.Interface.chatTitle || "",
+      chatSubTitle: state.Interface.chatSubTitle || "",
+      chatIcon: state.Interface.chatIcon || "",
+      currentSelectedBridgeSlug: state?.Interface?.bridgeName,
+      allowBridgeSwitchViaProp: state?.Interface?.allowBridgeSwitch,
+      teams: state.Hello?.widgetInfo?.teams || [],
+      currentTeamId: state.Hello?.currentTeamId || "",
+      subThreadList:
+        state.Interface?.interfaceContext?.[chatbotId]?.[
+          GetSessionStorageData("bridgeName") ||
+          state.appInfo?.bridgeName ||
+          "root"
+        ]?.threadList?.[
+        GetSessionStorageData("threadId") || state.appInfo?.threadId
+        ] || [],
+      isHuman: state.Hello?.isHuman || false,
+      voice_call_widget: state.Hello?.widgetInfo?.voice_call_widget || false
+    })
+  });
   // Determine if we should show the create thread button
   const showCreateThreadButton = useMemo(() => {
     return !isHuman && !(subThreadList?.length < 2 && (!messageIds || messageIds.length === 0));
@@ -223,7 +224,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
               className="rounded-full"
             />
           )}
-          <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis">
+          <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis text-lg">
             {displayTitle}
           </h1>
         </div>
@@ -277,8 +278,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
 
   // Memoized call button
   const CallButton = useMemo(() => {
-    if (!isHuman ) return null;
-    if(!voice_call_widget) return null;
+    if (!isHuman) return null;
+    if (!voice_call_widget) return null;
 
     const isCallDisabled = callState !== "idle";
 
@@ -298,19 +299,21 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   }, [isHuman, callState, handleVoiceCall, voice_call_widget]);
 
   return (
-    <div className="bg-gray-50 border-b border-gray-200 px-2 sm:py-3 py-1 w-full">
+    <div className="px-2 sm:py-4 py-3 w-full">
       <div className="flex items-center w-full relative">
         {/* Left side buttons */}
-        <div className="sm:absolute left-0 flex items-center">
+        <div className="flex items-center flex-1 sm:absolute sm:left-0 sm:flex sm:items-center">
           {DrawerToggleButton}
           {CreateThreadButton}
         </div>
 
         {/* Center title section */}
-        {HeaderTitleSection}
+        <div className="flex justify-center items-center flex-1">
+          {HeaderTitleSection}
+        </div>
 
         {/* Right side buttons */}
-        <div className="sm:absolute right-0 flex justify-center items-center gap-1">
+        <div className="flex justify-end items-center gap-1 flex-1 sm:absolute sm:right-0">
           {allowBridgeSwitchViaProp && allowBridgeSwitch && (
             <BridgeSwitchDropdown
               currentSelectedBridgeSlug={currentSelectedBridgeSlug}

@@ -1,12 +1,39 @@
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect } from 'react';
 import WebSocketClient from 'rtlayer-client';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
+import { ChatbotContext } from '@/components/context';
 
-const client = WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
+// Create a separate hook to manage the WebSocket client instance
+function useWebSocketClient(isHelloUser: boolean) {
+  const [client, setClient] = React.useState(null);
+  // Only create the WebSocket client when needed
+  React.useEffect(() => {
+    if (!isHelloUser) {
+      // Only initialize the client when it's not a human
+      const newClient = WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
+      setClient(newClient)
+
+      // Clean up the WebSocket connection when the component unmounts
+      return () => {
+        // Add any cleanup code for your WebSocket client if needed
+        if (newClient && typeof newClient.close === 'function') {
+          newClient.close();
+        }
+      };
+    }
+  }, [isHelloUser]);
+
+  return client;
+}
 
 function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) {
+  const { isHelloUser } = useContext(ChatbotContext)
+  if (isHelloUser) {
+    return null
+  }
+  const client = useWebSocketClient(isHelloUser);
   const { threadId, subThreadId } = chatState
   const { userId } = useCustomSelector((state: $ReduxCoreType) => ({ userId: state.appInfo.userId }))
 
@@ -76,6 +103,7 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
   }, []);
 
   useEffect(() => {
+    if (!client) return;
     const newChannelId = (
       chatbotId +
       (threadId || userId) +

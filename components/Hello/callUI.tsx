@@ -114,7 +114,7 @@ const CallUI: React.FC = () => {
                    ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}
                    flex items-center justify-center mx-auto p-3 bg-white
                    ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}
-                   border-l border-r border-b border-gray-300 rounded-bl-lg rounded-br-lg
+                   border border-gray-300 rounded-bl-lg rounded-br-lg
                    shadow-lg overflow-hidden`}
         >
             {renderCallUI()}

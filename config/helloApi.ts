@@ -1,6 +1,6 @@
 import { errorToast } from "@/components/customToast";
 import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
-import axios from "axios";
+import axios from "@/utils/helloInterceptor";
 
 const HELLO_HOST_URL = process.env.NEXT_PUBLIC_MSG91_HOST_URL;
 
@@ -70,7 +70,7 @@ export async function getAllChannels(): Promise<any> {
       },
       {
         headers: {
-          authorization: unique_id
+          authorization: (unique_id || mail || number)
             ? getLocalStorage('WidgetId')
             : (getLocalStorage('a_clientId')
               ? `${getLocalStorage('WidgetId')}:${getLocalStorage('a_clientId')}`

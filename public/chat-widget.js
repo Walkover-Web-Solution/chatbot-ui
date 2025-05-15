@@ -1,14 +1,88 @@
 /* eslint-disable */
 let block_chatbot = false;
+
+class CobrowseManager {
+    constructor() {
+        this.scriptInjected = false
+        this.device_id = null
+    }
+
+    injectScript(uuid) {
+        if (!uuid) {
+            console.log("[CoBrowse PARENT] No device ID provided, aborting script injection");
+            return;
+        }
+    
+        // Create and load the CobrowseIO script for parent window
+        const script = document.createElement('script');
+        script.id = 'CBParentScript';
+        script.src = 'https://js.cobrowse.io/CobrowseIO.js';
+        script.async = true;
+
+        // Set up an onload handler to configure CobrowseIO after script loads
+        script.onload = function () {
+            try {
+                console.log("[CoBrowse PARENT] Configuring with device ID:", uuid);
+                
+                // Now manually configure CobrowseIO
+                window.CobrowseIO.customData = {
+                    device_id: uuid
+                };
+
+                window.CobrowseIO.license = "FZBGaF9-Od0GEQ"; // Replace with your actual license key
+                window.CobrowseIO.trustedOrigins = [
+                    window?.origin,
+                    "https://blacksea.msg91.com/chatbot"
+                ]
+
+                // Start CobrowseIO
+                window.CobrowseIO.client().then(function () {
+                    window.CobrowseIO.start();
+                    console.log("[CoBrowse PARENT] CoBrowse service started successfully, Notifying iframe to add CoBrowse script");
+                    sendMessageToChatbot({ type: "ADD_COBROWSE_SCRIPT", data: { origin: window?.origin } });
+                }).catch(function (err) {
+                    console.error("[CoBrowse PARENT] Client initialization error:", err);
+                });
+            } catch (error) {
+                console.error("[CoBrowse PARENT] Error configuring CobrowseIO:", error);
+            }
+        };
+
+        script.onerror = function () {
+            console.error("[CoBrowse PARENT] Failed to load CobrowseIO script");
+        };
+
+        // Add the script to the document
+        document.head.appendChild(script);
+    }
+
+    updateDeviceId(uuid) {
+        if (this.device_id !== uuid && this.scriptInjected) {
+            this.device_id = uuid
+            window.CobrowseIO.customData = {
+                device_id: uuid
+            }
+            return
+        }
+        if (!this.scriptInjected) {
+            this.injectScript(uuid)
+        }
+    }
+}
+
+const CBManager = new CobrowseManager()
+
 class ChatbotEmbedManager {
     constructor() {
         this.props = {};
         this.helloProps = null;
         this.parentContainer = null;
+        this.hideHelloIcon = null;
+        this.helloLaunchWidget = null;
         this.config = {
             type: 'popup',
-            height: '80',
-            heightUnit: '%',
+            height: 'min(804px, calc(100% - 40px))',
+            heightUnit: '',
             width: '480',
             widthUnit: 'px',
             buttonName: ''
@@ -41,10 +115,23 @@ class ChatbotEmbedManager {
         chatBotIcon.id = 'interfaceEmbed';
         chatBotIcon.style.display = 'none';
 
-        const imgElement = document.createElement('img');
+        // const imgElement = document.createElement('img');
+        // imgElement.id = 'popup-interfaceEmbed';
+        // imgElement.alt = 'Ask Ai';
+        // imgElement.src = this.icons.black;
+        // chatBotIcon.appendChild(imgElement);
+
+        const imgElement = document.createElement('div');
         imgElement.id = 'popup-interfaceEmbed';
-        imgElement.alt = 'Ask Ai';
-        imgElement.src = this.icons.black;
+        imgElement.innerHTML = `
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" rx="24" fill="white"/>
+            <path d="M10.667 16C10.667 13.7909 12.4579 12 14.667 12H33.3337C35.5428 12 37.3337 13.7909 37.3337 16V28C37.3337 30.2091 35.5428 32 33.3337 32H14.667C12.4579 32 10.667 30.2091 10.667 28V16Z" fill="#F2CA55"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M21.1339 22.6665C21.1339 24.2497 22.4173 25.5332 24.0005 25.5332C25.5837 25.5332 26.8672 24.2497 26.8672 22.6665H29.1339C29.1339 25.5016 26.8356 27.7998 24.0005 27.7998C21.1655 27.7998 18.8672 25.5016 18.8672 22.6665H21.1339Z" fill="#8C5D00"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M20.2002 19.9998V16.6665H22.4669V19.9998H20.2002ZM25.5335 19.9998V16.6665H27.8002V19.9998H25.5335Z" fill="#8C5D00"/>
+            <path d="M26.6663 32V36L21.333 32H26.6663Z" fill="#8C5D00"/>
+        </svg>
+        `;
         chatBotIcon.appendChild(imgElement);
 
         const textElement = document.createElement('span');
@@ -101,16 +188,23 @@ class ChatbotEmbedManager {
                 this.cleanupChatbot();
                 break;
             case 'hide_widget':
-                if (data === true) {
-                    block_chatbot = true;
-                    this.cleanupChatbot();
+                if (!('hide_launcher' in this.helloProps) && !this.state.isMobileSDK) {
+                    if (data === true || data === 'true') {
+                        this.hideHelloIcon = true;
+                        this.hideChatbotWithIcon();
+                    } else {
+                        this.hideHelloIcon = false;
+                        this.showChatbotIcon();
+                    }
                 }
                 break;
             case 'launch_widget':
-                if (window.ReactNativeWebView && this.state.isMobileSDK) {
-                    if (data === true) {
+                if (!('launch_widget' in this.helloProps) && !this.state.isMobileSDK) {
+                    if (data === true || data === 'true') {
+                        this.helloLaunchWidget = true;
                         this.openChatbot();
                     } else {
+                        this.helloLaunchWidget = false;
                         this.closeChatbot();
                     }
                 }
@@ -118,12 +212,137 @@ class ChatbotEmbedManager {
             case 'downloadAttachment':
                 this.handleDownloadAttachment(data);
                 break;
+            case 'setDataInLocal':
+                localStorage.setItem(data.key, data?.payload);
+                break;
             case 'uuid':
                 this.setUUID(data?.uuid);
+                break;
+            case 'PUSH_NOTIFICATION':
+                if (this.state.isMobileSDK) {
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'PUSH_NOTIFICATION', data }));
+                } else {
+                    this.handlePushNotification(data)
+                }
+                break;
+            case 'ENABLE_DOMAIN_TRACKING':
+                    this.enableDomainTracking();
+                    break;    
+            default:
                 break;
         }
     }
 
+    handlePushNotification(data) {
+        // Create a full-screen transparent overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'notification-overlay';
+        overlay.classList.add('notification-overlay');
+
+        // Set position classes based on horizontal and vertical position values
+        const horizontalPosition = data.horizontal_position || 'center';
+        const verticalPosition = data.vertical_position || 'center';
+
+        // Add position classes
+        overlay.classList.add(`h-${horizontalPosition}`, `v-${verticalPosition}`);
+
+        // Create the modal container
+        const modalContainer = document.createElement('div');
+        modalContainer.classList.add('notification-modal');
+
+        const iframe = document.createElement('iframe');
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        iframe.style.minHeight = '500px';
+        iframe.style.minWidth = '500px';
+        iframe.style.background = 'transparent';
+
+        modalContainer.appendChild(iframe);
+
+        // Create close button (cross icon)
+        const closeButton = document.createElement('div');
+        closeButton.innerHTML = '&times;';
+        closeButton.classList.add('notification-close-btn');
+
+        // Add click event to close button
+        closeButton.addEventListener('click', () => {
+            this.removeNotification(overlay);
+        });
+
+        // Add the close button to the modal container after content
+        modalContainer.appendChild(closeButton);
+
+        // Append the modal to the overlay
+        overlay.appendChild(modalContainer);
+
+        // Append the overlay to the body
+        document.body.appendChild(overlay);
+
+
+        // Once the iframe is added to the DOM, we can access its document
+        setTimeout(() => {
+            // Get reference to the iframe's document
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            // Write the content to the iframe
+            iframeDoc.open();
+            iframeDoc.write(data.content);
+            iframeDoc.close();
+
+            // Add external stylesheet if needed
+            if (this.urls && this.urls.styleSheet) {
+                const externalStyle = iframeDoc.createElement('link');
+                externalStyle.rel = 'stylesheet';
+                externalStyle.href = this.urls.styleSheet;
+                externalStyle.type = 'text/css';
+                iframeDoc.head.appendChild(externalStyle);
+            }
+        }, 0);
+    }
+
+    removeNotification(overlayElement) {
+        if (overlayElement && document.body.contains(overlayElement)) {
+            // Add fade-out animation
+            overlayElement.classList.add('notification-fade-out');
+
+            // Remove after animation completes
+            setTimeout(() => {
+                document.body.removeChild(overlayElement);
+            }, 300); // Match this with CSS transition duration
+        }
+    }
+
+    enableDomainTracking() {
+        sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: window?.location?.href } });
+
+        (function () {
+                const originalPushState = history.pushState;
+                const originalReplaceState = history.replaceState;
+
+                function handleUrlChange() {
+                    const fullUrl = window.location.href;
+
+                    // Only call API if it's not a hash-only change
+                    if (window.location.hash === '') {
+                        sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: fullUrl } })
+                    }
+                }
+
+                history.pushState = function () {
+                    originalPushState.apply(this, arguments);
+                    handleUrlChange();
+                };
+
+                history.replaceState = function () {
+                    originalReplaceState.apply(this, arguments);
+                    handleUrlChange();
+                };
+
+                window.addEventListener('popstate', handleUrlChange);
+        })();
+    }
+    
     handleDownloadAttachment(data) {
         if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'downloadAttachment', data: data?.url }));
@@ -156,6 +375,8 @@ class ChatbotEmbedManager {
         this.uuid = uuid;
         if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'uuid', data: { uuid } }));
+        } else{
+            CBManager.updateDeviceId(uuid)
         }
     }
 
@@ -170,8 +391,10 @@ class ChatbotEmbedManager {
                 if (width < 600) {
                     iframeParentContainer.style.height = '100%';
                     iframeParentContainer.style.width = '100%';
+                    iframeParentContainer.classList.add('full-screen-interfaceEmbed')
                 } else {
                     this.applyConfig(this?.props?.config || {});
+                    iframeParentContainer.classList.remove('full-screen-interfaceEmbed');
                 }
             } else {
                 iframeParentContainer.style.height = '100%';
@@ -237,7 +460,7 @@ class ChatbotEmbedManager {
                 const interfaceEmbed = document.getElementById('interfaceEmbed');
                 if (interfaceEmbed) {
                     interfaceEmbed.style.display =
-                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher)
+                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || this.hideHelloIcon || chatbotManager.helloProps?.isMobileSDK)
                             ? 'none'
                             : 'unset';
                 }
@@ -335,7 +558,7 @@ class ChatbotEmbedManager {
         const iframeComponent = document.getElementById('iframe-component-interfaceEmbed');
         if (!iframeComponent) return;
         let encodedData = '';
-        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true, websiteUrl: window.location.href }));
+        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true }));
         const modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
         iframeComponent.src = modifiedUrl;
 
@@ -396,7 +619,11 @@ class ChatbotEmbedManager {
             iframeParentContainer.style.width = '100%';
             iframeParentContainer.style.display = 'block';
         } else {
-            iframeParentContainer.style.height = `${config?.height}${config?.heightUnit || ''}` || '70vh';
+            const isFunctionalHeight = config.height?.includes('(');
+            iframeParentContainer.style.height = isFunctionalHeight
+                ? config.height  // use as-is
+                : `${config.height}${config.heightUnit || ''}` || '70vh';
+            // iframeParentContainer.style.height = `${config?.height}${config?.heightUnit || ''}` || '70vh';
             iframeParentContainer.style.width = `${config?.width}${config?.widthUnit || ''}` || '40vw';
         }
     }
@@ -428,11 +655,11 @@ class ChatbotEmbedManager {
 
     showIconIfReady() {
         if (this.state.interfaceLoaded && this.state.delayElapsed) {
-            if (!chatbotManager.helloProps?.hide_launcher && !chatbotManager.helloProps?.isMobileSDK) {
+            if (!this.hideHelloIcon && !chatbotManager.helloProps?.isMobileSDK) {
                 const interfaceEmbed = document.getElementById('interfaceEmbed');
                 if (interfaceEmbed) interfaceEmbed.style.display = 'block';
             }
-            if (chatbotManager.helloProps?.launch_widget) chatbotManager.openChatbot()
+            if (this.helloLaunchWidget) chatbotManager.openChatbot()
             if (chatbotManager.helloProps?.icon_position === 'left') {
                 interfaceEmbed.classList.add('left_all_child')
                 document.getElementById('iframe-parent-container').classList.add('left_all_child')
@@ -461,6 +688,21 @@ class ChatbotEmbedManager {
         }
     }
 
+    hideChatbotWithIcon() {
+        this.hideHelloIcon = true;
+        const interfaceEmbed = document.getElementById('interfaceEmbed');
+        const iframeContainer = document.getElementById('iframe-parent-container');
+        if (interfaceEmbed) interfaceEmbed.style.display = 'none';
+        if (iframeContainer) iframeContainer.style.display = 'none';
+    }
+
+    showChatbotIcon() {
+        this.hideHelloIcon = false;
+        const interfaceEmbed = document.getElementById('interfaceEmbed');
+        if (interfaceEmbed) {
+            interfaceEmbed.style.display = 'unset';
+        }
+    }
 }
 
 const chatbotManager = new ChatbotEmbedManager();
@@ -580,6 +822,12 @@ window.initChatWidget = (data, delay = 0) => {
     if (block_chatbot) return;
     if (data) {
         chatbotManager.helloProps = { ...data };
+        if ('hide_launcher' in data) {
+            chatbotManager.hideHelloIcon = data.hide_launcher || false;
+        }
+        if ('launch_widget' in data) {
+            chatbotManager.helloLaunchWidget = data.launch_widget || false;
+        }
     }
     setTimeout(() => {
         chatbotManager.state.delayElapsed = true;
@@ -592,19 +840,10 @@ window.chatWidget = {
     open: () => chatbotManager.openChatbot(),
     close: () => chatbotManager.closeChatbot(),
     hide: () => {
-        const interfaceEmbed = document.getElementById('interfaceEmbed');
-        const iframeContainer = document.getElementById('iframe-parent-container');
-        if (interfaceEmbed) interfaceEmbed.style.display = 'none';
-        if (iframeContainer) iframeContainer.style.display = 'none';
+        chatbotManager.hideChatbotWithIcon();
     },
     show: () => {
-        const interfaceEmbed = document.getElementById('interfaceEmbed');
-        if (interfaceEmbed) {
-            interfaceEmbed.style.display =
-                (chatbotManager.props.hideIcon === true || chatbotManager.props.hideIcon === 'true' || chatbotManager.helloProps?.hide_launcher)
-                    ? 'none'
-                    : 'unset';
-        }
+        chatbotManager.showChatbotIcon();
     },
     toggleWidget: () => {
         const iframeContainer = document.getElementById('iframe-parent-container');
