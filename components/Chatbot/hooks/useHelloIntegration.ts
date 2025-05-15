@@ -18,7 +18,6 @@ import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
 import useNotificationSocket from '@/hooks/notifications/notificationSocket';
 import useNotificationSocketEventHandler from '@/hooks/notifications/notificationSocketEventHandler';
-import useCBManger from '@/hooks/coBrowser/useCBManger';
 
 interface HelloMessage {
   role: string;
@@ -68,7 +67,6 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
   useSocket();
-  useCBManger()
   useNotificationSocket();
 
   const setHelloMessages = useCallback((messages: HelloMessage[]) => {

@@ -8,9 +8,12 @@ class CobrowseManager {
     }
 
     injectScript(uuid) {
-        if (!uuid) return;
-
-        // Create and load the CobrowseIO script
+        if (!uuid) {
+            console.log("[CoBrowse PARENT] No device ID provided, aborting script injection");
+            return;
+        }
+    
+        // Create and load the CobrowseIO script for parent window
         const script = document.createElement('script');
         script.id = 'CBParentScript';
         script.src = 'https://js.cobrowse.io/CobrowseIO.js';
@@ -18,55 +21,53 @@ class CobrowseManager {
 
         // Set up an onload handler to configure CobrowseIO after script loads
         script.onload = function () {
-            console.log("CobrowseIO script loaded successfully");
-
             try {
+                console.log("[CoBrowse PARENT] Configuring with device ID:", uuid);
+                
                 // Now manually configure CobrowseIO
                 window.CobrowseIO.customData = {
                     device_id: uuid
                 };
 
-                window.CobrowseIO.license = "2PmDhZR5jN6MYQ"; // Replace with your actual license key
+                window.CobrowseIO.license = "FZBGaF9-Od0GEQ"; // Replace with your actual license key
                 window.CobrowseIO.trustedOrigins = [
                     window.origin,
-                    "http://localhost:3001/chatbot",
-                    "https://ctest.msg91.com/chatbot",
-                    "https://blacksea.msg91.com/chatbot"
+                    "http://localhost:3001/chatbot"
                 ]
-                
+
                 // Start CobrowseIO
                 window.CobrowseIO.client().then(function () {
                     window.CobrowseIO.start();
+                    console.log("[CoBrowse PARENT] CoBrowse service started successfully, Notifying iframe to add CoBrowse script");
+                    sendMessageToChatbot({ type: "ADD_COBROWSE_SCRIPT", data: null });
                 }).catch(function (err) {
-                    console.error("CobrowseIO client initialization error:", err);
+                    console.error("[CoBrowse PARENT] Client initialization error:", err);
                 });
             } catch (error) {
-                console.error("Error configuring CobrowseIO:", error);
+                console.error("[CoBrowse PARENT] Error configuring CobrowseIO:", error);
             }
         };
 
         script.onerror = function () {
-            console.error("Failed to load CobrowseIO script");
+            console.error("[CoBrowse PARENT] Failed to load CobrowseIO script");
         };
 
         // Add the script to the document
         document.head.appendChild(script);
-        console.log("CobrowseIO script tag added to head");
     }
 
     updateDeviceId(uuid) {
-        console.log(uuid, "-=0-0-0-00")
         if (this.device_id !== uuid && this.scriptInjected) {
+            this.device_id = uuid
             window.CobrowseIO.customData = {
                 device_id: uuid
             }
+            return
         }
-        this.device_id = uuid
         if (!this.scriptInjected) {
             this.injectScript(uuid)
         }
     }
-
 }
 
 const CBManager = new CobrowseManager()
@@ -215,7 +216,6 @@ class ChatbotEmbedManager {
                 break;
             case 'uuid':
                 this.setUUID(data?.uuid);
-                CBManager.updateDeviceId(data?.uuid)
                 break;
             case 'PUSH_NOTIFICATION':
                 if (this.state.isMobileSDK) {
@@ -374,6 +374,8 @@ class ChatbotEmbedManager {
         this.uuid = uuid;
         if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'uuid', data: { uuid } }));
+        }else{
+            CBManager.updateDeviceId(uuid)
         }
     }
 

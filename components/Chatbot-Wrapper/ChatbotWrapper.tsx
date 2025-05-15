@@ -17,6 +17,7 @@ import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Chatbot from "../Chatbot/Chatbot";
+import { CBManger } from "@/hooks/coBrowser/CBManger";
 
 interface InterfaceData {
   threadId?: string | null;
@@ -51,7 +52,10 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
 
   // Handle messages from parent window
   const handleMessage = useCallback((event: MessageEvent) => {
-    if (event?.data?.type !== "interfaceData" && event?.data?.type !== "helloData" && event?.data?.type !== 'parent-route-changed') return;
+    if (event?.data?.type !== "interfaceData" && event?.data?.type !== "helloData" && event?.data?.type !== 'parent-route-changed' && event?.data?.type !=='ADD_COBROWSE_SCRIPT') return;
+    if(event?.data?.type  === 'ADD_COBROWSE_SCRIPT'){
+        CBManger.injectScript()
+    }
     if (event?.data?.type === "helloData") {
       const {
         widgetToken,
