@@ -55,7 +55,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
   } = chatState;
 
   // Custom hooks
-  const { sendMessageToHello, fetchHelloPreviousHistory, fetchChannels } =
+  const { sendMessageToHello, fetchHelloPreviousHistory, fetchChannels, getMoreHelloChats } =
     useHelloIntegration({
       chatbotId,
       chatDispatch,
@@ -129,6 +129,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
     isSmallScreen,
     isTyping: isTyping?.[subThreadId],
     fetchChannels,
+    getMoreHelloChats,
     ...chatActions
   };
 
@@ -142,7 +143,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
     <MessageContext.Provider value={contextValue}>
       <div className="flex h-screen w-full overflow-hidden relative">
         {/* Sidebar - visible on large screens */}
-        <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? 'w-64' : 'w-0'}`}>
+        <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? 'w-96 max-w-[286px]' : 'w-0'}`}>
           <ChatbotDrawer
             setToggleDrawer={chatActions.setToggleDrawer}
             isToggledrawer={isToggledrawer}
@@ -150,7 +151,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
         </div>
 
         {/* Main content area */}
-        <div className="flex flex-col flex-1 w-full">
+        <div className="flex flex-col w-full">
           {/* Mobile header */}
           <ChatbotHeader />
 
@@ -224,31 +225,26 @@ function EmptyChatView({ }: EmptyChatViewProps) {
 
 interface ActiveChatViewProps {
   containerRef: React.RefObject<HTMLDivElement>;
-  subThreadId: string;
-  messageIds: Record<string, string[]>;
 }
 
 // Active chat component
-function ActiveChatView({ containerRef, subThreadId, messageIds }: ActiveChatViewProps) {
+function ActiveChatView({ containerRef }: ActiveChatViewProps) {
   return (
-    <>
-      {/* Messages container */}
-      <div
-        className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1 ${messageIds?.[subThreadId]?.length === 0 ? 'flex items-center justify-center' : 'pb-6'
-          }`}
-        id="message-container"
-        ref={containerRef}
-      >
-        <div className="w-full max-w-5xl mx-auto">
-          <MessageList />
-        </div>
+    <div
+      ref={containerRef}
+      className="flex flex-col h-full overflow-auto"
+      style={{ height: '100vh' }}
+    >
+      {/* Messages container - takes all available space */}
+      <div className="flex-1 overflow-y-auto max-w-5xl mx-auto w-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+        <MessageList />
       </div>
 
-      {/* Text input */}
+      {/* Text input - fixed at bottom */}
       <div className="max-w-5xl mx-auto px-4 pb-3 w-full">
         <ChatbotTextField />
       </div>
-    </>
+    </div>
   );
 }
 
