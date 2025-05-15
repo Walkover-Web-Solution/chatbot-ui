@@ -54,7 +54,7 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
   const handleMessage = useCallback((event: MessageEvent) => {
     if (event?.data?.type !== "interfaceData" && event?.data?.type !== "helloData" && event?.data?.type !== 'parent-route-changed' && event?.data?.type !=='ADD_COBROWSE_SCRIPT') return;
     if(event?.data?.type  === 'ADD_COBROWSE_SCRIPT'){
-        CBManger.injectScript()
+        CBManger.injectScript(event?.data?.data?.origin)
     }
     if (event?.data?.type === "helloData") {
       const {

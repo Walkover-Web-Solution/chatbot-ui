@@ -31,7 +31,7 @@ class CobrowseManager {
 
                 window.CobrowseIO.license = "FZBGaF9-Od0GEQ"; // Replace with your actual license key
                 window.CobrowseIO.trustedOrigins = [
-                    window.origin,
+                    window?.origin,
                     "https://blacksea.msg91.com/chatbot"
                 ]
 
@@ -39,7 +39,7 @@ class CobrowseManager {
                 window.CobrowseIO.client().then(function () {
                     window.CobrowseIO.start();
                     console.log("[CoBrowse PARENT] CoBrowse service started successfully, Notifying iframe to add CoBrowse script");
-                    sendMessageToChatbot({ type: "ADD_COBROWSE_SCRIPT", data: null });
+                    sendMessageToChatbot({ type: "ADD_COBROWSE_SCRIPT", data: { origin: window?.origin } });
                 }).catch(function (err) {
                     console.error("[CoBrowse PARENT] Client initialization error:", err);
                 });

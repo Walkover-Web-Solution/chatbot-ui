@@ -12,7 +12,7 @@ class CobrowseManager {
             console.log("[CoBrowse PARENT] No device ID provided, aborting script injection");
             return;
         }
-    
+
         // Create and load the CobrowseIO script for parent window
         const script = document.createElement('script');
         script.id = 'CBParentScript';
@@ -23,7 +23,7 @@ class CobrowseManager {
         script.onload = function () {
             try {
                 console.log("[CoBrowse PARENT] Configuring with device ID:", uuid);
-                
+
                 // Now manually configure CobrowseIO
                 window.CobrowseIO.customData = {
                     device_id: uuid
@@ -31,7 +31,7 @@ class CobrowseManager {
 
                 window.CobrowseIO.license = "FZBGaF9-Od0GEQ"; // Replace with your actual license key
                 window.CobrowseIO.trustedOrigins = [
-                    window.origin,
+                    window?.origin,
                     "http://localhost:3001/chatbot"
                 ]
 
@@ -39,7 +39,7 @@ class CobrowseManager {
                 window.CobrowseIO.client().then(function () {
                     window.CobrowseIO.start();
                     console.log("[CoBrowse PARENT] CoBrowse service started successfully, Notifying iframe to add CoBrowse script");
-                    sendMessageToChatbot({ type: "ADD_COBROWSE_SCRIPT", data: null });
+                    sendMessageToChatbot({ type: "ADD_COBROWSE_SCRIPT", data: { origin: window?.origin } });
                 }).catch(function (err) {
                     console.error("[CoBrowse PARENT] Client initialization error:", err);
                 });
@@ -374,7 +374,7 @@ class ChatbotEmbedManager {
         this.uuid = uuid;
         if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'uuid', data: { uuid } }));
-        }else{
+        } else {
             CBManager.updateDeviceId(uuid)
         }
     }
@@ -557,7 +557,7 @@ class ChatbotEmbedManager {
         const iframeComponent = document.getElementById('iframe-component-interfaceEmbed');
         if (!iframeComponent) return;
         let encodedData = '';
-        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true, websiteUrl: window.location.href, origin: window.origin }));
+        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true }));
         const modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
         iframeComponent.src = modifiedUrl;
 

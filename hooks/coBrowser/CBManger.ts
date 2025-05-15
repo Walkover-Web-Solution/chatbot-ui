@@ -23,7 +23,7 @@ class CobrowseManager {
     this.device_id = null;
   }
 
-  injectScript(): void {
+  injectScript(origin:string): void {
     const uuid = getLocalStorage('k_clientId') || getLocalStorage('a_clientId');
     
     if (!uuid) {
@@ -31,6 +31,11 @@ class CobrowseManager {
       return;
     }
     
+    if(!origin){
+        console.log("[CoBrowse IFRAME] No parent origin found, aborting script injection");
+        return;
+    }
+
     if (this.scriptInjected && uuid !== this.device_id) {
       console.log("[CoBrowse IFRAME] Script already injected, updating device ID from", this.device_id, "to", uuid);
       window.CobrowseIO.customData = {
@@ -53,7 +58,6 @@ class CobrowseManager {
       this.device_id = uuid;
 
       try {
-        const origin = getLocalStorage('origin') || '';
         console.log("[CoBrowse IFRAME] Configuring with trusted origin:", origin);
         
         window.CobrowseIO.trustedOrigins = [origin];
