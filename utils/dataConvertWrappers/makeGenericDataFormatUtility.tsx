@@ -4,11 +4,11 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
             return history
                 .map((chat: any) => {
                     let role;
-                    if(chat?.message?.chat_id){
-                        role ='user'
-                    }else if(chat?.message?.sender_id === 'workflow' || chat?.message?.sender_id === 'bot' || chat?.message?.is_auto_response){
+                    if (chat?.message?.chat_id) {
+                        role = 'user'
+                    } else if (chat?.message?.sender_id === 'workflow' || chat?.message?.sender_id === 'bot' || chat?.message?.is_auto_response) {
                         role = "Bot"
-                    }else{
+                    } else {
                         role = "Human"
                     }
 
@@ -22,7 +22,8 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                             token: chat?.message?.token,
                             dynamic_values: chat?.message?.dynamic_values,
                             chat_id: chat?.message?.chat_id,
-                            channel: chat?.message?.channel
+                            channel: chat?.message?.channel,
+                            time: chat?.timetoken || null
                         };
                     }
 
@@ -35,7 +36,8 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                             : chat?.message?.content?.text,
                         urls: chat?.message?.content?.attachment,
                         message_type: chat?.message?.message_type,
-                        messageJson: chat?.message?.content
+                        messageJson: chat?.message?.content,
+                        time: chat?.timetoken
                     };
                 })
                 .reverse();
@@ -73,13 +75,14 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
     if (type === 'feedback') {
         return [{
             role: "Human",
-            from_name:message?.dynamic_values?.agent_name,
+            from_name: message?.dynamic_values?.agent_name,
             id: message?.timetoken || message?.id,
             message_type: 'feedback',
             token: message?.token,
             dynamic_values: message?.dynamic_values,
             chat_id: message?.chat_id,
-            channel: message?.channel
+            channel: message?.channel,
+            time: message?.timetoken || null
         }];
     }
 
@@ -91,7 +94,8 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
         urls: content?.body?.attachment || content?.attachment,
         id: message?.id,
         message_type: message?.message_type,
-        messageJson: message?.content
+        messageJson: message?.content,
+        time: message?.timetoken || null
     }];
 }
 
@@ -101,10 +105,7 @@ function createSendMessageGtwyPayload(message: string) {
     };
 }
 
-
-
 export {
     convertChatHistoryToGenericFormat,
     convertEventMessageToGenericFormat, createSendMessageGtwyPayload, createSendMessageHelloPayload
 };
-

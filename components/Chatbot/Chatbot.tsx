@@ -11,6 +11,7 @@ import useHelloIntegration from './hooks/useHelloIntegration';
 import { useReduxStateManagement } from './hooks/useReduxManagement';
 import useRtlayerEventManager from './hooks/useRtlayerEventManager';
 
+
 // Components
 import FormComponent from '../FormComponent';
 import CallUI from '../Hello/callUI';
@@ -24,9 +25,9 @@ import StarterQuestions from '../Interface-Chatbot/Messages/StarterQuestions';
 // Utils
 import { ChatBotGif } from '@/assests/assestsIndex';
 import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
-import { ParamsEnums } from '@/utils/enums';
-import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { $ReduxCoreType } from '@/types/reduxCore';
+import { useCustomSelector } from '@/utils/deepCheckSelector';
+import { ParamsEnums } from '@/utils/enums';
 
 interface ChatbotProps {
   chatbotId: string;
@@ -67,11 +68,12 @@ function Chatbot({ chatbotId }: ChatbotProps) {
       chatDispatch
     });
 
-  const { show_widget_form, is_anon } = useCustomSelector((state: $ReduxCoreType) => {
+  const { show_widget_form, is_anon, greetingMessage } = useCustomSelector((state: $ReduxCoreType) => {
     const helloConfig = state.Hello?.helloConfig
     return ({
       show_widget_form: typeof helloConfig?.show_widget_form === 'boolean' ? helloConfig?.show_widget_form : state.Hello?.widgetInfo?.show_widget_form,
-      is_anon: state.Hello?.is_anon == 'true'
+      is_anon: state.Hello?.is_anon == 'true',
+      greetingMessage: state.Hello?.greeting
     })
   });
 
@@ -131,8 +133,9 @@ function Chatbot({ chatbotId }: ChatbotProps) {
 
   // Check if chat is empty
   const isChatEmpty = IsHuman
-    ? helloMsgIds[subThreadId]?.length === 0
-    : messageIds[subThreadId]?.length === 0;
+    ? (!subThreadId || helloMsgIds[subThreadId]?.length === 0) &&
+    (!greetingMessage || (!greetingMessage.text && !greetingMessage?.options?.length))
+    : !subThreadId || messageIds[subThreadId]?.length === 0;
 
   return (
     <MessageContext.Provider value={contextValue}>
