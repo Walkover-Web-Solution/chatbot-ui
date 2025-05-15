@@ -90,11 +90,16 @@ Object.freeze(EmbedVerificationStatus);
 Object.freeze(ParamsEnums);
 
 const FeedbackRatings = {
-  terrible : 'terrible',
-  bad : 'bad',
-  ok : 'ok',
-  good : 'good',
-  amazing : 'amazing',
+  terrible: 'terrible',
+  bad: 'bad',
+  ok: 'ok',
+  good: 'good',
+  amazing: 'amazing',
 }
 
-export { EmbedVerificationStatus, ParamsEnums , FeedbackRatings };
+export const PAGE_SIZE = {
+  gtwy: 40,
+  hello: 30
+}
+
+export { EmbedVerificationStatus, ParamsEnums, FeedbackRatings };

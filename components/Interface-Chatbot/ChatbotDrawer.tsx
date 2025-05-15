@@ -238,7 +238,7 @@ const ChatbotDrawer = ({
                         {(() => {
                           const channelMessages = allMessages[channel?.channel];
                           if (channelMessages && channelMessages?.length > 0) {
-                            const lastMessageId = channelMessages[channelMessages?.length - 1];
+                            const lastMessageId = channelMessages[0];
                             const lastMessage = allMessagesData[channel?.channel]?.[lastMessageId];
                             if (lastMessage) {
                               const isUserMessage = lastMessage?.role == "user";
