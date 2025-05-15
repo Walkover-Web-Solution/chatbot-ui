@@ -331,6 +331,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       initializeHelloServices(e.detail.value);
     }
     if (e.detail.key === 'k_clientId' || e.detail.key === 'a_clientId') {
+      dispatch(setHelloKeysData({ [e.detail.key]: e.detail.value }))
       emitEventToParent('uuid', { uuid: e.detail?.value });
     }
     if (e.detail.key === 'is_anon') {
