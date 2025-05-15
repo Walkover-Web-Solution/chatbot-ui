@@ -1,6 +1,7 @@
 import { errorToast } from "@/components/customToast";
 import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 import axios from "@/utils/helloInterceptor";
+import { PAGE_SIZE } from "@/utils/enums";
 
 const HELLO_HOST_URL = process.env.NEXT_PUBLIC_MSG91_HOST_URL;
 
@@ -212,7 +213,7 @@ export async function getHelloChatHistoryApi(channelId: string, skip: number = 0
       {
         channel: channelId,
         origin: "chat",
-        page_size: 30,
+        page_size: PAGE_SIZE.hello,
         start_from: skip + 1 || 1,
         user_data: {
           "unique_id": unique_id,

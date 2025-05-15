@@ -7,6 +7,7 @@ import { useCustomSelector } from '@/utils/deepCheckSelector';
 import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState, SendMessagePayloadType } from './chatTypes';
+import { PAGE_SIZE } from '@/utils/enums';
 
 export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) => {
     if (chatbotId === 'hello') {
@@ -75,7 +76,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                     chatDispatch({
                         type: ChatActionTypes.SET_DATA, payload: {
                             currentPage: 1,
-                            hasMoreMessages: previousChats?.length >= 40
+                            hasMoreMessages: previousChats?.length >= PAGE_SIZE.gtwy
                         }
                     });
                 } else {
@@ -127,7 +128,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                 chatDispatch({
                     type: ChatActionTypes.SET_DATA, payload: {
                         currentPage: nextPage,
-                        hasMoreMessages: previousChats?.length >= 40
+                        hasMoreMessages: previousChats?.length >= PAGE_SIZE.gtwy
                     }
                 });
             } else {
@@ -171,7 +172,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         chatDispatch({
             type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: {
                 message: {
-                    content: "Talking with AI", 
+                    content: "Talking with AI",
                     role: "assistant",
                     wait: true,
                 }

@@ -18,6 +18,7 @@ import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
 import useNotificationSocket from '@/hooks/notifications/notificationSocket';
 import useNotificationSocketEventHandler from '@/hooks/notifications/notificationSocketEventHandler';
+import { PAGE_SIZE } from '@/utils/enums';
 
 interface HelloMessage {
   role: string;
@@ -73,12 +74,12 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages, subThreadId: messages?.[0]?.channel || "" } });
   }, [chatDispatch]);
 
-  const addHelloMessage = useCallback((message: HelloMessage , subThreadId?:string) => {
+  const addHelloMessage = useCallback((message: HelloMessage, subThreadId?: string) => {
     if (Array.isArray(message)) {
       chatDispatch({ type: ChatActionTypes.SET_PAGINATE_MESSAGES, payload: { messages: message } });
       return
     }
-    chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message: message , subThreadId} });
+    chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message: message, subThreadId } });
   }, [chatDispatch]);
 
   // Fetch previous Hello chat history
@@ -95,7 +96,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
           setHelloMessages(chatsToStore);
           chatDispatch({
             type: ChatActionTypes.SET_DATA, payload: {
-              hasMoreMessages: helloChats.length >= 10,
+              hasMoreMessages: helloChats.length >= PAGE_SIZE.hello,
               skip: helloChats.length,
             }
           });
@@ -130,7 +131,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
           addHelloMessage(chatsToStore);
           chatDispatch({
             type: ChatActionTypes.SET_DATA, payload: {
-              hasMoreMessages: helloChats.length >= 10,
+              hasMoreMessages: helloChats.length >= PAGE_SIZE.hello,
               skip: skip + helloChats.length,
             }
           });
@@ -166,7 +167,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   }, [dispatch]);
 
   useSocketEvents({ chatbotId, chatState, chatDispatch, messageRef, fetchChannels });
-  useNotificationSocketEventHandler({chatDispatch})
+  useNotificationSocketEventHandler({ chatDispatch })
 
   // Start timeout timer for response waiting
   const startTimeoutTimer = useCallback(() => {
@@ -231,7 +232,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
           currentChannelId: data?.['channel']
         }));
         dispatch(setDataInAppInfoReducer({ subThreadId: data?.['channel'] }));
-        addHelloMessage(newMessage,data?.['channel'])
+        addHelloMessage(newMessage, data?.['channel'])
         // chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages: [newMessage], subThreadId: data?.['channel'] } })
         fetchChannels();
         if (data?.['channel']) {
@@ -244,7 +245,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
             console.error("Failed to subscribe to channels:", error);
           }
         }
- 
+
       }
     } catch (error) {
       if (isBot) {
@@ -288,11 +289,11 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       role: "user",
       chat_id: currentChatId || generateNewId(),
       content: {
-          text: textMessage,
-          attachment: images || []
+        text: textMessage,
+        attachment: images || []
       },
       timetoken: Date.now(),
-      sender_id:"user"
+      sender_id: "user"
     };
 
     // Add message to chat
