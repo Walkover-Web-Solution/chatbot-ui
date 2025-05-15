@@ -8,52 +8,57 @@ class CobrowseManager {
     }
 
     injectScript(uuid) {
-        console.log(uuid, "-0-0-0-0-0-0-0-000-0-0-");
         if (!uuid) return;
-        
+
         // Create and load the CobrowseIO script
         const script = document.createElement('script');
         script.id = 'CBParentScript';
         script.src = 'https://js.cobrowse.io/CobrowseIO.js';
         script.async = true;
-            
+
         // Set up an onload handler to configure CobrowseIO after script loads
-        script.onload = function() {
+        script.onload = function () {
             console.log("CobrowseIO script loaded successfully");
-            
+
             try {
                 // Now manually configure CobrowseIO
                 window.CobrowseIO.customData = {
                     device_id: uuid
                 };
-                
+
                 window.CobrowseIO.license = "2PmDhZR5jN6MYQ"; // Replace with your actual license key
+                window.CobrowseIO.trustedOrigins = [
+                    window.origin,
+                    "http://localhost:3001/chatbot",
+                    "https://ctest.msg91.com/chatbot",
+                    "https://blacksea.msg91.com/chatbot"
+                ]
                 
                 // Start CobrowseIO
-                window.CobrowseIO.client().then(function() {
+                window.CobrowseIO.client().then(function () {
                     window.CobrowseIO.start();
-                }).catch(function(err) {
+                }).catch(function (err) {
                     console.error("CobrowseIO client initialization error:", err);
                 });
             } catch (error) {
                 console.error("Error configuring CobrowseIO:", error);
             }
         };
-        
-        script.onerror = function() {
+
+        script.onerror = function () {
             console.error("Failed to load CobrowseIO script");
         };
-        
+
         // Add the script to the document
         document.head.appendChild(script);
         console.log("CobrowseIO script tag added to head");
     }
 
     updateDeviceId(uuid) {
-        console.log(uuid,"-=0-0-0-00")
+        console.log(uuid, "-=0-0-0-00")
         if (this.device_id !== uuid && this.scriptInjected) {
             window.CobrowseIO.customData = {
-                device_id : uuid
+                device_id: uuid
             }
         }
         this.device_id = uuid
@@ -550,7 +555,7 @@ class ChatbotEmbedManager {
         const iframeComponent = document.getElementById('iframe-component-interfaceEmbed');
         if (!iframeComponent) return;
         let encodedData = '';
-        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true, websiteUrl: window.location.href , origin:window.origin}));
+        encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true, websiteUrl: window.location.href, origin: window.origin }));
         const modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
         iframeComponent.src = modifiedUrl;
 
