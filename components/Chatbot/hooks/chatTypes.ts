@@ -42,6 +42,7 @@ export interface ChatState {
   openHelloForm: boolean;
   isToggledrawer: boolean;
   isTyping: Record<string, boolean>;
+  skip: number;
 }
 
 
@@ -70,11 +71,9 @@ export interface ReduxSetterActionType {
 }
 
 export enum ChatActionTypes {
-  SET_MESSAGES = 'SET_MESSAGES',
+
   ADD_USER_MESSAGE = 'ADD_USER_MESSAGE',
-  ADD_MESSAGE = 'ADD_MESSAGE',
   REMOVE_MESSAGES = 'REMOVE_MESSAGES',
-  ADD_ASSISTANT_WAITING_MESSAGE = 'ADD_ASSISTANT_WAITING_MESSAGE',
   UPDATE_LAST_ASSISTANT_MESSAGE = 'UPDATE_LAST_ASSISTANT_MESSAGE',
   SET_LOADING = 'SET_LOADING',
   SET_CHATS_LOADING = 'SET_CHATS_LOADING',
@@ -94,7 +93,6 @@ export enum ChatActionTypes {
   SET_NEW_MESSAGE = 'SET_NEW_MESSAGE',
   SET_OPEN_HELLO_FORM = 'SET_OPEN_HELLO_FORM',
   SET_TOGGLE_DRAWER = 'SET_TOGGLE_DRAWER',
-  SET_HELLO_MESSAGES = 'SET_HELLO_MESSAGES',
   ADD_HELLO_MESSAGE = 'ADD_HELLO_MESSAGE',
   SET_MESSAGE_TIMEOUT = 'SET_MESSAGE_TIMEOUT',
   RESET_STATE = 'RESET_STATE',
@@ -108,11 +106,8 @@ export enum ChatActionTypes {
 }
 
 export type ChatAction =
-  | { type: ChatActionTypes.SET_MESSAGES; payload: { messages: MessageType[], initial?: boolean } }
   | { type: ChatActionTypes.ADD_USER_MESSAGE; payload: { content: string; urls?: string[] } }
-  | { type: ChatActionTypes.ADD_MESSAGE; payload: MessageType }
   | { type: ChatActionTypes.REMOVE_MESSAGES; payload: { numberOfMessages: number } }
-  | { type: ChatActionTypes.ADD_ASSISTANT_WAITING_MESSAGE; payload?: { content?: string } }
   | { type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE; payload: Partial<MessageType> }
   | { type: ChatActionTypes.SET_LOADING; payload: boolean }
   | { type: ChatActionTypes.SET_CHATS_LOADING; payload: boolean }
@@ -132,7 +127,6 @@ export type ChatAction =
   | { type: ChatActionTypes.SET_NEW_MESSAGE; payload: boolean }
   | { type: ChatActionTypes.SET_OPEN_HELLO_FORM; payload: boolean }
   | { type: ChatActionTypes.SET_TOGGLE_DRAWER; payload: boolean }
-  | { type: ChatActionTypes.SET_HELLO_MESSAGES; payload: any[] }
   | { type: ChatActionTypes.ADD_HELLO_MESSAGE; payload: any, reponseType?: 'assistant' | null }
   | { type: ChatActionTypes.SET_MESSAGE_TIMEOUT }
   | { type: ChatActionTypes.RESET_STATE }
