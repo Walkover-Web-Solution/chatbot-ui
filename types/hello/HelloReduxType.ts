@@ -15,6 +15,8 @@ export interface $HelloReduxType {
   currentChatId?: string;
   greeting?: object;
   showWidgetForm?: boolean | null;
+  is_anon?: boolean;
+  agent_teams?: { teams?: Record<string, string>, agents?: Record<string, string> };
 }
 
 
