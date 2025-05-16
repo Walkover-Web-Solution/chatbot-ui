@@ -182,7 +182,7 @@ export async function saveClientDetails(clientData: any): Promise<any> {
         ...existingUserData,
         name: response?.data?.n || clientData?.n,
         email: response?.data?.e || clientData?.e,
-        number: response?.data?.p ? response?.data?.p?.replace(/^\+/, '') : (clientData?.p ? clientData?.p?.replace(/^\+/, '') : ''),
+        number: clientData?.number_without_CC,
         country_code: clientData?.country_code,
       }));
     }

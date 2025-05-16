@@ -97,6 +97,7 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
         p: formData?.number ? `${formData?.countryCode}${formData?.number}` : undefined,
         e: formData?.email,
         country_code: formData?.countryCode,
+        number_without_CC : formData?.number,
         user_data: getUserData(),
         is_anon: false,
       }
