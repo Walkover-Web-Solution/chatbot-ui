@@ -839,7 +839,7 @@ window.initChatWidget = (data, delay = 0) => {
 
 // Create chatWidget object with all widget control functions
 window.chatWidget = {
-    addUserEvent: (data) => sendMessageToChatbot({ type: "ADD_USER_EVENT_SEGMENTO", data }),
+    addUserEvent: (data) => sendMessageToChatbot({ type: "ADD_USER_EVENT_SEGMENTO", data: { ...data, websiteUrl: window.location?.href } }),
     open: () => chatbotManager.openChatbot(),
     close: () => chatbotManager.closeChatbot(),
     hide: () => {
