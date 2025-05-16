@@ -17,7 +17,8 @@ export const initialState: $HelloReduxType = {
   currentTeamId: '',
   greeting: {},
   showWidgetForm: null,
-  is_anon: false
+  is_anon: false,
+  agent_teams: { teams: {}, agents: {} }
 };
 
 export const reducers: ValidateSliceCaseReducers<
@@ -70,20 +71,21 @@ export const reducers: ValidateSliceCaseReducers<
     const payload = action.payload;
     if (payload && typeof payload === 'object') {
       Object.keys(payload).forEach(key => {
-          // This ensures we only set properties that exist in $HelloReduxType
-          (state as Record<keyof $HelloReduxType, any>)[key as keyof $HelloReduxType] =
-            payload[key as keyof $HelloReduxType];
+        // This ensures we only set properties that exist in $HelloReduxType
+        (state as Record<keyof $HelloReduxType, any>)[key as keyof $HelloReduxType] =
+          payload[key as keyof $HelloReduxType];
 
       });
     }
   },
 
   changeChannelAssigned(state, action: actionType<{ assigned_type: string, assignee_id: string, channelId?: string }>) {
-    const { assigned_type, assignee_id , channelId = state.currentChannelId } = action.payload;
+    const { assigned_type, assignee_id, channelId = state.currentChannelId } = action.payload;
     const channel = state.channelListData?.channels?.find((channel: any) => channel?.channel === channelId);
     if (channel) {
       channel.assigned_type = assigned_type;
-      channel.assignee_id = assignee_id;
+      channel.assigned_id = assignee_id;
+      channel.assigned_to = assigned_type === 'team' ? { name: state.agent_teams?.teams?.[assignee_id] } : { name: state.agent_teams?.agents?.[assignee_id] };
     }
     // Remove the return statement as we're already modifying the draft state
     // When using Immer, we should either modify the draft OR return a new state, not both
@@ -91,29 +93,53 @@ export const reducers: ValidateSliceCaseReducers<
 
   setUnReadCount(state, action: actionType<{ channelId?: string, resetCount?: boolean }>) {
     const { channelId = state.currentChannelId, resetCount = false } = action.payload;
-    
+
     if (!state.channelListData?.channels?.length) return;
-    
+
     const channelIndex = state.channelListData.channels.findIndex(
       (channel: any) => channel.channel === channelId
     );
-    
+
     if (channelIndex === -1) return;
-    
+
     const channel = state.channelListData.channels[channelIndex];
-    
+
     // Update unread count
     if (resetCount) {
       channel.widget_unread_count = 0;
     } else {
       channel.widget_unread_count = (channel.widget_unread_count || 0) + 1;
     }
-    
+
     // Always move channel to top of the list regardless of reset status
     if (channelIndex > 0) {
       // Remove channel from current position and add to beginning
       const [movedChannel] = state.channelListData.channels.splice(channelIndex, 1);
       state.channelListData.channels.unshift(movedChannel);
     }
+  },
+
+  setAgentTeams(state, action: actionType<any>) {
+    const { agents = [], teams = [] } = action.payload;
+    // Create maps for agents and teams with id as key and name as value
+    const agentsMap = agents.reduce((map: Record<string, any>, agent: any) => {
+      if (agent && agent.id) {
+        map[agent.id] = agent?.name;
+      }
+      return map;
+    }, {});
+
+    const teamsMap = teams.reduce((map: Record<string, any>, team: any) => {
+      if (team && team.id) {
+        map[team.id] = team?.name;
+      }
+      return map;
+    }, {});
+
+    // Store both maps and the original payload in agent_teams
+    state.agent_teams = {
+      agents: agentsMap,
+      teams: teamsMap
+    };
   }
 };

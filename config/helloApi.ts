@@ -113,7 +113,7 @@ export async function getAgentTeamApi(): Promise<any> {
         authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
       },
     });
-    return response?.data?.data || [];
+    return response?.data || [];
   } catch (error: any) {
     errorToast(error?.response?.data?.message || "Failed to get agent team");
     return [];

@@ -37,6 +37,24 @@ import ChatbotDrawer from "./ChatbotDrawer";
 import { MessageContext } from "./InterfaceChatbot";
 import "./InterfaceChatbot.css";
 
+
+function getAgentTeamName(state: $ReduxCoreType) {
+  const agent_teams = state.Hello?.agent_teams || {};
+  const currentChannelId = state.Hello?.currentChannelId || "";
+  const channel = state.Hello?.channelListData?.channels?.find(
+    (channel: any) => channel?.channel === currentChannelId
+  );
+  const assigned_type = channel?.assigned_type;
+  const assigned_id = channel?.assigned_id;
+  if (assigned_type === "team" && assigned_id) {
+    return agent_teams?.teams?.[assigned_id] || "";
+  } else if (assigned_type === "agent" && assigned_id) {
+    return agent_teams?.agents?.[assigned_id] || "";
+  } else {
+    return null;
+  }
+}
+
 interface ChatbotHeaderProps {
   chatbotId: string;
   preview?: boolean;
@@ -48,7 +66,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   const {
     setOptions,
     setLoading,
-    setChatsLoading,
     setToggleDrawer,
     isToggledrawer,
     threadId,
@@ -88,6 +105,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
     isHuman,
     teams,
     currentTeamId,
+    agentTeamName,
     isMobileSDK,
     voice_call_widget
   } = useCustomSelector((state: $ReduxCoreType) => {
@@ -104,6 +122,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
       allowBridgeSwitchViaProp: state?.Interface?.allowBridgeSwitch,
       teams: state.Hello?.widgetInfo?.teams || [],
       currentTeamId: state.Hello?.currentTeamId || "",
+      agentTeamName: getAgentTeamName(state),
       subThreadList:
         state.Interface?.interfaceContext?.[chatbotId]?.[
           GetSessionStorageData("bridgeName") ||
@@ -209,7 +228,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
 
   // Memoized header title section
   const HeaderTitleSection = useMemo(() => {
-    const displayTitle = chatTitle || chatbotTitle || teamName || (isHuman ? "Conversation" : "AI Assistant");
+    const displayTitle = chatTitle || chatbotTitle || (isHuman ? (agentTeamName || teamName || "Conversation")?.toString().split(' ')?.[0] : "AI Assistant");
     const displaySubtitle = chatSubTitle || chatbotSubtitle || "Do you have any questions? Ask us!";
 
     return (
@@ -235,7 +254,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
         )}
       </div>
     );
-  }, [chatIcon, chatTitle, chatbotTitle, teamName, chatSubTitle, chatbotSubtitle]);
+  }, [chatIcon, chatTitle, chatbotTitle, isHuman, teamName, chatSubTitle, chatbotSubtitle, agentTeamName]);
 
   // Memoized fullscreen toggle button
   const ScreenSizeToggleButton = useMemo(() => {
