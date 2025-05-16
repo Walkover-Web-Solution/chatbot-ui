@@ -99,7 +99,8 @@ class ChatbotEmbedManager {
             fullscreen: false,
             tempDataToSend: null,
             interfaceLoaded: false,
-            delayElapsed: false
+            delayElapsed: false,
+            domainTrackingStarted:false
         };
 
         this.initializeEventListeners();
@@ -313,6 +314,8 @@ class ChatbotEmbedManager {
     }
 
     enableDomainTracking() {
+        if(this.state.domainTrackingStarted) return
+        this.state.domainTrackingStarted = true
         sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: window?.location?.href } });
 
         (function () {
