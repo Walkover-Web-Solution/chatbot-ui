@@ -839,6 +839,9 @@ window.initChatWidget = (data, delay = 0) => {
 
 // Create chatWidget object with all widget control functions
 window.chatWidget = {
+    modifyCustomData: (data) => sendMessageToChatbot({ type: "UPDATE_COLUMNS_SEGMENTO", data: { ...data, websiteUrl: window.location?.href } }),
+    addCustomData: (data) => sendMessageToChatbot({ type: "UPDATE_COLUMNS_SEGMENTO", data: { ...data, websiteUrl: window.location?.href } }),
+    addUserEvent: (data) => sendMessageToChatbot({ type: "ADD_USER_EVENT_SEGMENTO", data }),
     open: () => chatbotManager.openChatbot(),
     close: () => chatbotManager.closeChatbot(),
     hide: () => {

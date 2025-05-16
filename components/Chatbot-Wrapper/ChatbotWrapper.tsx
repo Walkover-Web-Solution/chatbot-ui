@@ -1,5 +1,5 @@
 'use client';
-import { addDomainToHello } from "@/config/helloApi";
+import { addDomainToHello, saveClientDetails } from "@/config/helloApi";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
@@ -52,10 +52,30 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
 
   // Handle messages from parent window
   const handleMessage = useCallback((event: MessageEvent) => {
-    if (event?.data?.type !== "interfaceData" && event?.data?.type !== "helloData" && event?.data?.type !== 'parent-route-changed' && event?.data?.type !=='ADD_COBROWSE_SCRIPT') return;
-    if(event?.data?.type  === 'ADD_COBROWSE_SCRIPT'){
-        CBManger.injectScript(event?.data?.data?.origin)
+    const allowedEvents = ["interfaceData", "helloData", "parent-route-changed", "ADD_COBROWSE_SCRIPT", "UPDATE_COLUMNS_SEGMENTO", "ADD_USER_EVENT_SEGMENTO"];
+    if (!allowedEvents.includes(event?.data?.type)) return;
+
+    if (event?.data?.type === 'ADD_COBROWSE_SCRIPT') {
+      CBManger.injectScript(event?.data?.data?.origin)
     }
+
+    if (event?.data?.type === 'UPDATE_COLUMNS_SEGMENTO' && event?.data?.data) {
+      saveClientDetails(event?.data?.data)
+      return
+    }
+
+    if (event?.data?.type === 'ADD_USER_EVENT_SEGMENTO' && event?.data?.data) {
+      const { websiteUrl, ...rest } = event?.data?.data
+      addDomainToHello(websiteUrl, rest)
+      return
+    }
+
+    // Domain Tracking
+    if (event?.data?.type == 'parent-route-changed' && event?.data?.data?.websiteUrl) {
+      addDomainToHello(event?.data?.data?.websiteUrl);
+      return;
+    }
+
     if (event?.data?.type === "helloData") {
       const {
         widgetToken,
@@ -93,11 +113,11 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
 
       // 3. Update stored userData
       const { mail: clientMail, number: clientNumber, name: clientName, country_code: clientCountryCode } = JSON.parse(getLocalStorage('client') || '{}');
-      if(mail && number && name){
-        setLocalStorage('client', JSON.stringify({ mail:mail, number:number, name: name, country_code: clientCountryCode || "+91" }));
+      if (mail && number && name) {
+        setLocalStorage('client', JSON.stringify({ mail: mail, number: number, name: name, country_code: clientCountryCode || "+91" }));
         dispatch(setHelloKeysData({ showWidgetForm: false }));
-      } else{
-        setLocalStorage('client', JSON.stringify({ mail:clientMail, number:clientNumber, name: clientName, country_code: clientCountryCode || "+91" }));
+      } else {
+        setLocalStorage('client', JSON.stringify({ mail: clientMail, number: clientNumber, name: clientName, country_code: clientCountryCode || "+91" }));
       }
 
       setLocalStorage('userData', JSON.stringify({ unique_id, mail, number, user_jwt_token, name }));
@@ -132,10 +152,7 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
       dispatch(setHelloConfig(event.data.data));
       return;
     }
-    if(event?.data?.type == 'parent-route-changed' && event?.data?.data?.websiteUrl){
-      addDomainToHello(event?.data?.data?.websiteUrl);
-      return;
-    }
+
     const receivedData: InterfaceData = event.data.data;
     if (Object.keys(receivedData || {}).length === 0) return;
     // Process thread-related data
