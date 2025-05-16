@@ -1,6 +1,6 @@
 'use client';
 
-import { useMediaQuery, useTheme } from "@mui/material";
+import { lighten, useMediaQuery, useTheme } from "@mui/material";
 import { AlignLeft, ChevronRight, SquarePen, Users, X } from "lucide-react";
 import { memo, useContext, useMemo } from "react";
 import { useDispatch } from "react-redux";
@@ -223,18 +223,37 @@ const ChatbotDrawer = ({
               .map((channel: any, index: number) => (
                 <div
                   key={`${channel?._id}-${index}`}
-                  className={`conversation-card max-h-16 overflow-hidden text-ellipsis p-3 ${channel?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center`}
+                  className={`conversation-card max-h-16 h-full overflow-hidden text-ellipsis p-3 ${channel?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center`}
                   style={{
                     borderColor: channel?.id === currentChatId ? theme.palette.primary.main : ''
                   }}
                   onClick={() => handleChangeChannel(channel?.channel, channel?.id, channel?.team_id, channel?.widget_unread_count)}
                 >
-                  <div className="conversation-info flex-1 min-w-0 pr-2">
-                    <div className="conversation-name text-xs text-gray-400 break-words">
+                  <div className="w-9 h-9 flex items-center justify-center text-xs font-bold rounded-full mr-3" style={{ background: lighten(theme.palette.primary.main, 0.9), color: "#606060" }}>
+                    {(() => {
+                      if (channel?.assigned_to?.name) {
+                        const name = channel.assigned_to.name.toString() || '';
+                        const nameParts = name.split(' ');
+                        if (nameParts.length > 1) {
+                          // If there are multiple words, take first letter of first and second word
+                          return nameParts[0].charAt(0).toUpperCase() + nameParts[1].charAt(0).toUpperCase();
+                        } else {
+                          // If there's only one word, take first two letters
+                          return name.length > 1 ?
+                            name.charAt(0).toUpperCase() + name.charAt(1).toUpperCase() :
+                            name.charAt(0).toUpperCase();
+                        }
+                      } else {
+                        return "A";
+                      }
+                    })()}
+                  </div>
+                  <div className="conversation-info flex-1 min-w-0 pr-1">
+                    {/* <div className="conversation-name text-xs text-gray-400 break-words mb-1">
                       Conversation
-                    </div>
+                    </div> */}
                     {channel?.channel && allMessages && allMessagesData && (
-                      <div className="last-message text-sm text-black font-medium mt-1 truncate flex flex-row items-center gap-1 text-ellipsis overflow-hidden">
+                      <div className="last-message text-sm text-black font-medium truncate flex flex-row items-center gap-1 text-ellipsis overflow-hidden">
                         {(() => {
                           const channelMessages = allMessages[channel?.channel];
                           if (channelMessages && channelMessages?.length > 0) {
@@ -307,7 +326,7 @@ const ChatbotDrawer = ({
               {teamsList.map((team: any, index: number) => (
                 <div
                   key={`${team?.id}-${index}`}
-                  className={`team-card p-3 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer rounded-lg flex items-center justify-between ${currentTeamId === team?.id ? '' : ''}`}
+                  className={`team-card p-3 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer rounded-lg flex items-center justify-between`}
                   onClick={() => handleChangeTeam(team?.id)}
                 >
                   <div className="flex items-center overflow-hidden">
