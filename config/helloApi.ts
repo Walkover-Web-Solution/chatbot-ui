@@ -395,7 +395,7 @@ export async function getCallToken(): Promise<any> {
 }
 
 // Function to add domain to Hello chat
-export async function addDomainToHello(domain?: string): Promise<any> {
+export async function addDomainToHello(domain?: string,userEvent = {}): Promise<any> {
   const { mail, number, user_jwt_token, unique_id, name } = JSON.parse(getLocalStorage('userData') || '{}');
   try {
     const response = await axios.put(
@@ -407,7 +407,8 @@ export async function addDomainToHello(domain?: string): Promise<any> {
           unique_id: unique_id,
           user_jwt_token: user_jwt_token,
           number: number,
-          name: name
+          name: name,
+          ...userEvent
         },
         is_anon: getLocalStorage("is_anon") == 'true'
       },
