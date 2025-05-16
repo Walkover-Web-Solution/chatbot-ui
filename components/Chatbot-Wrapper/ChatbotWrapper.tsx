@@ -1,6 +1,7 @@
 'use client';
-import { addDomainToHello, saveClientDetails } from "@/config/helloApi";
+import { addDomainToHello } from "@/config/helloApi";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
+import { CBManger } from "@/hooks/coBrowser/CBManger";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
 import {
@@ -17,7 +18,6 @@ import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Chatbot from "../Chatbot/Chatbot";
-import { CBManger } from "@/hooks/coBrowser/CBManger";
 
 interface InterfaceData {
   threadId?: string | null;

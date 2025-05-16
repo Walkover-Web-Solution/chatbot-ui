@@ -1,4 +1,4 @@
-import { saveClientDetails } from "@/config/helloApi";
+import { getUserData, saveClientDetails } from "@/config/helloApi";
 import { setHelloKeysData } from "@/store/hello/helloSlice";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
@@ -97,7 +97,7 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
         p: formData?.number ? `${formData?.countryCode}${formData?.number}` : undefined,
         e: formData?.email,
         country_code: formData?.countryCode,
-        user_data: {},
+        user_data: getUserData(),
         is_anon: false,
       }
 
