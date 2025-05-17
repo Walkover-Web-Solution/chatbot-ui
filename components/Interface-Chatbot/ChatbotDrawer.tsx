@@ -6,7 +6,6 @@ import { memo, useContext, useMemo } from "react";
 import { useDispatch } from "react-redux";
 
 // API and Services
-import { createNewThreadApi } from "@/config/api";
 import { deleteReadReceipt } from "@/config/helloApi";
 import helloVoiceService from "../Chatbot/hooks/HelloVoiceService";
 
@@ -101,21 +100,25 @@ const ChatbotDrawer = ({
   // Handlers
   const handleCreateNewSubThread = async () => {
     if (preview) return;
-
-    const result = await createNewThreadApi({
-      threadId: reduxThreadId,
-      subThreadId: createRandomId(),
-    });
-
-    if (result?.success) {
+    if (subThreadList.find(thread => thread.display_name === "New Chat")) {
+      return;
+    }
+    const newThreadData  = {
+        sub_thread_id: createRandomId(),
+        thread_id: reduxThreadId,
+        display_name: "New Chat"
+    }
+    if (!subThreadList.find(thread => thread.displayName === "New Chat")) {
       dispatch(
         setThreads({
-          newThreadData: result?.thread,
+          newThreadData,
           bridgeName: GetSessionStorageData("bridgeName") || reduxBridgeName,
           threadId: reduxThreadId,
         })
+
       );
       setOptions([]);
+    
     }
   };
 

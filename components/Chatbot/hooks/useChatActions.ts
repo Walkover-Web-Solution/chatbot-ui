@@ -33,6 +33,11 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         variables: state.Interface?.interfaceContext?.[chatbotId]?.variables,
         selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null,
         userId: state.appInfo.userId || null,
+        
+    }))
+    const { threadList } = useCustomSelector((state: $ReduxCoreType) => ({
+        threadList: state.Interface?.interfaceContext?.[chatbotId]?.[bridgeName]?.threadList
+        
     }))
 
     useEffect(() => {
@@ -40,6 +45,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
     }, [threadId, bridgeName]);
 
     useEffect(() => {
+        if(!Object.values(threadList || {}).flat().some((thread: {display_name: string}) => thread.display_name === 'New Chat' && thread?.subThread_id === subThreadId))
         getIntialChatHistory();
     }, [threadId, bridgeName, subThreadId]);
 
@@ -152,6 +158,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload: true })
         const textMessage = message || (messageRef?.current as HTMLInputElement)?.value;
         const imageUrls = Array.isArray(chatState.images) && chatState?.images?.length ? chatState?.images : []; // Assuming imageUrls is an empty array or you can replace it with the actual value
+
         if (!textMessage && imageUrls.length === 0) return;
         if (messageRef.current) {
             messageRef.current.value = "";
@@ -187,6 +194,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             threadId: customThreadId || threadId,
             subThreadId: subThreadId,
             slugName: customBridgeSlug || bridgeName,
+            thread_flag : Object.values(threadList || {}).flat().some((thread: {display_name: string}) => thread.display_name === 'New Chat') ? true : false,
             chatBotId: chatbotId,
             version_id: chatState.bridgeVersionId === "null" ? null : chatState.bridgeVersionId,
             ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {

@@ -153,7 +153,21 @@ export const reducers: ValidateSliceCaseReducers<
         });
         state.subThreadId = threadId;
       }
-    } else {
+    }
+    else if (updatedInterfaceContext[chatbotId][bridgeName].threadList[threadId].find(
+      (thread: any) => thread.sub_thread_id === threadData?.sub_thread_id
+    )) {
+      const existingThreadIndex = updatedInterfaceContext[chatbotId][bridgeName].threadList[threadId]
+        .findIndex((thread: any) => thread.sub_thread_id === threadData?.sub_thread_id);
+      
+      if (existingThreadIndex !== -1) {
+        updatedInterfaceContext[chatbotId][bridgeName].threadList[threadId][existingThreadIndex] = {
+          ...updatedInterfaceContext[chatbotId][bridgeName].threadList[threadId][existingThreadIndex],
+          ...threadData
+        };
+      }
+    }
+     else {
       // Otherwise, push the new threadData to the thread list
       updatedInterfaceContext[chatbotId][bridgeName].threadList[
         threadId
