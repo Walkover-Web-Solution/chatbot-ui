@@ -142,17 +142,18 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   // Handler for creating a new thread
   const handleCreateNewSubThread = async () => {
     if (preview) return;
-    if (subThreadList.find(thread => thread.display_name === "New Chat")) {
+    if (subThreadList?.[0]?.newChat){
       return;
     }
 
     const newThreadData  = {
       sub_thread_id: createRandomId(),
       thread_id: threadId,
-      display_name: "New Chat"
+      display_name: "New Chat",
+      newChat : true
   }
 
-    if (!subThreadList.find(thread => thread.displayName === "New Chat")) {
+    if (!subThreadList?.[0]?.newChat) {
       dispatch(
         setThreads({
           newThreadData,

@@ -35,17 +35,17 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         userId: state.appInfo.userId || null,
         
     }))
-    const { threadList } = useCustomSelector((state: $ReduxCoreType) => ({
-        threadList: state.Interface?.interfaceContext?.[chatbotId]?.[bridgeName]?.threadList
-        
+    const { firstThread } = useCustomSelector((state: $ReduxCoreType) => ({
+        firstThread: state.Interface?.interfaceContext?.[chatbotId]?.[bridgeName]?.threadList?.[threadId]?.[0]
     }))
+    console.log(firstThread)
 
     useEffect(() => {
         fetchAllThreads()
     }, [threadId, bridgeName]);
 
     useEffect(() => {
-        if(!Object.values(threadList || {}).flat().some((thread: {display_name: string}) => thread.display_name === 'New Chat' && thread?.subThread_id === subThreadId))
+       if(!(firstThread?.newChat && firstThread?.subThread_id === subThreadId))
         getIntialChatHistory();
     }, [threadId, bridgeName, subThreadId]);
 
@@ -194,7 +194,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             threadId: customThreadId || threadId,
             subThreadId: subThreadId,
             slugName: customBridgeSlug || bridgeName,
-            thread_flag : Object.values(threadList || {}).flat().some((thread: {display_name: string}) => thread.display_name === 'New Chat') ? true : false,
+            thread_flag : (firstThread?.newChat && firstThread?.sub_thread_id === subThreadId)  ? true : false,
             chatBotId: chatbotId,
             version_id: chatState.bridgeVersionId === "null" ? null : chatState.bridgeVersionId,
             ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {
