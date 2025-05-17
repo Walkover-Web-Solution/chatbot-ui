@@ -153,11 +153,17 @@ export const reducers: ValidateSliceCaseReducers<
         });
         state.subThreadId = threadId;
       }
-    } else {
+    }
+    else if(updatedInterfaceContext[chatbotId][bridgeName].threadList[threadId][0]?.sub_thread_id === threadData?.sub_thread_id) {
+      updatedInterfaceContext[chatbotId][bridgeName].threadList[threadId][0] = {
+        ...threadData
+      };
+    }
+     else {
       // Otherwise, push the new threadData to the thread list
       updatedInterfaceContext[chatbotId][bridgeName].threadList[
         threadId
-      ].push(threadData);
+      ].unshift(threadData);
       state.subThreadId = threadData?.sub_thread_id || ""; // Store in reducer state
     }
 
