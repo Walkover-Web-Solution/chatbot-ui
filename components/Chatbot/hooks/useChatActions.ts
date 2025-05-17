@@ -38,8 +38,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
     const { firstThread } = useCustomSelector((state: $ReduxCoreType) => ({
         firstThread: state.Interface?.interfaceContext?.[chatbotId]?.[bridgeName]?.threadList?.[threadId]?.[0]
     }))
-    console.log(firstThread)
-
+    
     useEffect(() => {
         fetchAllThreads()
     }, [threadId, bridgeName]);
