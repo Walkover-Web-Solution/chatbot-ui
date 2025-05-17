@@ -1,8 +1,9 @@
 import { Button, ButtonProps } from "@mui/material";
-import React from "react";
+import React, { useContext } from "react";
 import { ParamsEnums } from "@/utils/enums";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { perFormAction } from "@/utils/ChatbotUtility";
+import { MessageContext } from "../Interface-Chatbot/InterfaceChatbot";
 
 interface InterfaceButtonProps {
   props: ButtonProps | any;
@@ -16,6 +17,7 @@ interface InterfaceButtonProps {
 
 function InterfaceButton({ props, action }: InterfaceButtonProps): JSX.Element {
   delete props?.action;
+  const { sendMessage } = useContext(MessageContext);
   const validColors = ["default", "inherit", "primary", "secondary"];
   // If the color is valid, use it; otherwise, default to 'default'
   if (props.color) {
@@ -23,7 +25,7 @@ function InterfaceButton({ props, action }: InterfaceButtonProps): JSX.Element {
   }
   const handleOnClick = () => {
     // if (action?.actionId) {
-    perFormAction(action);
+    perFormAction(action, sendMessage);
     // }
   };
 
