@@ -1,14 +1,16 @@
+import { generateNewId } from "../utilities";
+
 function convertChatHistoryToGenericFormat(history: any, isHello: boolean = false) {
     switch (isHello) {
         case true:
             return history
                 .map((chat: any) => {
                     let role;
-                    if(chat?.message?.chat_id){
-                        role ='user'
-                    }else if(chat?.message?.sender_id === 'workflow' || chat?.message?.sender_id === 'bot' || chat?.message?.is_auto_response){
+                    if (chat?.message?.chat_id) {
+                        role = 'user'
+                    } else if (chat?.message?.sender_id === 'workflow' || chat?.message?.sender_id === 'bot' || chat?.message?.is_auto_response) {
                         role = "Bot"
-                    }else{
+                    } else {
                         role = "Human"
                     }
 
@@ -22,7 +24,8 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                             token: chat?.message?.token,
                             dynamic_values: chat?.message?.dynamic_values,
                             chat_id: chat?.message?.chat_id,
-                            channel: chat?.message?.channel
+                            channel: chat?.message?.channel,
+                            time: chat?.timetoken || null
                         };
                     }
 
@@ -35,10 +38,11 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                             : chat?.message?.content?.text,
                         urls: chat?.message?.content?.attachment,
                         message_type: chat?.message?.message_type,
-                        messageJson: chat?.message?.content
+                        messageJson: chat?.message?.content,
+                        time: chat?.timetoken
                     };
                 })
-                .reverse();
+                // .reverse();
 
         case false:
             return (Array.isArray(history) ? history : []).map((msgObj: any) => {
@@ -68,30 +72,50 @@ function createSendMessageHelloPayload(message: string) {
 }
 
 function convertEventMessageToGenericFormat(message: any, isHello: boolean = false) {
+
+
+    if(!isHello){
+        return [{
+            ...message,
+            id: message?.Id || generateNewId(),
+            content: message?.content,
+            role: message?.role,
+            createdAt: message?.createdAt,
+            function: message?.function,
+            tools_call_data: message?.tools_call_data,
+            created_at: message?.created_at,
+            error: message?.error,
+            urls: message?.urls
+        }]
+    }
+
+
     const { sender_id, from_name, content, type } = message || {};
     // Handle feedback type messages    
     if (type === 'feedback') {
         return [{
             role: "Human",
-            from_name:message?.dynamic_values?.agent_name,
+            from_name: message?.dynamic_values?.agent_name,
             id: message?.timetoken || message?.id,
             message_type: 'feedback',
             token: message?.token,
             dynamic_values: message?.dynamic_values,
             chat_id: message?.chat_id,
-            channel: message?.channel
+            channel: message?.channel,
+            time: message?.timetoken || null
         }];
     }
 
     // Handle regular messages
     return [{
-        role: (sender_id === "bot" || sender_id === "workflow") ? "Bot" : "Human",
+        role: (sender_id === "bot" || sender_id === "workflow") ? "Bot" : sender_id === "user" ? "user" : "Human",
         from_name,
         content: content?.body?.text || content?.text,
         urls: content?.body?.attachment || content?.attachment,
-        id: message?.id,
+        id: message?.timetoken || message?.id,
         message_type: message?.message_type,
-        messageJson: message?.content
+        messageJson: message?.content,
+        time: message?.timetoken || null
     }];
 }
 
@@ -101,10 +125,7 @@ function createSendMessageGtwyPayload(message: string) {
     };
 }
 
-
-
 export {
     convertChatHistoryToGenericFormat,
     convertEventMessageToGenericFormat, createSendMessageGtwyPayload, createSendMessageHelloPayload
 };
-

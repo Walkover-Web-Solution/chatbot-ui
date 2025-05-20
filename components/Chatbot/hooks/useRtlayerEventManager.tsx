@@ -1,12 +1,40 @@
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect } from 'react';
 import WebSocketClient from 'rtlayer-client';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
+import { ChatbotContext } from '@/components/context';
+import { generateNewId } from '@/utils/utilities';
 
-const client = WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
+// Create a separate hook to manage the WebSocket client instance
+function useWebSocketClient(isHelloUser: boolean) {
+  const [client, setClient] = React.useState(null);
+  // Only create the WebSocket client when needed
+  React.useEffect(() => {
+    if (!isHelloUser) {
+      // Only initialize the client when it's not a human
+      const newClient = WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
+      setClient(newClient)
+
+      // Clean up the WebSocket connection when the component unmounts
+      return () => {
+        // Add any cleanup code for your WebSocket client if needed
+        if (newClient && typeof newClient.close === 'function') {
+          newClient.close();
+        }
+      };
+    }
+  }, [isHelloUser]);
+
+  return client;
+}
 
 function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) {
+  const { isHelloUser } = useContext(ChatbotContext)
+  if (isHelloUser) {
+    return null
+  }
+  const client = useWebSocketClient(isHelloUser);
   const { threadId, subThreadId } = chatState
   const { userId } = useCustomSelector((state: $ReduxCoreType) => ({ userId: state.appInfo.userId }))
 
@@ -24,17 +52,17 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
     switch (true) {
       // Case: Function call is present without a message
       case function_call && !responseMessage:
-        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Function Calling", Name: parsedMessage?.response?.Name || [] } });
+        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Function Calling", Name: parsedMessage?.response?.Name || [] , id:generateNewId()} });
         break;
 
       // Case: Function call is present with a message
       case function_call && !!responseMessage:
-        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Talking with AI" } });
+        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Talking with AI" ,id:generateNewId()} });
         break;
-
+ 
       // Case: Error is present without response data
       case !data && !!parsedMessage?.error:
-        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", content: `${parsedMessage?.error || error || "Error while talking to AI"}` } });
+        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", content: `${parsedMessage?.error || error || "Error while talking to AI"}` ,id:generateNewId()} });
         chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: false });
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
         break;
@@ -42,10 +70,12 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
       // Case: Reset role is present without mode
       case data?.role === "reset" && !data?.mode:
         chatDispatch({
-          type: ChatActionTypes.ADD_MESSAGE, payload: {
-            role: "reset",
-            mode: data?.mode,
-            content: "Resetting the chat",
+          type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: {
+            message:{
+              role: "reset",
+              mode: data?.mode,
+              content: "Resetting the chat",
+            }
           }
         })
         break;
@@ -76,6 +106,7 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
   }, []);
 
   useEffect(() => {
+    if (!client) return;
     const newChannelId = (
       chatbotId +
       (threadId || userId) +

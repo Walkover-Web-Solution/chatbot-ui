@@ -1,4 +1,4 @@
-// React and Next.js imports
+
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 // MUI Components
@@ -20,17 +20,15 @@ function MessageList() {
     hasMoreMessages = false,
     newMessage,
     getMoreChats,
+    getMoreHelloChats,
     messageIds = [],
     msgIdAndDataMap = {},
     loading,
     setNewMessage
   } = useContext(MessageContext);
 
-  const containerRef = useRef(null);
+  const scrollableDivRef = useRef(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [isAtBottom, setIsAtBottom] = useState(true);
-  const lastScrollHeightRef = useRef(0);
-  const prevMessagesLengthRef = useRef(0);
 
   const { IsHuman, assigned_type, currentChannelId, greetingMessage } = useCustomSelector((state: $ReduxCoreType) => ({
     IsHuman: state.Hello?.isHuman,
@@ -46,34 +44,35 @@ function MessageList() {
     "--primary-main": lighten(theme.palette.secondary.main, 0.4),
   };
 
-  const moveToDown = useCallback(() => {
-    const messageContainer = document.getElementById("message-container");
-    if (!messageContainer) return;
-
-    messageContainer.scrollTo({
-      top: messageContainer.scrollHeight,
-      behavior: 'smooth'
-    });
-    setIsAtBottom(true);
-  }, []);
-
-  const handleScroll = useCallback(() => {
-    const messageContainer = document.getElementById("message-container");
-    if (!messageContainer) return;
-
-    const { scrollTop, scrollHeight, clientHeight } = messageContainer;
-    const isBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 50;
-
-    setIsAtBottom(isBottom);
-    setShowScrollButton(!isBottom);
-
-    // Load more messages when scrolled to top
-    if (scrollTop < 100 && hasMoreMessages) {
-      // Save current scroll height before loading more
-      lastScrollHeightRef.current = scrollHeight;
+  const fetchMoreData = useCallback(() => {
+    if (IsHuman) {
+      getMoreHelloChats();
+    } else {
       getMoreChats();
     }
-  }, [hasMoreMessages, getMoreChats]);
+  }, [IsHuman, getMoreHelloChats, getMoreChats]);
+
+  const moveToDown = useCallback(() => {
+    if (scrollableDivRef.current) {
+      scrollableDivRef.current.scrollTo({
+        top: scrollableDivRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+      setShowScrollButton(false);
+    }
+  }, []);
+
+  const handleScroll = useCallback((e) => {
+    const { scrollTop } = e.target;
+
+    // In inverse scroll, scrollTop === 0 means you're at the bottom
+    // scrollTop becomes more negative as you scroll up
+    const buffer = -500; // buffer zone: only show button if user scrolled > 500px up
+
+    const isNearBottom = scrollTop > buffer;
+
+    setShowScrollButton(!isNearBottom);
+  }, []);
 
   // Handle new message and scroll to bottom
   useEffect(() => {
@@ -83,48 +82,7 @@ function MessageList() {
     }
   }, [newMessage, moveToDown, setNewMessage]);
 
-  // Initial scroll to bottom when messages first load
-  useEffect(() => {
-    const isInitialLoad = messageIds.length > 0 && prevMessagesLengthRef.current === 0;
-    if (isInitialLoad || newMessage) {
-      setTimeout(moveToDown, 100);
-    }
-  }, [messageIds.length, moveToDown, newMessage]);
-
-  // Handle new messages vs pagination
-  useEffect(() => {
-    const messageContainer = document.getElementById("message-container");
-    if (!messageContainer) return;
-
-    const messagesWereAdded = messageIds.length > prevMessagesLengthRef.current;
-
-    if (messagesWereAdded) {
-      if (isAtBottom) {
-        // New messages at the end
-        setTimeout(moveToDown, 100);
-      } else if (lastScrollHeightRef.current > 0) {
-        // Messages added at the beginning (pagination)
-        const newScrollHeight = messageContainer.scrollHeight;
-        const heightDifference = newScrollHeight - lastScrollHeightRef.current;
-
-        if (heightDifference > 0) {
-          messageContainer.scrollTop = heightDifference;
-        }
-      }
-    }
-
-    prevMessagesLengthRef.current = messageIds.length;
-  }, [messageIds.length, moveToDown, isAtBottom]);
-
-  // Set up scroll event listener
-  useEffect(() => {
-    const messageContainer = document.getElementById("message-container");
-    if (!messageContainer) return;
-
-    messageContainer.addEventListener("scroll", handleScroll);
-    return () => messageContainer.removeEventListener("scroll", handleScroll);
-  }, [handleScroll]);
-
+  // this is the greeting message that is shown when the user first opens the chat
   const renderGreetingMessage = useMemo(() => {
     if (!IsHuman || !greetingMessage ||
       (!greetingMessage.text && !greetingMessage?.options?.length)) {
@@ -174,36 +132,56 @@ function MessageList() {
     return null
   }, [IsHuman, loading, assigned_type, currentChannelId, themePalette]);
 
-
   const renderedMessages = useMemo(() => {
-    return messageIds.map((msgId, index) => (
-      <Message
-        key={`${msgId}-${index}`}
-        message={msgIdAndDataMap[msgId]}
-      />
-    ));
+    return messageIds.map((msgId, index) => {
+      const prevTime = messageIds[index + 1] && msgIdAndDataMap[messageIds[index + 1]]
+        ? msgIdAndDataMap[messageIds[index + 1]]?.time || null
+        : null;
+      return (
+        <Message
+          key={`${msgId}`}
+          message={msgIdAndDataMap[msgId]}
+          prevTime={prevTime}
+        />
+      );
+    });
   }, [messageIds, msgIdAndDataMap]);
 
+  const Loader = () => (
+    <div className="flex justify-center p-4">
+      <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+
   return (
-    <div>
-      <div
-        ref={containerRef}
-        id="scrollableDiv"
-        className="h-full overflow-y-auto flex flex-col p-3 sm:p-4 w-full"
+    <div
+      id="scrollableDiv"
+      ref={scrollableDivRef}
+      onScroll={handleScroll}
+      className="w-full h-full flex-1 overflow-auto p-3 sm:p-4"
+      style={{
+        display: 'flex',
+        flexDirection: 'column-reverse',
+        minHeight: 0 // Important for flex child to properly scroll
+      }}
+    >
+      <InfiniteScroll
+        dataLength={messageIds.length}
+        next={fetchMoreData}
+        hasMore={hasMoreMessages}
+        loader={<Loader />}
+        scrollableTarget="scrollableDiv"
+        scrollThreshold='200px'
+        inverse={true}
+        style={{
+          display: 'flex',
+          flexDirection: 'column-reverse'
+        }}
       >
-        <InfiniteScroll
-          dataLength={messageIds.length}
-          next={getMoreChats}
-          hasMore={hasMoreMessages}
-          inverse={true}
-          scrollableTarget="message-container"
-          scrollThreshold="200px"
-        >
-          {renderGreetingMessage}
-          {renderedMessages}
-          {renderThinkingIndicator}
-        </InfiniteScroll>
-      </div>
+        {renderThinkingIndicator}
+        {renderedMessages}
+        {renderGreetingMessage}
+      </InfiniteScroll>
       <MoveToDownButton
         movetoDown={moveToDown}
         showScrollButton={showScrollButton}
@@ -211,6 +189,7 @@ function MessageList() {
       />
     </div>
   );
+
 }
 
 export default MessageList;

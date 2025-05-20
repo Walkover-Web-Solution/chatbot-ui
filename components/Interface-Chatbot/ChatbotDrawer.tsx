@@ -1,6 +1,6 @@
 'use client';
 
-import { useMediaQuery, useTheme } from "@mui/material";
+import { lighten, useMediaQuery, useTheme } from "@mui/material";
 import { AlignLeft, ChevronRight, SquarePen, Users, X } from "lucide-react";
 import { memo, useContext, useMemo } from "react";
 import { useDispatch } from "react-redux";
@@ -223,22 +223,41 @@ const ChatbotDrawer = ({
               .map((channel: any, index: number) => (
                 <div
                   key={`${channel?._id}-${index}`}
-                  className={`conversation-card max-h-16 overflow-hidden text-ellipsis p-3 ${channel?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center`}
+                  className={`conversation-card max-h-16 h-full overflow-hidden text-ellipsis p-3 ${channel?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center`}
                   style={{
                     borderColor: channel?.id === currentChatId ? theme.palette.primary.main : ''
                   }}
                   onClick={() => handleChangeChannel(channel?.channel, channel?.id, channel?.team_id, channel?.widget_unread_count)}
                 >
-                  <div className="conversation-info flex-1 min-w-0 pr-2">
-                    <div className="conversation-name text-xs text-gray-400 break-words">
+                  <div className="w-9 h-9 flex items-center justify-center text-xs font-bold rounded-full mr-3" style={{ background: lighten(theme.palette.primary.main, 0.9), color: "#606060" }}>
+                    {(() => {
+                      if (channel?.assigned_to?.name) {
+                        const name = channel.assigned_to.name.toString() || '';
+                        const nameParts = name.split(' ');
+                        if (nameParts.length > 1) {
+                          // If there are multiple words, take first letter of first and second word
+                          return nameParts[0].charAt(0).toUpperCase() + nameParts[1].charAt(0).toUpperCase();
+                        } else {
+                          // If there's only one word, take first two letters
+                          return name.length > 1 ?
+                            name.charAt(0).toUpperCase() + name.charAt(1).toUpperCase() :
+                            name.charAt(0).toUpperCase();
+                        }
+                      } else {
+                        return "A";
+                      }
+                    })()}
+                  </div>
+                  <div className="conversation-info flex-1 min-w-0 pr-1">
+                    {/* <div className="conversation-name text-xs text-gray-400 break-words mb-1">
                       Conversation
-                    </div>
+                    </div> */}
                     {channel?.channel && allMessages && allMessagesData && (
-                      <div className="last-message text-sm text-black font-medium mt-1 truncate flex flex-row items-center gap-1 text-ellipsis overflow-hidden">
+                      <div className="last-message text-sm text-black font-medium truncate flex flex-row items-center gap-1 text-ellipsis overflow-hidden">
                         {(() => {
                           const channelMessages = allMessages[channel?.channel];
                           if (channelMessages && channelMessages?.length > 0) {
-                            const lastMessageId = channelMessages[channelMessages?.length - 1];
+                            const lastMessageId = channelMessages[0];
                             const lastMessage = allMessagesData[channel?.channel]?.[lastMessageId];
                             if (lastMessage) {
                               const isUserMessage = lastMessage?.role == "user";
@@ -246,10 +265,12 @@ const ChatbotDrawer = ({
                                 <>
                                   {isUserMessage ? "You: " : "Sender: "}
                                   <div className="line-clamp-1" dangerouslySetInnerHTML={{
-                                    __html: lastMessage.messageJson?.text ||
-                                      (lastMessage.messageJson?.attachment?.length > 0 ? "Attachment" :
-                                        lastMessage.messageJson?.message_type ||
-                                        "New conversation")
+                                    __html: lastMessage?.message_type === 'pushNotification'
+                                      ? "Custom Notification"
+                                      : (lastMessage.messageJson?.text ||
+                                        (lastMessage.messageJson?.attachment?.length > 0 ? "Attachment" :
+                                          lastMessage.messageJson?.message_type ||
+                                          "New conversation"))
                                   }}></div>
                                 </>
                               );
@@ -305,7 +326,7 @@ const ChatbotDrawer = ({
               {teamsList.map((team: any, index: number) => (
                 <div
                   key={`${team?.id}-${index}`}
-                  className={`team-card p-3 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer rounded-lg flex items-center justify-between ${currentTeamId === team?.id ? '' : ''}`}
+                  className={`team-card p-3 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer rounded-lg flex items-center justify-between`}
                   onClick={() => handleChangeTeam(team?.id)}
                 >
                   <div className="flex items-center overflow-hidden">
@@ -391,41 +412,60 @@ const ChatbotDrawer = ({
       )}
 
       <div className={`drawer-side ${isHuman && isSmallScreen ? '100%' : 'max-w-[286px]'} ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
-        <div className="p-4 w-full min-h-full text-base-content relative bg-base-200 border-r-base-300 border overflow-hidden">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10">
-              {isToggledrawer && (
-                <button
-                  className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-                  onClick={() => closeToggleDrawer(!isToggledrawer)}
-                >
-                  <AlignLeft size={22} color="#555555" />
-                </button>
-              )}
-            </div>
-            <div className="flex flex-col items-center justify-center flex-1">
-              <h2 className="text-lg font-bold text-center">
-                {Name ? `Hello ${Name.split(' ')[0]}` : 'Hello There!'}
-              </h2>
-              {tagline && Name && (
-                <p className="text-xs text-gray-500 text-center">{tagline}</p>
-              )}
-            </div>
-            <div className="w-10 flex items-center justify-end">
-              {isToggledrawer && !isHuman && (
-                <div className="tooltip tooltip-bottom z-[9999]" data-tip="New Chat">
+        <div className="w-full h-full text-base-content relative bg-base-200 border-r-base-300 border flex flex-col">
+          {/* Header with padding */}
+          <div className="px-4 pt-4 pb-4">
+            <div className="flex items-center justify-between">
+              <div className="w-10">
+                {isToggledrawer && (
                   <button
                     className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-                    onClick={handleCreateNewSubThread}
+                    onClick={() => closeToggleDrawer(!isToggledrawer)}
                   >
-                    <SquarePen size={22} color="#555555" />
+                    <AlignLeft size={22} color="#555555" />
                   </button>
-                </div>
-              )}
-              {isHuman && CloseButton}
+                )}
+              </div>
+              <div className="flex flex-col items-center justify-center flex-1">
+                <h2 className="text-lg font-bold text-center">
+                  {Name ? `Hello ${Name.split(' ')[0]}` : 'Hello There!'}
+                </h2>
+                {tagline && Name && (
+                  <p className="text-xs text-gray-500 text-center">{tagline}</p>
+                )}
+              </div>
+              <div className="w-10 flex items-center justify-end">
+                {isToggledrawer && !isHuman && (
+                  <div className="tooltip tooltip-bottom z-[9999]" data-tip="New Chat">
+                    <button
+                      className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                      onClick={handleCreateNewSubThread}
+                    >
+                      <SquarePen size={22} color="#555555" />
+                    </button>
+                  </div>
+                )}
+                {isHuman && CloseButton}
+              </div>
             </div>
           </div>
-          {!isHuman ? DrawerList : TeamsList}
+
+          {/* Content area with overflow handling - the scrollbar will appear at the edge */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="px-4">
+              {!isHuman ? DrawerList : TeamsList}
+            </div>
+          </div>
+
+          {/* Footer with branding - always stays at bottom */}
+          <div className="px-4 pt-2 pb-2 flex items-center justify-center mt-auto">
+            <div className="text-xs text-gray-500 flex items-baseline gap-1">
+              Powered by
+              {isHuman ? <a href="https://msg91.com" target="_blank" rel="noopener noreferrer" className="flex hover:opacity-80 transition-opacity ml-1">
+                <img src="/msg91-logo.svg" alt="MSG91" className="h-4" />
+              </a> : <a href="https://gtwy.ai" target="_blank" rel="noopener noreferrer" className="flex hover:opacity-80 transition-opacity"><span className="font-bold">GTWY</span></a>}
+            </div>
+          </div>
         </div>
       </div>
     </div>

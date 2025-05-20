@@ -9,7 +9,10 @@ import { ChatActionTypes } from './hooks/chatTypes';
 import { useChatActions } from './hooks/useChatActions';
 import useHelloIntegration from './hooks/useHelloIntegration';
 import { useReduxStateManagement } from './hooks/useReduxManagement';
-import useRtlayerEventManager from './hooks/useRtlayerEventManager';
+import dynamic from 'next/dynamic';
+const useRtlayerEventManager = dynamic(() => import('./hooks/useRtlayerEventManager'), { ssr: false });
+
+
 
 // Components
 import FormComponent from '../FormComponent';
@@ -24,9 +27,9 @@ import StarterQuestions from '../Interface-Chatbot/Messages/StarterQuestions';
 // Utils
 import { ChatBotGif } from '@/assests/assestsIndex';
 import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
-import { ParamsEnums } from '@/utils/enums';
-import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { $ReduxCoreType } from '@/types/reduxCore';
+import { useCustomSelector } from '@/utils/deepCheckSelector';
+import { ParamsEnums } from '@/utils/enums';
 
 interface ChatbotProps {
   chatbotId: string;
@@ -53,7 +56,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
   } = chatState;
 
   // Custom hooks
-  const { sendMessageToHello, fetchHelloPreviousHistory, fetchChannels } =
+  const { sendMessageToHello, fetchHelloPreviousHistory, fetchChannels, getMoreHelloChats } =
     useHelloIntegration({
       chatbotId,
       chatDispatch,
@@ -67,11 +70,12 @@ function Chatbot({ chatbotId }: ChatbotProps) {
       chatDispatch
     });
 
-  const { show_widget_form, is_anon } = useCustomSelector((state: $ReduxCoreType) => {
+  const { show_widget_form, is_anon, greetingMessage } = useCustomSelector((state: $ReduxCoreType) => {
     const helloConfig = state.Hello?.helloConfig
     return ({
       show_widget_form: typeof helloConfig?.show_widget_form === 'boolean' ? helloConfig?.show_widget_form : state.Hello?.widgetInfo?.show_widget_form,
-      is_anon: state.Hello?.is_anon == 'true'
+      is_anon: state.Hello?.is_anon == 'true',
+      greetingMessage: state.Hello?.greeting
     })
   });
 
@@ -84,7 +88,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
   });
 
   // Initialize RTLayer event listeners
-  useRtlayerEventManager({
+  !IsHuman && useRtlayerEventManager({
     chatbotId,
     chatDispatch,
     chatState,
@@ -126,19 +130,21 @@ function Chatbot({ chatbotId }: ChatbotProps) {
     isSmallScreen,
     isTyping: isTyping?.[subThreadId],
     fetchChannels,
+    getMoreHelloChats,
     ...chatActions
   };
 
   // Check if chat is empty
   const isChatEmpty = IsHuman
-    ? helloMsgIds[subThreadId]?.length === 0
-    : messageIds[subThreadId]?.length === 0;
+    ? (!subThreadId || helloMsgIds[subThreadId]?.length === 0) &&
+    (!greetingMessage || (!greetingMessage.text && !greetingMessage?.options?.length))
+    : !subThreadId || messageIds[subThreadId]?.length === 0;
 
   return (
     <MessageContext.Provider value={contextValue}>
       <div className="flex h-screen w-full overflow-hidden relative">
         {/* Sidebar - visible on large screens */}
-        <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? 'w-64' : 'w-0'}`}>
+        <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? 'w-96 max-w-[286px]' : 'w-0'}`}>
           <ChatbotDrawer
             setToggleDrawer={chatActions.setToggleDrawer}
             isToggledrawer={isToggledrawer}
@@ -146,7 +152,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
         </div>
 
         {/* Main content area */}
-        <div className="flex flex-col flex-1 w-full">
+        <div className="flex flex-col w-full">
           {/* Mobile header */}
           <ChatbotHeader />
 
@@ -220,31 +226,26 @@ function EmptyChatView({ }: EmptyChatViewProps) {
 
 interface ActiveChatViewProps {
   containerRef: React.RefObject<HTMLDivElement>;
-  subThreadId: string;
-  messageIds: Record<string, string[]>;
 }
 
 // Active chat component
-function ActiveChatView({ containerRef, subThreadId, messageIds }: ActiveChatViewProps) {
+function ActiveChatView({ containerRef }: ActiveChatViewProps) {
   return (
-    <>
-      {/* Messages container */}
-      <div
-        className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1 ${messageIds?.[subThreadId]?.length === 0 ? 'flex items-center justify-center' : 'pb-6'
-          }`}
-        id="message-container"
-        ref={containerRef}
-      >
-        <div className="w-full max-w-5xl mx-auto">
-          <MessageList />
-        </div>
+    <div
+      ref={containerRef}
+      className="flex flex-col h-full overflow-auto"
+      style={{ height: '100vh' }}
+    >
+      {/* Messages container - takes all available space */}
+      <div className="flex-1 overflow-y-auto max-w-5xl mx-auto w-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+        <MessageList />
       </div>
 
-      {/* Text input */}
+      {/* Text input - fixed at bottom */}
       <div className="max-w-5xl mx-auto px-4 pb-3 w-full">
         <ChatbotTextField />
       </div>
-    </>
+    </div>
   );
 }
 

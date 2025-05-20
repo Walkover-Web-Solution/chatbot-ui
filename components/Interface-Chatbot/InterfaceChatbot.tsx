@@ -13,6 +13,7 @@ interface MessageType {
   function?: () => void;
   id?: string;
   images?: string[]; // Added images property to MessageType
+  time?: string | number;
 }
 export const MessageContext = createContext<{
   fetchChannels: () => void,
@@ -49,6 +50,7 @@ export const MessageContext = createContext<{
   isToggledrawer: boolean,
   chatDispatch?: React.Dispatch<ChatAction>;
   getMoreChats: () => void;
+  getMoreHelloChats: () => void;
   handleMessageFeedback: (data: any) => void;
   isTyping: boolean;
   isSmallScreen: boolean;
