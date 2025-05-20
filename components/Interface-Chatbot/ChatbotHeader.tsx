@@ -19,7 +19,6 @@ import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 
 // App imports
-import { createNewThreadApi } from "@/config/api";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { setDataInInterfaceRedux, setSelectedAIServiceAndModal, setThreads } from "@/store/interface/interfaceSlice";
@@ -143,18 +142,21 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   // Handler for creating a new thread
   const handleCreateNewSubThread = async () => {
     if (preview) return;
+    if (subThreadList?.[0]?.newChat){
+      return;
+    }
 
-    const subThreadId = createRandomId();
-    const result = await createNewThreadApi({
-      threadId: threadId,
-      subThreadId,
-    });
+    const newThreadData  = {
+      sub_thread_id: createRandomId(),
+      thread_id: threadId,
+      display_name: "New Chat",
+      newChat : true
+  }
 
-    if (result?.success) {
-      dispatch(setDataInAppInfoReducer({ subThreadId }));
+    if (!subThreadList?.[0]?.newChat) {
       dispatch(
         setThreads({
-          newThreadData: result?.thread,
+          newThreadData,
           bridgeName: GetSessionStorageData("bridgeName") || reduxBridgeName,
           threadId: threadId,
         })

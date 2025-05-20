@@ -33,13 +33,18 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         variables: state.Interface?.interfaceContext?.[chatbotId]?.variables,
         selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null,
         userId: state.appInfo.userId || null,
+        
     }))
-
+    const { firstThread } = useCustomSelector((state: $ReduxCoreType) => ({
+        firstThread: state.Interface?.interfaceContext?.[chatbotId]?.[bridgeName]?.threadList?.[threadId]?.[0]
+    }))
+    
     useEffect(() => {
         fetchAllThreads()
     }, [threadId, bridgeName]);
 
     useEffect(() => {
+       if(!(firstThread?.newChat && firstThread?.subThread_id === subThreadId))
         getIntialChatHistory();
     }, [threadId, bridgeName, subThreadId]);
 
@@ -152,6 +157,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload: true })
         const textMessage = message || (messageRef?.current as HTMLInputElement)?.value;
         const imageUrls = Array.isArray(chatState.images) && chatState?.images?.length ? chatState?.images : []; // Assuming imageUrls is an empty array or you can replace it with the actual value
+
         if (!textMessage && imageUrls.length === 0) return;
         if (messageRef.current) {
             messageRef.current.value = "";
@@ -187,6 +193,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             threadId: customThreadId || threadId,
             subThreadId: subThreadId,
             slugName: customBridgeSlug || bridgeName,
+            thread_flag : (firstThread?.newChat && firstThread?.sub_thread_id === subThreadId)  ? true : false,
             chatBotId: chatbotId,
             version_id: chatState.bridgeVersionId === "null" ? null : chatState.bridgeVersionId,
             ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {
