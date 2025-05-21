@@ -231,17 +231,18 @@
 
 /* Modal Container Styles */
 .notification-modal {
-  background-color: white;
+  /* background-color: white;
   padding: 4px;
   border-radius: 10px;
   width: auto;
   height: auto;
-  overflow: visible;
+  overflow: visible; */
+  
   /* Single overflow property */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   position: relative;
   margin: 20px;
-  box-sizing: border-box;
+  box-sizing: border-box; */
   /* Ensures padding doesn't affect max dimensions */
 }
 
