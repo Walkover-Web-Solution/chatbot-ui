@@ -8,6 +8,7 @@ import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState, SendMessagePayloadType } from './chatTypes';
 import { PAGE_SIZE } from '@/utils/enums';
+import { getHelloDetailsStart } from '@/store/hello/helloSlice';
 
 export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) => {
     if (chatbotId === 'hello') {
@@ -33,19 +34,25 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         variables: state.Interface?.interfaceContext?.[chatbotId]?.variables,
         selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null,
         userId: state.appInfo.userId || null,
-        
+
     }))
     const { firstThread } = useCustomSelector((state: $ReduxCoreType) => ({
         firstThread: state.Interface?.interfaceContext?.[chatbotId]?.[bridgeName]?.threadList?.[threadId]?.[0]
     }))
-    
+
     useEffect(() => {
-        fetchAllThreads()
+        if (bridgeName) {
+            globalDispatch(getHelloDetailsStart({ slugName: bridgeName }));
+        }
+    }, [bridgeName])
+
+    useEffect(() => {
+        threadId && bridgeName && fetchAllThreads()
     }, [threadId, bridgeName]);
 
     useEffect(() => {
-       if(!(firstThread?.newChat && firstThread?.subThread_id === subThreadId))
-        getIntialChatHistory();
+        if (!(firstThread?.newChat && firstThread?.subThread_id === subThreadId))
+            getIntialChatHistory();
     }, [threadId, bridgeName, subThreadId]);
 
     const startTimeoutTimer = () => {
@@ -193,7 +200,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             threadId: customThreadId || threadId,
             subThreadId: subThreadId,
             slugName: customBridgeSlug || bridgeName,
-            thread_flag : (firstThread?.newChat && firstThread?.sub_thread_id === subThreadId)  ? true : false,
+            thread_flag: (firstThread?.newChat && firstThread?.sub_thread_id === subThreadId) ? true : false,
             chatBotId: chatbotId,
             version_id: chatState.bridgeVersionId === "null" ? null : chatState.bridgeVersionId,
             ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {
