@@ -15,7 +15,7 @@ class ChatbotEmbedManager {
         };
         this.urls = {
             chatbotUrl: 'http://localhost:3001/chatbot',
-            styleSheet: 'https://chatbot-embed.viasocket.com/style-local.css',
+            styleSheet: 'http://localhost:3001/chatbot-style.css',
             login: 'https://db.gtwy.ai/chatbot/loginuser'
         };
         this.icons = {
