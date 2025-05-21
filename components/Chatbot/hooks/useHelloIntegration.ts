@@ -1,6 +1,9 @@
 import { ThemeContext } from '@/components/AppWrapper';
 import { ChatbotContext } from '@/components/context';
+import { MessageContext } from '@/components/Interface-Chatbot/InterfaceChatbot';
 import { getAgentTeamApi, getAllChannels, getCallToken, getClientToken, getGreetingQuestions, getHelloChatHistoryApi, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
+import useNotificationSocket from '@/hooks/notifications/notificationSocket';
+import useNotificationSocketEventHandler from '@/hooks/notifications/notificationSocketEventHandler';
 import useSocket from '@/hooks/socket';
 import useSocketEvents from '@/hooks/socketEventHandler';
 import socketManager from '@/hooks/socketManager';
@@ -9,16 +12,13 @@ import { setAgentTeams, setChannelListData, setGreeting, setHelloKeysData, setJw
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
+import { PAGE_SIZE } from '@/utils/enums';
 import { generateNewId, getLocalStorage } from '@/utils/utilities';
 import { useCallback, useContext, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import helloVoiceService from './HelloVoiceService';
-import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
-import useNotificationSocket from '@/hooks/notifications/notificationSocket';
-import useNotificationSocketEventHandler from '@/hooks/notifications/notificationSocketEventHandler';
-import { PAGE_SIZE } from '@/utils/enums';
 
 interface HelloMessage {
   role: string;
@@ -41,9 +41,9 @@ interface UseHelloIntegrationProps {
 const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: UseHelloIntegrationProps) => {
   const { handleThemeChange } = useContext(ThemeContext);
   const { isHelloUser } = useContext(ChatbotContext);
+  const { setChatsLoading, setNewMessage, setLoading } = useContext(MessageContext);
   const { loading, helloMessages, images } = chatState;
 
-  const { setLoading, setChatsLoading, setNewMessage } = useChatActions({ chatbotId, chatDispatch, chatState });
   const {
     uuid,
     unique_id,

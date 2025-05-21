@@ -42,14 +42,13 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                         time: chat?.timetoken
                     };
                 })
-                // .reverse();
 
         case false:
             return (Array.isArray(history) ? history : []).map((msgObj: any) => {
                 return {
                     ...msgObj,
                     id: msgObj?.Id,
-                    content: msgObj?.content,
+                    content: msgObj?.chatbot_message || msgObj?.content,
                     role: msgObj?.role,
                     createdAt: msgObj?.createdAt,
                     function: msgObj?.function,
@@ -74,11 +73,11 @@ function createSendMessageHelloPayload(message: string) {
 function convertEventMessageToGenericFormat(message: any, isHello: boolean = false) {
 
 
-    if(!isHello){
+    if (!isHello) {
         return [{
             ...message,
             id: message?.Id || generateNewId(),
-            content: message?.content,
+            content: message?.chatbot_message || message?.content,
             role: message?.role,
             createdAt: message?.createdAt,
             function: message?.function,

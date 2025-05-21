@@ -1,10 +1,10 @@
 // useSocketEvents.ts
 import { ChatActionTypes, ChatState } from '@/components/Chatbot/hooks/chatTypes';
-import { useChatActions } from '@/components/Chatbot/hooks/useChatActions';
 import { useReduxStateManagement } from '@/components/Chatbot/hooks/useReduxManagement';
+import { MessageContext } from '@/components/Interface-Chatbot/InterfaceChatbot';
 import { changeChannelAssigned, setUnReadCount } from '@/store/hello/helloSlice';
 import { playMessageRecivedSound } from '@/utils/utilities';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useContext, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import socketManager from './socketManager';
 
@@ -41,7 +41,7 @@ export const useSocketEvents = ({
 }) => {
     const dispatch = useDispatch();
     // Reference to timeout for typing indicators
-    const { setLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
+    const { setLoading } = useContext(MessageContext);
     const { isToggledrawer } = chatState;
     const { currentChannelId, isSmallScreen } = useReduxStateManagement({ chatbotId, chatDispatch });
     const addHelloMessage = (message: HelloMessage, subThreadId: string = '') => {
