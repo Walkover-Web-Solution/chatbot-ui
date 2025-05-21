@@ -265,12 +265,13 @@ class ChatbotEmbedManager {
         document.body.appendChild(chatBotIcon);
         document.head.appendChild(this.createStyleLink()); // load the External Css for script
 
+        this.extractScriptProps();
         this.attachIconEvents(chatBotIcon);
         this.createIframeContainer();
         this.loadChatbotEmbed();
+        this.updateProps(this.state.tempDataToSend || {});
 
         this.state.bodyLoaded = true;
-        this.updateProps(this.extractScriptProps());
     }
 
     createIframeContainer() {
@@ -287,7 +288,7 @@ class ChatbotEmbedManager {
 
         this.parentContainer.appendChild(iframe);
 
-        const parentId = this.props.parentId || '';
+        const parentId = this.props.parentId || this.state.tempDataToSend?.parentId || '';
         this.changeContainer(parentId, this.parentContainer);
     }
 
