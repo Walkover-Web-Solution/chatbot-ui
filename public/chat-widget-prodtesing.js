@@ -64,6 +64,11 @@ class CobrowseManager {
             }
             return
         }
+       
+        if(this.device_id === uuid && this.scriptInjected){
+            return
+        }
+
         if (!this.scriptInjected) {
             this.injectScript(uuid)
         }

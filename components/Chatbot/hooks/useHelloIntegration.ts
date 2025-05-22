@@ -367,6 +367,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         k_clientId = getLocalStorage(`k_clientId`);
       }
 
+      //  used to subscribe to cobrowse
+      emitEventToParent('uuid', { uuid: k_clientId || a_clientId })
       // Step 2: Handle domain (if needed)
 
       let widgetData = null;
