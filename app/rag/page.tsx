@@ -115,7 +115,7 @@ function RagCompoonent() {
                         message: "Document updated successfully!",
                         severity: "success",
                     });
-                    window?.parent?.postMessage({ type: "rag_embed", name: response?.data?.name, description: response?.data?.description}, "*");
+                    window?.parent?.postMessage({ type: "rag_embed", name: response?.data?.name, description: response?.data?.description, id: response?.data?._id}, "*");
                     setKnowledgeBases((prevKnowledgeBases) =>
                         prevKnowledgeBases.map((kb) =>
                             kb._id === editingKnowledgeBase._id ? response?.data : kb
