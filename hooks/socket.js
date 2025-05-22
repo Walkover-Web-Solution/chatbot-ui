@@ -1,63 +1,57 @@
+import { useEffect } from "react";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
-import { useEffect, useReducer, useRef } from "react";
-// import/no-extraneous-dependencies
-import io from "socket.io-client";
+import socketManager from "./socketManager"; // Import the singleton socket manager
 
-const forceUpdateReducer = (x) => x + 1;
 const useSocket = () => {
-  const [, forceUpdate] = useReducer(forceUpdateReducer, 0);
-  const socketRef = useRef(null);
-  const { jwtToken, channelId, eventChannels } = useCustomSelector((state) => ({
+  const { jwtToken, channelId, eventChannels, channelListData } = useCustomSelector((state) => ({
     jwtToken: state.Hello?.socketJwt?.jwt,
     channelId: state.Hello?.Channel?.channel || null,
+    channelListData: state.Hello?.channelListData?.channels || [],
     eventChannels: state.Hello?.widgetInfo?.event_channels || [],
   }));
 
   useEffect(() => {
     if (!jwtToken) return;
 
-    const socketUrl = "https://chat.phone91.com/";
-    const socketInstance = io(socketUrl, {
-      auth: { token: jwtToken.jwt_token },
-      transports: ["websocket"],
-      reconnection: true,
-      timeout: 20000,
-      autoConnect: true,
-    });
+    // Connect socket using the manager
+    socketManager.connect(jwtToken);
 
-    socketInstance.on("connect", () => {
-      console.log("Connected to WebSocket server");
-      if (channelId) {
-        const channels = [channelId];
-        eventChannels.forEach((event_channel) => {
-          if (!event_channel.includes("-chat-typing")) {
-            channels.push(event_channel);
-          }
-        });
-        socketInstance.emit("subscribe", { channel: channels }, (data) => {
-          console.log("Subscribed channels data:", data);
-        });
+    // Setup channels for subscription
+    if (channelId) {
+      // Create array of channels to subscribe to
+      const channels = [];
+      
+      // Add channels from channelListData if available
+      if (channelListData && channelListData.length > 0) {
+        channels.push(...channelListData.map((channel) => channel?.channel).filter(Boolean));
+      } else if (channelId) {
+        // Otherwise use the single channelId
+        channels.push(channelId);
       }
-    });
+      
+      // Add event channels if available
+      if (eventChannels && eventChannels.length > 0) {
+        channels.push(...eventChannels.filter(Boolean));
+      }
+      
+      // Subscribe to channels using the manager - no need to check isConnected
+      // since the subscribe method now handles waiting for connection
+      if (channels.length > 0) {
+        socketManager.subscribe(channels)
+          .catch(error => {
+            console.error("Failed to subscribe to channels:", error);
+          });
+      }
+    }
 
-    socketInstance.on("disconnect", () => {
-      console.log("Disconnected from WebSocket server");
-    });
-
-    socketInstance.on("connect_error", (err) => {
-      console.error("Connection Error:", err);
-    });
-
-    socketRef.current = socketInstance;
-    forceUpdate();
-
-    // eslint-disable-next-line consistent-return
+    // Cleanup function - no need to disconnect as the manager handles multiple components
     return () => {
-      socketInstance.disconnect();
+      // We don't disconnect here as other components might be using the socket
+      // The socket manager will handle cleanup when the app unmounts
     };
-  }, [jwtToken, channelId, eventChannels]);
+  }, [jwtToken, channelId, eventChannels, channelListData]);
 
-  return socketRef.current;
+  return null;
 };
 
 export default useSocket;

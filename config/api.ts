@@ -3,6 +3,8 @@ import { errorToast } from "@/components/customToast";
 import { InterFaceDataType } from "@/types/interface/InterfaceReduxType";
 import { UrlDataType } from "@/types/utility";
 import axios from "@/utils/interceptor";
+import { getLocalStorage } from "@/utils/utilities";
+import { PAGE_SIZE } from "@/utils/enums";
 
 const URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const PYTHON_URL = process.env.NEXT_PUBLIC_PYTHON_API_BASE_URL;
@@ -125,7 +127,7 @@ export async function getPreviousMessage(
     bridgeName: string | null,
     pageNo: number | null,
     subThreadId: string | null = threadId,
-    limit = 40
+    limit = PAGE_SIZE.gtwy
 ): Promise<{ previousChats: any; starterQuestion: string[] }> {
     if (currentController) {
         currentController.abort();
@@ -139,7 +141,7 @@ export async function getPreviousMessage(
             { signal: currentController.signal }
         );
         return {
-            previousChats: response?.data?.data || [],
+            previousChats: response?.data?.data?.reverse() || [],
             starterQuestion: response?.data?.starterQuestion || [],
         };
     } catch (error) {
@@ -266,7 +268,7 @@ export async function getHelloChatsApi({
             },
             {
                 headers: {
-                    authorization: localStorage.getItem("HelloAgentAuth"),
+                    authorization: getLocalStorage("HelloAgentAuth"),
                     "content-type": "application/json",
                 },
             }

@@ -1,6 +1,8 @@
-import { Box, Typography } from "@mui/material";
-import { customAlphabet } from "nanoid";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { Box, Typography } from "@mui/material";
+import dayjs from "dayjs";
+import linkifyHtml from "linkify-html";
+import { customAlphabet } from "nanoid";
 
 export const generateNewId = (length = 8) => {
   const nanoid = customAlphabet(
@@ -317,4 +319,120 @@ export const getFromCookies = (cookieId) => {
 export const removeCookie = (cookieName) => {
   const domain = getDomain();
   document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain};`;
+};
+
+export const setLocalStorage = (key, value = '') => {
+  localStorage.setItem(key, value);
+  if (key === 'WidgetId' || key === 'k_clientId' || key === 'a_clientId' || key === 'is_anon') {
+    if (key === 'k_clientId') window.parent.postMessage({ type: 'setDataInLocal', data: { key: 'hello-widget-uuid', payload: value } }, '*');
+    if (key === 'a_clientId') window.parent.postMessage({ type: 'setDataInLocal', data: { key: 'hello-widget-anonymoud-uuid', payload: value } }, '*');
+
+    window.dispatchEvent(new CustomEvent("localstorage-updated", {
+      detail: { key, value }
+    }));
+  }
+}
+
+export const getLocalStorage = (key) => {
+  return key ? localStorage.getItem(key) : null;
+}
+
+
+export const linkify = (str) => {
+  return str ? linkifyHtml(str, {
+    className: 'link-text',
+    target: {
+      url: '_blank',
+    },
+  }) : str;
+}
+
+
+export const playMessageRecivedSound = () => {
+  const notificationSound = new Audio('/notification-sound.mp3');
+  notificationSound.volume = 0.2;
+  notificationSound.play().catch(error => {
+    console.log("Failed to play notification sound:", error);
+  });
+}
+
+/**
+ * Converts a timestamp to various formatted date/time strings
+ * @param {number} value - The timestamp to convert
+ * @param {'longDate'|'shortDate'|'timeAgo'|'shortTime'|'longtime'|'hrMinSec'} format - The desired output format
+ * @returns {string} The formatted date/time string
+ */
+export const formatTime = (value, format) => {
+  if (!value) {
+    return format === 'hrMinSec' ? '0 hr 0 min 0 sec' : '';
+  }
+
+  const timeToken = value;
+
+  switch (format) {
+    case 'longDate': {
+      if (
+        dayjs(timeToken).date() === dayjs().date() &&
+        dayjs(timeToken).month() === dayjs().month() &&
+        dayjs(timeToken).year() === dayjs().year()
+      ) {
+        return 'Today';
+      } else if (
+        dayjs(timeToken).date() === dayjs().date() - 1 &&
+        dayjs(timeToken).month() === dayjs().month() &&
+        dayjs(timeToken).year() === dayjs().year()
+      ) {
+        return 'Yesterday';
+      }
+      return dayjs(timeToken).format('LL');
+    }
+    case 'longtime': {
+      return dayjs(timeToken).format('hh:mm a z');
+    }
+    case 'shortDate': {
+      if (
+        dayjs(timeToken).date() === dayjs().date() &&
+        dayjs(timeToken).month() === dayjs().month() &&
+        dayjs(timeToken).year() === dayjs().year()
+      ) {
+        return 'Today';
+      } else if (
+        dayjs(timeToken).date() === dayjs().date() - 1 &&
+        dayjs(timeToken).month() === dayjs().month() &&
+        dayjs(timeToken).year() === dayjs().year()
+      ) {
+        return 'Yesterday';
+      }
+      return dayjs(timeToken).format('DD MMM, YYYY');
+    }
+    case 'shortTime': {
+      return dayjs(timeToken).format('hh:mm a');
+    }
+    case 'timeAgo': {
+      return dayjs(timeToken).fromNow();
+    }
+    case 'hrMinSec': {
+      if (value < 60) return value + ' Seconds';
+
+      const h = Math.floor(value / 3600);
+      const m = Math.floor((value % 3600) / 60);
+      const s = Math.floor((value % 3600) % 60);
+
+      let str = '0 hr 0 min 0 sec';
+
+      if (h > 0) {
+        str = h + ' hr';
+        if (m > 0) str += ' ' + m + ' min';
+        if (s > 0) str += ' ' + s + ' sec';
+      } else if (m > 0) {
+        str = m + ' min';
+        if (s > 0) str += ' ' + s + ' sec';
+      }
+
+      return str;
+    }
+    default: {
+      return dayjs(timeToken).fromNow();
+    }
+  }
 };

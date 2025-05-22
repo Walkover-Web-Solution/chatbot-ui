@@ -24,10 +24,12 @@ import {
 } from "./Plugin.ts";
 import { $InterfaceReduxType } from "./interface/InterfaceReduxType.ts";
 import { $HelloReduxType } from "./hello/HelloReduxType.ts";
+import { $AppInfoReduxType } from "./appInfo/appInfoReduxType.js";
 
 export interface $ReduxCoreType {
   Hello: $HelloReduxType;
   Interface: $InterfaceReduxType;
+  appInfo:$AppInfoReduxType
 }
 export interface $UserInfoReduxType {
   first_name: string;

@@ -7,32 +7,27 @@ import { useContext, useEffect, useState } from "react";
 export const runtime = "edge";
 
 export default function InterfaceEmbed() {
-    const { chatbot_id, userId, token } = useContext(ChatbotContext);
+    const { chatbot_id, userId, token, isHelloUser } = useContext(ChatbotContext);
     const router = useRouter();
-
-    const [verifiedState, setVerifiedState] = useState(
-        EmbedVerificationStatus.VERIFYING
-    );
-    const [details, setDetails] = useState({ chatbot_id: "" });
-
+    const [verifiedState, setVerifiedState] = useState(EmbedVerificationStatus.VERIFYING);
     useEffect(() => {
-        if (token) authorizeUserAndSetDetails();
-    }, [token]);
-
-    useEffect(() => {
-        if (verifiedState === EmbedVerificationStatus.VERIFIED) {
-            router.replace(`/chatbot/${details.chatbot_id}`);
+        if (token) {
+            SetSessionStorage("interfaceToken", token);
+            SetSessionStorage("interfaceUserId", userId);
+            setVerifiedState(EmbedVerificationStatus.VERIFIED);
+        } else if (isHelloUser) {
+            setVerifiedState(EmbedVerificationStatus.VERIFIED);
         }
-    }, [verifiedState, details.chatbot_id]);
+    }, [token, userId, isHelloUser]);
 
-    const authorizeUserAndSetDetails = () => {
-        // intefaceSetLocalStorage("interfaceToken", token);
-        SetSessionStorage("interfaceToken", token);
-        setVerifiedState(EmbedVerificationStatus.VERIFIED);
-        setDetails({ chatbot_id });
-        // localStorage.setItem("interfaceUserId", userId);
-        SetSessionStorage("interfaceUserId", userId);
-    };
+    useEffect(() => {
+        if (verifiedState === EmbedVerificationStatus.VERIFIED && chatbot_id) {
+            router.replace(`/chatbot/${chatbot_id}`);
+        }
+        if (isHelloUser && verifiedState === EmbedVerificationStatus.VERIFIED) {
+            router.replace(`/chatbot/hello`);
+        }
+    }, [verifiedState, chatbot_id, router, isHelloUser]);
 
     return (
         <div className="h-screen w-full flex items-center justify-center">

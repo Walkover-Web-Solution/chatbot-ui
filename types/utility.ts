@@ -1,7 +1,7 @@
 export default interface actionType<T> {
   payload: T;
-  type: string;
-  urlData: UrlDataType;
+  type?: string;
+  urlData?: UrlDataType;
 }
 
 export interface UrlDataType {

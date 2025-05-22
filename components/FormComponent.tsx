@@ -1,140 +1,274 @@
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  TextField,
-} from "@mui/material";
-import axios from "axios";
-import React, { useState } from "react";
+import { getUserData, saveClientDetails } from "@/config/helloApi";
+import { setHelloKeysData } from "@/store/hello/helloSlice";
+import { $ReduxCoreType } from "@/types/reduxCore";
+import { useCustomSelector } from "@/utils/deepCheckSelector";
+import { isColorLight } from "@/utils/themeUtility";
+import { useTheme } from "@mui/material";
+import { BookText, Mail, Phone, Send, User } from "lucide-react";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import countryCodes from "@/assests/countryCode.json";
+import { getLocalStorage } from "@/utils/utilities";
 
-function FormComponent({ open, setOpen }) {
-  const [formData, setFormData] = useState({
+interface FormComponentProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  isSmallScreen: boolean;
+}
+
+interface FormData {
+  name: string;
+  email: string;
+  number: string;
+  countryCode: string;
+}
+
+interface FormErrors {
+  name: string;
+  email: string;
+  number: string;
+  countryCode: string;
+}
+
+function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
+  const theme = useTheme();
+  const { showWidgetForm } = useCustomSelector((state: $ReduxCoreType) => ({
+    showWidgetForm: state.Hello.showWidgetForm
+  }));
+  const dispatch = useDispatch();
+  const backgroundColor = theme.palette.primary.main;
+  const textColor = isColorLight(backgroundColor) ? "black" : "white";
+  const userData = JSON.parse(getLocalStorage("client") || "{}");
+  const [formData, setFormData] = useState<FormData>({
+    name: userData?.name || "",
+    email: userData?.email || "",
+    number: userData?.number || "",
+    countryCode: userData?.country_code || "+91"
+  });
+
+  const [errors, setErrors] = useState<FormErrors>({
     name: "",
     email: "",
     number: "",
+    countryCode: ""
   });
 
-  const [errors, setErrors] = useState({
-    name: "",
-    email: "",
-    number: "",
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     setErrors({ ...errors, [name]: "" }); // Clear error on change
   };
 
   const validate = () => {
-    const tempErrors = { name: "", email: "", number: "" };
+    const tempErrors: FormErrors = { name: "", email: "", number: "", countryCode: "" };
     let isValid = true;
 
     if (!formData.name) {
       tempErrors.name = "Name is required";
       isValid = false;
-    }
-    if (!formData.email) {
-      tempErrors.email = "Email is required";
+    } else if (formData.name.length > 26) {
+      tempErrors.name = "Name cannot exceed 26 characters";
       isValid = false;
-    } else if (
+    }
+
+    // Email is optional, but validate if present
+    if (formData.email &&
       !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)
     ) {
       tempErrors.email = "Invalid email address";
       isValid = false;
     }
-    if (!formData.number) {
-      tempErrors.number = "Number is required";
-      isValid = false;
-    } else if (!/^\d{10}$/.test(formData.number)) {
+
+    // Number is optional, but validate if present
+    if (formData.number && !/^\d{10}$/.test(formData.number)) {
       tempErrors.number = "Invalid number";
       isValid = false;
     }
 
-    setErrors(tempErrors); // Make sure this sets the errors state correctly
+    setErrors(tempErrors);
     return isValid;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validate()) {
-      // Handle form submission
-      await axios.put(
-        "https://api.phone91.com/client/",
-        {
-          n: formData.name,
-          p: formData.number,
-          e: formData.email,
-          user_data: {},
-          is_anon: false,
-        },
-        {
-          headers: {
-            authorization: "a13cc:673d8908a237d3ad372964a9",
-            "content-type": "application/json",
-          },
-        }
-      );
-      setOpen(false); // Close the dialog after submission
+      let clientData = {
+        n: formData?.name,
+        p: formData?.number ? `${formData?.countryCode}${formData?.number}` : undefined,
+        e: formData?.email,
+        country_code: formData?.countryCode,
+        number_without_CC : formData?.number,
+        user_data: getUserData(),
+        is_anon: false,
+      }
+
+      // Dispatch setHelloKeysData if all three fields are filled
+      if (formData.name && formData.email && formData.number) {
+        dispatch(setHelloKeysData({ showWidgetForm: false }));
+      }
+
+      saveClientDetails(clientData).then(() => {
+        setOpen(false);
+      })
     }
   };
 
+  if (!open && !showWidgetForm) return null;
+  if (!open && showWidgetForm) return (
+    <div
+      className={`bg-white p-2 px-4 cursor-pointer hover:shadow-md transition-all border border-gray-300 mx-auto rounded-br-md rounded-bl-md ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
+      onClick={() => setOpen(true)}
+      style={{
+        backgroundColor: backgroundColor,
+        color: textColor
+      }}
+    >
+      <div className="flex items-center">
+        <div className="flex-shrink-0">
+          <BookText className="h-7 w-7 mr-1" />
+        </div>
+        <div className="ml-2">
+          <span className="font-medium block">Enter your details</span>
+          <p className="text-xs opacity-80">Click here to provide your information</p>
+        </div>
+      </div>
+    </div>
+  );
   return (
-    <div>
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>Enter your details</DialogTitle>
-        <DialogContent>
-          <TextField
-            name="name"
-            variant="outlined"
-            value={formData.name}
-            onChange={handleChange}
-            error={!!errors.name}
-            helperText={errors.name || " "} // Ensures empty helper text when no error
-            fullWidth
-            placeholder="Enter your name"
-            InputProps={{
-              style: { fontStyle: formData.name ? "normal" : "italic" },
-            }}
-          />
-          <TextField
-            name="email"
-            variant="outlined"
-            value={formData.email}
-            onChange={handleChange}
-            error={!!errors.email}
-            helperText={errors.email || " "} // Ensures empty helper text when no error
-            fullWidth
-            placeholder="Enter your email"
-            InputProps={{
-              style: { fontStyle: formData.email ? "normal" : "italic" },
-            }}
-          />
-          <TextField
-            name="number"
-            variant="outlined"
-            value={formData.number}
-            onChange={handleChange}
-            error={!!errors.number}
-            helperText={errors.number || " "} // Ensures empty helper text when no error
-            fullWidth
-            placeholder="Enter your number"
-            InputProps={{
-              style: { fontStyle: formData.number ? "normal" : "italic" },
-            }}
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            onClick={handleSubmit}
-            className="w-100"
-          >
-            Submit
-          </Button>
-        </DialogContent>
-      </Dialog>
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[9999]">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 relative">
+        {/* Card header */}
+        <div className="bg-primary text-white p-6 rounded-t-lg" style={{
+          backgroundColor: backgroundColor,
+          color: textColor
+        }}>
+          <h2 className="text-xl font-bold">Enter your details</h2>
+          <p className="text-sm opacity-90 mt-1">
+            Please provide your information below
+          </p>
+        </div>
+
+        {/* Form content */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* Name field */}
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text font-medium">Name *</span>
+            </label>
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                <User size={18} />
+              </div>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Enter your name"
+                className={`input input-bordered w-full pl-10 ${errors.name ? "input-error" : ""
+                  }`}
+                required
+              />
+            </div>
+            {errors.name && (
+              <label className="label">
+                <span className="label-text-alt text-error">{errors.name}</span>
+              </label>
+            )}
+          </div>
+
+          {/* Email field */}
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text font-medium">Email</span>
+            </label>
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                <Mail size={18} />
+              </div>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Enter your email"
+                className={`input input-bordered w-full pl-10 ${errors.email ? "input-error" : ""}`}
+              />
+            </div>
+            {errors.email && (
+              <label className="label">
+                <span className="label-text-alt text-error">{errors.email}</span>
+              </label>
+            )}
+          </div>
+
+          {/* Phone number field */}
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text font-medium">Phone Number</span>
+            </label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative">
+                <select
+                  name="countryCode"
+                  value={formData.countryCode}
+                  onChange={handleChange}
+                  className={`select select-bordered select-md max-w-36 pl-10 ${errors.countryCode ? "select-error" : ""}`}
+                  style={{ width: 'auto' }}
+                >
+                  {countryCodes
+                    .filter(country => country.dial_code !== null && country.dial_code !== "")
+                    .map((country) => (
+                      <option key={country.code + country.dial_code} value={String(country.dial_code)}>
+                        {country.code} ({country.dial_code})
+                      </option>
+                    ))}
+                </select>
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                  <Phone size={18} />
+                </div>
+              </div>
+              <div className="relative flex-1">
+                <input
+                  type="number"
+                  name="number"
+                  value={formData.number}
+                  onChange={handleChange}
+                  placeholder="Enter your phone number"
+                  className={`input input-bordered w-full ${errors.number ? "input-error" : ""}`}
+                />
+              </div>
+            </div>
+            {errors.number && (
+              <label className="label">
+                <span className="label-text-alt text-error">{errors.number}</span>
+              </label>
+            )}
+          </div>
+
+          {/* Submit button */}
+          <div className="mt-6 flex gap-3">
+            <button
+              type="button"
+              className="btn btn-outline flex-1"
+              onClick={() => setOpen(false)}
+            >
+              Skip
+            </button>
+            <button
+              type="submit"
+              className="btn flex-1"
+              style={{
+                backgroundColor: backgroundColor,
+                color: textColor
+              }}
+            >
+              <Send size={18} className="mr-2" />
+              Submit
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

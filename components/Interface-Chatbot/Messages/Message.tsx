@@ -2,6 +2,7 @@
 /* eslint-disable */
 import { AiIcon, UserAssistant } from "@/assests/assestsIndex";
 import InterfaceGrid from "@/components/Grid/Grid";
+import RenderHelloVedioCallMessage from "@/components/Hello/RenderHelloVedioCallMessage";
 import { Anchor, Code } from "@/components/Interface-Chatbot/Interface-Markdown/MarkdownUtitily";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { supportsLookbehind } from "@/utils/appUtility";
@@ -10,57 +11,49 @@ import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
+import { formatTime, linkify } from "@/utils/utilities";
 import {
   Box,
-  Chip,
-  Divider,
   lighten,
-  Stack,
   useTheme
 } from "@mui/material";
 import copy from "copy-to-clipboard";
 import { AlertCircle, Check, CircleCheckBig, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
 import dynamic from 'next/dynamic';
 import Image from "next/image";
-import React from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import RenderHelloAttachmentMessage from "../../Hello/RenderHelloAttachmentMessage";
+import RenderHelloFeedbackMessage from "../../Hello/RenderHelloFeedbackMessage";
+import RenderHelloInteractiveMessage from "../../Hello/RenderHelloInteractiveMessage";
+import { MessageContext } from "../InterfaceChatbot";
+import DateGroup from "./DateGroup";
+import ImageWithFallback from "./ImageWithFallback";
 import "./Message.css";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
-const ResetHistoryLine = ({ text = "" }) => {
-  return (
-    <Divider className="mb-2">
-      <Chip
-        label={text || "History cleared"}
-        size="small"
-        color={!text ? "error" : "success"}
-      />
-    </Divider>
-  );
-};
-
 const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
   return (
-    <>
-      <div className="flex flex-col gap-2.5 items-end w-full mb-2.5 animate-slide-left mt-1">
-        {Array.isArray(message?.urls) && message.urls.length > 0 && (
-          <div className="flex flex-row-reverse flex-wrap gap-2.5 max-w-[80%] p-2.5 rounded-[10px_10px_1px_10px]">
-            {message.urls.map((url: string, index: number) => (
-              <Image
+    <div className="flex flex-col gap-2.5 items-end w-full mb-2.5 animate-slide-left mt-1">
+      {Array.isArray(message?.urls) && message.urls.length > 0 && (
+        <div className="flex flex-row-reverse flex-wrap gap-2.5 w-full">
+          {message.urls.map((url: any, index: number) => {
+            const imageUrl = typeof url === 'object' ? url?.path : url;
+
+            return (
+              <ImageWithFallback
                 key={index}
-                src={url}
+                src={imageUrl}
                 alt={`Image ${index + 1}`}
-                className="block max-w-[40%] h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => window.open(url, "_blank")}
-                width={10} // You should replace 0 with the actual width
-                height={10} // You should replace 0 with the actual height
-                layout="responsive"
               />
-            ))}
-          </div>
-        )}
-        <div
-          className="p-2.5 min-w-[150px] sm:max-w-[80%] max-w-[90%] rounded-[10px_10px_1px_10px] break-words"
+            );
+          })}
+        </div>
+      )}
+
+      <div className="flex flex-col items-end w-full">
+        {message?.content && <div
+          className="p-2.5 min-w-[40px] sm:max-w-[80%] max-w-[90%] rounded-[10px_10px_1px_10px] break-words"
           style={{
             backgroundColor: theme.palette.primary.main,
             color: textColor
@@ -71,11 +64,10 @@ const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
               {message?.content}
             </p>
           </div>
-        </div>
+        </div>}
+        {message?.time && <p className="text-xs text-gray-500">{formatTime(message?.time, 'shortTime')}</p>}
       </div>
-
-      {message?.is_reset && <ResetHistoryLine />}
-    </>
+    </div>
   );
 });
 
@@ -84,7 +76,6 @@ const AssistantMessageCard = React.memo(
     message,
     theme,
     isError = false,
-    handleFeedback = () => { },
     addMessage = () => { },
     sendEventToParentOnMessageClick
   }: any) => {
@@ -163,7 +154,7 @@ const AssistantMessageCard = React.memo(
                   </a>
                 </div>
               ) : (
-                <div className="prose dark:prose-invert">
+                <div className="prose dark:prose-invert break-words">
                   {Object.keys(message?.tools_data || {})?.length > 0 && (
                     <Box className="flex items-center gap-2 mb-2">
                       <CircleCheckBig color="green" size={20} />
@@ -195,7 +186,6 @@ const AssistantMessageCard = React.memo(
                         parsedContent?.response ? (
                         <>
                           <ReactMarkdown
-                            // remarkPlugins={[remarkGfm]}
                             {...(!supportsLookbehind() ? {} : { remarkPlugins: [remarkGfm] })}
                             components={{
                               code: Code,
@@ -268,43 +258,11 @@ const AssistantMessageCard = React.memo(
               </button>
 
               {message?.message_id && (
-                <>
-                  <button
-                    className={`btn btn-ghost btn-xs tooltip ${message?.user_feedback === 1 ? "text-success" : ""
-                      }`}
-                    data-tip="Good response"
-                    onClick={() =>
-                      handleFeedback(
-                        message?.message_id,
-                        1,
-                        message?.user_feedback
-                      )
-                    }
-                  >
-                    <ThumbsUp className="w-4 h-4" />
-                  </button>
-
-                  <button
-                    className={`btn btn-ghost btn-xs tooltip ${message?.user_feedback === 2 ? "text-error" : ""
-                      }`}
-                    data-tip="Bad response"
-                    onClick={() =>
-                      handleFeedback(
-                        message?.message_id,
-                        2,
-                        message?.user_feedback
-                      )
-                    }
-                  >
-                    <ThumbsDown className="w-4 h-4" />
-                  </button>
-                </>
+                <FeedBackButtons msgId={message?.Id || message?.id} />
               )}
             </div>
           )}
         </div>
-
-        {message?.is_reset && <ResetHistoryLine />}
       </div>
     );
   }
@@ -314,6 +272,8 @@ const HumanOrBotMessageCard = React.memo(
   ({
     message,
     theme,
+    backgroundColor,
+    textColor,
     isBot = false,
     isError = false,
     handleFeedback = () => { },
@@ -328,97 +288,223 @@ const HumanOrBotMessageCard = React.memo(
       }, 1500);
     };
 
-    return (
-      <Box className="assistant_message_card">
-        <Stack
-          className="assistant-message-slide"
-          sx={{
-            alignItems: "flex-end",
-            gap: "10px",
-            maxWidth: "90%",
-            "@media(max-width:479px)": {
-              height: "fit-content",
-              columnGap: "5px",
-            },
-            marginBottom: "10px",
-          }}
-          direction="row"
-        >
-          <Stack
-            sx={{
-              alignItems: "center",
-              width: "30px",
-              justifyContent: "flex-end",
-              "@media(max-width:479px)": { width: "30px" },
-            }}
-            spacing="5px"
-          >
-            {!isBot ? (
-              <Image
-                src={UserAssistant}
-                width={28}
-                height={28}
-                alt="AI"
-                style={{ color: "red" }}
-              />
-            ) : (
-              <Image
-                width={24}
-                height={24}
-                src="https://img.icons8.com/ios/50/message-bot.png"
-                alt="message-bot"
-              />
-            )}
-          </Stack>
 
-          <Box
-            className="assistant-message-slide"
-            sx={{
-              backgroundColor: theme.palette.background.default,
-              padding: "2px 10px",
-              boxSizing: "border-box",
-              height: "fit-content",
-              minWidth: "150px",
-              borderRadius: "10px 10px 10px 1px",
-              boxShadow: "0 2px 1px rgba(0, 0, 0, 0.1)",
-              wordBreak: "break-word",
-              overflowWrap: "break-word",
-              maxWidth: "100%",
-              color: "black",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            <Box className="assistant-message-slide">
-              <div dangerouslySetInnerHTML={{ __html: message?.content }}></div>
-            </Box>
-          </Box>
-        </Stack>
-        <Box className="flex flex-row">
-          <Box
-            sx={{
-              alignItems: "center",
-              width: "30px",
-              justifyContent: "flex-end",
-              "@media(max-width:479px)": { width: "30px" },
-            }}
-          ></Box>
-        </Box>
-        {message?.is_reset && <ResetHistoryLine />}
-      </Box>
+    return (
+      <div className="w-full mb-3 animate-fade-in animate-slide-left">
+        <div className="flex items-start gap-2 max-w-[90%]">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-base-200">
+            {!isBot ? (
+              <div className="rounded-full" style={{ backgroundColor: "#e0e0e0" }}>
+                {message?.from_name ? (
+                  <div className="w-7 h-7 flex items-center justify-center text-xs font-bold rounded-full" style={{ color: "#606060" }}>
+                    {message?.from_name?.charAt(0)?.toUpperCase()}
+                  </div>
+                ) : (
+                  <Image
+                    width={24}
+                    height={24}
+                    src={UserAssistant}
+                    alt="User"
+                    className="opacity-70"
+                  />
+                )}
+              </div>
+            ) : (
+              <div className="rounded-full p-1 shadow-inner">
+                <Image
+                  width={24}
+                  height={24}
+                  src="https://img.icons8.com/ios/50/message-bot.png"
+                  alt="Bot"
+                  className="opacity-70"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="w-fit whitespace-pre-wrap  break-words">
+            <div className="text-base-content p-1 whitespace-pre-wrap w-full break-words">
+              {message?.from_name && (
+                <div className="text-sm font-medium mb-1">{message.from_name}</div>
+              )}
+
+              {message?.message_type === "video_call" ? (
+                <RenderHelloVedioCallMessage message={message} />
+              ) : message?.message_type === 'interactive' ? (
+                <RenderHelloInteractiveMessage message={message} />
+              ) : (message?.message_type === 'attachment' || message?.message_type === 'text-attachment') ? (
+                <RenderHelloAttachmentMessage message={message} />
+              ) : message?.message_type === 'feedback' ? (
+                <RenderHelloFeedbackMessage message={message} />
+              ) : message?.message_type === 'pushNotification' ? (
+                <ShadowDomComponent
+                  htmlContent={message?.content}
+                  messageId={message?.id}
+                  key={message?.id}
+                />
+              ) : (
+                <div className="prose max-w-none">
+                  <div dangerouslySetInnerHTML={{ __html: linkify(message?.content) }}></div>
+                </div>
+              )}
+              {message?.time && <p className="text-xs text-gray-500">{formatTime(message?.time, 'shortTime')}</p>}
+            </div>
+
+
+            {/* <div className="flex items-center gap-2 mt-1 ml-1">
+              <button
+                className="btn btn-ghost btn-xs tooltip tooltip-top"
+                data-tip={isCopied ? "Copied!" : "Copy message"}
+                onClick={handleCopy}
+              >
+                {isCopied ? (
+                  <Check className="w-3.5 h-3.5 text-success" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5 text-base-content/70" />
+                )}
+              </button>
+            </div> */}
+          </div>
+        </div>
+
+        {message?.is_reset && (
+          <div className="divider my-3">
+            <div className="badge badge-warning badge-sm">Chat history cleared</div>
+          </div>
+        )}
+      </div>
     );
   }
 );
-function Message({ message, handleFeedback, addMessage }: any) {
+
+const ShadowDomComponent = ({ htmlContent, messageId }:{htmlContent:string, messageId:string}) => {
+  const containerRef = useRef(null);
+  const [contentHeight, setContentHeight] = useState('auto');
+  const shadowRootRef = useRef(null);
+  const resizeObserverRef = useRef(null);
+
+  useEffect(() => {
+    // Cleanup previous observer if it exists
+    if (resizeObserverRef.current) {
+      resizeObserverRef.current.disconnect();
+      resizeObserverRef.current = null;
+    }
+
+    if (containerRef.current) {
+      // Create a shadow root only if one doesn't exist
+      if (!shadowRootRef.current) {
+        shadowRootRef.current = containerRef.current.attachShadow({ mode: 'open' });
+      } else {
+        // Clear existing content if shadow root already exists
+        while (shadowRootRef.current.firstChild) {
+          shadowRootRef.current.removeChild(shadowRootRef.current.firstChild);
+        }
+      }
+
+      // Create container for the HTML content
+      const contentContainer = document.createElement('div');
+      contentContainer.className = 'shadow-content-container';
+      contentContainer.style.width = '100%';
+      contentContainer.style.minHeight = 'auto';
+      contentContainer.style.overflow = 'visible';
+
+      // Insert the HTML content
+      contentContainer.innerHTML = htmlContent;
+
+      // Create a style element for base styles
+      const styleElement = document.createElement('style');
+      styleElement.textContent = `
+        :host {
+          all: initial;
+          display: block;
+          width: 100%;
+          min-height: auto;
+          height: auto;
+        }
+        .shadow-content-container {
+          width: 100%;
+          min-height: auto;
+          height: auto;
+          box-sizing: border-box;
+          background-color: white;
+        }
+      `;
+
+      // Append style and content container to shadow root
+      shadowRootRef.current.appendChild(styleElement);
+      shadowRootRef.current.appendChild(contentContainer);
+
+      // Set up a resize observer to track content height changes
+      resizeObserverRef.current = new ResizeObserver(entries => {
+        for (let entry of entries) {
+          // Update the parent container height based on content
+          const height = entry.contentRect.height;
+          setContentHeight(`${height}px`);
+
+          // Also update the host element directly
+          if (containerRef.current) {
+            containerRef.current.style.height = `${height}px`;
+          }
+        }
+      });
+
+      // Observe the content container for size changes
+      resizeObserverRef.current.observe(contentContainer);
+
+      // Execute scripts if needed
+      if (htmlContent.includes('<script>')) {
+        setTimeout(() => {
+          const scripts = contentContainer.querySelectorAll('script');
+          scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attr => {
+              newScript.setAttribute(attr.name, attr.value);
+            });
+            newScript.textContent = oldScript.textContent;
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+          });
+        }, 0);
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+        resizeObserverRef.current = null;
+      }
+    };
+  }, [htmlContent, messageId]); // Adding messageId dependency to ensure rerender on message change
+
+  return (
+    <div
+      ref={containerRef}
+      className="shadow-dom-container bg-white"
+      data-message-id={messageId} // Adding a data attribute to uniquely identify this container
+      style={{
+        width: '100%',
+        height: contentHeight,
+        minHeight: 'auto',
+        transition: 'height 0.2s ease-in-out'
+      }}
+    />
+  );
+};
+
+function Message({ message, addMessage, prevTime }: { message: any, addMessage?: any, prevTime?: string | number | null }) {
   const theme = useTheme();
   const backgroundColor = theme.palette.primary.main;
-  const textColor = isColorLight(backgroundColor) ? "black" : "white";
+  const textColor = isColorLight(backgroundColor) ? "#000000" : "#ffffff";
   const { sendEventToParentOnMessageClick } = useCustomSelector((state: $ReduxCoreType) => ({
     sendEventToParentOnMessageClick: state.Interface.eventsSubscribedByParent?.includes(ALLOWED_EVENTS_TO_SUBSCRIBE.MESSAGE_CLICK) || false
   }))
+
   return (
     <Box className="w-100">
+      {message?.time && <DateGroup prevTime={prevTime} messageTime={message?.time} key={message?.time} backgroundColor={backgroundColor} textColor={textColor} />}
       {message?.role === "user" ? (
         <>
+
           <UserMessageCard
             message={message}
             theme={theme}
@@ -430,7 +516,6 @@ function Message({ message, handleFeedback, addMessage }: any) {
               isError={true}
               theme={theme}
               textColor={textColor}
-              handleFeedback={handleFeedback}
               addMessage={addMessage}
             />
           )}
@@ -440,7 +525,6 @@ function Message({ message, handleFeedback, addMessage }: any) {
           message={message}
           theme={theme}
           textColor={textColor}
-          handleFeedback={handleFeedback}
           addMessage={addMessage}
           sendEventToParentOnMessageClick={sendEventToParentOnMessageClick}
         />
@@ -449,7 +533,7 @@ function Message({ message, handleFeedback, addMessage }: any) {
           message={message}
           theme={theme}
           textColor={textColor}
-          handleFeedback={handleFeedback}
+          backgroundColor={backgroundColor}
           addMessage={addMessage}
         />
       ) : message?.role === "Bot" ? (
@@ -458,7 +542,6 @@ function Message({ message, handleFeedback, addMessage }: any) {
           theme={theme}
           isBot={true}
           textColor={textColor}
-          handleFeedback={handleFeedback}
           addMessage={addMessage}
         />
       ) : message?.role === "tools_call" && Object.keys(message?.function) ? (
@@ -494,11 +577,50 @@ function Message({ message, handleFeedback, addMessage }: any) {
             </div>
           </div>
         </div>
-      ) : message?.role === "reset" ? (
-        <ResetHistoryLine text={message?.mode ? "Talk to human" : ""} />
       ) : null}
     </Box>
   );
 }
+
+
+
+function FeedBackButtons({ msgId }) {
+  const { handleMessageFeedback, msgIdAndDataMap } = useContext(MessageContext)
+  return <>
+    <button
+      className={`btn btn-ghost btn-xs tooltip ${msgIdAndDataMap?.[msgId]?.user_feedback === 1 ? "text-success" : ""
+        }`}
+      data-tip="Good response"
+      onClick={() =>
+        handleMessageFeedback({
+          msgId: msgIdAndDataMap?.[msgId]?.message_id,
+          reduxMsgId: msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
+          feedback: 1,
+        })
+      }
+    >
+      <ThumbsUp className="w-4 h-4" />
+    </button>
+
+    <button
+      className={`btn btn-ghost btn-xs tooltip ${msgIdAndDataMap?.[msgId]?.user_feedback === 2 ? "text-error" : ""
+        }`}
+      data-tip="Bad response"
+      onClick={() =>
+        handleMessageFeedback({
+          msgId: msgIdAndDataMap?.[msgId]?.message_id,
+          reduxMsgId: msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
+          feedback: 2
+        }
+        )
+      }
+    >
+      <ThumbsDown className="w-4 h-4" />
+    </button>
+  </>
+
+  return null
+}
+
 
 export default React.memo(Message);

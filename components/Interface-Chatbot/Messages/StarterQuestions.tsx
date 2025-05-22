@@ -1,14 +1,21 @@
 import { TrendingUp } from 'lucide-react';
+import { useContext } from 'react';
+import { MessageContext } from '../InterfaceChatbot';
 
-function StarterQuestions({ starterQuestions = [], addMessage }: { starterQuestions: string[]; addMessage: (message: string) => void }) {
-    if (starterQuestions.length === 0) return null;
+function StarterQuestions() {
+    const {
+        starterQuestions,
+        sendMessage
+    } = useContext(MessageContext)
+    
+    if (starterQuestions?.length === 0) return null;
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 mt-4 w-full max-5xl">
-            {starterQuestions.map((question: string, index: number) => (
+            {starterQuestions?.map((question: string, index: number) => (
                 <div
                     key={index}
-                    onClick={() => addMessage(question)}
+                    onClick={() => sendMessage({ message: question })}
                     className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md hover:scale-[1.01] cursor-pointer"
                 >
                     <div className="p-3">

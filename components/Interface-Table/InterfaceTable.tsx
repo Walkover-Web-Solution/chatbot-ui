@@ -20,7 +20,7 @@ function generateColumns(data) {
 function generateRows(data: any) {
   // Check if data is an array
   if (!Array.isArray(data)) {
-    console.error("Invalid data format. Expected an array.");
+    console.warn("Invalid data format. Expected an array.");
     return [];
   }
   // Generate rows
@@ -55,8 +55,18 @@ function InterfaceTable({ props, meta, propsPath }: InterfaceTableProps) {
     apiCallId,
     outputDataKey,
   } = meta || {};
-  const columns = generateColumns(props?.data?.[0]);
-  const [rows, setRows] = useState(generateRows(props?.data));
+  const [columns, setColumns] = useState<any[]>([]);
+  const [rows, setRows] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (props?.data && Array.isArray(props.data) && props.data.length > 0) {
+      setColumns(generateColumns(props.data[0]));
+      setRows(generateRows(props.data));
+    } else {
+      setColumns([]);
+      setRows([]);
+    }
+  }, [props?.data]);
   const apiRef = useGridApiRef();
   const path: any | { data: string } = outputDataKey || propsPath || "data";
 
@@ -94,7 +104,8 @@ function InterfaceTable({ props, meta, propsPath }: InterfaceTableProps) {
         paginationModel.eventType === "previous" &&
         pagesData[paginationModel.page]
       ) {
-        setRows(generateRows(pagesData[paginationModel.page]));
+        const pageData = pagesData[paginationModel.page];
+        setRows(generateRows(pageData));
         setIsLoading(false);
         return;
       }
@@ -154,28 +165,30 @@ function InterfaceTable({ props, meta, propsPath }: InterfaceTableProps) {
     return paginationMetaRef.current;
   }, [hasNextPage]);
   return (
-    <DataGrid
-      apiRef={apiRef}
-      rows={rows || []}
-      key={JSON.stringify(rows)}
-      className="bg-white w-full h-full"
-      columns={columns || []}
-      // columns={[{ field: "id", headerName: "ID" }]}
-      rowCount={paginationVariables?.total || -1}
-      paginationMeta={paginationMeta}
-      loading={isLoading}
-      pageSizeOptions={[currentPageInputVariable?.limit || 5, 10, 20]}
-      paginationModel={paginationModel}
-      hideFooterPagination={!meta}
-      paginationMode="server"
-      onPaginationModelChange={(model, details) => {
-        const eventType =
-          model?.page > details?.api?.state?.pagination?.paginationModel?.page
-            ? "next"
-            : "previous";
-        setPaginationModel({ ...model, eventType });
-      }}
-    />
+    <div className="flex flex-col">
+      <DataGrid
+        apiRef={apiRef}
+        rows={rows || []}
+        key={JSON.stringify(rows)}
+        className="bg-white w-full h-full"
+        columns={columns || []}
+        // columns={[{ field: "id", headerName: "ID" }]}
+        rowCount={paginationVariables?.total || -1}
+        paginationMeta={paginationMeta}
+        loading={isLoading}
+        pageSizeOptions={[currentPageInputVariable?.limit || 5, 10, 20]}
+        paginationModel={paginationModel}
+        hideFooterPagination={!meta}
+        paginationMode="server"
+        onPaginationModelChange={(model, details) => {
+          const eventType =
+            model?.page > details?.api?.state?.pagination?.paginationModel?.page
+              ? "next"
+              : "previous";
+          setPaginationModel({ ...model, eventType });
+        }}
+      />
+    </div>
   );
 }
 
