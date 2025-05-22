@@ -370,3 +370,9 @@ export const getAccessToken = async () => {
         return e;
     }
 };
+
+export const getAgentDetailsApi = async (agentName: string) => {
+    const response = await axios.get(`${PYTHON_URL}/public/${agentName}`);
+    console.log(response)
+    return response?.data;
+}

@@ -13,7 +13,7 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
     const { themeColor, handleThemeChange } = useContext(ThemeContext);
     const dispatch = useDispatch();
     // Use useMemo to parse interfaceDetails once and avoid repeated parsing
-    const { chatbot_id, userId, token, config, isHelloUser = false } = useMemo(() => {
+    const { chatbot_id, userId, token, config, isHelloUser = false, isPublicAgent = false } = useMemo(() => {
         const interfaceDetails = search.get("interfaceDetails");
         // Default values if parsing fails or interfaceDetails is not provided
         const defaultValues = {
@@ -21,7 +21,8 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
             userId: null,
             token: null,
             config: null,
-            isHelloUser: false
+            isHelloUser: false,
+            isPublicAgent:false
         };
 
         // Return default values if interfaceDetails is undefined or null
@@ -96,7 +97,8 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
         themeColor,
         onConfigChange,
         toggleHideCloseButton,
-        isHelloUser
+        isHelloUser,
+        isPublicAgent
     }), [chatbotConfig, chatbot_id, userId, token, themeColor, onConfigChange, toggleHideCloseButton, isHelloUser]);
 
     return (
