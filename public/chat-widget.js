@@ -12,7 +12,7 @@ class CobrowseManager {
             console.log("[CoBrowse PARENT] No device ID provided, aborting script injection");
             return;
         }
-
+      
         this.scriptInjected = true
         // Create and load the CobrowseIO script for parent window
         const script = document.createElement('script');

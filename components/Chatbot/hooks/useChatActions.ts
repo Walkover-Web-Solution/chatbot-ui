@@ -34,12 +34,12 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         variables: state.Interface?.interfaceContext?.[chatbotId]?.variables,
         selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null,
         userId: state.appInfo.userId || null,
-
     }))
+    
     const { firstThread } = useCustomSelector((state: $ReduxCoreType) => ({
         firstThread: state.Interface?.interfaceContext?.[chatbotId]?.[bridgeName]?.threadList?.[threadId]?.[0]
     }))
-
+    
     useEffect(() => {
         if (bridgeName) {
             globalDispatch(getHelloDetailsStart({ slugName: bridgeName }));
@@ -51,8 +51,9 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
     }, [threadId, bridgeName]);
 
     useEffect(() => {
-        if (!(firstThread?.newChat && firstThread?.subThread_id === subThreadId))
+        if (!(firstThread?.newChat && firstThread?.subThread_id === subThreadId)){
             getIntialChatHistory();
+        }
     }, [threadId, bridgeName, subThreadId]);
 
     const startTimeoutTimer = () => {
