@@ -148,10 +148,7 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
       dispatch(setHelloConfig(event.data.data));
       return;
     }
-    if(event?.data?.type == 'parent-route-changed' && event?.data?.data?.websiteUrl){
-      addDomainToHello(event?.data?.data?.websiteUrl);
-      return;
-    }
+
     const receivedData: InterfaceData = event.data.data;
     if (Object.keys(receivedData || {}).length === 0) return;
     // Process thread-related data
