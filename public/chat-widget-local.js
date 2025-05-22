@@ -1,5 +1,76 @@
 /* eslint-disable */
 let block_chatbot = false;
+
+class CobrowseManager {
+    constructor() {
+        this.scriptInjected = false
+        this.device_id = null
+    }
+
+    injectScript(uuid) {
+        if (!uuid) {
+            console.log("[CoBrowse PARENT] No device ID provided, aborting script injection");
+            return;
+        }
+
+        // Create and load the CobrowseIO script for parent window
+        const script = document.createElement('script');
+        script.id = 'CBParentScript';
+        script.src = 'https://js.cobrowse.io/CobrowseIO.js';
+        script.async = true;
+
+        // Set up an onload handler to configure CobrowseIO after script loads
+        script.onload = function () {
+            try {
+                console.log("[CoBrowse PARENT] Configuring with device ID:", uuid);
+
+                // Now manually configure CobrowseIO
+                window.CobrowseIO.customData = {
+                    device_id: uuid
+                };
+
+                window.CobrowseIO.license = "FZBGaF9-Od0GEQ"; // Replace with your actual license key
+                window.CobrowseIO.trustedOrigins = [
+                    window?.origin,
+                    "http://localhost:3001/chatbot"
+                ]
+
+                // Start CobrowseIO
+                window.CobrowseIO.client().then(function () {
+                    window.CobrowseIO.start();
+                    console.log("[CoBrowse PARENT] CoBrowse service started successfully, Notifying iframe to add CoBrowse script");
+                    sendMessageToChatbot({ type: "ADD_COBROWSE_SCRIPT", data: { origin: window?.origin } });
+                }).catch(function (err) {
+                    console.error("[CoBrowse PARENT] Client initialization error:", err);
+                });
+            } catch (error) {
+                console.error("[CoBrowse PARENT] Error configuring CobrowseIO:", error);
+            }
+        };
+
+        script.onerror = function () {
+            console.error("[CoBrowse PARENT] Failed to load CobrowseIO script");
+        };
+
+        // Add the script to the document
+        document.head.appendChild(script);
+    }
+
+    updateDeviceId(uuid) {
+        if (this.device_id !== uuid && this.scriptInjected) {
+            this.device_id = uuid
+            window.CobrowseIO.customData = {
+                device_id: uuid
+            }
+            return
+        }
+        if (!this.scriptInjected) {
+            this.injectScript(uuid)
+        }
+    }
+}
+
+const CBManager = new CobrowseManager()
 class HelloChatbotEmbedManager {
     constructor() {
         this.props = {};
@@ -28,7 +99,8 @@ class HelloChatbotEmbedManager {
             fullscreen: false,
             tempDataToSend: null,
             interfaceLoaded: false,
-            delayElapsed: false
+            delayElapsed: false,
+            domainTrackingStarted: false
         };
 
         this.initializeEventListeners();
@@ -46,7 +118,7 @@ class HelloChatbotEmbedManager {
         const imgElement = document.createElement('div');
         imgElement.id = 'hello-popup-interfaceEmbed';
         imgElement.innerHTML = `
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="60" height="60" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="border: 0.5px solid #A9A9A9; border-radius: 50%; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);">
             <rect width="48" height="48" rx="24" fill="white"/>
             <path d="M10.667 16C10.667 13.7909 12.4579 12 14.667 12H33.3337C35.5428 12 37.3337 13.7909 37.3337 16V28C37.3337 30.2091 35.5428 32 33.3337 32H14.667C12.4579 32 10.667 30.2091 10.667 28V16Z" fill="#F2CA55"/>
             <path fill-rule="evenodd" clip-rule="evenodd" d="M21.1339 22.6665C21.1339 24.2497 22.4173 25.5332 24.0005 25.5332C25.5837 25.5332 26.8672 24.2497 26.8672 22.6665H29.1339C29.1339 25.5016 26.8356 27.7998 24.0005 27.7998C21.1655 27.7998 18.8672 25.5016 18.8672 22.6665H21.1339Z" fill="#8C5D00"/>
@@ -236,6 +308,8 @@ class HelloChatbotEmbedManager {
     }
 
     enableDomainTracking() {
+        if (this.state.domainTrackingStarted) return
+        this.state.domainTrackingStarted = true
         sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: window?.location?.href } });
 
         (function () {
@@ -297,6 +371,8 @@ class HelloChatbotEmbedManager {
         this.uuid = uuid;
         if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'uuid', data: { uuid } }));
+        } else {
+            CBManager.updateDeviceId(uuid)
         }
     }
 
@@ -751,6 +827,7 @@ window.initChatWidget = (data, delay = 0) => {
 
 // Create chatWidget object with all widget control functions
 window.chatWidget = {
+    addUserEvent: (data) => sendMessageToChatbot({ type: "ADD_USER_EVENT_SEGMENTO", data: { ...data, websiteUrl: window?.location?.href } }),
     open: () => helloChatbotManager.openChatbot(),
     close: () => helloChatbotManager.closeChatbot(),
     hide: () => {

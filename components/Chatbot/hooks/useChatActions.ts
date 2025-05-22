@@ -7,6 +7,8 @@ import { useCustomSelector } from '@/utils/deepCheckSelector';
 import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState, SendMessagePayloadType } from './chatTypes';
+import { PAGE_SIZE } from '@/utils/enums';
+import { getHelloDetailsStart } from '@/store/hello/helloSlice';
 
 export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) => {
     if (chatbotId === 'hello') {
@@ -21,7 +23,6 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             setImages: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload }),
             setOptions: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_OPTIONS, payload }),
             setNewMessage: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload }),
-            setMessages: (payload: any) => chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload }),
             handleMessageFeedback: () => { }
         }
     }
@@ -33,15 +34,25 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         variables: state.Interface?.interfaceContext?.[chatbotId]?.variables,
         selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null,
         userId: state.appInfo.userId || null,
+
+    }))
+    const { firstThread } = useCustomSelector((state: $ReduxCoreType) => ({
+        firstThread: state.Interface?.interfaceContext?.[chatbotId]?.[bridgeName]?.threadList?.[threadId]?.[0]
     }))
 
     useEffect(() => {
-        fetchAllThreads()
+        if (bridgeName) {
+            globalDispatch(getHelloDetailsStart({ slugName: bridgeName }));
+        }
+    }, [bridgeName])
+
+    useEffect(() => {
+        threadId && bridgeName && fetchAllThreads()
     }, [threadId, bridgeName]);
 
     useEffect(() => {
-        setMessages([])
-        getIntialChatHistory();
+        if (!(firstThread?.newChat && firstThread?.subThread_id === subThreadId))
+            getIntialChatHistory();
     }, [threadId, bridgeName, subThreadId]);
 
     const startTimeoutTimer = () => {
@@ -77,7 +88,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                     chatDispatch({
                         type: ChatActionTypes.SET_DATA, payload: {
                             currentPage: 1,
-                            hasMoreMessages: previousChats?.length >= 20
+                            hasMoreMessages: previousChats?.length >= PAGE_SIZE.gtwy
                         }
                     });
                 } else {
@@ -129,7 +140,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                 chatDispatch({
                     type: ChatActionTypes.SET_DATA, payload: {
                         currentPage: nextPage,
-                        hasMoreMessages: previousChats?.length >= 20
+                        hasMoreMessages: previousChats?.length >= PAGE_SIZE.gtwy
                     }
                 });
             } else {
@@ -153,6 +164,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload: true })
         const textMessage = message || (messageRef?.current as HTMLInputElement)?.value;
         const imageUrls = Array.isArray(chatState.images) && chatState?.images?.length ? chatState?.images : []; // Assuming imageUrls is an empty array or you can replace it with the actual value
+
         if (!textMessage && imageUrls.length === 0) return;
         if (messageRef.current) {
             messageRef.current.value = "";
@@ -169,8 +181,16 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                 images: []
             }
         });
-        chatDispatch({ type: ChatActionTypes.ADD_MESSAGE, payload: { role: "user", content: textMessage, urls: imageUrls } });
-        chatDispatch({ type: ChatActionTypes.ADD_ASSISTANT_WAITING_MESSAGE, payload: { content: "Talking with AI" } });
+        chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message: { role: "user", content: textMessage, urls: imageUrls } } });
+        chatDispatch({
+            type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: {
+                message: {
+                    content: "Talking with AI",
+                    role: "assistant",
+                    wait: true,
+                }
+            }
+        });
 
         const payload = {
             message: textMessage,
@@ -180,6 +200,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             threadId: customThreadId || threadId,
             subThreadId: subThreadId,
             slugName: customBridgeSlug || bridgeName,
+            thread_flag: (firstThread?.newChat && firstThread?.sub_thread_id === subThreadId) ? true : false,
             chatBotId: chatbotId,
             version_id: chatState.bridgeVersionId === "null" ? null : chatState.bridgeVersionId,
             ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {
@@ -194,8 +215,6 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             return
         }
     }
-
-    const setMessages = (payload: MessageType[]) => chatDispatch({ type: ChatActionTypes.SET_MESSAGES, payload: { messages: payload, initial: false } })
 
     const handleMessageFeedback = async (payload: { msgId: string, feedback: number, reduxMsgId: string }) => {
         const { msgId, feedback, reduxMsgId } = payload;
@@ -262,7 +281,6 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         setImages: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload }),
         setOptions: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_OPTIONS, payload }),
         setNewMessage: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload }),
-        setMessages,
         handleMessageFeedback,
     };
 }

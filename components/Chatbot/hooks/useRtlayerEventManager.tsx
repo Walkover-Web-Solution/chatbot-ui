@@ -4,10 +4,14 @@ import React, { useCallback, useContext, useEffect } from 'react';
 import WebSocketClient from 'rtlayer-client';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { ChatbotContext } from '@/components/context';
+import { generateNewId } from '@/utils/utilities';
+import { setThreads } from '@/store/interface/interfaceSlice';
+import { useDispatch } from 'react-redux';
 
 // Create a separate hook to manage the WebSocket client instance
 function useWebSocketClient(isHelloUser: boolean) {
   const [client, setClient] = React.useState(null);
+  
   // Only create the WebSocket client when needed
   React.useEffect(() => {
     if (!isHelloUser) {
@@ -30,6 +34,11 @@ function useWebSocketClient(isHelloUser: boolean) {
 
 function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) {
   const { isHelloUser } = useContext(ChatbotContext)
+  const { reduxThreadId, reduxBridgeName} = useCustomSelector((state: $ReduxCoreType) => ({
+    threadId: state.appInfo.threadId,
+    bridgeName: state.appInfo.bridgeName,    
+}))
+  const dispatch = useDispatch()
   if (isHelloUser) {
     return null
   }
@@ -51,17 +60,17 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
     switch (true) {
       // Case: Function call is present without a message
       case function_call && !responseMessage:
-        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Function Calling", Name: parsedMessage?.response?.Name || [] } });
+        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Function Calling", Name: parsedMessage?.response?.Name || [] , id:generateNewId()} });
         break;
 
       // Case: Function call is present with a message
       case function_call && !!responseMessage:
-        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Talking with AI" } });
+        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Talking with AI" ,id:generateNewId()} });
         break;
-
+ 
       // Case: Error is present without response data
       case !data && !!parsedMessage?.error:
-        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", content: `${parsedMessage?.error || error || "Error while talking to AI"}` } });
+        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", content: `${parsedMessage?.error || error || "Error while talking to AI"}` ,id:generateNewId()} });
         chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: false });
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
         break;
@@ -69,10 +78,12 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
       // Case: Reset role is present without mode
       case data?.role === "reset" && !data?.mode:
         chatDispatch({
-          type: ChatActionTypes.ADD_MESSAGE, payload: {
-            role: "reset",
-            mode: data?.mode,
-            content: "Resetting the chat",
+          type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: {
+            message:{
+              role: "reset",
+              mode: data?.mode,
+              content: "Resetting the chat",
+            }
           }
         })
         break;
@@ -82,6 +93,14 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
         chatDispatch({
           type: ChatActionTypes.SET_OPTIONS, payload: Array.isArray(data?.suggestions) ? data?.suggestions : []
         });
+        break;
+      
+      case !!data?.display_name:
+        dispatch(setThreads({
+          newThreadData: { ...data },
+          bridgeName: reduxBridgeName,
+          threadId: reduxThreadId
+        }))
         break;
 
       // Case: Response data is present

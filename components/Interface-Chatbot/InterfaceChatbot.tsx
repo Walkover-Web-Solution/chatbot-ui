@@ -50,6 +50,7 @@ export const MessageContext = createContext<{
   isToggledrawer: boolean,
   chatDispatch?: React.Dispatch<ChatAction>;
   getMoreChats: () => void;
+  getMoreHelloChats: () => void;
   handleMessageFeedback: (data: any) => void;
   isTyping: boolean;
   isSmallScreen: boolean;
