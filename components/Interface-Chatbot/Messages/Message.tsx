@@ -32,9 +32,14 @@ import ImageWithFallback from "./ImageWithFallback";
 import "./Message.css";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
-const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
+const UserMessageCard = React.memo(({ message, theme, textColor, sendEventToParentOnMessageClick }: any) => {
+  const handleMessageClick = () => {
+    if (sendEventToParentOnMessageClick) {
+      emitEventToParent("MESSAGE_CLICK", message)
+    }
+  }
   return (
-    <div className="flex flex-col gap-2.5 items-end w-full mb-2.5 animate-slide-left mt-1">
+    <div className="flex flex-col gap-2.5 items-end w-full mb-2.5 animate-slide-left mt-1" onClick={handleMessageClick}>
       {Array.isArray(message?.urls) && message.urls.length > 0 && (
         <div className="flex flex-row-reverse flex-wrap gap-2.5 w-full">
           {message.urls.map((url: any, index: number) => {
@@ -77,7 +82,6 @@ const AssistantMessageCard = React.memo(
     theme,
     isError = false,
     addMessage = () => { },
-    sendEventToParentOnMessageClick
   }: any) => {
     const [isCopied, setIsCopied] = React.useState(false);
     const handleCopy = () => {
@@ -92,14 +96,8 @@ const AssistantMessageCard = React.memo(
       "--primary-main": lighten(theme.palette.secondary.main, 0.4),
     };
 
-    const handleMessageClick = () => {
-      if (sendEventToParentOnMessageClick) {
-        emitEventToParent("MESSAGE_CLICK", message)
-      }
-    }
-
     return (
-      <div className="flex flex-col" onClick={handleMessageClick}>
+      <div className="flex flex-col">
         <div className="flex items-end sm:max-w-[90%] max-w-[98%] animate-slide-left">
           <div className="flex flex-col items-center justify-end w-8 pb-3">
             <div className="sm:w-7 sm:h-7 w-6 h-6 rounded-full bg-primary/10 p-1 flex items-center justify-center">
@@ -509,6 +507,7 @@ function Message({ message, addMessage, prevTime }: { message: any, addMessage?:
             message={message}
             theme={theme}
             textColor={textColor}
+            sendEventToParentOnMessageClick={sendEventToParentOnMessageClick}
           />
           {message?.error && (
             <AssistantMessageCard
@@ -526,7 +525,6 @@ function Message({ message, addMessage, prevTime }: { message: any, addMessage?:
           theme={theme}
           textColor={textColor}
           addMessage={addMessage}
-          sendEventToParentOnMessageClick={sendEventToParentOnMessageClick}
         />
       ) : message?.role === "Human" ? (
         <HumanOrBotMessageCard

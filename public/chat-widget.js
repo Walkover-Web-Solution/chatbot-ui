@@ -12,7 +12,8 @@ class CobrowseManager {
             console.log("[CoBrowse PARENT] No device ID provided, aborting script injection");
             return;
         }
-    
+
+        this.scriptInjected = true
         // Create and load the CobrowseIO script for parent window
         const script = document.createElement('script');
         script.id = 'CBParentScript';
@@ -23,7 +24,7 @@ class CobrowseManager {
         script.onload = function () {
             try {
                 console.log("[CoBrowse PARENT] Configuring with device ID:", uuid);
-                
+
                 // Now manually configure CobrowseIO
                 window.CobrowseIO.customData = {
                     device_id: uuid
@@ -64,6 +65,11 @@ class CobrowseManager {
             }
             return
         }
+        
+        if(this.device_id === uuid && this.scriptInjected){
+            return
+        }
+
         if (!this.scriptInjected) {
             this.injectScript(uuid)
         }
@@ -101,7 +107,7 @@ class ChatbotEmbedManager {
             tempDataToSend: null,
             interfaceLoaded: false,
             delayElapsed: false,
-            domainTrackingStarted:false
+            domainTrackingStarted: false
         };
 
         this.initializeEventListeners();
@@ -125,7 +131,7 @@ class ChatbotEmbedManager {
         const imgElement = document.createElement('div');
         imgElement.id = 'popup-interfaceEmbed';
         imgElement.innerHTML = `
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="60" height="60" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="border: 0.5px solid #A9A9A9; border-radius: 50%; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);">
             <rect width="48" height="48" rx="24" fill="white"/>
             <path d="M10.667 16C10.667 13.7909 12.4579 12 14.667 12H33.3337C35.5428 12 37.3337 13.7909 37.3337 16V28C37.3337 30.2091 35.5428 32 33.3337 32H14.667C12.4579 32 10.667 30.2091 10.667 28V16Z" fill="#F2CA55"/>
             <path fill-rule="evenodd" clip-rule="evenodd" d="M21.1339 22.6665C21.1339 24.2497 22.4173 25.5332 24.0005 25.5332C25.5837 25.5332 26.8672 24.2497 26.8672 22.6665H29.1339C29.1339 25.5016 26.8356 27.7998 24.0005 27.7998C21.1655 27.7998 18.8672 25.5016 18.8672 22.6665H21.1339Z" fill="#8C5D00"/>
@@ -227,8 +233,8 @@ class ChatbotEmbedManager {
                 }
                 break;
             case 'ENABLE_DOMAIN_TRACKING':
-                    this.enableDomainTracking();
-                    break;    
+                this.enableDomainTracking();
+                break;
             default:
                 break;
         }
@@ -315,37 +321,37 @@ class ChatbotEmbedManager {
     }
 
     enableDomainTracking() {
-        if(this.state.domainTrackingStarted) return
+        if (this.state.domainTrackingStarted) return
         this.state.domainTrackingStarted = true
         sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: window?.location?.href } });
 
         (function () {
-                const originalPushState = history.pushState;
-                const originalReplaceState = history.replaceState;
+            const originalPushState = history.pushState;
+            const originalReplaceState = history.replaceState;
 
-                function handleUrlChange() {
-                    const fullUrl = window.location.href;
+            function handleUrlChange() {
+                const fullUrl = window.location.href;
 
-                    // Only call API if it's not a hash-only change
-                    if (window.location.hash === '') {
-                        sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: fullUrl } })
-                    }
+                // Only call API if it's not a hash-only change
+                if (window.location.hash === '') {
+                    sendMessageToChatbot({ type: 'parent-route-changed', data: { websiteUrl: fullUrl } })
                 }
+            }
 
-                history.pushState = function () {
-                    originalPushState.apply(this, arguments);
-                    handleUrlChange();
-                };
+            history.pushState = function () {
+                originalPushState.apply(this, arguments);
+                handleUrlChange();
+            };
 
-                history.replaceState = function () {
-                    originalReplaceState.apply(this, arguments);
-                    handleUrlChange();
-                };
+            history.replaceState = function () {
+                originalReplaceState.apply(this, arguments);
+                handleUrlChange();
+            };
 
-                window.addEventListener('popstate', handleUrlChange);
+            window.addEventListener('popstate', handleUrlChange);
         })();
     }
-    
+
     handleDownloadAttachment(data) {
         if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'downloadAttachment', data: data?.url }));
@@ -378,7 +384,7 @@ class ChatbotEmbedManager {
         this.uuid = uuid;
         if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'uuid', data: { uuid } }));
-        } else{
+        } else {
             CBManager.updateDeviceId(uuid)
         }
     }

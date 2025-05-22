@@ -5,10 +5,13 @@ import WebSocketClient from 'rtlayer-client';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import { ChatbotContext } from '@/components/context';
 import { generateNewId } from '@/utils/utilities';
+import { setThreads } from '@/store/interface/interfaceSlice';
+import { useDispatch } from 'react-redux';
 
 // Create a separate hook to manage the WebSocket client instance
 function useWebSocketClient(isHelloUser: boolean) {
   const [client, setClient] = React.useState(null);
+  
   // Only create the WebSocket client when needed
   React.useEffect(() => {
     if (!isHelloUser) {
@@ -31,6 +34,11 @@ function useWebSocketClient(isHelloUser: boolean) {
 
 function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) {
   const { isHelloUser } = useContext(ChatbotContext)
+  const { reduxThreadId, reduxBridgeName} = useCustomSelector((state: $ReduxCoreType) => ({
+    threadId: state.appInfo.threadId,
+    bridgeName: state.appInfo.bridgeName,    
+}))
+  const dispatch = useDispatch()
   if (isHelloUser) {
     return null
   }
@@ -85,6 +93,14 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
         chatDispatch({
           type: ChatActionTypes.SET_OPTIONS, payload: Array.isArray(data?.suggestions) ? data?.suggestions : []
         });
+        break;
+      
+      case !!data?.display_name:
+        dispatch(setThreads({
+          newThreadData: { ...data },
+          bridgeName: reduxBridgeName,
+          threadId: reduxThreadId
+        }))
         break;
 
       // Case: Response data is present

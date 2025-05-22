@@ -1,6 +1,8 @@
 import { ThemeContext } from '@/components/AppWrapper';
 import { ChatbotContext } from '@/components/context';
 import { getAgentTeamApi, getAllChannels, getCallToken, getClientToken, getGreetingQuestions, getHelloChatHistoryApi, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
+import useNotificationSocket from '@/hooks/notifications/notificationSocket';
+import useNotificationSocketEventHandler from '@/hooks/notifications/notificationSocketEventHandler';
 import useSocket from '@/hooks/socket';
 import useSocketEvents from '@/hooks/socketEventHandler';
 import socketManager from '@/hooks/socketManager';
@@ -9,6 +11,7 @@ import { setAgentTeams, setChannelListData, setGreeting, setHelloKeysData, setJw
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
+import { PAGE_SIZE } from '@/utils/enums';
 import { generateNewId, getLocalStorage } from '@/utils/utilities';
 import { useCallback, useContext, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
@@ -16,9 +19,6 @@ import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import helloVoiceService from './HelloVoiceService';
 import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
-import useNotificationSocket from '@/hooks/notifications/notificationSocket';
-import useNotificationSocketEventHandler from '@/hooks/notifications/notificationSocketEventHandler';
-import { PAGE_SIZE } from '@/utils/enums';
 
 interface HelloMessage {
   role: string;
@@ -333,7 +333,6 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     }
     if (e.detail.key === 'k_clientId' || e.detail.key === 'a_clientId') {
       dispatch(setHelloKeysData({ [e.detail.key]: e.detail.value }))
-      emitEventToParent('uuid', { uuid: e.detail?.value });
     }
     if (e.detail.key === 'is_anon') {
       dispatch(setHelloKeysData({ is_anon: e.detail.value }));
@@ -365,6 +364,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         k_clientId = getLocalStorage(`k_clientId`);
       }
 
+      //  used to subscribe to cobrowse
+      emitEventToParent('uuid', { uuid: k_clientId || a_clientId })
       // Step 2: Handle domain (if needed)
 
       let widgetData = null;
@@ -372,7 +373,6 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       let botType = '';
       if (isHelloUser && widgetToken) {
         try {
-          // debugger;
           widgetData = await initializeHelloChat();
           if (!widgetData) {
             window.parent.postMessage({ type: 'initializeHelloChat_failed' }, '*');

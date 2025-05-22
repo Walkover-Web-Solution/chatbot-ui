@@ -16,8 +16,14 @@ function InterfaceMarkdown({ props }: any) {
     >
       {props?.children ||
         props?.text ||
-        props?.content ||
-        props?.data ||
+        (typeof props?.content === 'object'
+          ? (props?.content?.content
+            ? (typeof props?.content?.content === 'object'
+              ? JSON.stringify(props?.content?.content)
+              : props?.content?.content)
+            : JSON.stringify(props?.content))
+          : props?.content) ||
+        (typeof props?.data === 'object' ? JSON.stringify(props?.data) : props?.data) ||
         `I'm a markdown component.`}
     </ReactMarkdown>
   );

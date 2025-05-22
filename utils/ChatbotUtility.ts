@@ -25,31 +25,21 @@ export const isJSONString = (str: string) => {
   }
 };
 
-export const perFormAction = (actionData: any) => {
-  // const data = {
-  //   message: actionData?.variables || actionData?.variable || actionData?.data || actionData?.dataToSend || {},
-  //   type: "ChatbotResponse",
-  // };
-  // window?.parent?.postMessage(data, "*");
-  emitEventToParent('FRONT_END_ACTION',actionData?.variables || actionData?.variable || actionData?.data || actionData?.dataToSend || {})
-  // switch (actionData?.type?.toLowerCase()) {
-  //   case "senddatatofrontend":
-  //     /* eslint-disable-next-line */
-  //     const data = {
-  //       message: actionData.variable,
-  //       type: "ChatbotResponse",
-  //     };
-  //     window?.parent?.postMessage(data, "*");
-  //     break;
-  //   case "senddatatoai":
-  //     // data = {
-  //     //   message: actionData.data,
-  //     //   type: "ChatbotResponse",
-  //     // };
-  //     break;
-  //   default:
-  //     break;
-  // }
+export const perFormAction = (actionData, sendMessage, props) => {
+
+  switch (actionData?.actionType) {
+    case "reply":
+      sendMessage({ message: (props?.label || props?.children || props?.text || props?.title || props?.name) });
+      break;
+    case "sendDataToFrontEnd":
+      emitEventToParent(
+        'FRONT_END_ACTION',
+        actionData?.variables || actionData?.variable || actionData?.data || actionData?.dataToSend || {}
+      );
+      break;
+    default:
+      break;
+  }
 };
 
 export const toggleSidebar = (sidebarId) => {
