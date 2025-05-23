@@ -573,12 +573,24 @@
     window.openChatbot = () => chatbotManager.openChatbot();
     window.closeChatbot = () => chatbotManager.closeChatbot();
 
-    window.chatbot = {
+    window.Chatbot = {
         open: () => {
             chatbotManager.openChatbot();
         },
         close: () => {
             chatbotManager.closeChatbot();
+        },
+        show: () => {
+            const interfaceEmbed = document.getElementById('interfaceEmbed');
+            if (interfaceEmbed) {
+                interfaceEmbed.style.display = 'unset';
+            }
+        },
+        hide: () => {
+            const interfaceEmbed = document.getElementById('interfaceEmbed');
+            if (interfaceEmbed) {
+                interfaceEmbed.style.display = 'none';
+            }
         },
         reloadChats: () => {
             sendMessageToChatbot({ type: 'refresh', reload: true });
