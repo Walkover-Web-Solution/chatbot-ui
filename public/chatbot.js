@@ -4,7 +4,6 @@
     class ChatbotEmbedManager {
         constructor() {
             this.props = {};
-            this.isHelloChatWidget = false;
             this.helloProps = {};
             this.parentContainer = null;
             this.config = {
@@ -76,7 +75,7 @@
                 'onOpen', 'onClose', 'iconColor', 'className', 'style', 'environment',
                 'fullScreen', 'hideCloseButton', 'hideIcon', 'parentId', 'config',
                 'headerButtons', 'eventsToSubscribe', 'modalConfig', 'allowModalSwitch',
-                'chatTitle', 'chatIcon', 'hideFullScreenButton'
+                'chatTitle', 'chatIcon', 'hideFullScreenButton', 'defaultOpen'
             ];
 
             return attributes.reduce((props, attr) => {
@@ -137,7 +136,18 @@
         }
 
         setupMessageListeners() {
-            window.addEventListener('message', this.handleIncomingMessages.bind(this));
+            window.addEventListener('message', (event) => {
+                // Only process messages from trusted origins
+                const trustedOrigins = [
+                    'http://localhost:3000',
+                    'https://chatbot.gtwy.ai',
+                    window.location.origin
+                ];
+
+                if (trustedOrigins.includes(event.origin)) {
+                    this.handleIncomingMessages(event);
+                }
+            });
         }
 
         handleIncomingMessages(event) {
@@ -308,17 +318,13 @@
         }
 
         attachIconEvents(chatBotIcon) {
-            chatBotIcon.addEventListener('click', () => window.openChatbot());
+            chatBotIcon.addEventListener('click', () => this.openChatbot());
         }
 
         async loadChatbotEmbed() {
             try {
-                if (this.isHelloChatWidget) {
-                    this.processChatbotDetails({});
-                } else {
-                    const response = await this.fetchChatbotDetails();
-                    this.processChatbotDetails(response);
-                }
+                const response = await this.fetchChatbotDetails();
+                this.processChatbotDetails(response);
             } catch (error) {
                 console.error('Chatbot embed loading error:', error);
             }
@@ -368,11 +374,7 @@
             const iframeComponent = document.getElementById('iframe-component-interfaceEmbed');
             if (!iframeComponent) return;
             let encodedData = '';
-            if (this.isHelloChatWidget) {
-                encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true }));
-            } else {
-                encodedData = encodeURIComponent(JSON.stringify(data.data));
-            }
+            encodedData = encodeURIComponent(JSON.stringify(data.data));
             const modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
             iframeComponent.src = modifiedUrl;
 
@@ -439,7 +441,7 @@
         }
 
         updateProps(newProps) {
-            this.props = { ...this.props, ...newProps };
+            this.props = { ...this.props, ...newProps }
             this.setPropValues(newProps);
         }
 
@@ -448,8 +450,12 @@
                 document.getElementById("popup-interfaceEmbed").src = newprops.iconColor === 'dark' ? AI_WHITE_ICON : AI_BLACK_ICON
             } if (newprops.fullScreen === true || newprops.fullScreen === 'true') {
                 document.getElementById('iframe-parent-container')?.classList.add('full-screen-interfaceEmbed')
+                this.state.tempDataToSend = { ...this.state.tempDataToSend, hideFullScreenButton: true }
+                sendMessageToChatbot({ type: 'interfaceData', data: { hideFullScreenButton: true } });
             } if (newprops.fullScreen === false || newprops.fullScreen === 'false') {
                 document.getElementById('iframe-parent-container')?.classList.remove('full-screen-interfaceEmbed')
+                this.state.tempDataToSend = { ...this.state.tempDataToSend, hideFullScreenButton: false }
+                sendMessageToChatbot({ type: 'interfaceData', data: { hideFullScreenButton: false } });
             } if ('hideIcon' in newprops && document.getElementById('interfaceEmbed')) {
                 document.getElementById('interfaceEmbed').style.display = (newprops.hideIcon === true || newprops.hideIcon === 'true') ? 'none' : 'unset';
             } if ('hideCloseButton' in newprops && document.getElementById('close-button-interfaceEmbed')) {
@@ -461,6 +467,9 @@
             if (this.state.tempDataToSend || this.helloProps) {
                 sendMessageToChatbot({ type: 'interfaceData', data: this.state.tempDataToSend });
                 sendMessageToChatbot({ type: 'helloData', data: this.helloProps });
+                if (this.state.tempDataToSend?.defaultOpen === true || this.state.tempDataToSend?.defaultOpen === 'true') {
+                    this.openChatbot();
+                }
                 this.state.tempDataToSend = null;
             }
         }
@@ -563,6 +572,36 @@
 
     window.openChatbot = () => chatbotManager.openChatbot();
     window.closeChatbot = () => chatbotManager.closeChatbot();
+
+    window.Chatbot = {
+        open: () => {
+            chatbotManager.openChatbot();
+        },
+        close: () => {
+            chatbotManager.closeChatbot();
+        },
+        show: () => {
+            const interfaceEmbed = document.getElementById('interfaceEmbed');
+            if (interfaceEmbed) {
+                interfaceEmbed.style.display = 'unset';
+            }
+        },
+        hide: () => {
+            const interfaceEmbed = document.getElementById('interfaceEmbed');
+            if (interfaceEmbed) {
+                interfaceEmbed.style.display = 'none';
+            }
+        },
+        reloadChats: () => {
+            sendMessageToChatbot({ type: 'refresh', reload: true });
+        },
+        askAi: (data) => {
+            sendMessageToChatbot({ type: 'askAi', data: data || "" });
+        },
+        sendData: (data) => {
+            window.SendDataToChatbot(data);
+        }
+    }
     // Helper function to send messages to the iframe
     function sendMessageToChatbot(messageObj) {
         const iframeComponent = document.getElementById('iframe-component-interfaceEmbed');
@@ -579,37 +618,5 @@
         sendMessageToChatbot({ type: 'askAi', data: data || "" });
     };
 
-    function getScriptParams() {
-        // Get the current script element
-        const script = document.currentScript || (function () {
-            // Fallback for browsers that don't support currentScript
-            const scripts = document.getElementsByTagName('script');
-            return scripts[scripts.length - 1];
-        })();
-
-        // Get the script URL
-        const scriptUrl = script.src;
-
-        // Parse URL to extract query parameters
-        const url = new URL(scriptUrl);
-        const params = new URLSearchParams(url.search);
-        return params;
-    }
-
-    const scriptParams = getScriptParams();
-    // Store embedToken in helloProps if it exists in URL parameters
-    if (scriptParams.get('hello') === 'true' || scriptParams.get('hello') === true) {
-        chatbotManager.isHelloChatWidget = true;
-    }
-
-    // Initialize the widget function
-    window.initChatWidget = (data, delay = 0) => {
-        if (data) {
-            chatbotManager.helloProps = { ...data };
-        }
-    };
-
-    setTimeout(() => {
-        chatbotManager.initializeChatbot();
-    }, 1000);
+    chatbotManager.initializeChatbot();
 })();
