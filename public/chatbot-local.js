@@ -459,10 +459,6 @@
         }
 
         sendInitialData() {
-            const interfaceEmbed = document.getElementById('interfaceEmbed');
-            if (interfaceEmbed) {
-                interfaceEmbed.style.display = 'block';
-            }
             if (this.state.tempDataToSend || this.helloProps) {
                 sendMessageToChatbot({ type: 'interfaceData', data: this.state.tempDataToSend });
                 sendMessageToChatbot({ type: 'helloData', data: this.helloProps });

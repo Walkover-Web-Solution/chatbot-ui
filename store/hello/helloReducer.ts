@@ -70,7 +70,7 @@ export const reducers: ValidateSliceCaseReducers<
   setHelloKeysData(state, action: actionType<Partial<$HelloReduxType>>) {
     const payload = action.payload;
     if (payload && typeof payload === 'object') {
-      Object.keys(payload).forEach(key => {
+      Object.keys(payload || {}).forEach(key => {
         // This ensures we only set properties that exist in $HelloReduxType
         (state as Record<keyof $HelloReduxType, any>)[key as keyof $HelloReduxType] =
           payload[key as keyof $HelloReduxType];
