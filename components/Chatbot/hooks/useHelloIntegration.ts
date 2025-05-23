@@ -333,7 +333,6 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     }
     if (e.detail.key === 'k_clientId' || e.detail.key === 'a_clientId') {
       dispatch(setHelloKeysData({ [e.detail.key]: e.detail.value }))
-      emitEventToParent('uuid', { uuid: e.detail?.value });
     }
     if (e.detail.key === 'is_anon') {
       dispatch(setHelloKeysData({ is_anon: e.detail.value }));
@@ -367,6 +366,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
         k_clientId = getLocalStorage(`k_clientId`);
       }
 
+      //  used to subscribe to cobrowse
+      emitEventToParent('uuid', { uuid: k_clientId || a_clientId })
       // Step 2: Handle domain (if needed)
 
       let widgetData = null;
