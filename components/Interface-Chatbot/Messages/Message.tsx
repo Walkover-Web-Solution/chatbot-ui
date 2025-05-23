@@ -542,14 +542,14 @@ function Message({ message, addMessage, prevTime }: { message: any, addMessage?:
           textColor={textColor}
           addMessage={addMessage}
         />
-      ) : message?.role === "tools_call" && Object.keys(message?.function) ? (
+      ) : message?.role === "tools_call" && Object.keys(message?.function || {})?.length ? (
         <div className="flex gap-2 pl-3 items-center">
           <div className="collapse collapse-arrow w-full">
             <input type="checkbox" />
             <div className="collapse-title flex flex-row items-center w-full max-w-64">
               <CircleCheckBig color="green" size={20} />
               <p className="text-base text-green-900 ml-2">
-                {Object.keys(message?.tools_call_data?.[0] || []).length} Functions executed
+                {Object.keys(message?.tools_call_data?.[0] || {}).length} Functions executed
               </p>
             </div>
             <div className="collapse-content w-full gap-2">
