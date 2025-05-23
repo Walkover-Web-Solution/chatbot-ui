@@ -9,9 +9,7 @@ import { ChatActionTypes } from './hooks/chatTypes';
 import { useChatActions } from './hooks/useChatActions';
 import useHelloIntegration from './hooks/useHelloIntegration';
 import { useReduxStateManagement } from './hooks/useReduxManagement';
-import dynamic from 'next/dynamic';
-const useRtlayerEventManager = dynamic(() => import('./hooks/useRtlayerEventManager'), { ssr: false });
-
+import useRtlayerEventManager from './hooks/useRtlayerEventManager';
 
 // Components
 import FormComponent from '../FormComponent';
@@ -87,7 +85,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
   });
 
   // Initialize RTLayer event listeners
-  !IsHuman && useRtlayerEventManager({
+  useRtlayerEventManager({
     chatbotId,
     chatDispatch,
     chatState,
