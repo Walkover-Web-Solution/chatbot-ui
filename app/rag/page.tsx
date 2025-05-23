@@ -115,7 +115,7 @@ function RagCompoonent() {
                         message: "Document updated successfully!",
                         severity: "success",
                     });
-                    window?.parent?.postMessage({ type: "rag_embed", name: response?.data?.name, description: response?.data?.description, id: response?.data?._id}, "*");
+                    window?.parent?.postMessage({ type: "rag", status: "update", data:{name: response?.data?.name, description: response?.data?.description, id: response?.data?._id}}, "*");
                     setKnowledgeBases((prevKnowledgeBases) =>
                         prevKnowledgeBases.map((kb) =>
                             kb._id === editingKnowledgeBase._id ? response?.data : kb
@@ -133,7 +133,7 @@ function RagCompoonent() {
                 setEditingKnowledgeBase(null);
                 setIsLoading(false);
                 setFile(null);
-                event.currentTarget.reset();
+                handleReset()
             }
         } else {
             // Check if either file or URL is provided
@@ -196,9 +196,9 @@ function RagCompoonent() {
                 });
                 return;
             } finally {
+                handleReset();
                 setIsLoading(false);
                 setFile(null);
-                event.target.reset();
             }
         }
     };
@@ -239,9 +239,9 @@ function RagCompoonent() {
         setFile(null);
         setShowListPage(true)
         // Reset form fields
-        const form = document.querySelector("form");
+        const form = document?.querySelector("form");
         if (form) {
-            form.reset();
+            form?.reset();
         }
     };
 
