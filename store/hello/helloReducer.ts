@@ -1,145 +1,198 @@
 import actionType from "@/types/utility.js";
-import { SliceCaseReducers, ValidateSliceCaseReducers } from "@reduxjs/toolkit";
+import { PayloadAction, SliceCaseReducers, ValidateSliceCaseReducers } from "@reduxjs/toolkit";
 import { $HelloReduxType, ChannelListData, HelloData } from "../../types/hello/HelloReduxType";
 
-export const initialState: $HelloReduxType = {
-  isHuman: false,
-  widgetInfo: {},
-  ChannelList: [],
-  anonymousClientId: {},
-  socketJwt: { jwt: "" },
-  isLoading: false,
-  mode: [],
-  helloConfig: {} as HelloData,
-  channelListData: {} as ChannelListData,
-  currentChannelId: '',
-  currentChatId: '',
-  currentTeamId: '',
-  greeting: {},
-  showWidgetForm: null,
-  is_anon: false,
-  agent_teams: { teams: {}, agents: {} }
-};
+export const initialState: $HelloReduxType = {};
 
 export const reducers: ValidateSliceCaseReducers<
   $HelloReduxType,
   SliceCaseReducers<$HelloReduxType>
 > = {
-  getHelloDetailsStart(state) {
-    return { ...state, isLoading: true };
+  getHelloDetailsStart(state, action) {
+    const chatSessionId = action.urlData?.chatSessionId
+    if (chatSessionId) {
+      return {
+        ...state, [chatSessionId]: {
+          ...state[chatSessionId],
+          isLoading: true
+        }
+      };
+    }
   },
-  getHelloDetailsSuccess(state, action) {
+  getHelloDetailsSuccess(state, action: actionType<any>) {
+    const chatSessionId = action?.urlData?.chatSessionId;
+    if (!chatSessionId) return;
+
     const { widgetInfo, ChannelList, Jwt, anonymousClientId, mode, vision } = action.payload;
-    state.widgetInfo = widgetInfo;
-    state.anonymousClientId = anonymousClientId;
-    state.socketJwt = { jwt: Jwt };
-    state.channelListData = ChannelList;
-    // state.isHuman = ChannelList?.channels?.[0]?.channel || false;
-    state.isLoading = false;
-    state.Channel = ChannelList?.channels?.[0];
-    state.mode = mode;
-    state.vision = vision || false;
+    
+    state[chatSessionId] = {
+      ...state[chatSessionId],
+      widgetInfo,
+      anonymousClientId,
+      socketJwt: { jwt: Jwt },
+      channelListData: ChannelList,
+      isLoading: false,
+      Channel: ChannelList?.channels?.[0],
+      mode,
+      vision: vision || false
+    };
   },
   setChannel(state, action) {
-    state.Channel = action.payload.Channel;
-    state.isHuman = true;
+    const chatSessionId = action.urlData?.chatSessionId
+    if (chatSessionId) {
+      state[chatSessionId] = {
+        ...state[chatSessionId],
+        Channel: action.payload.Channel,
+        isHelloUser: true
+      };
+    }
   },
-  setHuman(state, action: actionType<{ isHuman: boolean }>) {
-    state.isHuman = action.payload?.isHuman ?? true;
+  setHuman(state, action: actionType<{ isHelloUser: boolean }>) {
+    const chatSessionId = action.urlData?.chatSessionId
+    if (chatSessionId) {
+      state[chatSessionId] = {
+        ...state[chatSessionId],
+        isHelloUser: action.payload?.isHelloUser ?? true
+      };
+    }
   },
 
   setHelloConfig(state, action: actionType<HelloData>) {
-    state.helloConfig = action.payload;
-    state.showWidgetForm = state.showWidgetForm !== null ? state.showWidgetForm : (action.payload?.show_widget_form ?? true);
+    const chatSessionId = action.urlData?.chatSessionId
+    if (chatSessionId) {
+      state[chatSessionId] = {
+        ...state[chatSessionId],
+        helloConfig: action.payload,
+        showWidgetForm: state[chatSessionId]?.showWidgetForm !== null ? 
+          state[chatSessionId].showWidgetForm : 
+          (action.payload?.show_widget_form ?? true)
+      };
+    }
   },
 
   setWidgetInfo(state, action: actionType<HelloData>) {
-    state.widgetInfo = action.payload;
+    const chatSessionId = action.urlData?.chatSessionId
+    if (chatSessionId) {
+      state[chatSessionId] = {
+        ...state[chatSessionId],
+        widgetInfo: action.payload
+      };
+    }
   },
-  setChannelListData(state, action: actionType<ChannelListData>) {
-    state.channelListData = action.payload;
-    state.Channel = action.payload?.channels?.[0];
-    // state.currentChannelId = action.payload?.channels?.[0]?.channel;
-  },
-  setJwtToken(state, action: actionType<string>) {
-    state.socketJwt = { jwt: action.payload };
-  },
-  setGreeting(state, action: actionType<any>) {
-    state.greeting = action.payload;
-  },
-  setHelloKeysData(state, action: actionType<Partial<$HelloReduxType>>) {
-    const payload = action.payload;
-    if (payload && typeof payload === 'object') {
-      Object.keys(payload).forEach(key => {
-        // This ensures we only set properties that exist in $HelloReduxType
-        (state as Record<keyof $HelloReduxType, any>)[key as keyof $HelloReduxType] =
-          payload[key as keyof $HelloReduxType];
 
-      });
+  setChannelListData(state, action: actionType<ChannelListData>) {
+    const chatSessionId = action.urlData?.chatSessionId
+    if (chatSessionId) {
+      state[chatSessionId] = {
+        ...state[chatSessionId],
+        channelListData: action.payload,
+        Channel: action.payload?.channels?.[0]
+      };
+    }
+  },
+
+  setJwtToken(state, action: actionType<string>) {
+    const chatSessionId = action.urlData?.chatSessionId
+    if (chatSessionId) {
+      state[chatSessionId] = {
+        ...state[chatSessionId],
+        socketJwt: { jwt: action.payload }
+      };
+    }
+  },
+
+  setGreeting(state, action: actionType<any>) {
+    const chatSessionId = action.urlData?.chatSessionId
+    if (chatSessionId) {
+      state[chatSessionId] = {
+        ...state[chatSessionId],
+        greeting: action.payload
+      };
+    }
+  },
+
+  setHelloKeysData(state, action: actionType<Partial<$HelloReduxType>>) {
+    const chatSessionId = action.urlData?.chatSessionId
+    if (chatSessionId && action.payload && typeof action.payload === 'object') {
+      state[chatSessionId] = {
+        ...state[chatSessionId],
+        ...action.payload
+      };
     }
   },
 
   changeChannelAssigned(state, action: actionType<{ assigned_type: string, assignee_id: string, channelId?: string }>) {
-    const { assigned_type, assignee_id, channelId = state.currentChannelId } = action.payload;
-    const channel = state.channelListData?.channels?.find((channel: any) => channel?.channel === channelId);
-    if (channel) {
-      channel.assigned_type = assigned_type;
-      channel.assigned_id = assignee_id;
-      channel.assigned_to = assigned_type === 'team' ? { name: state.agent_teams?.teams?.[assignee_id] } : { name: state.agent_teams?.agents?.[assignee_id] };
+    const chatSessionId = action.urlData?.chatSessionId
+    if (chatSessionId) {
+      const { assigned_type, assignee_id, channelId = state[chatSessionId]?.currentChannelId } = action.payload;
+      const channel = state[chatSessionId]?.channelListData?.channels?.find(
+        (channel: any) => channel?.channel === channelId
+      );
+      
+      if (channel) {
+        channel.assigned_type = assigned_type;
+        channel.assigned_id = assignee_id;
+        channel.assigned_to = assigned_type === 'team' 
+          ? { name: state[chatSessionId]?.agent_teams?.teams?.[assignee_id] } 
+          : { name: state[chatSessionId]?.agent_teams?.agents?.[assignee_id] };
+      }
     }
-    // Remove the return statement as we're already modifying the draft state
-    // When using Immer, we should either modify the draft OR return a new state, not both
   },
 
   setUnReadCount(state, action: actionType<{ channelId?: string, resetCount?: boolean }>) {
-    const { channelId = state.currentChannelId, resetCount = false } = action.payload;
+    const chatSessionId = action.urlData?.chatSessionId
+    if (chatSessionId) {
+      const { channelId = state[chatSessionId]?.currentChannelId, resetCount = false } = action.payload;
 
-    if (!state.channelListData?.channels?.length) return;
+      if (!state[chatSessionId]?.channelListData?.channels?.length) return;
 
-    const channelIndex = state.channelListData.channels.findIndex(
-      (channel: any) => channel.channel === channelId
-    );
+      const channelIndex = state[chatSessionId].channelListData.channels.findIndex(
+        (channel: any) => channel.channel === channelId
+      );
 
-    if (channelIndex === -1) return;
+      if (channelIndex === -1) return;
 
-    const channel = state.channelListData.channels[channelIndex];
+      const channel = state[chatSessionId].channelListData.channels[channelIndex];
 
-    // Update unread count
-    if (resetCount) {
-      channel.widget_unread_count = 0;
-    } else {
-      channel.widget_unread_count = (channel.widget_unread_count || 0) + 1;
-    }
+      if (resetCount) {
+        channel.widget_unread_count = 0;
+      } else {
+        channel.widget_unread_count = (channel.widget_unread_count || 0) + 1;
+      }
 
-    // Always move channel to top of the list regardless of reset status
-    if (channelIndex > 0) {
-      // Remove channel from current position and add to beginning
-      const [movedChannel] = state.channelListData.channels.splice(channelIndex, 1);
-      state.channelListData.channels.unshift(movedChannel);
+      if (channelIndex > 0) {
+        const [movedChannel] = state[chatSessionId].channelListData.channels.splice(channelIndex, 1);
+        state[chatSessionId]?.channelListData.channels.unshift(movedChannel);
+      }
     }
   },
 
   setAgentTeams(state, action: actionType<any>) {
-    const { agents = [], teams = [] } = action.payload;
-    // Create maps for agents and teams with id as key and name as value
-    const agentsMap = agents.reduce((map: Record<string, any>, agent: any) => {
-      if (agent && agent.id) {
-        map[agent.id] = agent?.name;
-      }
-      return map;
-    }, {});
+    const chatSessionId = action.urlData?.chatSessionId
+    if (chatSessionId) {
+      const { agents = [], teams = [] } = action.payload;
+      
+      const agentsMap = agents.reduce((map: Record<string, any>, agent: any) => {
+        if (agent && agent.id) {
+          map[agent.id] = agent?.name;
+        }
+        return map;
+      }, {});
 
-    const teamsMap = teams.reduce((map: Record<string, any>, team: any) => {
-      if (team && team.id) {
-        map[team.id] = team?.name;
-      }
-      return map;
-    }, {});
+      const teamsMap = teams.reduce((map: Record<string, any>, team: any) => {
+        if (team && team.id) {
+          map[team.id] = team?.name;
+        }
+        return map;
+      }, {});
 
-    // Store both maps and the original payload in agent_teams
-    state.agent_teams = {
-      agents: agentsMap,
-      teams: teamsMap
-    };
+      state[chatSessionId] = {
+        ...state[chatSessionId],
+        agent_teams: {
+          agents: agentsMap,
+          teams: teamsMap
+        }
+      };
+    }
   }
 };

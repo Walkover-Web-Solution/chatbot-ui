@@ -18,6 +18,8 @@ import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Chatbot from "../Chatbot/Chatbot";
+import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
+import { setDataInTabInfo } from "@/store/tabInfo/tabInfoSlice";
 
 interface InterfaceData {
   threadId?: string | null;
@@ -39,7 +41,7 @@ interface InterfaceData {
 }
 
 interface ChatbotWrapperProps {
-  chatbotId?: string;
+  chatSessionId?: string;
 }
 
 const helloToChatbotPropsMap: Record<string, string> = {
@@ -47,9 +49,8 @@ const helloToChatbotPropsMap: Record<string, string> = {
   hideFullScreenButton: 'hideFullScreenButton'
 }
 
-function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
+function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
   const dispatch = useDispatch();
-
   // Handle messages from parent window
   const handleMessage = useCallback((event: MessageEvent) => {
     const allowedEvents = ["interfaceData", "helloData", "parent-route-changed", "ADD_COBROWSE_SCRIPT", "ADD_USER_EVENT_SEGMENTO"];
@@ -83,8 +84,10 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
         ...restProps
       } = event.data.data;
 
-      const prevWidgetId = getLocalStorage('WidgetId');
+      const prevWidgetId = GetSessionStorageData('widgetToken');
       const prevUser = JSON.parse(getLocalStorage('userData') || '{}');
+      SetSessionStorage('widgetToken', widgetToken)
+      dispatch(setDataInTabInfo({ widgetToken }))
       const hasUserIdentity = Boolean(unique_id || mail || number || user_jwt_token);
 
       // Helper: reset Redux keys and sub-thread
@@ -96,8 +99,8 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
       // 1. Widget token changed
       if (widgetToken !== prevWidgetId) {
         resetKeys();
-        ['a_clientId', 'k_clientId', 'userData', 'client', 'default_client_created'].forEach(key => setLocalStorage(key, ''));
-        setLocalStorage('is_anon', hasUserIdentity ? 'false' : 'true');
+        // ['a_clientId', 'k_clientId', 'userData', 'client', 'default_client_created'].forEach(key => setLocalStorage(key, ''));
+        // setLocalStorage('is_anon', hasUserIdentity ? 'false' : 'true');
       }
 
       // 2. User identity changed
@@ -223,7 +226,7 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
     return () => {
       window.removeEventListener("message", handleMessage);
     };
-  }, [handleMessage, chatbotId]);
+  }, [handleMessage, chatSessionId]);
 
   // Notify parent when interface is loaded
   useEffect(() => {
@@ -236,5 +239,5 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
 }
 
 export default React.memo(
-  addUrlDataHoc(React.memo(ChatbotWrapper), [ParamsEnums.chatbotId])
+  addUrlDataHoc(React.memo(ChatbotWrapper))
 );

@@ -69,7 +69,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
       const updatedMapping = { ...state.msgIdAndDataMap[subThreadId] };
 
       // Get the message IDs that will be removed
-      const messageIdsToRemove = state.messageIds?.[subThreadId].slice(-numberOfMessages);
+      const messageIdsToRemove = state.messageIds?.[subThreadId]?.slice(-numberOfMessages);
 
       // Remove these message IDs from the mapping
       messageIdsToRemove.forEach(msgId => {

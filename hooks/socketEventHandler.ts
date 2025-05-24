@@ -20,30 +20,29 @@ export interface HelloMessage {
 /**
  * Hook for handling socket events
  * @param options - Options for socket events
- * @param options.chatbotId - The chatbot ID
  * @param options.chatState - The current chat state
  * @param options.chatDispatch - Function to dispatch chat actions
  * @param options.messageRef - Reference to message element
  * @returns timeoutIdRef - Reference to timeout for cleanup
  */
 export const useSocketEvents = ({
-    chatbotId,
     chatState,
     chatDispatch,
     messageRef,
-    fetchChannels
+    fetchChannels,
+    chatSessionId
 }: {
-    chatbotId: string,
     chatState: ChatState,
     chatDispatch: (action: { type: string; payload?: any }) => void,
     messageRef: React.RefObject<HTMLDivElement>,
-    fetchChannels: () => void
+    fetchChannels: () => void,
+    chatSessionId:string
 }) => {
     const dispatch = useDispatch();
     // Reference to timeout for typing indicators
-    const { setLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
+    const { setLoading } = useChatActions({ chatDispatch, chatState,chatSessionId });
     const { isToggledrawer } = chatState;
-    const { currentChannelId, isSmallScreen } = useReduxStateManagement({ chatbotId, chatDispatch });
+    const { currentChannelId, isSmallScreen } = useReduxStateManagement({ chatDispatch,chatSessionId });
     const addHelloMessage = (message: HelloMessage, subThreadId: string = '') => {
         chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message, subThreadId } });
     }

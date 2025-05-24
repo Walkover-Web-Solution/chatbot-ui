@@ -7,6 +7,7 @@ import { ChatbotContext } from '@/components/context';
 import { generateNewId } from '@/utils/utilities';
 import { setThreads } from '@/store/interface/interfaceSlice';
 import { useDispatch } from 'react-redux';
+import { getInfoParametersFromUrl } from '@/store';
 
 // Create a separate hook to manage the WebSocket client instance
 function useWebSocketClient(isHelloUser: boolean) {
@@ -32,16 +33,16 @@ function useWebSocketClient(isHelloUser: boolean) {
   return client;
 }
 
-function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) {
+function useRtlayerEventManager({ chatDispatch, chatState, messageRef, timeoutIdRef ,chatSessionId }: { chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> ,chatSessionId:string}) {
   const { isHelloUser } = useContext(ChatbotContext)
-  const { reduxThreadId, reduxBridgeName} = useCustomSelector((state: $ReduxCoreType) => ({
-    threadId: state.appInfo.threadId,
-    bridgeName: state.appInfo.bridgeName,    
-}))
-  const dispatch = useDispatch()
   if (isHelloUser) {
     return null
   }
+  const { reduxThreadId, reduxBridgeName} = useCustomSelector((state: $ReduxCoreType) => ({
+    threadId: state.appInfo?.[chatSessionId]?.threadId,
+    bridgeName: state.appInfo?.[chatSessionId]?.bridgeName,    
+}))
+  const dispatch = useDispatch()
   const client = useWebSocketClient(isHelloUser);
   const { threadId, subThreadId } = chatState
   const { userId } = useCustomSelector((state: $ReduxCoreType) => ({ userId: state.appInfo.userId }))
@@ -124,7 +125,7 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
   useEffect(() => {
     if (!client) return;
     const newChannelId = (
-      chatbotId +
+      chatSessionId +
       (threadId || userId) +
       (subThreadId || userId)
     )?.replace(/ /g, "_");
@@ -138,7 +139,7 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
         clearTimeout(timeoutIdRef.current);
       }
     };
-  }, [chatbotId, userId, threadId, subThreadId]);
+  }, [chatSessionId, userId, threadId, subThreadId]);
   return null
 }
 

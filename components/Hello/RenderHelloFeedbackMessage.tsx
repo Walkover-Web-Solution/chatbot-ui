@@ -1,15 +1,16 @@
 import { submitFeedback } from '@/config/helloApi'
+import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import React, { useState, useCallback, useMemo } from 'react'
 
-function RenderHelloFeedbackMessage({message}:{message:any}) {
+function RenderHelloFeedbackMessage({message,chatSessionId}:{message:any,chatSessionId:string}) {
   const [feedbackText, setFeedbackText] = useState("");
   const [selectedRating, setSelectedRating] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const {widgetLogo} = useCustomSelector((state:$ReduxCoreType)=>({
-    widgetLogo: state?.Hello?.widgetInfo?.logo?.path
+    widgetLogo: state?.Hello?.[chatSessionId]?.widgetInfo?.logo?.path
   }))
   const handleSubmitFeedback = useCallback(async () => {
     if (!selectedRating) return;
@@ -112,4 +113,4 @@ function RenderHelloFeedbackMessage({message}:{message:any}) {
   )
 }
 
-export default React.memo(RenderHelloFeedbackMessage);
+export default React.memo(addUrlDataHoc(RenderHelloFeedbackMessage));

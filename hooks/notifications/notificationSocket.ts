@@ -4,10 +4,10 @@ import socketManager from "./notificationSocketManager";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { getLocalStorage } from "@/utils/utilities";
 
-const useNotificationSocket = () => {
+const useNotificationSocket = ({chatSessionId}:{chatSessionId:string}) => {
   const { jwtToken, company_id } = useCustomSelector((state: $ReduxCoreType) => ({
-    jwtToken: state.Hello?.socketJwt?.jwt,
-    company_id: state.Hello?.widgetInfo?.company_id
+    jwtToken: state.Hello?.[chatSessionId]?.socketJwt?.jwt,
+    company_id: state.Hello?.[chatSessionId]?.widgetInfo?.company_id
   }));
 
   useEffect(() => {

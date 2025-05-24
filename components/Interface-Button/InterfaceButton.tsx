@@ -44,5 +44,5 @@ function InterfaceButton({ props, action }: InterfaceButtonProps): JSX.Element {
   );
 }
 export default React.memo(
-  addUrlDataHoc(React.memo(InterfaceButton), [ParamsEnums?.chatbotId])
+  addUrlDataHoc(React.memo(InterfaceButton))
 );

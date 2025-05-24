@@ -4,17 +4,20 @@ import debounce from "lodash.debounce";
 import React, { useContext, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { GridContext } from "../Grid/Grid.tsx";
+import { addUrlDataHoc } from "../../hoc/addUrlDataHoc"
 
 interface InterfaceTextFieldProps {
   props: TextFieldProps;
   gridId: string;
   componentId: string;
+  chatSessionId:string
 }
 
 function InterfaceTextfield({
   props,
   gridId,
   componentId,
+  chatSessionId
 }: InterfaceTextFieldProps) {
   const responseJson = useContext(GridContext);
   useEffect(() => {
@@ -25,7 +28,7 @@ function InterfaceTextfield({
         value: responseJson?.[componentId]?.props?.defaultValue,
       })
     );
-  }, [responseJson, responseJson?.msgId]);
+  }, [responseJson, responseJson?.msgId,chatSessionId]);
 
   const dispatch = useDispatch();
 
@@ -60,4 +63,4 @@ function InterfaceTextfield({
     </Box>
   );
 }
-export default React.memo(InterfaceTextfield);
+export default React.memo(addUrlDataHoc(InterfaceTextfield));

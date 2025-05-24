@@ -68,5 +68,5 @@ function Grid({ componentJson, msgId, ...props }) {
 }
 
 export default React.memo(
-  addUrlDataHoc(React.memo(Grid), [ParamsEnums?.projectId])
+  addUrlDataHoc(React.memo(Grid))
 );

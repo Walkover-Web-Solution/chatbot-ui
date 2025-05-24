@@ -30,6 +30,7 @@ import { MessageContext } from "../InterfaceChatbot";
 import DateGroup from "./DateGroup";
 import ImageWithFallback from "./ImageWithFallback";
 import "./Message.css";
+import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 const UserMessageCard = React.memo(({ message, theme, textColor }: any) => {
@@ -491,12 +492,12 @@ const ShadowDomComponent = ({ htmlContent, messageId }:{htmlContent:string, mess
   );
 };
 
-function Message({ message, addMessage, prevTime }: { message: any, addMessage?: any, prevTime?: string | number | null }) {
+function Message({ message, addMessage, prevTime ,chatSessionId}: { message: any, addMessage?: any, prevTime?: string | number | null ,chatSessionId:string}) {
   const theme = useTheme();
   const backgroundColor = theme.palette.primary.main;
   const textColor = isColorLight(backgroundColor) ? "#000000" : "#ffffff";
   const { sendEventToParentOnMessageClick } = useCustomSelector((state: $ReduxCoreType) => ({
-    sendEventToParentOnMessageClick: state.Interface.eventsSubscribedByParent?.includes(ALLOWED_EVENTS_TO_SUBSCRIBE.MESSAGE_CLICK) || false
+    sendEventToParentOnMessageClick: state.Interface?.[chatSessionId]?.eventsSubscribedByParent?.includes(ALLOWED_EVENTS_TO_SUBSCRIBE.MESSAGE_CLICK) || false
   }))
 
   return (
@@ -623,4 +624,4 @@ function FeedBackButtons({ msgId }) {
 }
 
 
-export default React.memo(Message);
+export default React.memo(addUrlDataHoc(Message));

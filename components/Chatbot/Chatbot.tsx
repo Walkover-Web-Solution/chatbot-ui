@@ -1,6 +1,6 @@
 import { LinearProgress, useTheme } from '@mui/material';
 import Image from 'next/image';
-import { memo, useEffect, useReducer, useRef } from 'react';
+import React, { memo, useEffect, useReducer, useRef } from 'react';
 
 // Context and hooks
 import { MessageContext } from '../Interface-Chatbot/InterfaceChatbot';
@@ -30,10 +30,10 @@ import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { ParamsEnums } from '@/utils/enums';
 
 interface ChatbotProps {
-  chatbotId: string;
+  chatSessionId:string
 }
 
-function Chatbot({ chatbotId }: ChatbotProps) {
+function Chatbot({ chatSessionId}: ChatbotProps) {
   // Refs
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mountedRef = useRef<boolean>(false);
@@ -56,53 +56,53 @@ function Chatbot({ chatbotId }: ChatbotProps) {
   // Custom hooks
   const { sendMessageToHello, fetchHelloPreviousHistory, fetchChannels, getMoreHelloChats } =
     useHelloIntegration({
-      chatbotId,
       chatDispatch,
       chatState,
-      messageRef
+      messageRef,
+      chatSessionId
     });
 
-  const { IsHuman, isSmallScreen, currentChatId, isDefaultNavigateToChatScreen } =
+  const { isHelloUser, isSmallScreen, currentChatId, isDefaultNavigateToChatScreen } =
     useReduxStateManagement({
-      chatbotId,
-      chatDispatch
+      chatDispatch,
+      chatSessionId
     });
 
   const { show_widget_form, is_anon, greetingMessage } = useCustomSelector((state: $ReduxCoreType) => {
-    const helloConfig = state.Hello?.helloConfig
+    const helloConfig = state.Hello?.[chatSessionId]?.helloConfig
     return ({
-      show_widget_form: typeof helloConfig?.show_widget_form === 'boolean' ? helloConfig?.show_widget_form : state.Hello?.widgetInfo?.show_widget_form,
-      is_anon: state.Hello?.is_anon == 'true',
-      greetingMessage: state.Hello?.greeting
+      show_widget_form: typeof helloConfig?.show_widget_form === 'boolean' ? helloConfig?.show_widget_form : state.Hello?.[chatSessionId]?.widgetInfo?.show_widget_form,
+      is_anon: state.Hello?.[chatSessionId]?.is_anon == 'true',
+      greetingMessage: state.Hello?.[chatSessionId]?.greeting
     })
   });
 
   const chatActions = useChatActions({
-    chatbotId,
     chatDispatch,
     chatState,
     messageRef,
-    timeoutIdRef
+    timeoutIdRef,
+    chatSessionId
   });
 
   // Initialize RTLayer event listeners
   useRtlayerEventManager({
-    chatbotId,
     chatDispatch,
     chatState,
     messageRef,
-    timeoutIdRef
+    timeoutIdRef,
+    chatSessionId
   });
 
   const theme = useTheme();
 
   // Effect to open drawer for new human users
   useEffect(() => {
-    if (IsHuman && !currentChatId && !mountedRef.current) {
+    if (isHelloUser && !currentChatId && !mountedRef.current) {
       chatActions.setToggleDrawer(true);
     }
     mountedRef.current = true;
-  }, [IsHuman, currentChatId, chatActions]);
+  }, [isHelloUser, currentChatId, chatActions]);
 
   // open Chat directly if no team or one team exista
   useEffect(() => {
@@ -133,7 +133,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
   };
 
   // Check if chat is empty
-  const isChatEmpty = IsHuman
+  const isChatEmpty = isHelloUser
     ? (!subThreadId || helloMsgIds[subThreadId]?.length === 0) &&
     (!greetingMessage || (!greetingMessage.text && !greetingMessage?.options?.length))
     : !subThreadId || messageIds[subThreadId]?.length === 0;
@@ -165,7 +165,7 @@ function Chatbot({ chatbotId }: ChatbotProps) {
           )}
 
           {/* Form and UI components */}
-          {IsHuman && show_widget_form && !is_anon && (
+          {isHelloUser && show_widget_form && !is_anon && (
             <FormComponent
               open={openHelloForm}
               setOpen={(isFormOpen: boolean) =>
@@ -248,4 +248,4 @@ function ActiveChatView({ containerRef }: ActiveChatViewProps) {
 }
 
 // Export with HOC for URL data
-export default addUrlDataHoc(memo(Chatbot), [ParamsEnums.chatbotId]);
+export default React.memo(addUrlDataHoc(Chatbot));

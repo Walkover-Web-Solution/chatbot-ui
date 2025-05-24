@@ -32,18 +32,18 @@ interface HelloMessage {
 }
 
 interface UseHelloIntegrationProps {
-  chatbotId: string;
   chatState: ChatState;
   chatDispatch: React.Dispatch<ChatAction>;
   messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement>;
+  chatSessionId:string
 }
 
-const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: UseHelloIntegrationProps) => {
-  const { handleThemeChange } = useContext(ThemeContext);
+const useHelloIntegration = ({ chatDispatch, chatState, messageRef ,chatSessionId }: UseHelloIntegrationProps) => {
   const { isHelloUser } = useContext(ChatbotContext);
+  const { handleThemeChange } = useContext(ThemeContext);
   const { loading, helloMessages, images } = chatState;
 
-  const { setLoading, setChatsLoading, setNewMessage } = useChatActions({ chatbotId, chatDispatch, chatState });
+  const { setLoading, setChatsLoading, setNewMessage } = useChatActions({ chatDispatch, chatState ,chatSessionId});
   const {
     uuid,
     unique_id,
@@ -51,15 +51,16 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
     currentChatId,
     currentTeamId,
     currentChannelId
-  } = useReduxStateManagement({ chatbotId, chatDispatch });
+  } = useReduxStateManagement({ chatDispatch ,chatSessionId});
 
+  
   const { assigned_type, companyId, botId, showWidgetForm } = useCustomSelector((state: $ReduxCoreType) => ({
-    assigned_type: state.Hello?.channelListData?.channels?.find(
-      (channel: any) => channel?.channel === state?.Hello?.currentChannelId
+    assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
+      (channel: any) => channel?.channel === state?.Hello?.[chatSessionId]?.currentChannelId
     )?.assigned_type,
-    companyId: state.Hello?.widgetInfo?.company_id || '',
-    botId: state.Hello?.widgetInfo?.bot_id || '',
-    showWidgetForm: state.Hello?.showWidgetForm
+    companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
+    botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
+    showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm
   }));
 
   const isBot = assigned_type === 'bot';
@@ -67,8 +68,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
   const mountedRef = useRef(false);
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
-  useSocket();
-  useNotificationSocket();
+  useSocket({chatSessionId});
+  useNotificationSocket({chatSessionId});
 
   const setHelloMessages = useCallback((messages: HelloMessage[]) => {
     chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages, subThreadId: messages?.[0]?.channel || "" } });
@@ -166,8 +167,8 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       });
   }, [dispatch]);
 
-  useSocketEvents({ chatbotId, chatState, chatDispatch, messageRef, fetchChannels });
-  useNotificationSocketEventHandler({ chatDispatch })
+  useSocketEvents({ chatState, chatDispatch, messageRef, fetchChannels , chatSessionId});
+  useNotificationSocketEventHandler({ chatDispatch ,chatSessionId})
 
   // Start timeout timer for response waiting
   const startTimeoutTimer = useCallback(() => {

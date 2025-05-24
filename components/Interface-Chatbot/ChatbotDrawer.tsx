@@ -31,17 +31,17 @@ const createRandomId = () => Math.random().toString(36).substring(2, 15);
 
 interface ChatbotDrawerProps {
   setLoading: (loading: boolean) => void;
-  chatbotId: string;
   isToggledrawer: boolean;
   setToggleDrawer: (isOpen: boolean) => void;
   preview?: boolean;
+  chatSessionId:string
 }
 
 const ChatbotDrawer = ({
-  chatbotId,
   setToggleDrawer,
   isToggledrawer,
-  preview = false
+  preview = false,
+  chatSessionId
 }: ChatbotDrawerProps) => {
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -62,7 +62,7 @@ const ChatbotDrawer = ({
     setLoading,
   } = useContext(MessageContext);
 
-  const { currentChatId, currentTeamId } = useReduxStateManagement({ chatbotId, chatDispatch });
+  const { currentChatId, currentTeamId } = useReduxStateManagement({ chatDispatch ,chatSessionId});
   const { callState } = useCallUI();
 
   // Consolidated Redux state selection
@@ -73,27 +73,27 @@ const ChatbotDrawer = ({
     reduxBridgeName,
     teamsList,
     channelList,
-    isHuman,
+    isHelloUser,
     Name,
     tagline,
     hideCloseButton,
     voice_call_widget
   } = useCustomSelector((state: $ReduxCoreType) => {
-    const bridgeName = GetSessionStorageData("bridgeName") || state.appInfo?.bridgeName || "root";
-    const threadId = GetSessionStorageData("threadId") || state.appInfo?.threadId || "";
+    const bridgeName = GetSessionStorageData("bridgeName") || state.appInfo?.[chatSessionId]?.bridgeName || "root";
+    const threadId = GetSessionStorageData("threadId") || state.appInfo?.[chatSessionId]?.threadId || "";
 
     return {
       reduxThreadId: threadId,
-      reduxSubThreadId: state.appInfo?.subThreadId || "",
+      reduxSubThreadId: state.appInfo?.[chatSessionId]?.subThreadId || "",
       reduxBridgeName: bridgeName,
-      subThreadList: state.Interface?.interfaceContext?.[chatbotId]?.[bridgeName]?.threadList?.[threadId] || [],
-      teamsList: state.Hello?.widgetInfo?.teams || [],
-      channelList: state.Hello?.channelListData?.channels || [],
-      isHuman: state.Hello?.isHuman || false,
-      Name: JSON.parse(getLocalStorage("client") || '{}')?.name || state.Hello?.channelListData?.customer_name || '',
-      tagline: state.Hello?.widgetInfo?.tagline || '',
-      hideCloseButton: state.Interface.hideCloseButton || false,
-      voice_call_widget: state.Hello?.widgetInfo?.voice_call_widget || false
+      subThreadList: state.Interface?.[chatSessionId]?.interfaceContext?.[bridgeName]?.threadList?.[threadId] || [],
+      teamsList: state.Hello?.[chatSessionId]?.widgetInfo?.teams || [],
+      channelList: state.Hello?.[chatSessionId]?.channelListData?.channels || [],
+      isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
+      Name: JSON.parse(getLocalStorage("client") || '{}')?.name || state.Hello?.[chatSessionId]?.channelListData?.customer_name || '',
+      tagline: state.Hello?.[chatSessionId]?.widgetInfo?.tagline || '',
+      hideCloseButton: state.Interface?.[chatSessionId]?.hideCloseButton || false,
+      voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false
     };
   });
 
@@ -415,7 +415,7 @@ const ChatbotDrawer = ({
         />
       )}
 
-      <div className={`drawer-side ${isHuman && isSmallScreen ? '100%' : 'max-w-[286px]'} ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
+      <div className={`drawer-side ${isHelloUser && isSmallScreen ? '100%' : 'max-w-[286px]'} ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
         <div className="w-full h-full text-base-content relative bg-base-200 border-r-base-300 border flex flex-col">
           {/* Header with padding */}
           <div className="px-4 pt-4 pb-4">
@@ -439,7 +439,7 @@ const ChatbotDrawer = ({
                 )}
               </div>
               <div className="w-10 flex items-center justify-end">
-                {isToggledrawer && !isHuman && (
+                {isToggledrawer && !isHelloUser && (
                   <div className="tooltip tooltip-bottom z-[9999]" data-tip="New Chat">
                     <button
                       className="p-2 hover:bg-gray-200 rounded-full transition-colors"
@@ -449,7 +449,7 @@ const ChatbotDrawer = ({
                     </button>
                   </div>
                 )}
-                {isHuman && CloseButton}
+                {isHelloUser && CloseButton}
               </div>
             </div>
           </div>
@@ -457,7 +457,7 @@ const ChatbotDrawer = ({
           {/* Content area with overflow handling - the scrollbar will appear at the edge */}
           <div className="flex-1 overflow-y-auto">
             <div className="px-4">
-              {!isHuman ? DrawerList : TeamsList}
+              {!isHelloUser ? DrawerList : TeamsList}
             </div>
           </div>
 
@@ -465,7 +465,7 @@ const ChatbotDrawer = ({
           <div className="px-4 pt-2 pb-2 flex items-center justify-center mt-auto">
             <div className="text-xs text-gray-500 flex items-baseline gap-1">
               Powered by
-              {isHuman ? <a href="https://msg91.com" target="_blank" rel="noopener noreferrer" className="flex hover:opacity-80 transition-opacity ml-1">
+              {isHelloUser ? <a href="https://msg91.com" target="_blank" rel="noopener noreferrer" className="flex hover:opacity-80 transition-opacity ml-1">
                 <img src="/msg91-logo.svg" alt="MSG91" className="h-4" />
               </a> : <a href="https://gtwy.ai" target="_blank" rel="noopener noreferrer" className="flex hover:opacity-80 transition-opacity"><span className="font-bold">GTWY</span></a>}
             </div>
@@ -476,4 +476,4 @@ const ChatbotDrawer = ({
   );
 };
 
-export default addUrlDataHoc(memo(ChatbotDrawer), [ParamsEnums.chatbotId]);
+export default addUrlDataHoc(memo(ChatbotDrawer));
