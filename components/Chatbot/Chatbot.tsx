@@ -59,7 +59,12 @@ function Chatbot({ chatbotId }: ChatbotProps) {
       chatbotId,
       chatDispatch,
       chatState,
-      messageRef
+      messageRef,
+      chatActions: {
+        setNewMessage: (data) => chatActions.setNewMessage(data),
+        setChatsLoading: (data) => chatActions.setChatsLoading(data),
+        setLoading: (data) => chatActions.setLoading(data)
+      }
     });
 
   const { IsHuman, isSmallScreen, currentChatId, isDefaultNavigateToChatScreen } =

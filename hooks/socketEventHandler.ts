@@ -31,17 +31,18 @@ export const useSocketEvents = ({
     chatState,
     chatDispatch,
     messageRef,
-    fetchChannels
+    fetchChannels,
+    setLoading
 }: {
     chatbotId: string,
     chatState: ChatState,
     chatDispatch: (action: { type: string; payload?: any }) => void,
     messageRef: React.RefObject<HTMLDivElement>,
-    fetchChannels: () => void
+    fetchChannels: () => void,
+    setLoading:(data:boolean)=>void
 }) => {
     const dispatch = useDispatch();
-    // Reference to timeout for typing indicators
-    const { setLoading } = useChatActions({ chatbotId, chatDispatch, chatState });
+
     const { isToggledrawer } = chatState;
     const { currentChannelId, isSmallScreen } = useReduxStateManagement({ chatbotId, chatDispatch });
     const addHelloMessage = (message: HelloMessage, subThreadId: string = '') => {
