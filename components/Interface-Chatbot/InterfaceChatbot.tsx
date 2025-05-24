@@ -73,5 +73,5 @@ export const MessageContext = createContext<{
   helloMsgIds: [],
   helloMsgIdAndDataMap: {},
   isTyping: false,
-  isSmallScreen: false,
+  isSmallScreen: false
 });

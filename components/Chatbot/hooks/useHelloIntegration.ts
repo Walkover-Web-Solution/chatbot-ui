@@ -17,7 +17,6 @@ import { useCallback, useContext, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import helloVoiceService from './HelloVoiceService';
-import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
 
 interface HelloMessage {
@@ -36,14 +35,19 @@ interface UseHelloIntegrationProps {
   chatState: ChatState;
   chatDispatch: React.Dispatch<ChatAction>;
   messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement>;
+  chatActions: {
+    setLoading: (data:boolean) =>void
+    setChatsLoading: (data:boolean) =>void
+    setNewMessage: (data:boolean) =>void
+  }
 }
 
-const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }: UseHelloIntegrationProps) => {
+const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef ,chatActions }: UseHelloIntegrationProps) => {
   const { handleThemeChange } = useContext(ThemeContext);
   const { isHelloUser } = useContext(ChatbotContext);
   const { loading, helloMessages, images } = chatState;
+  const { setLoading, setChatsLoading, setNewMessage } = chatActions
 
-  const { setLoading, setChatsLoading, setNewMessage } = useChatActions({ chatbotId, chatDispatch, chatState });
   const {
     uuid,
     unique_id,
@@ -166,7 +170,7 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       });
   }, [dispatch]);
 
-  useSocketEvents({ chatbotId, chatState, chatDispatch, messageRef, fetchChannels });
+  useSocketEvents({ chatbotId, chatState, chatDispatch, messageRef, fetchChannels,setLoading });
   useNotificationSocketEventHandler({ chatDispatch })
 
   // Start timeout timer for response waiting
