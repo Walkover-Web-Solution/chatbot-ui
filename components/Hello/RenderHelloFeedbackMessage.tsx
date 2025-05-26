@@ -4,14 +4,24 @@ import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import React, { useState, useCallback, useMemo } from 'react'
 
+function addDynamicValuesInText(text: string, dynamic_values: Record<string, string>): string {
+  if (!text || !dynamic_values) return text;
+  
+  return text.replace(/##(\w+)##/g, (match, key) => {
+    return dynamic_values[key] || match;
+  });
+}
+
 function RenderHelloFeedbackMessage({message,chatSessionId}:{message:any,chatSessionId:string}) {
   const [feedbackText, setFeedbackText] = useState("");
   const [selectedRating, setSelectedRating] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const {widgetLogo} = useCustomSelector((state:$ReduxCoreType)=>({
-    widgetLogo: state?.Hello?.[chatSessionId]?.widgetInfo?.logo?.path
+    widgetLogo: state?.Hello?.[chatSessionId]?.widgetInfo?.logo?.path,
+    feedBackHeaderText : addDynamicValuesInText(state.Hello?.[chatSessionId]?.widgetInfo?.feedback_text,message?.dynamic_values)
   }))
+
   const handleSubmitFeedback = useCallback(async () => {
     if (!selectedRating) return;
     
@@ -74,16 +84,21 @@ function RenderHelloFeedbackMessage({message,chatSessionId}:{message:any,chatSes
         </div>
       ) : (
         <>
-          <div className="flex gap-4 justify-center mb-3">
-            {ratingOptions.map(rating => (
-              <div 
-                key={rating}
-                className={`flex flex-col items-center cursor-pointer hover:opacity-80 ${selectedRating === rating ? "scale-110" : ""}`}
-                onClick={handleRatingSelect(rating)}
-              >
-                <span role="img" aria-label={rating} className="text-3xl">{emojiMap[rating as keyof typeof emojiMap]}</span>
-              </div>
-            ))}
+          <div className="flex flex-col items-center gap-4 mb-2">
+            {feedBackHeaderText && (
+              <h3 className="text-center font-medium mb-1">{feedBackHeaderText}</h3>
+            )}
+            <div className="flex gap-4">
+              {ratingOptions.map(rating => (
+                <div 
+                  key={rating}
+                  className={`flex items-center cursor-pointer hover:opacity-80 ${selectedRating === rating ? "scale-110" : ""}`}
+                  onClick={handleRatingSelect(rating)}
+                >
+                  <span role="img" aria-label={rating} className="text-3xl">{emojiMap[rating as keyof typeof emojiMap]}</span>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="mt-3">
             <textarea 

@@ -216,7 +216,7 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
       return acc;
     }, {} as Record<string, any>);
 
-    if (Object.keys(interfaceDataToUpdate).length > 0) {
+    if (Object.keys(interfaceDataToUpdate || {}).length > 0) {
       dispatch(setDataInInterfaceRedux(interfaceDataToUpdate));
     }
   }, [dispatch]);
