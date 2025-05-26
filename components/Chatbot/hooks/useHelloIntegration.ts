@@ -35,15 +35,15 @@ interface UseHelloIntegrationProps {
   chatState: ChatState;
   chatDispatch: React.Dispatch<ChatAction>;
   messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement>;
-  chatSessionId:string
+  chatSessionId: string
 }
 
-const useHelloIntegration = ({ chatDispatch, chatState, messageRef ,chatSessionId }: UseHelloIntegrationProps) => {
+const useHelloIntegration = ({ chatDispatch, chatState, messageRef, chatSessionId }: UseHelloIntegrationProps) => {
   const { isHelloUser } = useContext(ChatbotContext);
   const { handleThemeChange } = useContext(ThemeContext);
   const { loading, helloMessages, images } = chatState;
 
-  const { setLoading, setChatsLoading, setNewMessage } = useChatActions({ chatDispatch, chatState ,chatSessionId});
+  const { setLoading, setChatsLoading, setNewMessage } = useChatActions({ chatDispatch, chatState, chatSessionId });
   const {
     uuid,
     unique_id,
@@ -51,16 +51,17 @@ const useHelloIntegration = ({ chatDispatch, chatState, messageRef ,chatSessionI
     currentChatId,
     currentTeamId,
     currentChannelId
-  } = useReduxStateManagement({ chatDispatch ,chatSessionId});
+  } = useReduxStateManagement({ chatDispatch, chatSessionId });
 
-  
-  const { assigned_type, companyId, botId, showWidgetForm } = useCustomSelector((state: $ReduxCoreType) => ({
+
+  const { assigned_type, companyId, botId, showWidgetForm, reduxChatSessionId } = useCustomSelector((state: $ReduxCoreType) => ({
     assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === state?.Hello?.[chatSessionId]?.currentChannelId
     )?.assigned_type,
     companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
     botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
-    showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm
+    showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm,
+    reduxChatSessionId: state.tabInfo?.widgetToken
   }));
 
   const isBot = assigned_type === 'bot';
@@ -68,8 +69,8 @@ const useHelloIntegration = ({ chatDispatch, chatState, messageRef ,chatSessionI
   const mountedRef = useRef(false);
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
-  useSocket({chatSessionId});
-  useNotificationSocket({chatSessionId});
+  useSocket({ chatSessionId });
+  useNotificationSocket({ chatSessionId });
 
   const setHelloMessages = useCallback((messages: HelloMessage[]) => {
     chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages, subThreadId: messages?.[0]?.channel || "" } });
@@ -84,11 +85,11 @@ const useHelloIntegration = ({ chatDispatch, chatState, messageRef ,chatSessionI
   }, [chatDispatch]);
 
 
-  useEffect(()=>{
-    if(isHelloUser && currentChannelId){
+  useEffect(() => {
+    if (isHelloUser && currentChannelId) {
       fetchHelloPreviousHistory()
     }
-  },[currentChannelId,isHelloUser])
+  }, [currentChannelId, isHelloUser])
 
   // Fetch previous Hello chat history
   const fetchHelloPreviousHistory = useCallback((dynamicChannelId?: string) => {
@@ -174,8 +175,8 @@ const useHelloIntegration = ({ chatDispatch, chatState, messageRef ,chatSessionI
       });
   }, [dispatch]);
 
-  useSocketEvents({ chatState, chatDispatch, messageRef, fetchChannels , chatSessionId});
-  useNotificationSocketEventHandler({ chatDispatch ,chatSessionId})
+  useSocketEvents({ chatState, chatDispatch, messageRef, fetchChannels, chatSessionId });
+  useNotificationSocketEventHandler({ chatDispatch, chatSessionId })
 
   // Start timeout timer for response waiting
   const startTimeoutTimer = useCallback(() => {
@@ -321,24 +322,31 @@ const useHelloIntegration = ({ chatDispatch, chatState, messageRef ,chatSessionI
   }, [onSendHello, addHelloMessage, images, messageRef, currentChannelId]);
 
   // Effect hooks
-  useEffect(() => {
-    window.addEventListener("localstorage-updated", handleStorageUpdate);
-    return () => {
-      window.removeEventListener("localstorage-updated", handleStorageUpdate);
-    };
-  }, []);
+  // useEffect(() => {
+  //   window.addEventListener("localstorage-updated", handleStorageUpdate);
+  //   return () => {
+  //     window.removeEventListener("localstorage-updated", handleStorageUpdate);
+  //   };
+  // }, []);
 
-  const handleStorageUpdate = (e: CustomEvent<{ key: string, value: string | boolean }>) => {
-    if (e.detail.key === 'WidgetId') {
-      initializeHelloServices(e.detail.value);
+  useEffect(() => {
+    if (reduxChatSessionId) {
+      const widgetToken = reduxChatSessionId?.split('_')[0] // Extract first part (e.g., "d1bc7")
+      initializeHelloServices(widgetToken);
     }
-    if (e.detail.key === 'k_clientId' || e.detail.key === 'a_clientId') {
-      dispatch(setHelloKeysData({ [e.detail.key]: e.detail.value }))
-    }
-    if (e.detail.key === 'is_anon') {
-      dispatch(setHelloKeysData({ is_anon: e.detail.value }));
-    }
-  };
+  }, [reduxChatSessionId])
+
+  // const handleStorageUpdate = (e: CustomEvent<{ key: string, value: string | boolean }>) => {
+  //   if (e.detail.key === 'WidgetId') {
+  //     initializeHelloServices(e.detail.value);
+  //   }
+  //   if (e.detail.key === 'k_clientId' || e.detail.key === 'a_clientId') {
+  //     dispatch(setHelloKeysData({ [e.detail.key]: e.detail.value }))
+  //   }
+  //   if (e.detail.key === 'is_anon') {
+  //     dispatch(setHelloKeysData({ is_anon: e.detail.value }));
+  //   }
+  // };
 
   const initializeHelloServices = async (widgetToken: string = '') => {
     // Prevent duplicate initialization
