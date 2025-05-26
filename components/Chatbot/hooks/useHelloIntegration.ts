@@ -83,6 +83,13 @@ const useHelloIntegration = ({ chatDispatch, chatState, messageRef ,chatSessionI
     chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message: message, subThreadId } });
   }, [chatDispatch]);
 
+
+  useEffect(()=>{
+    if(isHelloUser && currentChannelId){
+      fetchHelloPreviousHistory()
+    }
+  },[currentChannelId,isHelloUser])
+
   // Fetch previous Hello chat history
   const fetchHelloPreviousHistory = useCallback((dynamicChannelId?: string) => {
     const channelId = dynamicChannelId || currentChannelId;
@@ -236,9 +243,6 @@ const useHelloIntegration = ({ chatDispatch, chatState, messageRef ,chatSessionI
         addHelloMessage(newMessage, data?.['channel'])
         // chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages: [newMessage], subThreadId: data?.['channel'] } })
         fetchChannels();
-        if (data?.['channel']) {
-          fetchHelloPreviousHistory(data?.['channel']);
-        }
         if (data?.['presence_channel'] && data?.['channel']) {
           try {
             await socketManager.subscribe([data?.['presence_channel'], data?.['channel']]);
@@ -318,10 +322,6 @@ const useHelloIntegration = ({ chatDispatch, chatState, messageRef ,chatSessionI
 
   // Effect hooks
   useEffect(() => {
-    if (!mountedRef.current) {
-      fetchHelloPreviousHistory();
-    }
-
     window.addEventListener("localstorage-updated", handleStorageUpdate);
     return () => {
       window.removeEventListener("localstorage-updated", handleStorageUpdate);
@@ -339,7 +339,6 @@ const useHelloIntegration = ({ chatDispatch, chatState, messageRef ,chatSessionI
       dispatch(setHelloKeysData({ is_anon: e.detail.value }));
     }
   };
-
 
   const initializeHelloServices = async (widgetToken: string = '') => {
     // Prevent duplicate initialization

@@ -54,7 +54,7 @@ function Chatbot({ chatSessionId}: ChatbotProps) {
   } = chatState;
 
   // Custom hooks
-  const { sendMessageToHello, fetchHelloPreviousHistory, fetchChannels, getMoreHelloChats } =
+  const { sendMessageToHello, fetchChannels, getMoreHelloChats } =
     useHelloIntegration({
       chatDispatch,
       chatState,
@@ -118,7 +118,6 @@ function Chatbot({ chatSessionId}: ChatbotProps) {
   const contextValue = {
     ...chatState,
     sendMessageToHello,
-    fetchHelloPreviousHistory,
     messageRef,
     chatDispatch,
     messageIds: messageIds?.[subThreadId] || [],

@@ -52,7 +52,6 @@ const ChatbotDrawer = ({
     setNewMessage,
     setOptions,
     chatDispatch,
-    fetchHelloPreviousHistory,
     images,
     setImages,
     fetchChannels,
@@ -146,9 +145,6 @@ const ChatbotDrawer = ({
     // Update redux state
     dispatch(setHelloKeysData({ currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
     dispatch(setDataInAppInfoReducer({ subThreadId: channelId }));
-
-    // Fetch history and cleanup
-    fetchHelloPreviousHistory(channelId);
     if (isSmallScreen) setToggleDrawer(false);
     if (images?.length > 0) setImages([]);
 

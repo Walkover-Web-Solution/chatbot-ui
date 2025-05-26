@@ -86,8 +86,8 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
 
       const prevWidgetId = GetSessionStorageData('widgetToken');
       const prevUser = JSON.parse(getLocalStorage('userData') || '{}');
-      SetSessionStorage('widgetToken', widgetToken)
-      dispatch(setDataInTabInfo({ widgetToken }))
+      SetSessionStorage('widgetToken', unique_id ? `${widgetToken}_${unique_id}` : widgetToken)
+      dispatch(setDataInTabInfo({ widgetToken: unique_id ? `${widgetToken}_${unique_id}` : widgetToken }))
       const hasUserIdentity = Boolean(unique_id || mail || number || user_jwt_token);
 
       // Helper: reset Redux keys and sub-thread
@@ -97,7 +97,7 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
       };
 
       // 1. Widget token changed
-      if (widgetToken !== prevWidgetId) {
+      if (unique_id ? `${widgetToken}_${unique_id}` !== prevWidgetId : widgetToken !== prevWidgetId) {
         resetKeys();
         // ['a_clientId', 'k_clientId', 'userData', 'client', 'default_client_created'].forEach(key => setLocalStorage(key, ''));
         // setLocalStorage('is_anon', hasUserIdentity ? 'false' : 'true');
