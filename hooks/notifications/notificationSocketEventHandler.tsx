@@ -19,15 +19,14 @@ export interface HelloMessage {
 /**
  * Hook for handling socket events
  * @param options - Options for socket events
- * @param options.chatbotId - The chatbot ID
  * @param options.chatState - The current chat state
  * @param options.chatDispatch - Function to dispatch chat actions
  * @param options.messageRef - Reference to message element
  * @returns timeoutIdRef - Reference to timeout for cleanup
  */
-export const useNotificationSocketEventHandler = ({ chatDispatch }: { chatDispatch: Dispatch<ChatAction> }) => {
+export const useNotificationSocketEventHandler = ({ chatDispatch ,chatSessionId }: { chatDispatch: Dispatch<ChatAction> ,chatSessionId:string}) => {
     // Handler for new messages
-    const conversations = useCustomSelector((state:$ReduxCoreType)=>state.Hello?.channelListData?.channels || [])
+    const conversations = useCustomSelector((state:$ReduxCoreType)=>state.Hello?.[chatSessionId]?.channelListData?.channels || [])
     const addHelloMessage = (data) => {
         conversations?.forEach((conversation)=>{
             const messageObj = {

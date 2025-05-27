@@ -71,8 +71,6 @@ function createSendMessageHelloPayload(message: string) {
 }
 
 function convertEventMessageToGenericFormat(message: any, isHello: boolean = false) {
-
-
     if (!isHello) {
         return [{
             ...message,

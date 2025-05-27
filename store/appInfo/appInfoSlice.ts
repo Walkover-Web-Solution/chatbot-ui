@@ -10,28 +10,28 @@ const interfaceSlice = createSlice({
     builder.addCase(setThreads, (state, action) => {
       const threadData = action.payload?.newThreadData || {};
       const allThreadList = action.payload?.threadList || [];
-
+      const chatSessionId = action.urlData.chatSessionId
       if (!(Object.keys(threadData || {}).length > 0)) {
-        if (state.threadId) {
+        if (state[chatSessionId]?.threadId) {
           const selectedThread = allThreadList.find(
-            (thread: any) => thread.thread_id === state.threadId
+            (thread: any) => thread.thread_id === state[chatSessionId]?.threadId
           );
 
           if (!selectedThread) {
-            state.subThreadId = state.threadId;
-          } else if (!state.subThreadId && state.threadId === selectedThread.thread_id) {
+            state[chatSessionId].subThreadId = state[chatSessionId].threadId;
+          } else if (!state[chatSessionId]?.subThreadId && state[chatSessionId]?.threadId === selectedThread.thread_id) {
             const lastSubThreadId = allThreadList[allThreadList.length - 1]?.sub_thread_id;
             if (lastSubThreadId) {
-              state.subThreadId = lastSubThreadId;
+              state[chatSessionId].subThreadId = lastSubThreadId;
             }
           }
         }
         if (allThreadList?.length === 0) {
-          state.subThreadId = state.threadId;
+          state[chatSessionId].subThreadId = state[chatSessionId].threadId;
         }
 
       } else {
-        state.subThreadId = threadData?.sub_thread_id || "";
+        state[chatSessionId].subThreadId = threadData?.sub_thread_id || "";
       }
     });
   }

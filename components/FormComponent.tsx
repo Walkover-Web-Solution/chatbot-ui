@@ -5,15 +5,17 @@ import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { isColorLight } from "@/utils/themeUtility";
 import { useTheme } from "@mui/material";
 import { BookText, Mail, Phone, Send, User } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import countryCodes from "@/assests/countryCode.json";
 import { getLocalStorage } from "@/utils/utilities";
+import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 
 interface FormComponentProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   isSmallScreen: boolean;
+  chatSessionId:string
 }
 
 interface FormData {
@@ -30,10 +32,10 @@ interface FormErrors {
   countryCode: string;
 }
 
-function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
+function FormComponent({ open, setOpen, isSmallScreen ,chatSessionId}: FormComponentProps) {
   const theme = useTheme();
   const { showWidgetForm } = useCustomSelector((state: $ReduxCoreType) => ({
-    showWidgetForm: state.Hello.showWidgetForm
+    showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm
   }));
   const dispatch = useDispatch();
   const backgroundColor = theme.palette.primary.main;
@@ -273,4 +275,4 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
   );
 }
 
-export default FormComponent;
+export default React.memo(addUrlDataHoc(FormComponent));

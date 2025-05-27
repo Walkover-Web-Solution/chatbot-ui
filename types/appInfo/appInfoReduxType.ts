@@ -1,8 +1,9 @@
 export interface $AppInfoReduxType{
-    threadId:string
-    bridgeName:string
-    subThreadId:string
-    userId:string
-    chatBotId:string
-    config:Record<string,unknown>
+    [chatSessionId:string]:{
+        threadId:string
+        bridgeName:string
+        subThreadId:string
+        userId:string
+        config:Record<string,unknown>
+    }
 }

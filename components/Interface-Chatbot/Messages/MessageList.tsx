@@ -1,5 +1,5 @@
 
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 // MUI Components
 import { lighten, useTheme } from "@mui/material";
@@ -14,8 +14,9 @@ import { generateNewId } from "@/utils/utilities";
 import { MessageContext } from "../InterfaceChatbot";
 import MoveToDownButton from "../MoveToDownButton";
 import Message from "./Message";
+import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 
-function MessageList() {
+function MessageList({chatSessionId}:{chatSessionId:string}) {
   const {
     hasMoreMessages = false,
     newMessage,
@@ -30,13 +31,13 @@ function MessageList() {
   const scrollableDivRef = useRef(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
-  const { IsHuman, assigned_type, currentChannelId, greetingMessage } = useCustomSelector((state: $ReduxCoreType) => ({
-    IsHuman: state.Hello?.isHuman,
-    assigned_type: state.Hello?.channelListData?.channels?.find(
-      (channel: any) => channel?.channel === state.Hello?.currentChannelId
+  const { isHelloUser, assigned_type, currentChannelId, greetingMessage } = useCustomSelector((state: $ReduxCoreType) => ({
+    isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser,
+    assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
+      (channel: any) => channel?.channel === state.Hello?.[chatSessionId]?.currentChannelId
     )?.assigned_type,
-    currentChannelId: state.Hello?.currentChannelId,
-    greetingMessage: state.Hello?.greeting
+    currentChannelId: state.Hello?.[chatSessionId]?.currentChannelId,
+    greetingMessage: state.Hello?.[chatSessionId]?.greeting
   }));
 
   const theme = useTheme();
@@ -45,12 +46,12 @@ function MessageList() {
   };
 
   const fetchMoreData = useCallback(() => {
-    if (IsHuman) {
+    if (isHelloUser) {
       getMoreHelloChats();
     } else {
       getMoreChats();
     }
-  }, [IsHuman, getMoreHelloChats, getMoreChats]);
+  }, [isHelloUser, getMoreHelloChats, getMoreChats]);
 
   const moveToDown = useCallback(() => {
     if (scrollableDivRef.current) {
@@ -84,7 +85,7 @@ function MessageList() {
 
   // this is the greeting message that is shown when the user first opens the chat
   const renderGreetingMessage = useMemo(() => {
-    if (!IsHuman || !greetingMessage ||
+    if (!isHelloUser || !greetingMessage ||
       (!greetingMessage.text && !greetingMessage?.options?.length)) {
       return null;
     }
@@ -111,11 +112,10 @@ function MessageList() {
         }}
       />
     );
-  }, [IsHuman, greetingMessage]);
-
+  }, [isHelloUser, greetingMessage]);
 
   const renderThinkingIndicator = useMemo(() => {
-    if (loading && assigned_type === 'bot' && IsHuman) {
+    if (loading && assigned_type === 'bot' && isHelloUser) {
       return (
         <div className="w-full">
           <div className="flex flex-wrap gap-2 items-center">
@@ -130,7 +130,7 @@ function MessageList() {
       );
     }
     return null
-  }, [IsHuman, loading, assigned_type, currentChannelId, themePalette]);
+  }, [isHelloUser, loading, assigned_type, currentChannelId, themePalette]);
 
   const renderedMessages = useMemo(() => {
     return messageIds.map((msgId, index) => {
@@ -192,4 +192,4 @@ function MessageList() {
 
 }
 
-export default MessageList;
+export default React.memo(addUrlDataHoc(MessageList));

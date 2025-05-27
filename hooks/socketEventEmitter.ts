@@ -9,10 +9,10 @@ import { $ReduxCoreType } from "@/types/reduxCore";
  * @param channelId - Channel ID to emit the event on
  * @returns emitTypingStatus - function to emit 'typing' or 'not-typing'
  */
-export const useTypingStatus = () => {
+export const useTypingStatus = ({chatSessionId}:{chatSessionId:string}) => {
     const { currentChannelId, typeingEventChannel } = useCustomSelector((state: $ReduxCoreType) => ({
-        currentChannelId: state.Hello?.currentChannelId,
-        typeingEventChannel: state.Hello?.widgetInfo?.event_channels?.find((channel: any) => channel.includes("typing"))
+        currentChannelId: state.Hello?.[chatSessionId]?.currentChannelId,
+        typeingEventChannel: state.Hello?.[chatSessionId]?.widgetInfo?.event_channels?.find((channel: any) => channel.includes("typing"))
     }));
     const hasSentTyping = useRef(false);
 

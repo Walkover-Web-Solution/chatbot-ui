@@ -111,5 +111,5 @@ function ComponentRenderer({
 }
 
 export default React.memo(
-  addUrlDataHoc(React.memo(ComponentRenderer), [ParamsEnums?.chatbotId])
+  addUrlDataHoc(ComponentRenderer)
 );

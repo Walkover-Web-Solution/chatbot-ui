@@ -1,4 +1,5 @@
 import { submitFeedback } from '@/config/helloApi'
+import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import React, { useState, useCallback, useMemo } from 'react'
@@ -11,14 +12,14 @@ function addDynamicValuesInText(text: string, dynamic_values: Record<string, str
   });
 }
 
-function RenderHelloFeedbackMessage({message}:{message:any}) {
+function RenderHelloFeedbackMessage({message,chatSessionId}:{message:any,chatSessionId:string}) {
   const [feedbackText, setFeedbackText] = useState("");
   const [selectedRating, setSelectedRating] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
-  const {widgetLogo , feedBackHeaderText} = useCustomSelector((state:$ReduxCoreType)=>({
-    widgetLogo: state?.Hello?.widgetInfo?.logo?.path,
-    feedBackHeaderText : addDynamicValuesInText(state.Hello?.widgetInfo?.feedback_text,message?.dynamic_values)
+  const {widgetLogo} = useCustomSelector((state:$ReduxCoreType)=>({
+    widgetLogo: state?.Hello?.[chatSessionId]?.widgetInfo?.logo?.path,
+    feedBackHeaderText : addDynamicValuesInText(state.Hello?.[chatSessionId]?.widgetInfo?.feedback_text,message?.dynamic_values)
   }))
 
   const handleSubmitFeedback = useCallback(async () => {
@@ -127,4 +128,4 @@ function RenderHelloFeedbackMessage({message}:{message:any}) {
   )
 }
 
-export default React.memo(RenderHelloFeedbackMessage);
+export default React.memo(addUrlDataHoc(RenderHelloFeedbackMessage));

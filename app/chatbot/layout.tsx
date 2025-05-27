@@ -1,13 +1,14 @@
 'use client';
 import { ThemeContext } from '@/components/AppWrapper';
 import { ChatbotContext } from '@/components/context';
+import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
 import { setHuman } from '@/store/hello/helloSlice';
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-export default function ChatbotLayout({ children }: { children: React.ReactNode }) {
+function ChatbotLayout({ children ,chatSessionId }: { children: React.ReactNode ,chatSessionId:string }) {
     const search = useSearchParams();
     const [chatbotConfig, setChatbotConfig] = useState({});
     const { themeColor, handleThemeChange } = useContext(ThemeContext);
@@ -50,7 +51,7 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
                 config: config
             }));
         }
-    }, [chatbot_id, userId, config]);
+    }, [chatbot_id, userId, config,chatSessionId]);
 
 
     const onConfigChange = useCallback((config: any) => {
@@ -83,9 +84,9 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
 
     useEffect(() => {
         if (isHelloUser) {
-            dispatch(setHuman({ isHuman: true }));
+            dispatch(setHuman({ isHelloUser: true }));
         }
-    }, [isHelloUser])
+    }, [isHelloUser,chatSessionId])
 
     // Create context value with useMemo to prevent unnecessary re-renders
     const contextValue = useMemo(() => ({
@@ -105,3 +106,5 @@ export default function ChatbotLayout({ children }: { children: React.ReactNode 
         </ChatbotContext.Provider>
     );
 }
+
+export default React.memo(addUrlDataHoc(ChatbotLayout))

@@ -1,22 +1,24 @@
 export interface $HelloReduxType {
-  isHuman: boolean;
-  widgetInfo: any;
-  anonymousClientId: any;
-  socketJwt: { jwt: string };
-  ChannelList: any;
-  Channel?: any;
-  isLoading?: boolean;
-  mode?: Array<string | null>;
-  helloConfig?: HelloData;
-  vision?: boolean;
-  channelListData: ChannelListData;
-  currentChannelId?: string;
-  currentTeamId?: string;
-  currentChatId?: string;
-  greeting?: object;
-  showWidgetForm?: boolean | null;
-  is_anon?: boolean;
-  agent_teams?: { teams?: Record<string, string>, agents?: Record<string, string> };
+  [chatSessionId: string]: {
+    isHelloUser: boolean;
+    widgetInfo: any;
+    anonymousClientId: any;
+    socketJwt: { jwt: string };
+    ChannelList: any;
+    Channel?: any;
+    isLoading?: boolean;
+    mode?: Array<string | null>;
+    helloConfig?: HelloData;
+    vision?: boolean;
+    channelListData: ChannelListData;
+    currentChannelId?: string;
+    currentTeamId?: string;
+    currentChatId?: string;
+    greeting?: object;
+    showWidgetForm?: boolean | null;
+    is_anon?: boolean;
+    agent_teams?: { teams?: Record<string, string>, agents?: Record<string, string> };
+  }
 }
 
 

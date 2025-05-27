@@ -3,6 +3,7 @@ import { Box, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import linkifyHtml from "linkify-html";
 import { customAlphabet } from "nanoid";
+import { GetSessionStorageData } from "./ChatbotUtility";
 
 export const generateNewId = (length = 8) => {
   const nanoid = customAlphabet(
@@ -322,7 +323,12 @@ export const removeCookie = (cookieName) => {
 };
 
 export const setLocalStorage = (key, value = '') => {
-  localStorage.setItem(key, value);
+  const widgetToken = GetSessionStorageData('widgetToken')
+  let updatedKey = key
+  if(widgetToken){
+    updatedKey = `${widgetToken}_${key}`
+  }
+  localStorage.setItem(updatedKey, value);
   if (key === 'WidgetId' || key === 'k_clientId' || key === 'a_clientId' || key === 'is_anon') {
     if (key === 'k_clientId') window.parent.postMessage({ type: 'setDataInLocal', data: { key: 'hello-widget-uuid', payload: value } }, '*');
     if (key === 'a_clientId') window.parent.postMessage({ type: 'setDataInLocal', data: { key: 'hello-widget-anonymoud-uuid', payload: value } }, '*');
@@ -334,7 +340,12 @@ export const setLocalStorage = (key, value = '') => {
 }
 
 export const getLocalStorage = (key) => {
-  return key ? localStorage.getItem(key) : null;
+  let updatedKey = key
+  const widgetToken = GetSessionStorageData('widgetToken')
+  if(widgetToken){
+    updatedKey = `${widgetToken}_${key}`
+  }
+  return key ? localStorage.getItem(updatedKey) : null;
 }
 
 

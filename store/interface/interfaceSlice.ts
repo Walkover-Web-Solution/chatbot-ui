@@ -3,7 +3,7 @@ import { initialState, reducers } from "@/store/interface/interfaceReducer";
 
 const interfaceSlice = createSlice({
   name: "Interface",
-  initialState,
+  initialState:{},
   reducers
 });
 
