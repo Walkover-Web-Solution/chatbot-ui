@@ -464,6 +464,10 @@
         }
 
         sendInitialData() {
+            const interfaceEmbedElement = document.getElementById('interfaceEmbed');
+            if (interfaceEmbedElement) {
+                interfaceEmbedElement.style.display = (this.props.hideIcon === true || this.props.hideIcon === 'true') ? 'none' : 'unset';
+            }
             if (this.state.tempDataToSend || this.helloProps) {
                 sendMessageToChatbot({ type: 'interfaceData', data: this.state.tempDataToSend });
                 sendMessageToChatbot({ type: 'helloData', data: this.helloProps });
