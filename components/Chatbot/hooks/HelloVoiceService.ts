@@ -53,11 +53,14 @@ class HelloVoiceService {
         });
         // Set up event listeners for this call
         call.on("answered", (data: any) => {
+            console.log("Call answered:", data);
+            localStorage.setItem('CallId', data?.id || '');
             this.callState = "connected";
             this.eventEmitter.emit("callStateChanged", { state: this.callState, data });
         });
 
         call.on("connected", (mediaStream: any) => {
+            console.log(' connected meadia', mediaStream)
             this.callState = "connected";
             this.eventEmitter.emit("callStateChanged", {
                 state: this.callState,
@@ -66,6 +69,7 @@ class HelloVoiceService {
         });
 
         call.on("ended", (data: any) => {
+            localStorage.removeItem('CallId');
             this.callState = "idle";
             this.isMuted = false;
             this.eventEmitter.emit("callStateChanged", { state: this.callState, data });
@@ -82,6 +86,17 @@ class HelloVoiceService {
             this.isMuted = false;
             this.eventEmitter.emit("muteStatusChanged", { muted: false, uid });
         });
+        call.on("rejoined", (data) => {
+            console.log(localStorage.getItem('CallId'), 'rejoined call');
+            const summary = data?.summary;
+            console.log("Call rejoined with summary:", summary);
+            /**
+             * Following details can be found in summary to rehydrate the UI
+             * summary.startedAt;
+             * summary.answeredAt;
+             * summary.answeredBy;
+             */
+        });
     }
 
     public initiateCall(): void {
@@ -97,6 +112,23 @@ class HelloVoiceService {
         }
 
         this.webrtc.call(callToken);
+        this.callState = "ringing";
+        this.eventEmitter.emit("callStateChanged", { state: this.callState });
+    }
+
+    public rejoinCall(): void {
+        if (!this.webrtc) {
+            console.warn("WebRTC not initialized. Call initialize() first.");
+            return;
+        }
+
+        const CallId = getLocalStorage('CallId');
+        if (!CallId) {
+            console.warn("No call token found in localStorage.");
+            return;
+        }
+
+        this.webrtc.rejoinCall(CallId);
         this.callState = "ringing";
         this.eventEmitter.emit("callStateChanged", { state: this.callState });
     }

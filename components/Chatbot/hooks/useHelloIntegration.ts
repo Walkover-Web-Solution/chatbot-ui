@@ -431,6 +431,10 @@ const useHelloIntegration = ({ chatbotId, chatDispatch, chatState, messageRef }:
       if ((getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`)) && widgetToken && enable_call) {
         const clientTokenPromise = getClientToken().then(() => {
           helloVoiceService.initialize();
+          if (localStorage.getItem('CallId')) {
+            console.log('call id present')
+            helloVoiceService.rejoinCall();
+          }
         });
 
         const callTokenPromise = getCallToken();
