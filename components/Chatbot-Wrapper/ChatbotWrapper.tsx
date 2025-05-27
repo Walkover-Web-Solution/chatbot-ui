@@ -54,7 +54,7 @@ const helloToChatbotPropsMap: Record<string, string> = {
 function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
   const dispatch = useDispatch();
   const { reduxChatSessionId } = useCustomSelector((state: $ReduxCoreType) => ({
-    reduxChatSessionId: state.tabInfo?.widgetToken
+    reduxChatSessionId: state.tabInfo?.widgetToken || state?.tabInfo?.chatbotId || '',
   }));
   // Handle messages from parent window
   const handleMessage = useCallback((event: MessageEvent) => {
