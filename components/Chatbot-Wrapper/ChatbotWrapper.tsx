@@ -13,7 +13,11 @@ import {
   setModalConfig,
   setThreadId
 } from "@/store/interface/interfaceSlice";
-import { ALLOWED_EVENTS_TO_SUBSCRIBE, ParamsEnums } from "@/utils/enums";
+import { setDataInTabInfo } from "@/store/tabInfo/tabInfoSlice";
+import { $ReduxCoreType } from "@/types/reduxCore";
+import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
+import { useCustomSelector } from "@/utils/deepCheckSelector";
+import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
 import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -39,7 +43,7 @@ interface InterfaceData {
 }
 
 interface ChatbotWrapperProps {
-  chatbotId?: string;
+  chatSessionId?: string;
 }
 
 const helloToChatbotPropsMap: Record<string, string> = {
@@ -47,9 +51,11 @@ const helloToChatbotPropsMap: Record<string, string> = {
   hideFullScreenButton: 'hideFullScreenButton'
 }
 
-function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
+function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
   const dispatch = useDispatch();
-
+  const { reduxChatSessionId } = useCustomSelector((state: $ReduxCoreType) => ({
+    reduxChatSessionId: state.tabInfo?.widgetToken || state?.tabInfo?.chatbotId || '',
+  }));
   // Handle messages from parent window
   const handleMessage = useCallback((event: MessageEvent) => {
     const allowedEvents = ["interfaceData", "helloData", "parent-route-changed", "ADD_COBROWSE_SCRIPT", "ADD_USER_EVENT_SEGMENTO"];
@@ -83,8 +89,9 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
         ...restProps
       } = event.data.data;
 
-      const prevWidgetId = getLocalStorage('WidgetId');
+      const prevWidgetId = GetSessionStorageData('widgetToken');
       const prevUser = JSON.parse(getLocalStorage('userData') || '{}');
+      SetSessionStorage('widgetToken', unique_id ? `${widgetToken}_${unique_id}` : widgetToken)
       const hasUserIdentity = Boolean(unique_id || mail || number || user_jwt_token);
 
       // Helper: reset Redux keys and sub-thread
@@ -94,10 +101,10 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
       };
 
       // 1. Widget token changed
-      if (widgetToken !== prevWidgetId) {
+      if (unique_id ? `${widgetToken}_${unique_id}` !== prevWidgetId : widgetToken !== prevWidgetId) {
         resetKeys();
-        ['a_clientId', 'k_clientId', 'userData', 'client', 'default_client_created'].forEach(key => setLocalStorage(key, ''));
-        setLocalStorage('is_anon', hasUserIdentity ? 'false' : 'true');
+        // ['a_clientId', 'k_clientId', 'userData', 'client', 'default_client_created'].forEach(key => setLocalStorage(key, ''));
+        // setLocalStorage('is_anon', hasUserIdentity ? 'false' : 'true');
       }
 
       // 2. User identity changed
@@ -146,6 +153,7 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
       // 8. Persist new widget token and config
       setLocalStorage('WidgetId', widgetToken);
       dispatch(setHelloConfig(event.data.data));
+      dispatch(setDataInTabInfo({ widgetToken: unique_id ? `${widgetToken}_${unique_id}` : widgetToken }))
       return;
     }
 
@@ -218,12 +226,25 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
     }
   }, [dispatch]);
 
+  const handleStorageUpdate = (e: CustomEvent<{ key: string, value: string | boolean }>) => {
+    if (e.detail.key === 'k_clientId' || e.detail.key === 'a_clientId') {
+      dispatch(setHelloKeysData({ [e.detail.key]: e.detail.value }))
+    }
+    if (e.detail.key === 'is_anon') {
+      dispatch(setHelloKeysData({ is_anon: e.detail.value }));
+    }
+  };
+
   useEffect(() => {
     window.addEventListener("message", handleMessage);
+    window.addEventListener("localstorage-updated", handleStorageUpdate);
+
     return () => {
       window.removeEventListener("message", handleMessage);
+      window.removeEventListener("localstorage-updated", handleStorageUpdate);
+
     };
-  }, [handleMessage, chatbotId]);
+  }, [handleMessage, chatSessionId]);
 
   // Notify parent when interface is loaded
   useEffect(() => {
@@ -232,9 +253,13 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
     }, 0);
   }, []);
 
+  if (!reduxChatSessionId) {
+    return null
+  }
+
   return <Chatbot />
 }
 
 export default React.memo(
-  addUrlDataHoc(React.memo(ChatbotWrapper), [ParamsEnums.chatbotId])
+  addUrlDataHoc(React.memo(ChatbotWrapper))
 );

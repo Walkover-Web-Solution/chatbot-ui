@@ -1,57 +1,40 @@
 // hooks/useChatActions.ts
 import { errorToast } from '@/components/customToast';
 import { getAllThreadsApi, getPreviousMessage, sendDataToAction, sendFeedbackAction } from '@/config/api';
+import { getHelloDetailsStart } from '@/store/hello/helloSlice';
 import { setThreads } from '@/store/interface/interfaceSlice';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
+import { PAGE_SIZE } from '@/utils/enums';
 import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState, SendMessagePayloadType } from './chatTypes';
-import { PAGE_SIZE } from '@/utils/enums';
-import { getHelloDetailsStart } from '@/store/hello/helloSlice';
 
-export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) => {
-    if (chatbotId === 'hello') {
-        return {
-            fetchAllThreads: () => { },
-            getIntialChatHistory: () => { },
-            getMoreChats: () => { },
-            sendMessage: () => { },
-            setToggleDrawer: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_TOGGLE_DRAWER, payload }),
-            setLoading: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_LOADING, payload }),
-            setChatsLoading: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_CHATS_LOADING, payload }),
-            setImages: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload }),
-            setOptions: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_OPTIONS, payload }),
-            setNewMessage: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload }),
-            handleMessageFeedback: () => { }
-        }
-    }
+export const useChatActions = ({ chatDispatch, chatState, messageRef, timeoutIdRef, chatSessionId }: { chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, chatSessionId: string }) => {
     const globalDispatch = useDispatch();
-    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId } = useCustomSelector((state: $ReduxCoreType) => ({
-        threadId: state.appInfo.threadId,
-        subThreadId: state.appInfo.subThreadId,
-        bridgeName: state.appInfo.bridgeName,
-        variables: state.Interface?.interfaceContext?.[chatbotId]?.variables,
-        selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null,
-        userId: state.appInfo.userId || null,
+    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, isHelloUser, firstThread } = useCustomSelector((state: $ReduxCoreType) => ({
+        threadId: state.appInfo?.[chatSessionId]?.threadId,
+        subThreadId: state.appInfo?.[chatSessionId]?.subThreadId,
+        bridgeName: state.appInfo?.[chatSessionId]?.bridgeName,
+        variables: state.Interface?.[chatSessionId]?.interfaceContext?.variables,
+        selectedAiServiceAndModal: state.Interface?.[chatSessionId]?.selectedAiServiceAndModal || null,
+        userId: state.appInfo?.[chatSessionId]?.userId || null,
+        isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
+        firstThread: state.Interface?.[chatSessionId]?.interfaceContext?.[state.appInfo?.[chatSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[chatSessionId]?.threadId]?.[0]
     }))
-    
-    const { firstThread } = useCustomSelector((state: $ReduxCoreType) => ({
-        firstThread: state.Interface?.interfaceContext?.[chatbotId]?.[bridgeName]?.threadList?.[threadId]?.[0]
-    }))
-    
+
     useEffect(() => {
         if (bridgeName) {
             globalDispatch(getHelloDetailsStart({ slugName: bridgeName }));
         }
-    }, [bridgeName])
+    }, [bridgeName, chatSessionId])
 
     useEffect(() => {
         threadId && bridgeName && fetchAllThreads()
-    }, [threadId, bridgeName]);
+    }, [threadId, bridgeName, chatSessionId]);
 
     useEffect(() => {
-        if (!(firstThread?.newChat && firstThread?.subThread_id === subThreadId)){
+        if (!(firstThread?.newChat && firstThread?.subThread_id === subThreadId)) {
             getIntialChatHistory();
         }
     }, [threadId, bridgeName, subThreadId]);
@@ -202,7 +185,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
             subThreadId: subThreadId,
             slugName: customBridgeSlug || bridgeName,
             thread_flag: (firstThread?.newChat && firstThread?.sub_thread_id === subThreadId) ? true : false,
-            chatBotId: chatbotId,
+            chatBotId: chatSessionId,
             version_id: chatState.bridgeVersionId === "null" ? null : chatState.bridgeVersionId,
             ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {
                 configuration: { model: selectedAiServiceAndModal?.modal },
@@ -265,11 +248,29 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
     );
 
     useEffect(() => {
-        window.addEventListener("message", handleMessage);
-        return () => {
-            window.removeEventListener("message", handleMessage);
-        };
+        if (!isHelloUser) {
+            window.addEventListener("message", handleMessage);
+            return () => {
+                window.removeEventListener("message", handleMessage);
+            };
+        }
     }, [handleMessage]);
+
+    if (isHelloUser) {
+        return {
+            fetchAllThreads: () => { },
+            getIntialChatHistory: () => { },
+            getMoreChats: () => { },
+            sendMessage: () => { },
+            setToggleDrawer: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_TOGGLE_DRAWER, payload }),
+            setLoading: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_LOADING, payload }),
+            setChatsLoading: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_CHATS_LOADING, payload }),
+            setImages: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload }),
+            setOptions: (payload: string[]) => chatDispatch({ type: ChatActionTypes.SET_OPTIONS, payload }),
+            setNewMessage: (payload: boolean) => chatDispatch({ type: ChatActionTypes.SET_NEW_MESSAGE, payload }),
+            handleMessageFeedback: () => { }
+        }
+    }
 
     return {
         fetchAllThreads,

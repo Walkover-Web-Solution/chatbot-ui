@@ -12,16 +12,23 @@ const getStoredValueOrDefault = (key: string, defaultValue: any, isJson = false)
   return isJson ? JSON.parse(storedValue) : storedValue;
 };
 
-function isDefaultNavigateToChatScreenFn(state: $ReduxCoreType) {
-  const teams = state.Hello?.widgetInfo?.teams || [];
-  const channels = state.Hello?.channelListData?.channels || [];
+function isDefaultNavigateToChatScreenFn(state: $ReduxCoreType, chatSessionId: string) {
+  const teams = state.Hello?.[chatSessionId]?.widgetInfo?.teams || [];
+  const channels = state.Hello?.[chatSessionId]?.channelListData?.channels || [];
   return teams && teams.length <= 1 && channels?.length <= 1 && !channels?.[0]?.id;
 }
 
-export const useReduxStateManagement = ({ chatbotId, chatDispatch }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction> }) => {
+export const useReduxStateManagement = ({ 
+  chatDispatch, 
+  chatSessionId 
+}: { 
+  chatDispatch: React.Dispatch<ChatAction>; 
+  chatSessionId: string;
+}) => {
+  // FIXED: Always call hooks at the top level, in the same order
   const theme = useTheme();
   const isLargeScreen = useMediaQuery('(max-width: 1024px)');
-  const isSmallScreen = useMediaQuery('(max-width:1023px)');
+  const isSmallScreen = useMediaQuery('(max-width: 1023px)');
 
   // Get Redux state
   const {
@@ -32,7 +39,7 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch }: { chatbotId
     reduxBridgeVersionId,
     reduxHeaderButtons,
     interfaceContextData,
-    IsHuman,
+    isHelloUser,
     uuid,
     unique_id,
     presence_channel,
@@ -48,28 +55,28 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch }: { chatbotId
     currentTeamId,
     isDefaultNavigateToChatScreen
   } = useCustomSelector((state: $ReduxCoreType) => ({
-    interfaceContextData: state.Interface?.interfaceContext?.[chatbotId]?.variables,
-    reduxThreadId: state.appInfo?.threadId || "",
-    reduxSubThreadId: state.appInfo?.subThreadId || "",
-    reduxHeaderButtons: state.Interface?.headerButtons || [],
-    reduxBridgeName: state.appInfo?.bridgeName || "root",
-    reduxHelloId: state.Interface?.helloId || null,
-    reduxBridgeVersionId: state.Interface?.version_id || null,
-    IsHuman: state.Hello?.isHuman || false,
-    uuid: state.Hello?.channelListData?.uuid,
-    unique_id: state.Hello?.channelListData?.unique_id,
-    presence_channel: state.Hello?.channelListData?.presence_channel,
-    team_id: state.Hello?.widgetInfo?.team?.[0]?.id,
-    isDefaultNavigateToChatScreen: isDefaultNavigateToChatScreenFn(state),
-    chat_id: state.Hello?.Channel?.id,
-    channelId: state.Hello?.Channel?.channel || null,
-    mode: state.Hello?.mode || [],
-    selectedAiServiceAndModal: state.Interface?.selectedAiServiceAndModal || null,
-    unique_id_hello: state?.Hello?.helloConfig?.unique_id,
-    widgetToken: state?.Hello?.helloConfig?.widgetToken,
-    currentChatId: state.Hello?.currentChatId,
-    currentChannelId: state.Hello?.currentChannelId,
-    currentTeamId: state.Hello?.currentTeamId,
+    interfaceContextData: state.Interface?.[chatSessionId]?.interfaceContext?.variables,
+    reduxThreadId: state.appInfo?.[chatSessionId]?.threadId || "",
+    reduxSubThreadId: state.appInfo?.[chatSessionId]?.subThreadId || "",
+    reduxHeaderButtons: state.Interface?.[chatSessionId]?.headerButtons || [],
+    reduxBridgeName: state.appInfo?.[chatSessionId]?.bridgeName || "root",
+    reduxHelloId: state.Interface?.[chatSessionId]?.helloId || null,
+    reduxBridgeVersionId: state.Interface?.[chatSessionId]?.version_id || null,
+    isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
+    uuid: state.Hello?.[chatSessionId]?.channelListData?.uuid,
+    unique_id: state.Hello?.[chatSessionId]?.channelListData?.unique_id,
+    presence_channel: state.Hello?.[chatSessionId]?.channelListData?.presence_channel,
+    team_id: state.Hello?.[chatSessionId]?.widgetInfo?.team?.[0]?.id,
+    isDefaultNavigateToChatScreen: isDefaultNavigateToChatScreenFn(state, chatSessionId),
+    chat_id: state.Hello?.[chatSessionId]?.Channel?.id,
+    channelId: state.Hello?.[chatSessionId]?.Channel?.channel || null,
+    mode: state.Hello?.[chatSessionId]?.mode || [],
+    selectedAiServiceAndModal: state.Interface?.[chatSessionId]?.selectedAiServiceAndModal || null,
+    unique_id_hello: state?.Hello?.[chatSessionId]?.helloConfig?.unique_id,
+    widgetToken: state?.Hello?.[chatSessionId]?.helloConfig?.widgetToken,
+    currentChatId: state.Hello?.[chatSessionId]?.currentChatId,
+    currentChannelId: state.Hello?.[chatSessionId]?.currentChannelId,
+    currentTeamId: state.Hello?.[chatSessionId]?.currentTeamId,
   }));
 
   // Sync Redux threadId with local state
@@ -120,15 +127,15 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch }: { chatbotId
     });
   }, [reduxBridgeVersionId, chatDispatch]);
 
-  // Sync IsHuman with local state
+  // Sync isHelloUser with local state
   useEffect(() => {
     chatDispatch({
       type: ChatActionTypes.SET_DATA,
       payload: {
-        isHelloUser: IsHuman
+        isHelloUser: isHelloUser
       }
     });
-  }, [IsHuman, chatDispatch]);
+  }, [isHelloUser, chatDispatch]);
 
   // Sync large screen toggle with local state
   useEffect(() => {
@@ -140,7 +147,7 @@ export const useReduxStateManagement = ({ chatbotId, chatDispatch }: { chatbotId
 
   return {
     interfaceContextData,
-    IsHuman,
+    isHelloUser,
     uuid,
     unique_id,
     presence_channel,

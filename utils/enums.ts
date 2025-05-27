@@ -23,7 +23,6 @@ const ParamsEnums = {
   isPublishedTab: "isPublishedTab",
   versionId: "versionId",
   isTemplate: "isTemplate",
-  chatbotId: "chatbotId",
   isConfiguration: "isConfiguration",
   isLogs: "isLogs",
   isSetup: "isSetup",
@@ -32,8 +31,7 @@ const ParamsEnums = {
   serviceId: "serviceId",
   triggerId: "triggerId",
   stepName: "stepName",
-  eventId: "eventId",
-  chatBotId: "chatBotId",
+  eventId: "eventId"
 };
 
 export const KNOWLEDGE_BASE_SECTION_TYPES = [

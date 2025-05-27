@@ -5,6 +5,7 @@ import rootReducer from "./combineReducer";
 import rootSaga from "./rootSaga.ts";
 import createWebStorage from "redux-persist/es/storage/createWebStorage";
 import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
+import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 // import { getInfoParametersFromUrl } from "../utils/utilities";
 
 export const getInfoParametersFromUrl = () => {
@@ -14,8 +15,14 @@ export const getInfoParametersFromUrl = () => {
 
   const params = window.location.pathname.slice(1)?.split("/");
   const urlParameters = {};
-  if (params[0] === "chatbot") urlParameters.chatbotId = params[1];
-  if (params[0] === "chatbot") urlParameters.chatbotId = params[1];
+  if (params[0] === "chatbot") {
+    const chatbotId = params[1];
+    if (chatbotId === 'hello') {
+      urlParameters.chatSessionId = store.getState().tabInfo.widgetToken
+    } else {
+      urlParameters.chatSessionId = store.getState().tabInfo.chatbotId
+    }
+  }
   return urlParameters;
 };
 
@@ -43,7 +50,7 @@ const storage =
     ? createWebStorage("local")
     : createNoopStorage();
 
-const persistConfig = { key: "root", storage, version: 1 };
+const persistConfig = { key: "root", storage, version: 1, blacklist: ['tabInfo'] };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 const sagaMiddleware = createSagaMiddleware();

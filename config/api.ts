@@ -296,7 +296,7 @@ export const createScripts = async (data: any, type = "flow") => {
 
 export const getAllThreadsApi = async ({ threadId = "" }) => {
     if (!threadId) {
-        console.error("Invalid threadId provided");
+        // console.error("Invalid threadId provided");
         return null;
     }
     try {

@@ -78,5 +78,5 @@ export default React.memo(
       prevProps.componentJson === nextProps.componentJson &&
       prevProps.msgId === nextProps.msgId
     );
-  }), [ParamsEnums?.projectId])
+  }))
 );

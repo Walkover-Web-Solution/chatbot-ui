@@ -2,12 +2,12 @@ import { useEffect } from "react";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import socketManager from "./socketManager"; // Import the singleton socket manager
 
-const useSocket = () => {
+const useSocket = ({chatSessionId}) => {
   const { jwtToken, channelId, eventChannels, channelListData } = useCustomSelector((state) => ({
-    jwtToken: state.Hello?.socketJwt?.jwt,
-    channelId: state.Hello?.Channel?.channel || null,
-    channelListData: state.Hello?.channelListData?.channels || [],
-    eventChannels: state.Hello?.widgetInfo?.event_channels || [],
+    jwtToken: state.Hello?.[chatSessionId]?.socketJwt?.jwt,
+    channelId: state.Hello?.[chatSessionId]?.Channel?.channel || null,
+    channelListData: state.Hello?.[chatSessionId]?.channelListData?.channels || [],
+    eventChannels: state.Hello?.[chatSessionId]?.widgetInfo?.event_channels || [],
   }));
 
   useEffect(() => {
