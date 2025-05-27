@@ -17,7 +17,7 @@ function RenderHelloFeedbackMessage({message,chatSessionId}:{message:any,chatSes
   const [selectedRating, setSelectedRating] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
-  const {widgetLogo} = useCustomSelector((state:$ReduxCoreType)=>({
+  const {widgetLogo, feedBackHeaderText} = useCustomSelector((state:$ReduxCoreType)=>({
     widgetLogo: state?.Hello?.[chatSessionId]?.widgetInfo?.logo?.path,
     feedBackHeaderText : addDynamicValuesInText(state.Hello?.[chatSessionId]?.widgetInfo?.feedback_text,message?.dynamic_values)
   }))
