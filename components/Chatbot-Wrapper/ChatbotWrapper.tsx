@@ -85,7 +85,7 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
 
       const prevWidgetId = getLocalStorage('WidgetId');
       const prevUser = JSON.parse(getLocalStorage('userData') || '{}');
-      const hasUserIdentity = Boolean(unique_id || mail || number || user_jwt_token);
+      const hasUserIdentity = Boolean(unique_id || mail || number);
 
       // Helper: reset Redux keys and sub-thread
       const resetKeys = () => {
@@ -116,7 +116,7 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
         setLocalStorage('client', JSON.stringify({ mail: clientMail, number: clientNumber, name: clientName, country_code: clientCountryCode || "+91" }));
       }
 
-      setLocalStorage('userData', JSON.stringify({ unique_id, mail, number, user_jwt_token, name }));
+      setLocalStorage('userData', JSON.stringify({ unique_id, mail, number, user_jwt_token: hasUserIdentity ? user_jwt_token : undefined, name }));
 
       // 4. Anonymous cleanup when no identity
       if (!hasUserIdentity && getLocalStorage('k_clientId')) {

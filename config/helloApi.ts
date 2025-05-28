@@ -55,7 +55,7 @@ export async function getJwtToken(): Promise<string | null> {
 // Get all channels for registered user
 export async function getAllChannels(): Promise<any> {
   try {
-    const { mail, number, user_jwt_token, unique_id, name } = JSON.parse(getLocalStorage('userData') || '{}');
+    const { mail, number, unique_id, name } = JSON.parse(getLocalStorage('userData') || '{}');
     const response = await axios.post(
       `${HELLO_HOST_URL}/pubnub-channels/list/`,
       {
@@ -69,7 +69,7 @@ export async function getAllChannels(): Promise<any> {
       },
       {
         headers: {
-          authorization: (unique_id || mail || number || user_jwt_token)
+          authorization: (unique_id || mail || number)
             ? getLocalStorage('WidgetId')
             : (getLocalStorage('a_clientId')
               ? `${getLocalStorage('WidgetId')}:${getLocalStorage('a_clientId')}`
@@ -78,7 +78,7 @@ export async function getAllChannels(): Promise<any> {
       }
     );
 
-    if (unique_id || mail || number || user_jwt_token) {
+    if (unique_id || mail || number) {
       setLocalStorage('k_clientId', response?.data?.uuid)
     } else if (response?.data?.customer_name) {
       setLocalStorage('default_client_created', 'true')
