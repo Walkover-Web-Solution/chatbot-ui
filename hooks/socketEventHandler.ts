@@ -100,12 +100,12 @@ export const useSocketEvents = ({
                 break;
             }
             case 'feedback': {
-                const { channel, channel_details } = message || {};
+                const { channel } = message || {};
                 if (message?.new_event) {
                     const messageId = response.timetoken || response.id;
                     addHelloMessage(
                         { ...message, id: messageId },
-                        channel_details?.channel
+                        channel
                     );
                 }
                 break;
