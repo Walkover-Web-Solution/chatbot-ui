@@ -359,9 +359,9 @@ const useHelloIntegration = ({ chatDispatch, chatState, messageRef, chatSessionI
       let k_clientId = getLocalStorage('k_clientId');
       let enable_call = false
       let is_domain_enable = false
-      let { mail, number, user_jwt_token, unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
+      let { mail, number, unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
 
-      let needsAnonymousRegistration = !a_clientId && !k_clientId && !unique_id && widgetToken && isHelloUser && !mail && !number && !user_jwt_token;
+      let needsAnonymousRegistration = !a_clientId && !k_clientId && !unique_id && widgetToken && isHelloUser && !mail && !number;
 
       if (needsAnonymousRegistration) {
         await registerAnonymousUser();
