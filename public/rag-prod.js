@@ -5,7 +5,7 @@
             this.parentContainer = null;
             this.modalOverlay = null;
             this.documents = [];
-            this.userToken = null;
+            this.token = null;
             this.lastProcessedMessage = null; // Add this line
             this.urls = {
                 ragUrl: 'https://chatbot.gtwy.ai/rag',
@@ -899,7 +899,7 @@
             // Clear references
             this.parentContainer = null;
             this.modalOverlay = null;
-            this.userToken = null;
+            this.token = null;
 
             // Remove DOM elements
             this.cleanupRag();
@@ -1043,7 +1043,7 @@
         }
 
         async fetchDocuments() {
-            if (!this.userToken) {
+            if (!this.token) {
                 throw new Error('User token not available');
             }
 
@@ -1051,7 +1051,7 @@
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Proxy_auth_token': this.userToken
+                    'Proxy_auth_token': this.token
                 }
             });
 
@@ -1230,7 +1230,7 @@
                         type: 'OPEN_ADD_DOCUMENT',
                         data: {
                             action: 'add_new',
-                            userToken: this.userToken
+                            token: this.token
                         }
                     }, '*');
                 }
@@ -1431,7 +1431,7 @@
                     ...messageObj,
                     data: {
                         ...messageObj.data,
-                        userToken: this.userToken,
+                        token: this.token,
                         timestamp: Date.now()
                     }
                 };
@@ -1655,8 +1655,8 @@
 
                 const data = await response.json();
                 //console.log(data)
-                this.userToken = data.data.token || data.accessToken;
-                //console.log(this.userToken)
+                this.token = data.data.token || data.accessToken;
+                //console.log(this.token)
                 //console.log('User authenticated successfully');
             } catch (error) {
                 console.error('Authentication error:', error);
@@ -1679,7 +1679,7 @@
                 data: {
                     ...this.props,
                     ...this.state.tempDataToSend,
-                    userToken: this.userToken,
+                    token: this.token,
                     isEmbedded: this.state.isEmbeddedInParent,
                     timestamp: Date.now()
                 }
