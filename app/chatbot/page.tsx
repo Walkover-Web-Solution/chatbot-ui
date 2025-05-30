@@ -9,7 +9,7 @@ import { useDispatch } from "react-redux";
 export const runtime = "edge";
 
 export default function InterfaceEmbed() {
-    const { chatbot_id, userId, token, isHelloUser } = useContext(ChatbotContext);
+    const { chatbot_id, userId, token, isHelloUser, environment = null } = useContext(ChatbotContext);
     const router = useRouter();
     const [verifiedState, setVerifiedState] = useState(EmbedVerificationStatus.VERIFYING);
     const dispatch = useDispatch();
@@ -29,7 +29,11 @@ export default function InterfaceEmbed() {
             router.replace(`/chatbot/${chatbot_id}`);
         }
         if (isHelloUser && verifiedState === EmbedVerificationStatus.VERIFIED) {
-            router.replace(`/chatbot/hello`);
+            if (environment) {
+                router.replace(`/chatbot/hello?env=${environment}`);
+            } else {
+                router.replace(`/chatbot/hello`);
+            }
         }
     }, [verifiedState, chatbot_id, router, isHelloUser]);
 
