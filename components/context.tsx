@@ -9,4 +9,5 @@ export const ChatbotContext = createContext({
     onConfigChange: () => { },
     toggleHideCloseButton: () => { },
     isHelloUser: false,
+    environment: null
 });

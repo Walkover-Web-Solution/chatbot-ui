@@ -3,7 +3,9 @@ import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 import axios from "@/utils/helloInterceptor";
 import { PAGE_SIZE } from "@/utils/enums";
 
-const HELLO_HOST_URL = process.env.NEXT_PUBLIC_MSG91_HOST_URL;
+const urlParams = new URLSearchParams(window.location.search);
+const env = urlParams.get('env');
+const HELLO_HOST_URL = env !== 'stage' ? process.env.NEXT_PUBLIC_MSG91_HOST_URL : 'https://stageapi.phone91.com';
 
 export function getUserData() {
   const userData = JSON.parse(getLocalStorage('userData') || '{}');
