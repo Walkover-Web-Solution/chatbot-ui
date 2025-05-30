@@ -78,7 +78,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className ,chatSess
   };
 
   const handleSendMessage = useCallback((messageObj: { message?: string } = {}) => {
-    console.log('first',isHelloUser)
     if (isHelloUser) {
       sendMessageToHello?.();
       emitTypingStatus("not-typing");
