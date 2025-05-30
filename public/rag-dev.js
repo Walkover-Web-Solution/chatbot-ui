@@ -1670,7 +1670,7 @@
 
             // Check if we've already sent initial data to this iframe instance
             if (iframe.dataset.initialDataSent === 'true') {
-                //console.log('Initial data already sent to this iframe instance');
+                console.log('Initial data already sent to this iframe instance');
                 return;
             }
 
@@ -1685,7 +1685,7 @@
                 }
             };
 
-            // //console.log('Sending initial data to iframe:', dataToSend);
+            console.log('Sending initial data to iframe:', dataToSend);
             iframe.contentWindow.postMessage(dataToSend, '*');
 
 

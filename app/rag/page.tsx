@@ -126,7 +126,9 @@ function RagComponent() {
 
     // Message handler
     const handleMessage = React.useCallback((event: MessageEvent) => {
-        const { type, data } = event.data || {};        
+        const { type, data } = event.data || {};  
+        console.log("type", type);
+        console.log("data", data);      
         switch (type) {
             case "INITIAL_CONFIG":
                 setConfiguration(data);
@@ -161,8 +163,11 @@ function RagComponent() {
         return () => window.removeEventListener("message", handleMessage);
     }, [handleMessage]);
 
+    console.log("configuration", configuration);
     React.useEffect(() => {
+        console.log("configuration?.token", configuration?.token);
         if (configuration?.token) {
+            console.log("configuration?.token", configuration?.token);
             SetSessionStorage("ragToken", configuration.token);
             window?.parent?.postMessage({ type: "ragLoaded" }, "*");
         }
