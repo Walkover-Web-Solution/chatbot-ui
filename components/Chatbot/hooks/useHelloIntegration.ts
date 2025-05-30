@@ -36,14 +36,16 @@ interface UseHelloIntegrationProps {
   chatDispatch: React.Dispatch<ChatAction>;
   messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement>;
   chatSessionId: string
+  tabSessionId: string
+
 }
 
-const useHelloIntegration = ({ chatDispatch, chatState, messageRef, chatSessionId }: UseHelloIntegrationProps) => {
+const useHelloIntegration = ({ chatDispatch, chatState, messageRef, chatSessionId, tabSessionId }: UseHelloIntegrationProps) => {
   const { isHelloUser } = useContext(ChatbotContext);
   const { handleThemeChange } = useContext(ThemeContext);
   const { loading, helloMessages, images } = chatState;
 
-  const { setLoading, setChatsLoading, setNewMessage } = useChatActions({ chatDispatch, chatState, chatSessionId });
+  const { setLoading, setChatsLoading, setNewMessage } = useChatActions({ chatDispatch, chatState, chatSessionId, tabSessionId });
   const {
     uuid,
     unique_id,
@@ -51,12 +53,11 @@ const useHelloIntegration = ({ chatDispatch, chatState, messageRef, chatSessionI
     currentChatId,
     currentTeamId,
     currentChannelId
-  } = useReduxStateManagement({ chatDispatch, chatSessionId });
-
+  } = useReduxStateManagement({ chatDispatch, chatSessionId, tabSessionId });
 
   const { assigned_type, companyId, botId, showWidgetForm, reduxChatSessionId } = useCustomSelector((state: $ReduxCoreType) => ({
     assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
-      (channel: any) => channel?.channel === state?.Hello?.[chatSessionId]?.currentChannelId
+      (channel: any) => channel?.channel === currentChannelId
     )?.assigned_type,
     companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
     botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
@@ -236,11 +237,11 @@ const useHelloIntegration = ({ chatDispatch, chatState, messageRef, chatSessionI
 
       const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId);
       if (data && (!currentChatId || !currentChannelId)) {
-        dispatch(setHelloKeysData({
+        dispatch(setDataInAppInfoReducer({
+          subThreadId: data?.['channel'], 
           currentChatId: data?.['id'],
           currentChannelId: data?.['channel']
         }));
-        dispatch(setDataInAppInfoReducer({ subThreadId: data?.['channel'] }));
         addHelloMessage(newMessage, data?.['channel'])
         // chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages: [newMessage], subThreadId: data?.['channel'] } })
         fetchChannels();
@@ -394,7 +395,7 @@ const useHelloIntegration = ({ chatDispatch, chatState, messageRef, chatSessionI
           dispatch(setWidgetInfo(widgetData));
           handleThemeChange(widgetData?.primary_color || "#000000");
           if (widgetData?.teams && widgetData?.teams.length <= 1) {
-            dispatch(setHelloKeysData({ currentTeamId: widgetData?.teams?.[0]?.id || null }));
+            dispatch(setDataInAppInfoReducer({ currentTeamId: widgetData?.teams?.[0]?.id || null }));
           }
         } catch (error) {
           window.parent.postMessage({ type: 'initializeHelloChat_failed' }, '*');

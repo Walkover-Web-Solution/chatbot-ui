@@ -20,28 +20,29 @@ import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 interface ChatbotTextFieldProps {
   className?: string;
   chatSessionId:string
+  tabSessionId:string
 }
 
 const MAX_IMAGES = 4;
 
-const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className ,chatSessionId}) => {
+const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className ,chatSessionId, tabSessionId}) => {
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const theme = useTheme();
   const isLight = isColorLight(theme.palette.primary.main);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const emitTypingStatus = useTypingStatus({chatSessionId});
+  const emitTypingStatus = useTypingStatus({chatSessionId,tabSessionId});
 
   const { isHelloUser, mode, inbox_id, show_send_button, subThreadId, assigned_type, currentTeamId } = useCustomSelector((state: $ReduxCoreType) => ({
     isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
     mode: state.Hello?.[chatSessionId]?.mode || [],
     inbox_id: state.Hello?.[chatSessionId]?.widgetInfo?.inbox_id,
     show_send_button: typeof state.Hello?.[chatSessionId]?.helloConfig?.show_send_button === 'boolean' ? state.Hello?.[chatSessionId]?.helloConfig?.show_send_button : true,
-    subThreadId: state.appInfo?.[chatSessionId]?.subThreadId,
+    subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
     assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
-      (channel: any) => channel?.channel === state?.Hello?.[chatSessionId]?.currentChannelId
+      (channel: any) => channel?.channel === state?.appInfo?.[tabSessionId]?.currentChannelId
     )?.assigned_type || '',
-    currentTeamId: state.Hello?.[chatSessionId]?.currentTeamId
+    currentTeamId: state?.appInfo?.[tabSessionId]?.currentTeamId
   }));
 
   const reduxIsVision = useCustomSelector(

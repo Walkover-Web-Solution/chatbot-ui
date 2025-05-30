@@ -30,9 +30,10 @@ import { ParamsEnums } from '@/utils/enums';
 
 interface ChatbotProps {
   chatSessionId:string
+  tabSessionId:string
 }
 
-function Chatbot({ chatSessionId}: ChatbotProps) {
+function Chatbot({ chatSessionId , tabSessionId}: ChatbotProps) {
   // Refs
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mountedRef = useRef<boolean>(false);
@@ -58,13 +59,15 @@ function Chatbot({ chatSessionId}: ChatbotProps) {
       chatDispatch,
       chatState,
       messageRef,
-      chatSessionId
+      chatSessionId,
+      tabSessionId
     });
 
   const { isHelloUser, isSmallScreen, currentChatId, isDefaultNavigateToChatScreen } =
     useReduxStateManagement({
       chatDispatch,
-      chatSessionId
+      chatSessionId,
+      tabSessionId
     });
 
   const { show_widget_form, is_anon, greetingMessage } = useCustomSelector((state: $ReduxCoreType) => {
@@ -81,7 +84,8 @@ function Chatbot({ chatSessionId}: ChatbotProps) {
     chatState,
     messageRef,
     timeoutIdRef,
-    chatSessionId
+    chatSessionId,
+    tabSessionId
   });
 
   // Initialize RTLayer event listeners
@@ -90,7 +94,8 @@ function Chatbot({ chatSessionId}: ChatbotProps) {
     chatState,
     messageRef,
     timeoutIdRef,
-    chatSessionId
+    chatSessionId,
+    tabSessionId
   });
 
   const theme = useTheme();
