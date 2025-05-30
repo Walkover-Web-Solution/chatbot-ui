@@ -5,8 +5,17 @@ import { PAGE_SIZE } from "@/utils/enums";
 
 const HELLO_HOST_URL = process.env.NEXT_PUBLIC_MSG91_HOST_URL;
 
-export function getUserData(){
-  return JSON.parse(getLocalStorage('userData') || '{}')
+export function getUserData() {
+  const userData = JSON.parse(getLocalStorage('userData') || '{}');
+  const filteredData = {};
+
+  for (const [key, value] of Object.entries(userData)) {
+    if (value && key !== 'name') {
+      filteredData[key] = value;
+    }
+  }
+
+  return filteredData;
 }
 
 // Register anonymous user
@@ -357,7 +366,7 @@ export async function getCallToken(): Promise<any> {
 }
 
 // Function to add domain to Hello chat
-export async function addDomainToHello(domain?: string,userEvent = {}): Promise<any> {
+export async function addDomainToHello(domain?: string, userEvent = {}): Promise<any> {
   try {
     const response = await axios.put(
       `${HELLO_HOST_URL}/add-domain/`,
