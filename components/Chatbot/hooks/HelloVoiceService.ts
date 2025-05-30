@@ -50,6 +50,7 @@ class HelloVoiceService {
             this.eventEmitter.emit("callStateChanged", { state: this.callState });
             this.eventEmitter.emit("muteStatusChanged", { muted: false });
             this.currentCall = null;
+            localStorage.removeItem('CallId');
         });
         // Set up event listeners for this call
         call.on("answered", (data: any) => {
@@ -128,9 +129,17 @@ class HelloVoiceService {
             return;
         }
 
-        this.webrtc.rejoinCall(CallId);
-        this.callState = "ringing";
-        this.eventEmitter.emit("callStateChanged", { state: this.callState });
+        this.webrtc.rejoinCall(CallId).then(() => {
+            this.callState = "ringing";
+            this.eventEmitter.emit("callStateChanged", { state: this.callState });
+        }).catch((e: any) => {
+            console.log(e, 'error rejoining call');
+            this.callState = "idle";
+            this.eventEmitter.emit("callStateChanged", { state: this.callState });
+            localStorage.removeItem('CallId');
+        });
+        // this.callState = "ringing";
+        // this.eventEmitter.emit("callStateChanged", { state: this.callState });
     }
 
     public answerCall(): void {

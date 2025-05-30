@@ -35,7 +35,7 @@ const CallUI: React.FC = () => {
             case 'ringing':
                 return (
                     <div className="flex flex-row items-center w-full justify-between px-3">
-                        <h3 className="text-md">Calling...</h3>
+                        <h3 className="text-md">{localStorage.getItem('CallId') ? 'Rejoing Call' : 'Calling...'}</h3>
                         <div className="flex items-center">
                             <div className="call-animation">
                                 <div className="ripple"></div>
