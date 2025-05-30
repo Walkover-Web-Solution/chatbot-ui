@@ -43,6 +43,13 @@ function ChatbotLayout({ children ,chatSessionId }: { children: React.ReactNode 
         }
     }, []);
 
+    const { environment } = useMemo(() => {
+        const env = search.get("env");
+        return {
+            environment: env && env === 'stage' ? env : null
+        };
+    }, []);
+
     useEffect(() => {
         if (chatbot_id && userId) {
             dispatch(setDataInAppInfoReducer({
@@ -97,8 +104,9 @@ function ChatbotLayout({ children ,chatSessionId }: { children: React.ReactNode 
         themeColor,
         onConfigChange,
         toggleHideCloseButton,
-        isHelloUser
-    }), [chatbotConfig, chatbot_id, userId, token, themeColor, onConfigChange, toggleHideCloseButton, isHelloUser]);
+        isHelloUser,
+        environment
+    }), [chatbotConfig, chatbot_id, userId, token, themeColor, onConfigChange, toggleHideCloseButton, isHelloUser, environment]);
 
     return (
         <ChatbotContext.Provider value={contextValue}>
