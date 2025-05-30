@@ -1,5 +1,5 @@
 'use client';
-import { addDomainToHello } from "@/config/helloApi";
+import { addDomainToHello, saveClientDetails } from "@/config/helloApi";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { CBManger } from "@/hooks/coBrowser/CBManger";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
@@ -58,7 +58,7 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
   }));
   // Handle messages from parent window
   const handleMessage = useCallback((event: MessageEvent) => {
-    const allowedEvents = ["interfaceData", "helloData", "parent-route-changed", "ADD_COBROWSE_SCRIPT", "ADD_USER_EVENT_SEGMENTO"];
+    const allowedEvents = ["interfaceData", "helloData", "parent-route-changed", "ADD_COBROWSE_SCRIPT", "ADD_USER_EVENT_SEGMENTO", "UPDATE_USER_DATA_SEGMENTO"];
     if (!allowedEvents.includes(event?.data?.type)) return;
 
     if (event?.data?.type === 'ADD_COBROWSE_SCRIPT') {
@@ -69,6 +69,12 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
     if (event?.data?.type === 'ADD_USER_EVENT_SEGMENTO' && event?.data?.data) {
       const { websiteUrl, ...rest } = event?.data?.data
       addDomainToHello(websiteUrl, rest)
+      return
+    }
+
+    // UPDATE USER INFO ON SEGMENTO
+    if (event?.data?.type === 'UPDATE_USER_DATA_SEGMENTO') {
+      saveClientDetails(event?.data?.data)
       return
     }
 
@@ -123,7 +129,7 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
         setLocalStorage('client', JSON.stringify({ mail: clientMail, number: clientNumber, name: clientName, country_code: clientCountryCode || "+91" }));
       }
 
-      setLocalStorage('userData', JSON.stringify({ unique_id, mail, number, user_jwt_token,name }));
+      setLocalStorage('userData', JSON.stringify({ unique_id, mail, number, user_jwt_token, name }));
 
       // 4. Anonymous cleanup when no identity
       if (!hasUserIdentity && getLocalStorage('k_clientId')) {
