@@ -237,7 +237,7 @@
 
                     // Add observer to trigger parent resize when content changes
                     if (window.ResizeObserver) {
-                        const resizeObserver = new ResizeObserver((entries) => {
+                        const resizeObserver = new ResizeObserver(() => {
                             // Force parent to recalculate its size
                             if (parentContainer) {
                                 const event = new Event('resize');
@@ -416,7 +416,7 @@
 
                 // Add mutation observer to trigger parent resize when content changes
                 if (window.MutationObserver) {
-                    const mutationObserver = new MutationObserver((mutations) => {
+                    const mutationObserver = new MutationObserver(() => {
                         // Trigger parent to recalculate size when content changes
                         setTimeout(() => {
                             if (parentContainer) {
@@ -920,7 +920,6 @@
 
         handleIncomingMessages(event) {
             const { type } = event.data || {};
-
             // Ignore duplicate or invalid messages
             if (!type || this.lastProcessedMessage === JSON.stringify(event.data)) {
                 return;
@@ -933,10 +932,11 @@
                 case 'closeRag':
                     this.closeRag();
                     break;
-                case 'interfaceLoaded':
+                case 'ragLoaded':
                     // Only send initial data when iframe first loads and hasn't been sent yet
                     const iframe = document.getElementById('iframe-component-ragInterfaceEmbed');
                     if (iframe?.dataset.initialDataSent !== 'true') {
+                        console.log('Sending initial data to iframe');
                         this.sendInitialData();
                     }
                     break;
@@ -1670,7 +1670,7 @@
 
             // Check if we've already sent initial data to this iframe instance
             if (iframe.dataset.initialDataSent === 'true') {
-                console.log('Initial data already sent to this iframe instance');
+                //console.log('Initial data already sent to this iframe instance');
                 return;
             }
 
@@ -1685,9 +1685,8 @@
                 }
             };
 
-            console.log('Sending initial data to iframe:', dataToSend);
-            iframe.contentWindow.postMessage(dataToSend, '*');
-
+            //console.log('Sending initial data to iframe:', dataToSend);
+            this.sendMessageToIframe(dataToSend);
 
             if (this.state.tempDataToSend?.defaultOpen === true || this.state.tempDataToSend?.defaultOpen === 'true') {
                 this.showDocumentList();

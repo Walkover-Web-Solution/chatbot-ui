@@ -126,9 +126,7 @@ function RagComponent() {
 
     // Message handler
     const handleMessage = React.useCallback((event: MessageEvent) => {
-        const { type, data } = event.data || {};  
-        console.log("type", type);
-        console.log("data", data);      
+        const { type, data } = event.data || {};      
         switch (type) {
             case "INITIAL_CONFIG":
                 setConfiguration(data);
@@ -163,13 +161,10 @@ function RagComponent() {
         return () => window.removeEventListener("message", handleMessage);
     }, [handleMessage]);
 
-    console.log("configuration", configuration);
     React.useEffect(() => {
-        console.log("configuration?.token", configuration?.token);
         if (configuration?.token) {
-            console.log("configuration?.token", configuration?.token);
             SetSessionStorage("ragToken", configuration.token);
-            window?.parent?.postMessage({ type: "ragLoaded" }, "*");
+            
         }
     }, [configuration?.token]);
 
@@ -309,6 +304,13 @@ function RagComponent() {
                 : (isDarkTheme ? 'border border-gray-600 text-gray-300 hover:bg-gray-800 hover:border-gray-500' : 'border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400')
         }
     `;
+
+
+    React.useEffect(() => {
+        setTimeout(() => {
+            window?.parent?.postMessage({ type: "ragLoaded" }, "*");
+        }, 0);
+    }, []);
 
     return (
         <div className={`flex flex-col ${isDarkTheme ? 'bg-gray-900 text-white border border-gray-700' : 'bg-white text-gray-900 border border-gray-200'} transition-all duration-200 min-h-screen w-screen p-4`}>
