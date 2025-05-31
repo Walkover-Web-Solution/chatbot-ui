@@ -108,7 +108,6 @@ function ChatbotLayout({ children ,chatSessionId }: { children: React.ReactNode 
         environment
     }), [chatbotConfig, chatbot_id, userId, token, themeColor, onConfigChange, toggleHideCloseButton, isHelloUser, environment]);
 
-    console.log(isHelloUser,"-0-0-")
     return (
         <ChatbotContext.Provider value={contextValue}>
             {children}

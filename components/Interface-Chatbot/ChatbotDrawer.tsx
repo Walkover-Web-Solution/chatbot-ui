@@ -2,7 +2,7 @@
 
 import { lighten, useMediaQuery, useTheme } from "@mui/material";
 import { AlignLeft, ChevronRight, SquarePen, Users, X } from "lucide-react";
-import { memo, useContext, useMemo } from "react";
+import { memo, useContext, useEffect, useMemo } from "react";
 import { useDispatch } from "react-redux";
 
 // API and Services
@@ -33,8 +33,8 @@ interface ChatbotDrawerProps {
   isToggledrawer: boolean;
   setToggleDrawer: (isOpen: boolean) => void;
   preview?: boolean;
-  chatSessionId:string
-  tabSessionId:string
+  chatSessionId: string
+  tabSessionId: string
 }
 
 const ChatbotDrawer = ({
@@ -62,7 +62,7 @@ const ChatbotDrawer = ({
     setLoading,
   } = useContext(MessageContext);
 
-  const { currentChatId, currentTeamId } = useReduxStateManagement({ chatDispatch ,chatSessionId , tabSessionId});
+  const { currentChatId, currentTeamId } = useReduxStateManagement({ chatDispatch, chatSessionId, tabSessionId });
   const { callState } = useCallUI();
 
   // Consolidated Redux state selection
@@ -96,19 +96,23 @@ const ChatbotDrawer = ({
     };
   });
 
-  console.log(channelList?.length," [ CHANNEL LIST ] ", chatSessionId)
+  useEffect(() => {
+    if (chatSessionId) {
+      setToggleDrawer(true);
+    }
+  }, [chatSessionId])
 
   // Handlers
   const handleCreateNewSubThread = async () => {
     if (preview) return;
-    if (subThreadList?.[0]?.newChat){
+    if (subThreadList?.[0]?.newChat) {
       return;
     }
-    const newThreadData  = {
-        sub_thread_id: createRandomId(),
-        thread_id: reduxThreadId,
-        display_name: "New Chat",
-        newChat:"true"
+    const newThreadData = {
+      sub_thread_id: createRandomId(),
+      thread_id: reduxThreadId,
+      display_name: "New Chat",
+      newChat: "true"
     }
     if (!subThreadList?.[0]?.newChat) {
       dispatch(
@@ -120,7 +124,7 @@ const ChatbotDrawer = ({
 
       );
       setOptions([]);
-    
+
     }
   };
 
@@ -145,7 +149,7 @@ const ChatbotDrawer = ({
 
   const handleChangeChannel = async (channelId: string, chatId: string, teamId: string, widget_unread_count: number) => {
     // Update redux state
-    dispatch(setDataInAppInfoReducer({ subThreadId: channelId , currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
+    dispatch(setDataInAppInfoReducer({ subThreadId: channelId, currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
     if (isSmallScreen) setToggleDrawer(false);
     if (images?.length > 0) setImages([]);
 
@@ -159,7 +163,7 @@ const ChatbotDrawer = ({
   };
 
   const handleChangeTeam = (teamId: string) => {
-    dispatch(setDataInAppInfoReducer({ subThreadId: '' , currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
+    dispatch(setDataInAppInfoReducer({ subThreadId: '', currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
 
     if (isSmallScreen) setToggleDrawer(false);
     if (images?.length > 0) setImages([]);
@@ -393,7 +397,7 @@ const ChatbotDrawer = ({
   }, [hideCloseButton, handleCloseChatbot]);
 
   return (
-    <div className="drawer z-[999]">
+    <div className={`drawer ${isSmallScreen ? 'z-[99999]' : 'z-[999]'}`}>
       <input
         id="chatbot-drawer"
         type="checkbox"
