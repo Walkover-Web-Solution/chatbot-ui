@@ -22,6 +22,7 @@ import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Chatbot from "../Chatbot/Chatbot";
+import _ from "lodash"
 
 interface InterfaceData {
   threadId?: string | null;
@@ -66,20 +67,20 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
     }
 
     // User Event Storing
-    if (event?.data?.type === 'ADD_USER_EVENT_SEGMENTO' && event?.data?.data) {
-      addDomainToHello({userEvent:event?.data?.data})
+    if (event?.data?.type === 'ADD_USER_EVENT_SEGMENTO' && event?.data?.data && _.isPlainObject(event?.data?.data)) {
+      addDomainToHello({ userEvent: event?.data?.data })
       return
     }
 
     // UPDATE USER INFO ON SEGMENTO
-    if (event?.data?.type === 'UPDATE_USER_DATA_SEGMENTO' && event?.data?.data) {
+    if (event?.data?.type === 'UPDATE_USER_DATA_SEGMENTO' && event?.data?.data && _.isPlainObject(event?.data?.data)) {
       saveClientDetails(event?.data?.data)
       return
     }
 
     // Domain Tracking
     if (event?.data?.type == 'parent-route-changed' && event?.data?.data?.websiteUrl) {
-      addDomainToHello({domain:event?.data?.data?.websiteUrl});
+      addDomainToHello({ domain: event?.data?.data?.websiteUrl });
       return;
     }
 

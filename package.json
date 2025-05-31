@@ -43,6 +43,7 @@
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.8",
     "@eslint/eslintrc": "^3",
+    "@types/lodash": "^4.17.17",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
