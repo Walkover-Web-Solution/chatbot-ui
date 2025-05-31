@@ -342,7 +342,8 @@
             title.style.webkitBackgroundClip = 'text';
             title.style.webkitTextFillColor = 'transparent';
             title.style.backgroundClip = 'text';
-
+            header.appendChild(title);
+            if(!parentContainer){
             const closeBtn = document.createElement('button');
             closeBtn.innerHTML = '×';
             closeBtn.style.background = 'none';
@@ -367,10 +368,9 @@
                 closeBtn.style.color = themeColors.textMuted;
             });
             closeBtn.addEventListener('click', () => this.closeDocumentList());
-
-            header.appendChild(title);
             header.appendChild(closeBtn);
-
+            } 
+            
             // Add Document Button
             const addBtn = document.createElement('button');
             addBtn.textContent = '+ Add New Document';
