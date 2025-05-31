@@ -94,13 +94,6 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
         name,
         ...restProps
       } = event.data.data;
-      
-      let tabSessionId = GetSessionStorageData('tab_session_id');
-
-      if (!tabSessionId) {
-        tabSessionId = Date.now().toString();
-        SetSessionStorage('tab_session_id', tabSessionId);
-      }
 
       const fullWidgetToken = unique_id ? `${widgetToken}_${unique_id}` : `${widgetToken}`;
       
@@ -168,7 +161,7 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
       setLocalStorage('WidgetId', widgetToken);
       dispatch(setHelloConfig(event.data.data));
       
-      dispatch(setDataInTabInfo({ widgetToken: fullWidgetToken , tabSessionId}));
+      dispatch(setDataInTabInfo({ widgetToken: fullWidgetToken}));
       return;
     }
 

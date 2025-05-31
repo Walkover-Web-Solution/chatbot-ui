@@ -1,7 +1,7 @@
 'use client';
 import { ChatbotContext } from "@/components/context";
 import { setDataInTabInfo } from "@/store/tabInfo/tabInfoSlice";
-import { SetSessionStorage } from "@/utils/ChatbotUtility";
+import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
 import { EmbedVerificationStatus } from "@/utils/enums";
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
@@ -13,6 +13,19 @@ export default function InterfaceEmbed() {
     const router = useRouter();
     const [verifiedState, setVerifiedState] = useState(EmbedVerificationStatus.VERIFYING);
     const dispatch = useDispatch();
+
+    useEffect(() => {
+
+        let tabSessionId = GetSessionStorageData('tab_session_id');
+
+        if (!tabSessionId) {
+            tabSessionId = Date.now().toString();
+            SetSessionStorage('tab_session_id', tabSessionId);
+            dispatch(setDataInTabInfo({ tabSessionId }))
+        }
+
+    }, [])
+
     useEffect(() => {
         if (token) {
             SetSessionStorage("interfaceToken", token);

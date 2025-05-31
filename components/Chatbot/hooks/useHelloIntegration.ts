@@ -179,7 +179,7 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
       });
   }, [dispatch]);
 
-  useSocketEvents({ chatState, chatDispatch, messageRef, fetchChannels, chatSessionId, setLoading });
+  useSocketEvents({ chatState, chatDispatch, messageRef, fetchChannels, chatSessionId, setLoading, tabSessionId });
   useNotificationSocketEventHandler({ chatDispatch, chatSessionId })
 
   // Start timeout timer for response waiting
