@@ -920,7 +920,6 @@
 
         handleIncomingMessages(event) {
             const { type } = event.data || {};
-
             // Ignore duplicate or invalid messages
             if (!type || this.lastProcessedMessage === JSON.stringify(event.data)) {
                 return;
@@ -937,6 +936,7 @@
                     // Only send initial data when iframe first loads and hasn't been sent yet
                     const iframe = document.getElementById('iframe-component-ragInterfaceEmbed');
                     if (iframe?.dataset.initialDataSent !== 'true') {
+                        console.log('Sending initial data to iframe');
                         this.sendInitialData();
                     }
                     break;
@@ -1093,23 +1093,11 @@
 
         closeDocumentList() {
             const listModal = document.getElementById('rag-document-list-modal');
-            const parentId = this.props.parentId || this.state.tempDataToSend?.parentId || '';
-            const isEmbedded = parentId && this.state.isEmbeddedInParent;
-
             if (listModal) {
                 listModal.style.transition = 'opacity 0.2s ease-in-out';
                 listModal.style.opacity = '0';
-
                 setTimeout(() => {
                     listModal.style.display = 'none';
-
-                    if (isEmbedded) {
-                        // For embedded mode, show the main iframe again
-                        const iframeContainer = document.getElementById('iframe-parent-container');
-                        if (iframeContainer) {
-                            iframeContainer.style.display = 'block';
-                        }
-                    }
                 }, 200);
             }
         }
@@ -1336,8 +1324,8 @@
 
         waitForIframeReadyAndSendEdit(doc) {
             let attempts = 0;
-            const maxAttempts = 20;
-            const checkInterval = 500; // 500ms between checks
+            const maxAttempts = 5;
+            const checkInterval = 200; // 500ms between checks
 
             const sendEditMessage = () => {
                 //console.log(`Attempt ${attempts + 1}: Checking iframe ready state...`);
@@ -1356,9 +1344,7 @@
 
                 // Check if iframe content window is accessible and has loaded
                 try {
-                    const iframeReady = iframe.contentWindow &&
-                        iframe.contentDocument &&
-                        iframe.contentDocument.readyState === 'complete';
+                    const iframeReady = iframe.contentWindow;
 
                     if (iframeReady) {
                         //console.log('Iframe ready, sending EDIT_DOCUMENT message...');
@@ -1373,7 +1359,7 @@
                                     timestamp: Date.now()
                                 }
                             });
-                        }, 300);
+                        }, 100);
 
                         return;
                     }
@@ -1413,7 +1399,7 @@
                                 timestamp: Date.now()
                             }
                         });
-                    }, 500);
+                    }, 200);
                 }, { once: true });
             }
 
@@ -1685,7 +1671,7 @@
                 }
             };
 
-            // console.log('Sending initial data to iframe:', dataToSend);
+            //console.log('Sending initial data to iframe:', dataToSend);
             this.sendMessageToIframe(dataToSend);
 
             if (this.state.tempDataToSend?.defaultOpen === true || this.state.tempDataToSend?.defaultOpen === 'true') {
