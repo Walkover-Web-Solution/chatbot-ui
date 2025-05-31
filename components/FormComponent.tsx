@@ -95,13 +95,11 @@ function FormComponent({ open, setOpen, isSmallScreen ,chatSessionId}: FormCompo
     e.preventDefault();
     if (validate()) {
       let clientData = {
-        n: formData?.name,
-        p: formData?.number ? `${formData?.countryCode}${formData?.number}` : undefined,
-        e: formData?.email,
+        Name: formData?.name,
+        Phonenumber: formData?.number ? `${formData?.countryCode}${formData?.number}` : undefined,
+        Email: formData?.email,
         country_code: formData?.countryCode,
-        number_without_CC : formData?.number,
-        user_data: getUserData(),
-        is_anon: false,
+        number_without_CC : formData?.number
       }
 
       // Dispatch setHelloKeysData if all three fields are filled

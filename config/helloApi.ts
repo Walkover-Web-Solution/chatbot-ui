@@ -180,9 +180,15 @@ export async function getGreetingQuestions(companyId: string, botId: string, bot
 }
 
 // Save client details
-export async function saveClientDetails(clientData: any): Promise<any> {
+export async function saveClientDetails(clientData = {}): Promise<any> {
   try {
-    const response = await axios.put(`${HELLO_HOST_URL}/client/`, clientData, {
+    const payload = {
+      user_data: getUserData(),
+      is_anon: false,
+      ...clientData
+    }
+
+    const response = await axios.put(`${HELLO_HOST_URL}/v2/client/`, payload, {
       headers: {
         authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
       },
@@ -368,7 +374,7 @@ export async function getCallToken(): Promise<any> {
 }
 
 // Function to add domain to Hello chat
-export async function addDomainToHello(domain?: string, userEvent = {}): Promise<any> {
+export async function addDomainToHello({ domain, userEvent = {} }: { domain?: string, userEvent?: Record<string, any> }): Promise<any> {
   try {
     const response = await axios.put(
       `${HELLO_HOST_URL}/add-domain/`,
