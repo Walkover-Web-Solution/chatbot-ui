@@ -197,8 +197,8 @@ export async function saveClientDetails(clientData = {}): Promise<any> {
       const existingUserData = JSON.parse(getLocalStorage('client') || '{}');
       setLocalStorage("client", JSON.stringify({
         ...existingUserData,
-        name: response?.data?.n || clientData?.n,
-        email: response?.data?.e || clientData?.e,
+        name: response?.data?.name || clientData?.Name,
+        email: response?.data?.mail || clientData?.Email,
         number: clientData?.number_without_CC,
         country_code: clientData?.country_code,
       }));
