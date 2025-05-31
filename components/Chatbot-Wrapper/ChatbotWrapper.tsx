@@ -67,20 +67,19 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
 
     // User Event Storing
     if (event?.data?.type === 'ADD_USER_EVENT_SEGMENTO' && event?.data?.data) {
-      const { websiteUrl, ...rest } = event?.data?.data
-      addDomainToHello(websiteUrl, rest)
+      addDomainToHello({userEvent:event?.data?.data})
       return
     }
 
     // UPDATE USER INFO ON SEGMENTO
-    if (event?.data?.type === 'UPDATE_USER_DATA_SEGMENTO') {
+    if (event?.data?.type === 'UPDATE_USER_DATA_SEGMENTO' && event?.data?.data) {
       saveClientDetails(event?.data?.data)
       return
     }
 
     // Domain Tracking
     if (event?.data?.type == 'parent-route-changed' && event?.data?.data?.websiteUrl) {
-      addDomainToHello(event?.data?.data?.websiteUrl);
+      addDomainToHello({domain:event?.data?.data?.websiteUrl});
       return;
     }
 
