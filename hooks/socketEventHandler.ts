@@ -1,6 +1,5 @@
 // useSocketEvents.ts
 import { ChatActionTypes, ChatState } from '@/components/Chatbot/hooks/chatTypes';
-import { useChatActions } from '@/components/Chatbot/hooks/useChatActions';
 import { useReduxStateManagement } from '@/components/Chatbot/hooks/useReduxManagement';
 import { changeChannelAssigned, setUnReadCount } from '@/store/hello/helloSlice';
 import { playMessageRecivedSound } from '@/utils/utilities';
@@ -31,20 +30,21 @@ export const useSocketEvents = ({
     messageRef,
     fetchChannels,
     chatSessionId,
-    tabSessionId
+    tabSessionId,
+    setLoading
 }: {
     chatState: ChatState,
     chatDispatch: (action: { type: string; payload?: any }) => void,
     messageRef: React.RefObject<HTMLDivElement>,
     fetchChannels: () => void,
-    chatSessionId:string
+    setLoading: (data: boolean) => void
+    chatSessionId: string;
     tabSessionId:string
 }) => {
     const dispatch = useDispatch();
-    // Reference to timeout for typing indicators
-    const { setLoading } = useChatActions({ chatDispatch, chatState,chatSessionId , tabSessionId });
+
     const { isToggledrawer } = chatState;
-    const { currentChannelId, isSmallScreen } = useReduxStateManagement({ chatDispatch,chatSessionId, tabSessionId });
+    const { currentChannelId, isSmallScreen } = useReduxStateManagement({ chatDispatch, chatSessionId , tabSessionId});
     const addHelloMessage = (message: HelloMessage, subThreadId: string = '') => {
         chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message, subThreadId } });
     }

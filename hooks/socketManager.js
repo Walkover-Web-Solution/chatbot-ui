@@ -1,6 +1,9 @@
 import io from "socket.io-client";
 
-const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+const urlParams = new URLSearchParams(window.location.search);
+const env = urlParams.get('env');
+
+const socketUrl = env !== 'stage' ? process.env.NEXT_PUBLIC_SOCKET_URL : 'https://stagechat.phone91.com';
 
 class SocketManager {
   constructor() {
@@ -57,7 +60,7 @@ class SocketManager {
       console.log("Connected to WebSocket server");
       this.isConnected = true;
       this.connecting = false;
-      
+
       // Re-subscribe to all channels on reconnection
       if (this.channels.length > 0) {
         this.subscribe(this.channels);
@@ -122,12 +125,12 @@ class SocketManager {
 
       // Convert single channel to array if needed
       const channelArray = Array.isArray(channels) ? channels : [channels];
-      
+
       // Filter out duplicates and empty channels
-      const uniqueChannels = channelArray.filter(channel => 
+      const uniqueChannels = channelArray.filter(channel =>
         channel && !this.channels.includes(channel)
       );
-      
+
       if (uniqueChannels.length === 0) {
         resolve({ message: "No new channels to subscribe" });
         return;
@@ -135,7 +138,7 @@ class SocketManager {
 
       // Add new channels to the tracking array
       // this.channels.push(...uniqueChannels);
-      
+
       this.socket.emit("subscribe", { channel: uniqueChannels }, (data) => {
         console.log("Subscribed channels data:", data);
         resolve(data);
@@ -178,10 +181,10 @@ class SocketManager {
       }
 
       const channelArray = Array.isArray(channels) ? channels : [channels];
-      
+
       // Remove channels from tracking array
       this.channels = this.channels.filter(ch => !channelArray.includes(ch));
-      
+
       this.socket.emit("unsubscribe", { channel: channelArray }, (data) => {
         console.log("Unsubscribed channels data:", data);
         resolve(data);
@@ -240,15 +243,15 @@ class SocketManager {
    */
   on(eventName, callback) {
     if (!this.socket) return this;
-    
+
     this.socket.on(eventName, callback);
-    
+
     // Track listeners for cleanup
     if (!this.listeners.has(eventName)) {
       this.listeners.set(eventName, []);
     }
     this.listeners.get(eventName).push(callback);
-    
+
     return this;
   }
 
@@ -260,18 +263,18 @@ class SocketManager {
    */
   off(eventName, callback) {
     if (!this.socket) return this;
-    
+
     this.socket.off(eventName, callback);
-    
+
     // Remove from tracked listeners
     if (this.listeners.has(eventName)) {
       const callbacks = this.listeners.get(eventName);
       this.listeners.set(
-        eventName, 
+        eventName,
         callbacks.filter(cb => cb !== callback)
       );
     }
-    
+
     return this;
   }
 
@@ -282,15 +285,15 @@ class SocketManager {
    */
   removeAllListeners(eventName) {
     if (!this.socket) return this;
-    
+
     this.socket.removeAllListeners(eventName);
-    
+
     if (eventName) {
       this.listeners.delete(eventName);
     } else {
       this.listeners.clear();
     }
-    
+
     return this;
   }
 

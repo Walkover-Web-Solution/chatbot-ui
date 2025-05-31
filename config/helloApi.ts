@@ -3,10 +3,21 @@ import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 import axios from "@/utils/helloInterceptor";
 import { PAGE_SIZE } from "@/utils/enums";
 
-const HELLO_HOST_URL = process.env.NEXT_PUBLIC_MSG91_HOST_URL;
+const urlParams = new URLSearchParams(window.location.search);
+const env = urlParams.get('env');
+const HELLO_HOST_URL = env !== 'stage' ? process.env.NEXT_PUBLIC_MSG91_HOST_URL : 'https://stageapi.phone91.com';
 
-export function getUserData(){
-  return JSON.parse(getLocalStorage('userData') || '{}')
+export function getUserData() {
+  const userData = JSON.parse(getLocalStorage('userData') || '{}');
+  const filteredData = {};
+
+  for (const [key, value] of Object.entries(userData)) {
+    if (value && key !== 'name') {
+      filteredData[key] = value;
+    }
+  }
+
+  return filteredData;
 }
 
 // Register anonymous user
@@ -169,9 +180,15 @@ export async function getGreetingQuestions(companyId: string, botId: string, bot
 }
 
 // Save client details
-export async function saveClientDetails(clientData: any): Promise<any> {
+export async function saveClientDetails(clientData = {}): Promise<any> {
   try {
-    const response = await axios.put(`${HELLO_HOST_URL}/client/`, clientData, {
+    const payload = {
+      user_data: getUserData(),
+      is_anon: false,
+      ...clientData
+    }
+
+    const response = await axios.put(`${HELLO_HOST_URL}/v2/client/`, payload, {
       headers: {
         authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
       },
@@ -357,7 +374,7 @@ export async function getCallToken(): Promise<any> {
 }
 
 // Function to add domain to Hello chat
-export async function addDomainToHello(domain?: string,userEvent = {}): Promise<any> {
+export async function addDomainToHello({ domain, userEvent = {} }: { domain?: string, userEvent?: Record<string, any> }): Promise<any> {
   try {
     const response = await axios.put(
       `${HELLO_HOST_URL}/add-domain/`,

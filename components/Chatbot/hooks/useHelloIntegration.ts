@@ -17,7 +17,6 @@ import { useCallback, useContext, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import helloVoiceService from './HelloVoiceService';
-import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
 
 interface HelloMessage {
@@ -35,17 +34,21 @@ interface UseHelloIntegrationProps {
   chatState: ChatState;
   chatDispatch: React.Dispatch<ChatAction>;
   messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement>;
-  chatSessionId: string
-  tabSessionId: string
-
+  chatSessionId: string;
+  tabSessionId: string;
+  chatActions: {
+    setLoading: (data: boolean) => void
+    setChatsLoading: (data: boolean) => void
+    setNewMessage: (data: boolean) => void
+  }
 }
 
-const useHelloIntegration = ({ chatDispatch, chatState, messageRef, chatSessionId, tabSessionId }: UseHelloIntegrationProps) => {
-  const { isHelloUser } = useContext(ChatbotContext);
+const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRef, chatActions, tabSessionId }: UseHelloIntegrationProps) => {
   const { handleThemeChange } = useContext(ThemeContext);
+  const { isHelloUser } = useContext(ChatbotContext);
   const { loading, helloMessages, images } = chatState;
+  const { setLoading, setChatsLoading, setNewMessage } = chatActions
 
-  const { setLoading, setChatsLoading, setNewMessage } = useChatActions({ chatDispatch, chatState, chatSessionId, tabSessionId });
   const {
     uuid,
     unique_id,
@@ -176,7 +179,7 @@ const useHelloIntegration = ({ chatDispatch, chatState, messageRef, chatSessionI
       });
   }, [dispatch]);
 
-  useSocketEvents({ chatState, chatDispatch, messageRef, fetchChannels, chatSessionId });
+  useSocketEvents({ chatState, chatDispatch, messageRef, fetchChannels, chatSessionId, setLoading });
   useNotificationSocketEventHandler({ chatDispatch, chatSessionId })
 
   // Start timeout timer for response waiting
@@ -238,7 +241,7 @@ const useHelloIntegration = ({ chatDispatch, chatState, messageRef, chatSessionI
       const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId);
       if (data && (!currentChatId || !currentChannelId)) {
         dispatch(setDataInAppInfoReducer({
-          subThreadId: data?.['channel'], 
+          subThreadId: data?.['channel'],
           currentChatId: data?.['id'],
           currentChannelId: data?.['channel']
         }));

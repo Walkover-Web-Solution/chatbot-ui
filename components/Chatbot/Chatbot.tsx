@@ -60,7 +60,12 @@ function Chatbot({ chatSessionId , tabSessionId}: ChatbotProps) {
       chatState,
       messageRef,
       chatSessionId,
-      tabSessionId
+      tabSessionId,
+      chatActions: {
+        setNewMessage: (data) => chatActions.setNewMessage(data),
+        setChatsLoading: (data) => chatActions.setChatsLoading(data),
+        setLoading: (data) => chatActions.setLoading(data)
+      }
     });
 
   const { isHelloUser, isSmallScreen, currentChatId, isDefaultNavigateToChatScreen } =
