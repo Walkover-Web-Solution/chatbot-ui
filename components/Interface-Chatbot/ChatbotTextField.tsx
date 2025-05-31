@@ -1,37 +1,37 @@
 'use client';
 
-import { AiIcon, UserAssistant } from "@/assests/assestsIndex";
+import { AiIcon } from "@/assests/assestsIndex";
 import { errorToast } from "@/components/customToast";
 import { uploadImage } from "@/config/api";
 import { uploadAttachmentToHello } from "@/config/helloApi";
+import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
+import { useTypingStatus } from "@/hooks/socketEventEmitter";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { isColorLight } from "@/utils/themeUtility";
 import { TextField, useTheme } from "@mui/material";
+import debounce from "lodash.debounce";
 import { ChevronDown, Send, Upload, X } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { MessageContext } from "./InterfaceChatbot";
-import { useTypingStatus } from "@/hooks/socketEventEmitter";
 import ImageWithFallback from "./Messages/ImageWithFallback";
-import { debounce } from "lodash";
-import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 
 interface ChatbotTextFieldProps {
   className?: string;
-  chatSessionId:string
-  tabSessionId:string
+  chatSessionId: string
+  tabSessionId: string
 }
 
 const MAX_IMAGES = 4;
 
-const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className ,chatSessionId, tabSessionId}) => {
+const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const theme = useTheme();
   const isLight = isColorLight(theme.palette.primary.main);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const emitTypingStatus = useTypingStatus({chatSessionId,tabSessionId});
+  const emitTypingStatus = useTypingStatus({ chatSessionId, tabSessionId });
 
   const { isHelloUser, mode, inbox_id, show_send_button, subThreadId, assigned_type, currentTeamId } = useCustomSelector((state: $ReduxCoreType) => ({
     isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,

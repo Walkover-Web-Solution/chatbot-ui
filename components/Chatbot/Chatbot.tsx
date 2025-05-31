@@ -1,6 +1,6 @@
 import { LinearProgress, useTheme } from '@mui/material';
 import Image from 'next/image';
-import React, { memo, useEffect, useReducer, useRef } from 'react';
+import React, { useEffect, useReducer, useRef } from 'react';
 
 // Context and hooks
 import { MessageContext } from '../Interface-Chatbot/InterfaceChatbot';
@@ -26,14 +26,13 @@ import { ChatBotGif } from '@/assests/assestsIndex';
 import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
-import { ParamsEnums } from '@/utils/enums';
 
 interface ChatbotProps {
-  chatSessionId:string
-  tabSessionId:string
+  chatSessionId: string
+  tabSessionId: string
 }
 
-function Chatbot({ chatSessionId , tabSessionId}: ChatbotProps) {
+function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
   // Refs
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mountedRef = useRef<boolean>(false);
@@ -52,6 +51,15 @@ function Chatbot({ chatSessionId , tabSessionId}: ChatbotProps) {
     helloMsgIds,
     isTyping
   } = chatState;
+
+  const chatActions = useChatActions({
+    chatDispatch,
+    chatState,
+    messageRef,
+    timeoutIdRef,
+    chatSessionId,
+    tabSessionId
+  });
 
   // Custom hooks
   const { sendMessageToHello, fetchChannels, getMoreHelloChats } =
@@ -82,15 +90,6 @@ function Chatbot({ chatSessionId , tabSessionId}: ChatbotProps) {
       is_anon: state.Hello?.[chatSessionId]?.is_anon == 'true',
       greetingMessage: state.Hello?.[chatSessionId]?.greeting
     })
-  });
-
-  const chatActions = useChatActions({
-    chatDispatch,
-    chatState,
-    messageRef,
-    timeoutIdRef,
-    chatSessionId,
-    tabSessionId
   });
 
   // Initialize RTLayer event listeners
