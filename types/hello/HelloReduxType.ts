@@ -35,6 +35,7 @@ export interface HelloData {
   city?: string;
   region?: string;
   user_jwt_token?: string;
+  pushConfig?: Record<string, any>
 }
 
 export interface ChannelListData {

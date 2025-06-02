@@ -227,7 +227,7 @@
                     this.cleanupChatbot();
                     break;
                 case 'hide_widget':
-                    if (!(this.helloProps && 'hide_launcher' in this.helloProps) && !this.state.isMobileSDK) {
+                    if (!(this.helloProps && 'hide_launcher' in this.helloProps) && !this.helloProps?.isMobileSDK) {
                         if (data === true || data === 'true') {
                             this.hideHelloIcon = true;
                             this.hideChatbotWithIcon();
@@ -238,7 +238,7 @@
                     }
                     break;
                 case 'launch_widget':
-                    if (!(this.helloProps && 'launch_widget' in this.helloProps) && !this.state.isMobileSDK) {
+                    if (!(this.helloProps && 'launch_widget' in this.helloProps) && !this.helloProps?.isMobileSDK) {
                         if (data === true || data === 'true') {
                             this.helloLaunchWidget = true;
                             this.openChatbot();
@@ -258,7 +258,7 @@
                     this.setUUID(data?.uuid);
                     break;
                 case 'PUSH_NOTIFICATION':
-                    if (this.state.isMobileSDK) {
+                    if (this.helloProps?.isMobileSDK) {
                         window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'PUSH_NOTIFICATION', data }));
                     } else {
                         this.handlePushNotification(data)
