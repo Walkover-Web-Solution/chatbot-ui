@@ -35,6 +35,9 @@ export interface HelloData {
   city?: string;
   region?: string;
   user_jwt_token?: string;
+  sdkConfig: {
+    customTheme?: string
+  }
 }
 
 export interface ChannelListData {

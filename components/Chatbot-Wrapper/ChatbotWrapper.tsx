@@ -20,8 +20,9 @@ import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
 import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 import isPlainObject from "lodash.isplainobject";
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useContext, useEffect } from "react";
 import { useDispatch } from "react-redux";
+import { ThemeContext } from "../AppWrapper";
 import Chatbot from "../Chatbot/Chatbot";
 
 interface InterfaceData {
@@ -54,6 +55,7 @@ const helloToChatbotPropsMap: Record<string, string> = {
 
 function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
   const dispatch = useDispatch();
+  const { handleThemeChange } = useContext(ThemeContext)
   const { reduxChatSessionId } = useCustomSelector((state: $ReduxCoreType) => ({
     reduxChatSessionId: state.tabInfo?.widgetToken || state?.tabInfo?.chatbotId || '',
   }));
@@ -92,8 +94,13 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
         number,
         user_jwt_token,
         name,
+        sdkConfig,
         ...restProps
       } = event.data.data;
+      
+      if (sdkConfig?.customTheme) {
+        handleThemeChange(sdkConfig?.customTheme)
+      }
 
       const fullWidgetToken = unique_id ? `${widgetToken}_${unique_id}` : `${widgetToken}`;
       const prevWidgetId = GetSessionStorageData('widgetToken');
@@ -159,7 +166,7 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
       // 8. Persist new widget token and config
       setLocalStorage('WidgetId', widgetToken);
       dispatch(setHelloConfig(event.data.data));
-
+      SetSessionStorage('helloConfig',JSON.stringify( event.data.data))
       dispatch(setDataInTabInfo({ widgetToken: fullWidgetToken }));
       return;
     }
