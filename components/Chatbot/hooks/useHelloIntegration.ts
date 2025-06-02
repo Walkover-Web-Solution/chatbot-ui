@@ -18,6 +18,7 @@ import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import helloVoiceService from './HelloVoiceService';
 import { useReduxStateManagement } from './useReduxManagement';
+import { GetSessionStorageData } from '@/utils/ChatbotUtility';
 
 interface HelloMessage {
   role: string;
@@ -396,7 +397,10 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
           enable_call = widgetData?.voice_call_widget;
           is_domain_enable = widgetData?.is_domain_enable
           dispatch(setWidgetInfo(widgetData));
-          handleThemeChange(widgetData?.primary_color || "#000000");
+          const customTheme = (JSON.parse(GetSessionStorageData('helloConfig') || `{}`))?.sdkConfig?.customTheme || ''
+          if(!customTheme){
+            handleThemeChange(widgetData?.primary_color || "#000000");
+          }
           if (widgetData?.teams && widgetData?.teams.length <= 1) {
             dispatch(setDataInAppInfoReducer({ currentTeamId: widgetData?.teams?.[0]?.id || null }));
           }
