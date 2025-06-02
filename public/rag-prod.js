@@ -8,9 +8,9 @@
             this.token = null;
             this.lastProcessedMessage = null; // Add this line
             this.urls = {
-                ragUrl: 'https://dev-chatbot.gtwy.ai/rag',
-                login: 'https://dev-db.gtwy.ai/user/embed/login',
-                docsApi: 'https://dev-db.gtwy.ai/rag/docs'
+                ragUrl: 'https://chatbot.gtwy.ai/rag',
+                login: 'https://db.gtwy.ai/user/embed/login',
+                docsApi: 'https://db.gtwy.ai/rag/docs'
             };
             this.state = {
                 bodyLoaded: false,
@@ -987,7 +987,7 @@
 
         setupResizeObserver() {
             const iframeObserver = new ResizeObserver((entries) => {
-                const iframeParentContainer = document.getElementById('iframe-parent-container');
+                const iframeParentContainer = document.getElementById('rag-iframe-parent-container');
 
                 if (!iframeParentContainer || this.state.fullscreen) return;
 
@@ -1005,7 +1005,7 @@
         }
 
         applyConfig() {
-            const iframeContainer = document.getElementById('iframe-parent-container');
+            const iframeContainer = document.getElementById('rag-iframe-parent-container');
             if (!iframeContainer) return;
             // Modal popup mode - centered with max dimensions and proper spacing
             iframeContainer.style.position = 'fixed';
@@ -1049,7 +1049,7 @@
                         }
 
                         // For embedded mode, hide the main iframe and show document list
-                        const iframeContainer = document.getElementById('iframe-parent-container');
+                        const iframeContainer = document.getElementById('rag-iframe-parent-container');
                         if (iframeContainer) {
                             iframeContainer.style.display = 'none';
                         }
@@ -1146,13 +1146,13 @@
             } = config;
 
             const ragInterfaceEmbed = document.getElementById('ragInterfaceEmbed');
-            let iframeContainer = document.getElementById('iframe-parent-container');
+            let iframeContainer = document.getElementById('rag-iframe-parent-container');
             let modalOverlay = document.getElementById('rag-modal-overlay');
 
             // Create elements if they don't exist
             if (!iframeContainer) {
                 this.createIframeContainer();
-                iframeContainer = document.getElementById('iframe-parent-container');
+                iframeContainer = document.getElementById('rag-iframe-parent-container');
             }
 
             if (!modalOverlay) {
@@ -1282,7 +1282,7 @@
         // Updated closeRag function - handles modal restoration properly
         closeRag() {
             const ragInterfaceEmbed = document.getElementById('ragInterfaceEmbed');
-            const iframeContainer = document.getElementById('iframe-parent-container');
+            const iframeContainer = document.getElementById('rag-iframe-parent-container');
             const modalOverlay = document.getElementById('rag-modal-overlay');
 
             if (iframeContainer?.style?.display === 'block') {
@@ -1511,7 +1511,7 @@
             //console.log('Props extracted:', this.props);
 
             // Create iframe container
-            if (!document.getElementById('iframe-parent-container')) {
+            if (!document.getElementById('rag-iframe-parent-container')) {
                 this.createIframeContainer();
                 //console.log('Iframe container created');
             }
@@ -1546,7 +1546,7 @@
 
         createIframeContainer() {
             this.parentContainer = document.createElement('div');
-            this.parentContainer.id = 'iframe-parent-container';
+            this.parentContainer.id = 'rag-iframe-parent-container';
             this.parentContainer.className = 'popup-parent-container';
             this.parentContainer.style.display = 'none';
             this.parentContainer.style.border = 'none';
