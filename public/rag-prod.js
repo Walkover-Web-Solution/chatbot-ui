@@ -8,9 +8,9 @@
             this.token = null;
             this.lastProcessedMessage = null; // Add this line
             this.urls = {
-                ragUrl: 'https://chatbot.gtwy.ai/rag',
-                login: 'https://db.gtwy.ai/user/embed/login',
-                docsApi: 'https://db.gtwy.ai/rag/docs'
+                ragUrl: 'https://dev-chatbot.gtwy.ai/rag',
+                login: 'https://dev-db.gtwy.ai/user/embed/login',
+                docsApi: 'https://dev-db.gtwy.ai/rag/docs'
             };
             this.state = {
                 bodyLoaded: false,
@@ -335,7 +335,42 @@
             title.style.webkitBackgroundClip = 'text';
             title.style.webkitTextFillColor = 'transparent';
             title.style.backgroundClip = 'text';
+            header.appendChild(title);
 
+            //refresh button 
+            const headerRight = document.createElement('div');
+            headerRight.style.display = 'flex';
+            headerRight.style.alignItems = 'center';
+            headerRight.style.gap = '8px';
+
+            const refreshBtn = document.createElement('button');
+            refreshBtn.innerHTML = '⟳';
+            refreshBtn.style.background = 'none';
+            refreshBtn.style.border = 'none';
+            refreshBtn.style.fontSize = '32px';
+            refreshBtn.style.cursor = 'pointer';
+            refreshBtn.style.color = isDark ? 'white' : 'black';
+            refreshBtn.style.padding = '0';
+            refreshBtn.style.width = '32px';
+            refreshBtn.style.height = '32px';
+            refreshBtn.style.display = 'flex';
+            refreshBtn.style.alignItems = 'center';
+            refreshBtn.style.justifyContent = 'center';
+            refreshBtn.style.borderRadius = '8px';
+            refreshBtn.style.transition = 'all 0.2s ease';
+            refreshBtn.title = 'Refresh Document List';
+            refreshBtn.addEventListener('mouseenter', () => {
+                refreshBtn.style.backgroundColor = themeColors.buttonHover;
+                refreshBtn.style.color = isDark ? 'white' : 'black';
+            });
+            refreshBtn.addEventListener('mouseleave', () => {
+                refreshBtn.style.backgroundColor = 'transparent';
+                refreshBtn.style.color = isDark ? 'white' : 'black';
+            });
+            refreshBtn.addEventListener('click', () => this.showDocumentList());
+            headerRight.appendChild(refreshBtn);
+
+            if(!parentContainer){
             const closeBtn = document.createElement('button');
             closeBtn.innerHTML = '×';
             closeBtn.style.background = 'none';
@@ -360,10 +395,9 @@
                 closeBtn.style.color = themeColors.textMuted;
             });
             closeBtn.addEventListener('click', () => this.closeDocumentList());
-
-            header.appendChild(title);
-            header.appendChild(closeBtn);
-
+            headerRight.appendChild(closeBtn);
+            }
+            header.appendChild(headerRight);
             // Add Document Button
             const addBtn = document.createElement('button');
             addBtn.textContent = '+ Add New Document';
@@ -920,7 +954,6 @@
 
         handleIncomingMessages(event) {
             const { type } = event.data || {};
-
             // Ignore duplicate or invalid messages
             if (!type || this.lastProcessedMessage === JSON.stringify(event.data)) {
                 return;
@@ -937,6 +970,7 @@
                     // Only send initial data when iframe first loads and hasn't been sent yet
                     const iframe = document.getElementById('iframe-component-ragInterfaceEmbed');
                     if (iframe?.dataset.initialDataSent !== 'true') {
+                        console.log('Sending initial data to iframe');
                         this.sendInitialData();
                     }
                     break;
@@ -947,7 +981,7 @@
                     this.showDocumentList();
                     break;
                 default:
-                console.log('Unhandled message type:', type);
+                //console.log('Unhandled message type:', type);
             }
         }
 
@@ -1093,23 +1127,11 @@
 
         closeDocumentList() {
             const listModal = document.getElementById('rag-document-list-modal');
-            const parentId = this.props.parentId || this.state.tempDataToSend?.parentId || '';
-            const isEmbedded = parentId && this.state.isEmbeddedInParent;
-
             if (listModal) {
                 listModal.style.transition = 'opacity 0.2s ease-in-out';
                 listModal.style.opacity = '0';
-
                 setTimeout(() => {
                     listModal.style.display = 'none';
-
-                    if (isEmbedded) {
-                        // For embedded mode, show the main iframe again
-                        const iframeContainer = document.getElementById('iframe-parent-container');
-                        if (iframeContainer) {
-                            iframeContainer.style.display = 'block';
-                        }
-                    }
                 }, 200);
             }
         }
@@ -1336,8 +1358,8 @@
 
         waitForIframeReadyAndSendEdit(doc) {
             let attempts = 0;
-            const maxAttempts = 20;
-            const checkInterval = 500; // 500ms between checks
+            const maxAttempts = 5;
+            const checkInterval = 200; // 500ms between checks
 
             const sendEditMessage = () => {
                 //console.log(`Attempt ${attempts + 1}: Checking iframe ready state...`);
@@ -1356,9 +1378,7 @@
 
                 // Check if iframe content window is accessible and has loaded
                 try {
-                    const iframeReady = iframe.contentWindow &&
-                        iframe.contentDocument &&
-                        iframe.contentDocument.readyState === 'complete';
+                    const iframeReady = iframe.contentWindow;
 
                     if (iframeReady) {
                         //console.log('Iframe ready, sending EDIT_DOCUMENT message...');
@@ -1373,7 +1393,7 @@
                                     timestamp: Date.now()
                                 }
                             });
-                        }, 300);
+                        }, 100);
 
                         return;
                     }
@@ -1413,7 +1433,7 @@
                                 timestamp: Date.now()
                             }
                         });
-                    }, 500);
+                    }, 200);
                 }, { once: true });
             }
 
@@ -1685,7 +1705,7 @@
                 }
             };
 
-            // console.log('Sending initial data to iframe:', dataToSend);
+            //console.log('Sending initial data to iframe:', dataToSend);
             this.sendMessageToIframe(dataToSend);
 
             if (this.state.tempDataToSend?.defaultOpen === true || this.state.tempDataToSend?.defaultOpen === 'true') {
