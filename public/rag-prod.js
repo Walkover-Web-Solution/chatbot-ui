@@ -8,9 +8,9 @@
             this.token = null;
             this.lastProcessedMessage = null; // Add this line
             this.urls = {
-                ragUrl: 'https://dev-chatbot.gtwy.ai/rag',
-                login: 'https://dev-db.gtwy.ai/user/embed/login',
-                docsApi: 'https://dev-db.gtwy.ai/rag/docs'
+                ragUrl: 'https://chatbot.gtwy.ai/rag',
+                login: 'https://db.gtwy.ai/user/embed/login',
+                docsApi: 'https://db.gtwy.ai/rag/docs'
             };
             this.state = {
                 bodyLoaded: false,
