@@ -1,6 +1,6 @@
 import { LinearProgress, useTheme } from '@mui/material';
 import Image from 'next/image';
-import React, { memo, useEffect, useReducer, useRef } from 'react';
+import React, { useEffect, useReducer, useRef } from 'react';
 
 // Context and hooks
 import { MessageContext } from '../Interface-Chatbot/InterfaceChatbot';
@@ -26,13 +26,13 @@ import { ChatBotGif } from '@/assests/assestsIndex';
 import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
-import { ParamsEnums } from '@/utils/enums';
 
 interface ChatbotProps {
-  chatSessionId:string
+  chatSessionId: string
+  tabSessionId: string
 }
 
-function Chatbot({ chatSessionId}: ChatbotProps) {
+function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
   // Refs
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mountedRef = useRef<boolean>(false);
@@ -52,6 +52,15 @@ function Chatbot({ chatSessionId}: ChatbotProps) {
     isTyping
   } = chatState;
 
+  const chatActions = useChatActions({
+    chatDispatch,
+    chatState,
+    messageRef,
+    timeoutIdRef,
+    chatSessionId,
+    tabSessionId
+  });
+
   // Custom hooks
   const { sendMessageToHello, fetchChannels, getMoreHelloChats } =
     useHelloIntegration({
@@ -59,6 +68,7 @@ function Chatbot({ chatSessionId}: ChatbotProps) {
       chatState,
       messageRef,
       chatSessionId,
+      tabSessionId,
       chatActions: {
         setNewMessage: (data) => chatActions.setNewMessage(data),
         setChatsLoading: (data) => chatActions.setChatsLoading(data),
@@ -69,24 +79,17 @@ function Chatbot({ chatSessionId}: ChatbotProps) {
   const { isHelloUser, isSmallScreen, currentChatId, isDefaultNavigateToChatScreen } =
     useReduxStateManagement({
       chatDispatch,
-      chatSessionId
+      chatSessionId,
+      tabSessionId
     });
 
   const { show_widget_form, is_anon, greetingMessage } = useCustomSelector((state: $ReduxCoreType) => {
     const helloConfig = state.Hello?.[chatSessionId]?.helloConfig
     return ({
-      show_widget_form: typeof helloConfig?.show_widget_form === 'boolean' ? helloConfig?.show_widget_form : state.Hello?.[chatSessionId]?.widgetInfo?.show_widget_form,
+      show_widget_form: typeof helloConfig?.show_widget_form === 'boolean' ? helloConfig?.show_widget_form : state.Hello?.[chatSessionId]?.showWidgetForm,
       is_anon: state.Hello?.[chatSessionId]?.is_anon == 'true',
       greetingMessage: state.Hello?.[chatSessionId]?.greeting
     })
-  });
-
-  const chatActions = useChatActions({
-    chatDispatch,
-    chatState,
-    messageRef,
-    timeoutIdRef,
-    chatSessionId
   });
 
   // Initialize RTLayer event listeners
@@ -95,7 +98,8 @@ function Chatbot({ chatSessionId}: ChatbotProps) {
     chatState,
     messageRef,
     timeoutIdRef,
-    chatSessionId
+    chatSessionId,
+    tabSessionId
   });
 
   const theme = useTheme();

@@ -11,9 +11,6 @@ export interface $HelloReduxType {
     helloConfig?: HelloData;
     vision?: boolean;
     channelListData: ChannelListData;
-    currentChannelId?: string;
-    currentTeamId?: string;
-    currentChatId?: string;
     greeting?: object;
     showWidgetForm?: boolean | null;
     is_anon?: boolean;

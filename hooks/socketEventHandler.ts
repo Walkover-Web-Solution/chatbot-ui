@@ -30,6 +30,7 @@ export const useSocketEvents = ({
     messageRef,
     fetchChannels,
     chatSessionId,
+    tabSessionId,
     setLoading
 }: {
     chatState: ChatState,
@@ -38,11 +39,12 @@ export const useSocketEvents = ({
     fetchChannels: () => void,
     setLoading: (data: boolean) => void
     chatSessionId: string;
+    tabSessionId:string
 }) => {
     const dispatch = useDispatch();
 
     const { isToggledrawer } = chatState;
-    const { currentChannelId, isSmallScreen } = useReduxStateManagement({ chatDispatch, chatSessionId });
+    const { currentChannelId, isSmallScreen } = useReduxStateManagement({ chatDispatch, chatSessionId , tabSessionId});
     const addHelloMessage = (message: HelloMessage, subThreadId: string = '') => {
         chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message, subThreadId } });
     }

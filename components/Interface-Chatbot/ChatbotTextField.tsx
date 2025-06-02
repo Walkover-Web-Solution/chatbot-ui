@@ -1,47 +1,48 @@
 'use client';
 
-import { AiIcon, UserAssistant } from "@/assests/assestsIndex";
+import { AiIcon } from "@/assests/assestsIndex";
 import { errorToast } from "@/components/customToast";
 import { uploadImage } from "@/config/api";
 import { uploadAttachmentToHello } from "@/config/helloApi";
+import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
+import { useTypingStatus } from "@/hooks/socketEventEmitter";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { isColorLight } from "@/utils/themeUtility";
 import { TextField, useTheme } from "@mui/material";
+import debounce from "lodash.debounce";
 import { ChevronDown, Send, Upload, X } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { MessageContext } from "./InterfaceChatbot";
-import { useTypingStatus } from "@/hooks/socketEventEmitter";
 import ImageWithFallback from "./Messages/ImageWithFallback";
-import { debounce } from "lodash";
-import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 
 interface ChatbotTextFieldProps {
   className?: string;
-  chatSessionId:string
+  chatSessionId: string
+  tabSessionId: string
 }
 
 const MAX_IMAGES = 4;
 
-const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className ,chatSessionId}) => {
+const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const theme = useTheme();
   const isLight = isColorLight(theme.palette.primary.main);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const emitTypingStatus = useTypingStatus({chatSessionId});
+  const emitTypingStatus = useTypingStatus({ chatSessionId, tabSessionId });
 
   const { isHelloUser, mode, inbox_id, show_send_button, subThreadId, assigned_type, currentTeamId } = useCustomSelector((state: $ReduxCoreType) => ({
     isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
     mode: state.Hello?.[chatSessionId]?.mode || [],
     inbox_id: state.Hello?.[chatSessionId]?.widgetInfo?.inbox_id,
     show_send_button: typeof state.Hello?.[chatSessionId]?.helloConfig?.show_send_button === 'boolean' ? state.Hello?.[chatSessionId]?.helloConfig?.show_send_button : true,
-    subThreadId: state.appInfo?.[chatSessionId]?.subThreadId,
+    subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
     assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
-      (channel: any) => channel?.channel === state?.Hello?.[chatSessionId]?.currentChannelId
+      (channel: any) => channel?.channel === state?.appInfo?.[tabSessionId]?.currentChannelId
     )?.assigned_type || '',
-    currentTeamId: state.Hello?.[chatSessionId]?.currentTeamId
+    currentTeamId: state?.appInfo?.[tabSessionId]?.currentTeamId
   }));
 
   const reduxIsVision = useCustomSelector(

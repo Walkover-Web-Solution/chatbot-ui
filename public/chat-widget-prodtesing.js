@@ -868,7 +868,9 @@
 
     // Create chatWidget object with all widget control functions
     window.chatWidget = {
-        addUserEvent: (data) => sendMessageToChatbot({ type: "ADD_USER_EVENT_SEGMENTO", data: { ...data, websiteUrl: window?.location?.href } }),
+        addCustomData: (data) => sendMessageToChatbot({ type: "UPDATE_USER_DATA_SEGMENTO", data }),
+        modifyCustomData: (data) => sendMessageToChatbot({ type: "UPDATE_USER_DATA_SEGMENTO", data }),
+        addUserEvent: (data) => sendMessageToChatbot({ type: "ADD_USER_EVENT_SEGMENTO", data }),
         open: () => helloChatbotManager.openChatbot(),
         close: () => helloChatbotManager.closeChatbot(),
         hide: () => {

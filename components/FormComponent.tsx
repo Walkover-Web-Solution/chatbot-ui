@@ -1,15 +1,15 @@
-import { getUserData, saveClientDetails } from "@/config/helloApi";
+import countryCodes from "@/assests/countryCode.json";
+import { saveClientDetails } from "@/config/helloApi";
+import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { setHelloKeysData } from "@/store/hello/helloSlice";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { isColorLight } from "@/utils/themeUtility";
+import { getLocalStorage } from "@/utils/utilities";
 import { useTheme } from "@mui/material";
 import { BookText, Mail, Phone, Send, User } from "lucide-react";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import countryCodes from "@/assests/countryCode.json";
-import { getLocalStorage } from "@/utils/utilities";
-import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 
 interface FormComponentProps {
   open: boolean;
@@ -116,10 +116,10 @@ function FormComponent({ open, setOpen, isSmallScreen ,chatSessionId}: FormCompo
   if (!open && !showWidgetForm) return null;
   if (!open && showWidgetForm) return (
     <div
-      className={`bg-white p-2 px-4 cursor-pointer hover:shadow-md transition-all border border-gray-300 mx-auto rounded-br-md rounded-bl-md ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
+      className={`bg-white p-2 px-4 cursor-pointer hover:shadow-md transition-all mx-auto rounded-br-md rounded-bl-md ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
       onClick={() => setOpen(true)}
       style={{
-        backgroundColor: backgroundColor,
+        background: `linear-gradient(to right, ${backgroundColor}, ${backgroundColor}CC)`,
         color: textColor
       }}
     >
@@ -139,7 +139,7 @@ function FormComponent({ open, setOpen, isSmallScreen ,chatSessionId}: FormCompo
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 relative">
         {/* Card header */}
         <div className="bg-primary text-white p-6 rounded-t-lg" style={{
-          backgroundColor: backgroundColor,
+          background: `linear-gradient(to right, ${backgroundColor}, ${backgroundColor}CC)`,
           color: textColor
         }}>
           <h2 className="text-xl font-bold">Enter your details</h2>

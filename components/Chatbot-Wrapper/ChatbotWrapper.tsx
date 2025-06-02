@@ -19,6 +19,7 @@ import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
 import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
+import isPlainObject from "lodash.isplainobject";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Chatbot from "../Chatbot/Chatbot";
@@ -66,20 +67,20 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
     }
 
     // User Event Storing
-    if (event?.data?.type === 'ADD_USER_EVENT_SEGMENTO' && event?.data?.data) {
-      addDomainToHello({userEvent:event?.data?.data})
+    if (event?.data?.type === 'ADD_USER_EVENT_SEGMENTO' && event?.data?.data && isPlainObject(event?.data?.data)) {
+      addDomainToHello({ userEvent: event?.data?.data })
       return
     }
 
     // UPDATE USER INFO ON SEGMENTO
-    if (event?.data?.type === 'UPDATE_USER_DATA_SEGMENTO' && event?.data?.data) {
+    if (event?.data?.type === 'UPDATE_USER_DATA_SEGMENTO' && event?.data?.data && isPlainObject(event?.data?.data)) {
       saveClientDetails(event?.data?.data)
       return
     }
 
     // Domain Tracking
     if (event?.data?.type == 'parent-route-changed' && event?.data?.data?.websiteUrl) {
-      addDomainToHello({domain:event?.data?.data?.websiteUrl});
+      addDomainToHello({ domain: event?.data?.data?.websiteUrl });
       return;
     }
 
@@ -94,15 +95,15 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
         ...restProps
       } = event.data.data;
 
+      const fullWidgetToken = unique_id ? `${widgetToken}_${unique_id}` : `${widgetToken}`;
       const prevWidgetId = GetSessionStorageData('widgetToken');
       const prevUser = JSON.parse(getLocalStorage('userData') || '{}');
-      SetSessionStorage('widgetToken', unique_id ? `${widgetToken}_${unique_id}` : widgetToken)
+      SetSessionStorage('widgetToken', fullWidgetToken)
       const hasUserIdentity = Boolean(unique_id || mail || number);
 
       // Helper: reset Redux keys and sub-thread
       const resetKeys = () => {
-        dispatch(setHelloKeysData({ currentChannelId: '', currentChatId: '', currentTeamId: '' }));
-        dispatch(setDataInAppInfoReducer({ subThreadId: '' }));
+        dispatch(setDataInAppInfoReducer({ subThreadId: '', currentChannelId: '', currentChatId: '', currentTeamId: '' }));
       };
 
       // 1. Widget token changed
@@ -158,7 +159,8 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
       // 8. Persist new widget token and config
       setLocalStorage('WidgetId', widgetToken);
       dispatch(setHelloConfig(event.data.data));
-      dispatch(setDataInTabInfo({ widgetToken: unique_id ? `${widgetToken}_${unique_id}` : widgetToken }))
+
+      dispatch(setDataInTabInfo({ widgetToken: fullWidgetToken }));
       return;
     }
 

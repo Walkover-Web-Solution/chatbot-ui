@@ -1,9 +1,12 @@
 export interface $AppInfoReduxType{
-    [chatSessionId:string]:{
+    [tabSessionId:string]:{
         threadId:string
         bridgeName:string
         subThreadId:string
         userId:string
         config:Record<string,unknown>
+        currentChannelId: string,
+        currentChatId: string,
+        currentTeamId: string
     }
 }
