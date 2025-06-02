@@ -20,10 +20,12 @@ function isDefaultNavigateToChatScreenFn(state: $ReduxCoreType, chatSessionId: s
 
 export const useReduxStateManagement = ({ 
   chatDispatch, 
-  chatSessionId 
+  chatSessionId ,
+  tabSessionId
 }: { 
   chatDispatch: React.Dispatch<ChatAction>; 
   chatSessionId: string;
+  tabSessionId: string;
 }) => {
   // FIXED: Always call hooks at the top level, in the same order
   const theme = useTheme();
@@ -56,10 +58,10 @@ export const useReduxStateManagement = ({
     isDefaultNavigateToChatScreen
   } = useCustomSelector((state: $ReduxCoreType) => ({
     interfaceContextData: state.Interface?.[chatSessionId]?.interfaceContext?.variables,
-    reduxThreadId: state.appInfo?.[chatSessionId]?.threadId || "",
-    reduxSubThreadId: state.appInfo?.[chatSessionId]?.subThreadId || "",
+    reduxThreadId: state.appInfo?.[tabSessionId]?.threadId || "",
+    reduxSubThreadId: state.appInfo?.[tabSessionId]?.subThreadId || "",
     reduxHeaderButtons: state.Interface?.[chatSessionId]?.headerButtons || [],
-    reduxBridgeName: state.appInfo?.[chatSessionId]?.bridgeName || "root",
+    reduxBridgeName: state.appInfo?.[tabSessionId]?.bridgeName || "root",
     reduxHelloId: state.Interface?.[chatSessionId]?.helloId || null,
     reduxBridgeVersionId: state.Interface?.[chatSessionId]?.version_id || null,
     isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
@@ -74,11 +76,11 @@ export const useReduxStateManagement = ({
     selectedAiServiceAndModal: state.Interface?.[chatSessionId]?.selectedAiServiceAndModal || null,
     unique_id_hello: state?.Hello?.[chatSessionId]?.helloConfig?.unique_id,
     widgetToken: state?.Hello?.[chatSessionId]?.helloConfig?.widgetToken,
-    currentChatId: state.Hello?.[chatSessionId]?.currentChatId,
-    currentChannelId: state.Hello?.[chatSessionId]?.currentChannelId,
-    currentTeamId: state.Hello?.[chatSessionId]?.currentTeamId,
+    currentChatId: state?.appInfo?.[tabSessionId]?.currentChatId,
+    currentChannelId: state?.appInfo?.[tabSessionId]?.currentChannelId,
+    currentTeamId: state?.appInfo?.[tabSessionId]?.currentTeamId,
   }));
-
+  
   // Sync Redux threadId with local state
   useEffect(() => {
     chatDispatch({

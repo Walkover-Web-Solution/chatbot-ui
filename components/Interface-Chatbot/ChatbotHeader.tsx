@@ -36,9 +36,9 @@ import { MessageContext } from "./InterfaceChatbot";
 import "./InterfaceChatbot.css";
 
 
-function getAgentTeamName(state: $ReduxCoreType,chatSessionId:string) {
+function getAgentTeamName(state: $ReduxCoreType,chatSessionId:string,tabSessionId:string) {
   const agent_teams = state.Hello?.[chatSessionId]?.agent_teams || {};
-  const currentChannelId = state.Hello?.[chatSessionId]?.currentChannelId || "";
+  const currentChannelId = state?.appInfo?.[tabSessionId]?.currentChannelId || "";
   const channel = state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
     (channel: any) => channel?.channel === currentChannelId
   );
@@ -56,9 +56,10 @@ function getAgentTeamName(state: $ReduxCoreType,chatSessionId:string) {
 interface ChatbotHeaderProps {
   preview?: boolean;
   chatSessionId:string
+  tabSessionId:string
 }
 
-const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false , chatSessionId }) => {
+const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false , chatSessionId , tabSessionId }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const {
@@ -119,15 +120,15 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false , chatSes
       currentSelectedBridgeSlug: state?.Interface?.[chatSessionId]?.bridgeName,
       allowBridgeSwitchViaProp: state?.Interface?.[chatSessionId]?.allowBridgeSwitch,
       teams: state.Hello?.[chatSessionId]?.widgetInfo?.teams || [],
-      currentTeamId: state.Hello?.[chatSessionId]?.currentTeamId || "",
-      agentTeamName: getAgentTeamName(state,chatSessionId),
+      currentTeamId: state?.appInfo?.[tabSessionId]?.currentTeamId || "",
+      agentTeamName: getAgentTeamName(state,chatSessionId,tabSessionId),
       subThreadList:
         state.Interface?.[chatSessionId]?.interfaceContext?.[
           GetSessionStorageData("bridgeName") ||
-          state.appInfo?.[chatSessionId]?.bridgeName ||
+          state.appInfo?.[tabSessionId]?.bridgeName ||
           "root"
         ]?.threadList?.[
-        GetSessionStorageData("threadId") || state.appInfo?.[chatSessionId]?.threadId
+        GetSessionStorageData("threadId") || state.appInfo?.[tabSessionId]?.threadId
         ] || [],
       isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
       voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false

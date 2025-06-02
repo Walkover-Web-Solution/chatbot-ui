@@ -2,7 +2,7 @@
 
 import { lighten, useMediaQuery, useTheme } from "@mui/material";
 import { AlignLeft, ChevronRight, SquarePen, Users, X } from "lucide-react";
-import { memo, useContext, useMemo } from "react";
+import { memo, useContext, useEffect, useMemo } from "react";
 import { useDispatch } from "react-redux";
 
 // API and Services
@@ -17,15 +17,14 @@ import { useReduxStateManagement } from "../Chatbot/hooks/useReduxManagement";
 
 // Redux Actions
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
-import { setHelloKeysData, setUnReadCount } from "@/store/hello/helloSlice";
+import { setUnReadCount } from "@/store/hello/helloSlice";
 import { setThreadId, setThreads } from "@/store/interface/interfaceSlice";
 
 // Utils and Types
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
-import { ParamsEnums } from "@/utils/enums";
-import { MessageContext } from "./InterfaceChatbot";
 import { getLocalStorage } from "@/utils/utilities";
+import { MessageContext } from "./InterfaceChatbot";
 
 const createRandomId = () => Math.random().toString(36).substring(2, 15);
 
@@ -34,14 +33,16 @@ interface ChatbotDrawerProps {
   isToggledrawer: boolean;
   setToggleDrawer: (isOpen: boolean) => void;
   preview?: boolean;
-  chatSessionId:string
+  chatSessionId: string
+  tabSessionId: string
 }
 
 const ChatbotDrawer = ({
   setToggleDrawer,
   isToggledrawer,
   preview = false,
-  chatSessionId
+  chatSessionId,
+  tabSessionId
 }: ChatbotDrawerProps) => {
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -61,7 +62,7 @@ const ChatbotDrawer = ({
     setLoading,
   } = useContext(MessageContext);
 
-  const { currentChatId, currentTeamId } = useReduxStateManagement({ chatDispatch ,chatSessionId});
+  const { currentChatId, currentTeamId } = useReduxStateManagement({ chatDispatch, chatSessionId, tabSessionId });
   const { callState } = useCallUI();
 
   // Consolidated Redux state selection
@@ -78,12 +79,11 @@ const ChatbotDrawer = ({
     hideCloseButton,
     voice_call_widget
   } = useCustomSelector((state: $ReduxCoreType) => {
-    const bridgeName = GetSessionStorageData("bridgeName") || state.appInfo?.[chatSessionId]?.bridgeName || "root";
-    const threadId = GetSessionStorageData("threadId") || state.appInfo?.[chatSessionId]?.threadId || "";
-
+    const bridgeName = GetSessionStorageData("bridgeName") || state.appInfo?.[tabSessionId]?.bridgeName || "root";
+    const threadId = GetSessionStorageData("threadId") || state.appInfo?.[tabSessionId]?.threadId || "";
     return {
       reduxThreadId: threadId,
-      reduxSubThreadId: state.appInfo?.[chatSessionId]?.subThreadId || "",
+      reduxSubThreadId: state.appInfo?.[tabSessionId]?.subThreadId || "",
       reduxBridgeName: bridgeName,
       subThreadList: state.Interface?.[chatSessionId]?.interfaceContext?.[bridgeName]?.threadList?.[threadId] || [],
       teamsList: state.Hello?.[chatSessionId]?.widgetInfo?.teams || [],
@@ -96,17 +96,23 @@ const ChatbotDrawer = ({
     };
   });
 
+  useEffect(() => {
+    if (chatSessionId) {
+      setToggleDrawer(true);
+    }
+  }, [chatSessionId])
+
   // Handlers
   const handleCreateNewSubThread = async () => {
     if (preview) return;
-    if (subThreadList?.[0]?.newChat){
+    if (subThreadList?.[0]?.newChat) {
       return;
     }
-    const newThreadData  = {
-        sub_thread_id: createRandomId(),
-        thread_id: reduxThreadId,
-        display_name: "New Chat",
-        newChat:"true"
+    const newThreadData = {
+      sub_thread_id: createRandomId(),
+      thread_id: reduxThreadId,
+      display_name: "New Chat",
+      newChat: "true"
     }
     if (!subThreadList?.[0]?.newChat) {
       dispatch(
@@ -118,7 +124,7 @@ const ChatbotDrawer = ({
 
       );
       setOptions([]);
-    
+
     }
   };
 
@@ -143,8 +149,7 @@ const ChatbotDrawer = ({
 
   const handleChangeChannel = async (channelId: string, chatId: string, teamId: string, widget_unread_count: number) => {
     // Update redux state
-    dispatch(setHelloKeysData({ currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
-    dispatch(setDataInAppInfoReducer({ subThreadId: channelId }));
+    dispatch(setDataInAppInfoReducer({ subThreadId: channelId, currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
     if (isSmallScreen) setToggleDrawer(false);
     if (images?.length > 0) setImages([]);
 
@@ -158,8 +163,7 @@ const ChatbotDrawer = ({
   };
 
   const handleChangeTeam = (teamId: string) => {
-    dispatch(setHelloKeysData({ currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
-    dispatch(setDataInAppInfoReducer({ subThreadId: '' }));
+    dispatch(setDataInAppInfoReducer({ subThreadId: '', currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
 
     if (isSmallScreen) setToggleDrawer(false);
     if (images?.length > 0) setImages([]);
@@ -177,8 +181,7 @@ const ChatbotDrawer = ({
   };
 
   const handleSendMessageWithNoTeam = () => {
-    dispatch(setHelloKeysData({ currentTeamId: "", currentChannelId: "", currentChatId: "" }));
-    dispatch(setDataInAppInfoReducer({ subThreadId: '' }));
+    dispatch(setDataInAppInfoReducer({ subThreadId: '', currentTeamId: "", currentChannelId: "", currentChatId: "" }));
 
     if (isSmallScreen) setToggleDrawer(false);
     if (images?.length > 0) setImages([]);
@@ -394,7 +397,7 @@ const ChatbotDrawer = ({
   }, [hideCloseButton, handleCloseChatbot]);
 
   return (
-    <div className="drawer z-[999]">
+    <div className={`drawer ${isSmallScreen ? 'z-[99999]' : 'z-[999]'}`}>
       <input
         id="chatbot-drawer"
         type="checkbox"

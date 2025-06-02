@@ -32,19 +32,19 @@ function useWebSocketClient(isHelloUser: boolean) {
   return client;
 }
 
-function useRtlayerEventManager({ chatDispatch, chatState, messageRef, timeoutIdRef, chatSessionId }: { chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, chatSessionId: string }) {
+function useRtlayerEventManager({ chatDispatch, chatState, messageRef, timeoutIdRef, chatSessionId, tabSessionId }: { chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, chatSessionId: string, tabSessionId: string }) {
   const { isHelloUser } = useContext(ChatbotContext)
   if (isHelloUser) {
     return null
   }
   const { reduxThreadId, reduxBridgeName } = useCustomSelector((state: $ReduxCoreType) => ({
-    threadId: state.appInfo?.[chatSessionId]?.threadId,
-    bridgeName: state.appInfo?.[chatSessionId]?.bridgeName,
+    reduxThreadId: state.appInfo?.[tabSessionId]?.threadId,
+    reduxBridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
   }))
   const dispatch = useDispatch()
   const client = useWebSocketClient(isHelloUser);
   const { threadId, subThreadId } = chatState
-  const { userId } = useCustomSelector((state: $ReduxCoreType) => ({ userId: state.appInfo.userId }))
+  const { userId } = useCustomSelector((state: $ReduxCoreType) => ({ userId: state.appInfo?.[tabSessionId]?.userId }))
 
   const handleMessageRTLayer = useCallback((message: string) => {
     // Parse the incoming message string into an object

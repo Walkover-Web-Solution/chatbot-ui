@@ -10,17 +10,17 @@ import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState, SendMessagePayloadType } from './chatTypes';
 
-export const useChatActions = ({ chatDispatch, chatState, messageRef, timeoutIdRef, chatSessionId }: { chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, chatSessionId: string }) => {
+export const useChatActions = ({ chatDispatch, chatState, messageRef, timeoutIdRef, chatSessionId, tabSessionId }: { chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, chatSessionId: string ,tabSessionId:string}) => {
     const globalDispatch = useDispatch();
     const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, isHelloUser, firstThread } = useCustomSelector((state: $ReduxCoreType) => ({
-        threadId: state.appInfo?.[chatSessionId]?.threadId,
-        subThreadId: state.appInfo?.[chatSessionId]?.subThreadId,
-        bridgeName: state.appInfo?.[chatSessionId]?.bridgeName,
+        threadId: state.appInfo?.[tabSessionId]?.threadId,
+        subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
+        bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
         variables: state.Interface?.[chatSessionId]?.interfaceContext?.variables,
         selectedAiServiceAndModal: state.Interface?.[chatSessionId]?.selectedAiServiceAndModal || null,
-        userId: state.appInfo?.[chatSessionId]?.userId || null,
+        userId: state.appInfo?.[tabSessionId]?.userId || null,
         isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
-        firstThread: state.Interface?.[chatSessionId]?.interfaceContext?.[state.appInfo?.[chatSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[chatSessionId]?.threadId]?.[0]
+        firstThread: state.Interface?.[chatSessionId]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId]?.[0]
     }))
 
     useEffect(() => {

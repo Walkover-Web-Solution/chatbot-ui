@@ -16,7 +16,7 @@ import MoveToDownButton from "../MoveToDownButton";
 import Message from "./Message";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 
-function MessageList({chatSessionId}:{chatSessionId:string}) {
+function MessageList({chatSessionId,tabSessionId}:{chatSessionId:string, tabSessionId:string}) {
   const {
     hasMoreMessages = false,
     newMessage,
@@ -34,9 +34,9 @@ function MessageList({chatSessionId}:{chatSessionId:string}) {
   const { isHelloUser, assigned_type, currentChannelId, greetingMessage } = useCustomSelector((state: $ReduxCoreType) => ({
     isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser,
     assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
-      (channel: any) => channel?.channel === state.Hello?.[chatSessionId]?.currentChannelId
+      (channel: any) => channel?.channel === state?.appInfo?.[tabSessionId]?.currentChannelId
     )?.assigned_type,
-    currentChannelId: state.Hello?.[chatSessionId]?.currentChannelId,
+    currentChannelId: state?.appInfo?.[tabSessionId]?.currentChannelId,
     greetingMessage: state.Hello?.[chatSessionId]?.greeting
   }));
 
