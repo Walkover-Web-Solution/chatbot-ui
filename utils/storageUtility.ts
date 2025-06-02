@@ -6,7 +6,7 @@ type Storage = {
   removeItem: (key: string) => Promise<void>;
 };
 
-const createNoopStorage = (): Storage => ({
+export const createNoopStorage = (): Storage => ({
   getItem: (_key: string) => Promise.resolve(null),
   setItem: (_key: string, value: any) => Promise.resolve(value),
   removeItem: (_key: string) => Promise.resolve(),

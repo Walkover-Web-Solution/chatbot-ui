@@ -1,5 +1,5 @@
 "use client";
-import { STORAGE_OPTIONS } from "@/utils/storageUtility";
+import { createNoopStorage, STORAGE_OPTIONS } from "@/utils/storageUtility";
 import { configureStore } from "@reduxjs/toolkit";
 import { persistReducer, persistStore } from "redux-persist";
 import createSagaMiddleware from "redux-saga";
@@ -38,11 +38,11 @@ export const getInfoParametersFromUrl = () => {
 };
 
 const customMiddleware = () => (next) => (action) => {
-  
+
   // IF URL DATA ALREADY PRESENT THIS MEANS THIS ACTION IS TO SYNC CROSS TAB REDUX STORE
-  if(!action.urlData){
+  if (!action.urlData) {
     action.urlData = getInfoParametersFromUrl();
-  }else{
+  } else {
     console.log('SYNCING CROSS TAB REDUX STORE')
   }
   return next(action);
@@ -50,6 +50,7 @@ const customMiddleware = () => (next) => (action) => {
 
 
 const crossTabSyncConfig = {
+  channel: 'crossTabChannel',
   predicate: (action) => {
     const isPersistAction = [PERSIST, REHYDRATE, FLUSH, PAUSE, PURGE, REGISTER].includes(action.type);
     const actionTypeRoot = action.type.split('/')[0];
@@ -58,9 +59,13 @@ const crossTabSyncConfig = {
   }
 };
 
+const storage =
+  typeof window !== "undefined"
+    ? STORAGE_OPTIONS.local : createNoopStorage();
+
 const rootPersistConfig = {
   key: "root",
-  storage: STORAGE_OPTIONS.local,
+  storage: storage,
   version: 1,
   blacklist: ["appInfo", "tabInfo"],
 };

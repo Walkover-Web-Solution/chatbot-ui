@@ -6,17 +6,21 @@ import InterfaceReducer from "./interface/interfaceSlice";
 import appInfoReducer from "./appInfo/appInfoSlice";
 import helloReducer from "./hello/helloSlice";
 import tabInfoReducer from "./tabInfo/tabInfoSlice";
-import { STORAGE_OPTIONS } from "@/utils/storageUtility";
+import { createNoopStorage, STORAGE_OPTIONS } from "@/utils/storageUtility";
+
+const storage =
+  typeof window !== "undefined"
+    ? STORAGE_OPTIONS.session : createNoopStorage();
 
 const appInfoPersistConfig = {
   key: "appInfo",
-  storage: STORAGE_OPTIONS.session,
+  storage: storage,
   version: 1,
 };
 
 const tabInfoPersistConfig = {
   key: "tabInfo",
-  storage: STORAGE_OPTIONS.session,
+  storage: storage,
   version: 1,
 };
 
