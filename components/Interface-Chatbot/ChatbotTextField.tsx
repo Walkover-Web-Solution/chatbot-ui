@@ -16,16 +16,20 @@ import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { MessageContext } from "./InterfaceChatbot";
 import ImageWithFallback from "./Messages/ImageWithFallback";
+import { ParamsEnums } from "@/utils/enums";
 
 interface ChatbotTextFieldProps {
   className?: string;
   chatSessionId: string
   tabSessionId: string
+  subThreadId: string;
+  currentTeamId: string
+  currentChannelId: string
 }
 
 const MAX_IMAGES = 4;
 
-const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId }) => {
+const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "" }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const theme = useTheme();
@@ -33,16 +37,14 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const fileInputRef = useRef<HTMLInputElement>(null);
   const emitTypingStatus = useTypingStatus({ chatSessionId, tabSessionId });
 
-  const { isHelloUser, mode, inbox_id, show_send_button, subThreadId, assigned_type, currentTeamId } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { isHelloUser, mode, inbox_id, show_send_button, assigned_type } = useCustomSelector((state: $ReduxCoreType) => ({
     isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
     mode: state.Hello?.[chatSessionId]?.mode || [],
     inbox_id: state.Hello?.[chatSessionId]?.widgetInfo?.inbox_id,
     show_send_button: typeof state.Hello?.[chatSessionId]?.helloConfig?.show_send_button === 'boolean' ? state.Hello?.[chatSessionId]?.helloConfig?.show_send_button : true,
-    subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
     assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
-      (channel: any) => channel?.channel === state?.appInfo?.[tabSessionId]?.currentChannelId
+      (channel: any) => channel?.channel === currentChannelId
     )?.assigned_type || '',
-    currentTeamId: state?.appInfo?.[tabSessionId]?.currentTeamId
   }));
 
   const reduxIsVision = useCustomSelector(
@@ -361,4 +363,4 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   );
 };
 
-export default React.memo(addUrlDataHoc(ChatbotTextField));
+export default React.memo(addUrlDataHoc(ChatbotTextField, [ParamsEnums.subThreadId, ParamsEnums.currentTeamId, ParamsEnums.currentChannelId]));

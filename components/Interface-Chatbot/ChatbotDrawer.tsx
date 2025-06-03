@@ -2,7 +2,7 @@
 
 import { lighten, useMediaQuery, useTheme } from "@mui/material";
 import { AlignLeft, ChevronRight, SquarePen, Users, X } from "lucide-react";
-import { memo, useContext, useEffect, useMemo } from "react";
+import { useContext, useEffect, useMemo } from "react";
 import { useDispatch } from "react-redux";
 
 // API and Services
@@ -23,6 +23,7 @@ import { setThreadId, setThreads } from "@/store/interface/interfaceSlice";
 // Utils and Types
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
+import { ParamsEnums } from "@/utils/enums";
 import { getLocalStorage } from "@/utils/utilities";
 import { MessageContext } from "./InterfaceChatbot";
 
@@ -35,6 +36,9 @@ interface ChatbotDrawerProps {
   preview?: boolean;
   chatSessionId: string
   tabSessionId: string
+  subThreadId?: string;
+  bridgeName: string;
+  threadId: string
 }
 
 const ChatbotDrawer = ({
@@ -42,7 +46,10 @@ const ChatbotDrawer = ({
   isToggledrawer,
   preview = false,
   chatSessionId,
-  tabSessionId
+  tabSessionId,
+  subThreadId,
+  bridgeName,
+  threadId
 }: ChatbotDrawerProps) => {
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -67,10 +74,7 @@ const ChatbotDrawer = ({
 
   // Consolidated Redux state selection
   const {
-    reduxThreadId,
     subThreadList,
-    reduxSubThreadId,
-    reduxBridgeName,
     teamsList,
     channelList,
     isHelloUser,
@@ -79,12 +83,7 @@ const ChatbotDrawer = ({
     hideCloseButton,
     voice_call_widget
   } = useCustomSelector((state: $ReduxCoreType) => {
-    const bridgeName = GetSessionStorageData("bridgeName") || state.appInfo?.[tabSessionId]?.bridgeName || "root";
-    const threadId = GetSessionStorageData("threadId") || state.appInfo?.[tabSessionId]?.threadId || "";
     return {
-      reduxThreadId: threadId,
-      reduxSubThreadId: state.appInfo?.[tabSessionId]?.subThreadId || "",
-      reduxBridgeName: bridgeName,
       subThreadList: state.Interface?.[chatSessionId]?.interfaceContext?.[bridgeName]?.threadList?.[threadId] || [],
       teamsList: state.Hello?.[chatSessionId]?.widgetInfo?.teams || [],
       channelList: state.Hello?.[chatSessionId]?.channelListData?.channels || [],
@@ -110,7 +109,7 @@ const ChatbotDrawer = ({
     }
     const newThreadData = {
       sub_thread_id: createRandomId(),
-      thread_id: reduxThreadId,
+      thread_id: threadId,
       display_name: "New Chat",
       newChat: "true"
     }
@@ -118,8 +117,8 @@ const ChatbotDrawer = ({
       dispatch(
         setThreads({
           newThreadData,
-          bridgeName: GetSessionStorageData("bridgeName") || reduxBridgeName,
-          threadId: reduxThreadId,
+          bridgeName: GetSessionStorageData("bridgeName") || bridgeName,
+          threadId: threadId,
         })
 
       );
@@ -200,7 +199,7 @@ const ChatbotDrawer = ({
           {subThreadList.map((thread: any, index: number) => (
             <li key={`${thread?._id}-${index}`}>
               <a
-                className={`${thread?.sub_thread_id === reduxSubThreadId ? 'active' : ''}`}
+                className={`${thread?.sub_thread_id === subThreadId ? 'active' : ''}`}
                 onClick={() => handleChangeSubThread(thread?.sub_thread_id)}
               >
                 {thread?.display_name || thread?.sub_thread_id}
@@ -210,7 +209,7 @@ const ChatbotDrawer = ({
         </ul>
       )}
     </div>
-  ), [subThreadList, reduxSubThreadId, handleChangeSubThread]);
+  ), [subThreadList, subThreadId, handleChangeSubThread]);
 
   const TeamsList = useMemo(() => (
     <div className="teams-container p-2 relative gap-6 flex flex-col">
@@ -475,4 +474,4 @@ const ChatbotDrawer = ({
   );
 };
 
-export default addUrlDataHoc(memo(ChatbotDrawer));
+export default addUrlDataHoc(ChatbotDrawer, [ParamsEnums.subThreadId, ParamsEnums.bridgeName, ParamsEnums.threadId]);
