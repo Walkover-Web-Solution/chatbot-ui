@@ -456,11 +456,11 @@ export async function submitFeedback(params: {
 export async function subscribeForFCMPushNotification(data: Record<string, any>, jwtToken: string): Promise<any> {
   try {
     const response = await axios.post(
-      `${PUSH_NOTIFICATION_URL}/add-user-fcm-token`,
+      `${PUSH_NOTIFICATION_URL}/add-user-fcm-token/`,
       data,
       {
         headers: {
-          'Jwt': jwtToken,
+          'authorization': jwtToken,
           'content-type': 'application/json'
         }
       }
