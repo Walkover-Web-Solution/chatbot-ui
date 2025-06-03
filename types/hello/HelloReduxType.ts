@@ -36,6 +36,9 @@ export interface HelloData {
   region?: string;
   user_jwt_token?: string;
   pushConfig?: Record<string, any>
+  sdkConfig: {
+    customTheme?: string
+  }
 }
 
 export interface ChannelListData {
