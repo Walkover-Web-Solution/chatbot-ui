@@ -993,7 +993,7 @@
 
         setupResizeObserver() {
             const iframeObserver = new ResizeObserver((entries) => {
-                const iframeParentContainer = document.getElementById('iframe-parent-container');
+                const iframeParentContainer = document.getElementById('rag-iframe-parent-container');
 
                 if (!iframeParentContainer || this.state.fullscreen) return;
 
@@ -1011,7 +1011,7 @@
         }
 
         applyConfig() {
-            const iframeContainer = document.getElementById('iframe-parent-container');
+            const iframeContainer = document.getElementById('rag-iframe-parent-container');
             if (!iframeContainer) return;
             // Modal popup mode - centered with max dimensions and proper spacing
             iframeContainer.style.position = 'fixed';
@@ -1055,7 +1055,7 @@
                         }
 
                         // For embedded mode, hide the main iframe and show document list
-                        const iframeContainer = document.getElementById('iframe-parent-container');
+                        const iframeContainer = document.getElementById('rag-iframe-parent-container');
                         if (iframeContainer) {
                             iframeContainer.style.display = 'none';
                         }
@@ -1152,13 +1152,13 @@
             } = config;
 
             const ragInterfaceEmbed = document.getElementById('ragInterfaceEmbed');
-            let iframeContainer = document.getElementById('iframe-parent-container');
+            let iframeContainer = document.getElementById('rag-iframe-parent-container');
             let modalOverlay = document.getElementById('rag-modal-overlay');
 
             // Create elements if they don't exist
             if (!iframeContainer) {
                 this.createIframeContainer();
-                iframeContainer = document.getElementById('iframe-parent-container');
+                iframeContainer = document.getElementById('rag-iframe-parent-container');
             }
 
             if (!modalOverlay) {
@@ -1284,105 +1284,10 @@
             });
         }
 
-        //     //console.log('openRag called');
-
-        //     const ragInterfaceEmbed = document.getElementById('ragInterfaceEmbed');
-        //     let iframeContainer = document.getElementById('iframe-parent-container');
-        //     let modalOverlay = document.getElementById('rag-modal-overlay');
-
-        //     // Create elements if they don't exist
-        //     if (!iframeContainer) {
-        //         //console.log('No iframe container found, creating one...');
-        //         this.createIframeContainer();
-        //         iframeContainer = document.getElementById('iframe-parent-container');
-        //     }
-
-        //     if (!modalOverlay) {
-        //         //console.log('No modal overlay found, creating one...');
-        //         this.modalOverlay = this.createModalOverlay();
-        //         document.body.appendChild(this.modalOverlay);
-        //         modalOverlay = document.getElementById('rag-modal-overlay');
-        //     }
-
-        //     if (iframeContainer) {
-        //         // Hide the icon/embed element if exists
-        //         if (ragInterfaceEmbed) {
-        //             ragInterfaceEmbed.style.display = 'none';
-        //         }
-
-        //         // Show modal overlay
-        //         if (modalOverlay) {
-        //             modalOverlay.style.display = 'block';
-        //             modalOverlay.style.opacity = '0';
-        //             requestAnimationFrame(() => {
-        //                 modalOverlay.style.opacity = '1';
-        //             });
-        //         }
-
-        //         // Store current embedded state and set to false for modal mode
-        //         const wasEmbedded = this.state.isEmbeddedInParent;
-        //         this.state.isEmbeddedInParent = false;
-
-        //         // Configure iframe container for modal mode
-        //         iframeContainer.style.position = 'fixed';
-        //         iframeContainer.style.top = '50%';
-        //         iframeContainer.style.left = '50%';
-        //         iframeContainer.style.transform = 'translate(-50%, -50%)';
-        //         iframeContainer.style.width = '90vw';
-        //         iframeContainer.style.height = '64vh';
-        //         iframeContainer.style.maxWidth = '1200px';
-        //         iframeContainer.style.maxHeight = '800px';
-        //         iframeContainer.style.borderRadius = '12px';
-        //         iframeContainer.style.boxShadow = '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)';
-        //         iframeContainer.style.overflow = 'hidden';
-        //         iframeContainer.style.zIndex = '999999';
-        //         iframeContainer.style.backgroundColor = 'white';
-
-        //         // Ensure iframe container is in body for modal mode
-        //         if (iframeContainer.parentNode !== document.body) {
-        //             document.body.appendChild(iframeContainer);
-        //         }
-
-        //         // Show iframe container with animation
-        //         iframeContainer.style.display = 'block';
-        //         iframeContainer.style.opacity = '0';
-        //         iframeContainer.style.transition = 'opacity 0.3s ease-in-out';
-
-        //         requestAnimationFrame(() => {
-        //             iframeContainer.style.opacity = '1';
-        //         });
-
-        //         // Store embedded state for restoration
-        //         iframeContainer.dataset.wasEmbedded = wasEmbedded.toString();
-
-        //         //console.log('Modal opened successfully');
-        //     } else {
-        //         console.error('Failed to create or find iframe container');
-        //     }
-
-        //     // Notify parent window
-        //     if (window.parent) {
-        //         window.parent.postMessage?.({ type: 'open', data: {} }, '*');
-        //     }
-
-        //     // Send open message to iframe (but not initial config)
-        //     const iframeComponent = document.getElementById('iframe-component-ragInterfaceEmbed');
-        //     if (iframeComponent?.contentWindow) {
-        //         iframeComponent.contentWindow.postMessage({
-        //             type: 'OPEN_ADD_DOCUMENT',
-        //             data: {
-        //                 ction: 'add_new',
-        //                 token: this.token
-        //             }
-        //         }, '*');
-        //     }
-        // }
-
-
         // Updated closeRag function - handles modal restoration properly
         closeRag() {
             const ragInterfaceEmbed = document.getElementById('ragInterfaceEmbed');
-            const iframeContainer = document.getElementById('iframe-parent-container');
+            const iframeContainer = document.getElementById('rag-iframe-parent-container');
             const modalOverlay = document.getElementById('rag-modal-overlay');
 
             if (iframeContainer?.style?.display === 'block') {
@@ -1611,7 +1516,7 @@
             //console.log('Props extracted:', this.props);
 
             // Create iframe container
-            if (!document.getElementById('iframe-parent-container')) {
+            if (!document.getElementById('rag-iframe-parent-container')) {
                 this.createIframeContainer();
                 //console.log('Iframe container created');
             }
@@ -1646,7 +1551,7 @@
 
         createIframeContainer() {
             this.parentContainer = document.createElement('div');
-            this.parentContainer.id = 'iframe-parent-container';
+            this.parentContainer.id = 'rag-iframe-parent-container';
             this.parentContainer.className = 'popup-parent-container';
             this.parentContainer.style.display = 'none';
             this.parentContainer.style.border = 'none';
