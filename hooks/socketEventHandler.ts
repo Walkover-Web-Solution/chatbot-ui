@@ -62,15 +62,16 @@ export const useSocketEvents = ({
         const { type } = message || {};
 
         // Handle unread count updates
-        if (message?.new_event && (type === 'chat' || type === 'feedback')) {
+        if (message?.new_event && (type === 'chat' || type === 'feedback') && !message?.chat_id) {
             const channelId = message?.channel;
             const isCurrentChannel = isSameChannel(channelId);
-            const shouldResetCount = isCurrentChannel &&
-                ((isToggledrawer && !isSmallScreen) || (isSmallScreen && !isToggledrawer));
-            dispatch(setUnReadCount({
-                channelId,
-                resetCount: shouldResetCount || false
-            }));
+            const shouldIncreaseCount = isCurrentChannel ? (isSmallScreen && isToggledrawer) : true
+            if(shouldIncreaseCount){
+                dispatch(setUnReadCount({
+                    channelId,
+                    resetCount: false
+                }));
+            }
         }
 
         switch (type) {
