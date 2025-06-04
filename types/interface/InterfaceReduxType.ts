@@ -82,3 +82,22 @@ export interface FrontendActionType {
     [id: string]: any;
   };
 }
+
+export interface InterfaceData {
+  threadId?: string | null;
+  bridgeName?: string | null;
+  vision?: any;
+  helloId?: string | null;
+  version_id?: string | null;
+  headerButtons?: Array<any>;
+  eventsToSubscribe?: Array<string>;
+  modalConfig?: Record<string, any>;
+  allowModalSwitch?: boolean;
+  chatTitle?: string;
+  chatSubTitle?: string;
+  chatIcon?: string;
+  allowBridgeSwitch?: boolean;
+  hideCloseButton?: boolean;
+  variables?: Record<string, any>;
+  [key: string]: any; // Allow for other properties
+}

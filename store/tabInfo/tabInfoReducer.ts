@@ -1,11 +1,15 @@
 import { SliceCaseReducers, ValidateSliceCaseReducers } from "@reduxjs/toolkit";
-import { $HelloReduxType } from "../../types/hello/HelloReduxType";
+import { $TabInfoReduxType } from "../../types/reduxCore";
 
-export const initialState: $HelloReduxType = {};
+export const initialState: $TabInfoReduxType = {
+  widgetToken: '',
+  chatbotId: '',
+  tabSessionId: '',
+};
 
 export const reducers: ValidateSliceCaseReducers<
-  $HelloReduxType,
-  SliceCaseReducers<$HelloReduxType>
+  $TabInfoReduxType,
+  SliceCaseReducers<$TabInfoReduxType>
 > = {
   setDataInTabInfo:(state,action)=> {
     return {...state,...action.payload}
