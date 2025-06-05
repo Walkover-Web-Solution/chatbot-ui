@@ -9,12 +9,13 @@ const ParamsEnums = {
   subThreadId: "subThreadId",
   bridgeName: "bridgeName",
   threadId: "threadId",
+  versionId: "versionId",
   userId: "userId",
   config: "config",
   currentChannelId: "currentChannelId",
   currentChatId: "currentChatId",
   currentTeamId: "currentTeamId",
-  isVision: "isVision"
+  isVision: "isVision",
 };
 
 export const KNOWLEDGE_BASE_SECTION_TYPES = [

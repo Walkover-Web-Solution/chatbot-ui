@@ -29,7 +29,7 @@ interface InterfaceData {
   bridgeName?: string | null;
   vision?: any;
   helloId?: string | null;
-  version_id?: string | null;
+  versionId?: string | null;
   headerButtons?: Array<any>;
   eventsToSubscribe?: Array<string>;
   modalConfig?: Record<string, any>;
@@ -53,10 +53,10 @@ const helloToChatbotPropsMap: Record<string, string> = {
   hideFullScreenButton: 'hideFullScreenButton'
 }
 
-function ChatbotWrapper({ chatSessionId , tabSessionId}: ChatbotWrapperProps) {
+function ChatbotWrapper({ chatSessionId, tabSessionId }: ChatbotWrapperProps) {
   const dispatch = useDispatch();
   const { handleThemeChange } = useContext(ThemeContext)
-  const { reduxChatSessionId , currentThreadId} = useCustomSelector((state: $ReduxCoreType) => ({
+  const { reduxChatSessionId, currentThreadId } = useCustomSelector((state: $ReduxCoreType) => ({
     reduxChatSessionId: state.tabInfo?.widgetToken || state?.tabInfo?.chatbotId || '',
     currentThreadId: state.appInfo?.[tabSessionId]?.threadId
   }));
@@ -98,7 +98,7 @@ function ChatbotWrapper({ chatSessionId , tabSessionId}: ChatbotWrapperProps) {
         sdkConfig,
         ...restProps
       } = event.data.data;
-      
+
       if (sdkConfig?.customTheme) {
         handleThemeChange(sdkConfig?.customTheme)
       }
@@ -167,7 +167,7 @@ function ChatbotWrapper({ chatSessionId , tabSessionId}: ChatbotWrapperProps) {
       // 8. Persist new widget token and config
       setLocalStorage('WidgetId', widgetToken);
       dispatch(setHelloConfig(event.data.data));
-      SetSessionStorage('helloConfig',JSON.stringify( event.data.data))
+      SetSessionStorage('helloConfig', JSON.stringify(event.data.data))
       dispatch(setDataInTabInfo({ widgetToken: fullWidgetToken }));
       return;
     }
@@ -177,7 +177,7 @@ function ChatbotWrapper({ chatSessionId , tabSessionId}: ChatbotWrapperProps) {
     // Process thread-related data
     if (receivedData.threadId) {
       dispatch(setDataInAppInfoReducer({ threadId: receivedData.threadId }))
-      if(receivedData?.threadId !== currentThreadId){
+      if (receivedData?.threadId !== currentThreadId) {
         dispatch(setDataInAppInfoReducer({ subThreadId: '' }))
       }
     }
@@ -187,7 +187,7 @@ function ChatbotWrapper({ chatSessionId , tabSessionId}: ChatbotWrapperProps) {
     }
 
     if (receivedData.version_id === 'null' || receivedData.version_id) {
-      dispatch(setDataInAppInfoReducer({ version_id: receivedData.version_id }))
+      dispatch(setDataInAppInfoReducer({ versionId: receivedData.version_id }))
     }
 
     // Process bridge data

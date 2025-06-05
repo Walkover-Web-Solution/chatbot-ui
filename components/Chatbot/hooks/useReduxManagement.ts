@@ -55,7 +55,7 @@ export const useReduxStateManagement = ({
     reduxHeaderButtons: state.Interface?.[chatSessionId]?.headerButtons || [],
     reduxBridgeName: state.appInfo?.[tabSessionId]?.bridgeName || "root",
     reduxHelloId: state.appInfo?.[tabSessionId]?.helloId || null,
-    reduxBridgeVersionId: state.appInfo?.[tabSessionId]?.version_id || null,
+    reduxBridgeVersionId: state.appInfo?.[tabSessionId]?.versionId || null,
     isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
     uuid: state.Hello?.[chatSessionId]?.channelListData?.uuid,
     unique_id: state.Hello?.[chatSessionId]?.channelListData?.unique_id,
