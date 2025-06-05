@@ -9,14 +9,16 @@ import { PAGE_SIZE } from '@/utils/enums';
 import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState, SendMessagePayloadType } from './chatTypes';
+import { version } from 'os';
 
-export const useChatActions = ({ chatDispatch, chatState, messageRef, timeoutIdRef, chatSessionId, tabSessionId }: { chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, chatSessionId: string ,tabSessionId:string}) => {
+export const useChatActions = ({ chatDispatch, chatState, messageRef, timeoutIdRef, chatSessionId, tabSessionId }: { chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, chatSessionId: string, tabSessionId: string }) => {
     const globalDispatch = useDispatch();
-    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, isHelloUser, firstThread } = useCustomSelector((state: $ReduxCoreType) => ({
+    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, isHelloUser, firstThread, versionId = 'null' } = useCustomSelector((state: $ReduxCoreType) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
-        variables: state.Interface?.[chatSessionId]?.interfaceContext?.variables,
+        versionId: state.appInfo?.[tabSessionId]?.versionId || "null",
+        variables: state.Interface?.[chatSessionId]?.interfaceContext?.[state?.appInfo?.[tabSessionId]?.bridgeName]?.variables,
         selectedAiServiceAndModal: state.Interface?.[chatSessionId]?.selectedAiServiceAndModal || null,
         userId: state.appInfo?.[tabSessionId]?.userId || null,
         isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
@@ -56,7 +58,7 @@ export const useChatActions = ({ chatDispatch, chatState, messageRef, timeoutIdR
     }
 
     const getIntialChatHistory = async () => {
-        if (threadId) {
+        if (threadId && bridgeName) {
             chatDispatch({
                 type: ChatActionTypes.SET_CHATS_LOADING, payload: true
             })
@@ -186,7 +188,7 @@ export const useChatActions = ({ chatDispatch, chatState, messageRef, timeoutIdR
             slugName: customBridgeSlug || bridgeName,
             thread_flag: (firstThread?.newChat && firstThread?.sub_thread_id === subThreadId) ? true : false,
             chatBotId: chatSessionId,
-            version_id: chatState.bridgeVersionId === "null" ? null : chatState.bridgeVersionId,
+            version_id: versionId === "null" ? null : versionId,
             ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {
                 configuration: { model: selectedAiServiceAndModal?.modal },
                 service: selectedAiServiceAndModal?.service

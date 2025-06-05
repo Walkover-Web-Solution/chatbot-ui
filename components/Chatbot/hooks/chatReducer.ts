@@ -1,6 +1,4 @@
-import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { convertChatHistoryToGenericFormat, convertEventMessageToGenericFormat } from "@/utils/dataConvertWrappers/makeGenericDataFormatUtility";
-import { generateNewId } from "@/utils/utilities";
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 
 export const initialChatState: ChatState = {
@@ -25,11 +23,11 @@ export const initialChatState: ChatState = {
   headerButtons: [],
 
   // Chat Metadata
-  threadId: GetSessionStorageData("threadId") || "",
+  threadId: "",
   subThreadId: "",
-  bridgeName: GetSessionStorageData("bridgeName") || "root",
-  helloId: GetSessionStorageData("helloId") || null,
-  bridgeVersionId: GetSessionStorageData("version_id") || null,
+  bridgeName: "",
+  helloId: "",
+  bridgeVersionId: "",
 
   // Pagination & Message Handling
   currentPage: 1,
