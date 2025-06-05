@@ -39,12 +39,12 @@ export const useSocketEvents = ({
     fetchChannels: () => void,
     setLoading: (data: boolean) => void
     chatSessionId: string;
-    tabSessionId:string
+    tabSessionId: string
 }) => {
     const dispatch = useDispatch();
 
     const { isToggledrawer } = chatState;
-    const { currentChannelId, isSmallScreen } = useReduxStateManagement({ chatDispatch, chatSessionId , tabSessionId});
+    const { currentChannelId, isSmallScreen } = useReduxStateManagement({ chatDispatch, chatSessionId, tabSessionId });
     const addHelloMessage = (message: HelloMessage, subThreadId: string = '') => {
         chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message, subThreadId } });
     }
@@ -55,7 +55,7 @@ export const useSocketEvents = ({
     // Handler for new messages
     const handleNewMessage = useCallback((data: any) => {
         const { response } = data;
-        const { message, timetoken } = response || {};
+        const { message, timetoken, company_id = null } = response || {};
         if (message && timetoken) {
             message.timetoken = timetoken;
         }
@@ -66,7 +66,7 @@ export const useSocketEvents = ({
             const channelId = message?.channel;
             const isCurrentChannel = isSameChannel(channelId);
             const shouldIncreaseCount = isCurrentChannel ? (isSmallScreen && isToggledrawer) : true
-            if(shouldIncreaseCount){
+            if (shouldIncreaseCount) {
                 dispatch(setUnReadCount({
                     channelId,
                     resetCount: false
@@ -109,6 +109,19 @@ export const useSocketEvents = ({
                         { ...message, id: messageId },
                         channel
                     );
+                }
+                break;
+            }
+            case 'update': {
+                const { channel, client_id, n } = message || {};
+                if (message?.new_event) {
+                    console.log(message, 232312123)
+                    if (client_id) {
+                        socketManager.unsubscribe([channel]);
+                        // Replace the old client id in the channel with the new client_id
+                        const newUserChannel = `ch-comp-${company_id}-${client_id}`;
+                        socketManager.subscribe([newUserChannel]);
+                    }
                 }
                 break;
             }

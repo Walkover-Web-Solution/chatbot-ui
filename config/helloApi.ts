@@ -91,7 +91,10 @@ export async function getAllChannels(): Promise<any> {
 
     if (unique_id || mail || number) {
       setLocalStorage('k_clientId', response?.data?.uuid)
-    } else if (response?.data?.customer_name) {
+    } else {
+      setLocalStorage('a_clientId', response?.data?.uuid)
+    }
+    if (response?.data?.customer_name) {
       setLocalStorage('default_client_created', 'true')
     }
 

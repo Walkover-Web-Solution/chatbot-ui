@@ -92,7 +92,7 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
 
   useEffect(() => {
     if (isHelloUser && currentChannelId) {
-      fetchHelloPreviousHistory()
+      // fetchHelloPreviousHistory()
     }
   }, [currentChannelId, isHelloUser])
 
@@ -326,32 +326,12 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
     return true;
   }, [onSendHello, addHelloMessage, images, messageRef, currentChannelId]);
 
-  // Effect hooks
-  // useEffect(() => {
-  //   window.addEventListener("localstorage-updated", handleStorageUpdate);
-  //   return () => {
-  //     window.removeEventListener("localstorage-updated", handleStorageUpdate);
-  //   };
-  // }, []);
-
   useEffect(() => {
     if (reduxChatSessionId) {
       const widgetToken = reduxChatSessionId?.split('_')[0] // Extract first part (e.g., "d1bc7")
       initializeHelloServices(widgetToken);
     }
   }, [reduxChatSessionId])
-
-  // const handleStorageUpdate = (e: CustomEvent<{ key: string, value: string | boolean }>) => {
-  //   if (e.detail.key === 'WidgetId') {
-  //     initializeHelloServices(e.detail.value);
-  //   }
-  //   if (e.detail.key === 'k_clientId' || e.detail.key === 'a_clientId') {
-  //     dispatch(setHelloKeysData({ [e.detail.key]: e.detail.value }))
-  //   }
-  //   if (e.detail.key === 'is_anon') {
-  //     dispatch(setHelloKeysData({ is_anon: e.detail.value }));
-  //   }
-  // };
 
   const initializeHelloServices = async (widgetToken: string = '') => {
     // Prevent duplicate initialization
