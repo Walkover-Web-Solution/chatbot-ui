@@ -18,11 +18,10 @@ import { useReduxStateManagement } from "../Chatbot/hooks/useReduxManagement";
 // Redux Actions
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { setUnReadCount } from "@/store/hello/helloSlice";
-import { setThreadId, setThreads } from "@/store/interface/interfaceSlice";
+import { setThreads } from "@/store/interface/interfaceSlice";
 
 // Utils and Types
 import { $ReduxCoreType } from "@/types/reduxCore";
-import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { ParamsEnums } from "@/utils/enums";
 import { getLocalStorage } from "@/utils/utilities";
 import { MessageContext } from "./InterfaceChatbot";
@@ -117,7 +116,7 @@ const ChatbotDrawer = ({
       dispatch(
         setThreads({
           newThreadData,
-          bridgeName: GetSessionStorageData("bridgeName") || bridgeName,
+          bridgeName: bridgeName,
           threadId: threadId,
         })
 
@@ -129,7 +128,6 @@ const ChatbotDrawer = ({
 
   const handleChangeSubThread = (sub_thread_id: string) => {
     setLoading(false);
-    dispatch(setThreadId({ subThreadId: sub_thread_id }));
     dispatch(setDataInAppInfoReducer({ subThreadId: sub_thread_id }));
     setNewMessage(true);
     setOptions([]);

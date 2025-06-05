@@ -24,7 +24,6 @@ import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { setSelectedAIServiceAndModal, setThreads } from "@/store/interface/interfaceSlice";
 import { SelectedAiServicesType } from "@/types/interface/InterfaceReduxType";
 import { $ReduxCoreType } from "@/types/reduxCore";
-import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 import { createRandomId, DEFAULT_AI_SERVICE_MODALS, ParamsEnums } from "@/utils/enums";
@@ -149,7 +148,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
       dispatch(
         setThreads({
           newThreadData,
-          bridgeName: GetSessionStorageData("bridgeName") || reduxBridgeName,
+          bridgeName: reduxBridgeName,
           threadId: threadId,
         })
       );
@@ -588,7 +587,6 @@ function BridgeSwitchDropdown({ currentSelectedBridgeSlug, bridges }: { currentS
       value={currentSelectedBridgeSlug}
       onChange={(e) => {
         dispatch(setDataInAppInfoReducer({ bridgeName: e.target.value }))
-        sessionStorage.setItem("bridgeName", e.target.value);
       }}
       className="select select-sm select-bordered"
     >

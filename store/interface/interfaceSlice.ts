@@ -38,9 +38,7 @@ export const {
   updateInterfaceFrontendActionError,
   addInterfaceContext,
   addDefaultContext,
-  setThreadId,
   setThreads,
-  setConfig,
 
 
   // chat bot 

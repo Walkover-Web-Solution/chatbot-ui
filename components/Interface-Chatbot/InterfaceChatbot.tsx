@@ -26,7 +26,6 @@ export const MessageContext = createContext<{
   addMessage?: (message: string) => void;
   setMessages?: (message: MessageType[]) => void;
   sendMessageToHello?: (() => void) | undefined
-  threadId?: string;
   bridgeName?: string;
   fetchMoreData?: () => void;
   hasMoreMessages?: boolean;

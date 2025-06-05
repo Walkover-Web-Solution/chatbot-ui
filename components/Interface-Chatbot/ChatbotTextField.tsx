@@ -25,11 +25,12 @@ interface ChatbotTextFieldProps {
   subThreadId: string;
   currentTeamId: string
   currentChannelId: string
+  isVision:Record<string, any>
 }
 
 const MAX_IMAGES = 4;
 
-const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "" }) => {
+const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "" ,isVision:reduxIsVision={}}) => {
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const theme = useTheme();
@@ -46,10 +47,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
       (channel: any) => channel?.channel === currentChannelId
     )?.assigned_type || '',
   }));
-
-  const reduxIsVision = useCustomSelector(
-    (state: $ReduxCoreType) => state.Interface?.[chatSessionId]?.isVision || ""
-  );
 
   const {
     sendMessage,
@@ -363,4 +360,4 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   );
 };
 
-export default React.memo(addUrlDataHoc(ChatbotTextField, [ParamsEnums.subThreadId, ParamsEnums.currentTeamId, ParamsEnums.currentChannelId]));
+export default React.memo(addUrlDataHoc(ChatbotTextField, [ParamsEnums.subThreadId, ParamsEnums.currentTeamId, ParamsEnums.currentChannelId,ParamsEnums.isVision]));

@@ -10,8 +10,7 @@ import {
   setDataInInterfaceRedux,
   setEventsSubsribedByParent,
   setHeaderActionButtons,
-  setModalConfig,
-  setThreadId
+  setModalConfig
 } from "@/store/interface/interfaceSlice";
 import { setDataInTabInfo } from "@/store/tabInfo/tabInfoSlice";
 import { $ReduxCoreType } from "@/types/reduxCore";
@@ -46,6 +45,7 @@ interface InterfaceData {
 
 interface ChatbotWrapperProps {
   chatSessionId?: string;
+  tabSessionId: string;
 }
 
 const helloToChatbotPropsMap: Record<string, string> = {
@@ -53,11 +53,12 @@ const helloToChatbotPropsMap: Record<string, string> = {
   hideFullScreenButton: 'hideFullScreenButton'
 }
 
-function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
+function ChatbotWrapper({ chatSessionId , tabSessionId}: ChatbotWrapperProps) {
   const dispatch = useDispatch();
   const { handleThemeChange } = useContext(ThemeContext)
-  const { reduxChatSessionId } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { reduxChatSessionId , currentThreadId} = useCustomSelector((state: $ReduxCoreType) => ({
     reduxChatSessionId: state.tabInfo?.widgetToken || state?.tabInfo?.chatbotId || '',
+    currentThreadId: state.appInfo?.[tabSessionId]?.threadId
   }));
   // Handle messages from parent window
   const handleMessage = useCallback((event: MessageEvent) => {
@@ -175,22 +176,23 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
     if (Object.keys(receivedData || {}).length === 0) return;
     // Process thread-related data
     if (receivedData.threadId) {
-      dispatch(setThreadId({ threadId: receivedData.threadId }));
       dispatch(setDataInAppInfoReducer({ threadId: receivedData.threadId }))
+      if(receivedData?.threadId !== currentThreadId){
+        dispatch(setDataInAppInfoReducer({ subThreadId: '' }))
+      }
     }
 
     if (receivedData.helloId) {
-      dispatch(setThreadId({ helloId: receivedData.helloId }));
+      dispatch(setDataInAppInfoReducer({ helloId: receivedData.helloId }))
     }
 
     if (receivedData.version_id === 'null' || receivedData.version_id) {
-      dispatch(setThreadId({ version_id: receivedData.version_id }));
+      dispatch(setDataInAppInfoReducer({ version_id: receivedData.version_id }))
     }
 
     // Process bridge data
     if (receivedData.bridgeName) {
       dispatch(setDataInAppInfoReducer({ bridgeName: receivedData.bridgeName }))
-      dispatch(setThreadId({ bridgeName: receivedData.bridgeName || "root" }));
       dispatch(
         addDefaultContext({
           variables: { ...receivedData.variables },
@@ -203,7 +205,7 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
 
     // Process vision config
     if (receivedData.vision) {
-      dispatch(setConfig({ vision: receivedData.vision }));
+      dispatch(setDataInAppInfoReducer({ isVision: receivedData.vision }))
     }
 
     // Process UI-related data

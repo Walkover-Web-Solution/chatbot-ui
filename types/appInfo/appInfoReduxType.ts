@@ -3,6 +3,8 @@ export interface $AppInfoReduxType{
         threadId:string
         bridgeName:string
         subThreadId:string
+        helloId:string
+        version_id:string
         userId:string
         config:Record<string,unknown>
         currentChannelId: string,
