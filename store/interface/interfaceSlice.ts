@@ -3,7 +3,7 @@ import { initialState, reducers } from "@/store/interface/interfaceReducer";
 
 const interfaceSlice = createSlice({
   name: "Interface",
-  initialState,
+  initialState:{},
   reducers
 });
 
@@ -38,9 +38,7 @@ export const {
   updateInterfaceFrontendActionError,
   addInterfaceContext,
   addDefaultContext,
-  setThreadId,
   setThreads,
-  setConfig,
 
 
   // chat bot 

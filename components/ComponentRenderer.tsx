@@ -5,7 +5,6 @@ import InterfaceBox from "@/components/Interface-Box/InterfaceBox";
 import InterfaceButton from "@/components/Interface-Button/InterfaceButton";
 import InterfaceMarkdown from "@/components/Interface-Chatbot/Interface-Markdown/InterfaceMarkdown";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
-import { ParamsEnums } from "@/utils/enums";
 import React, { useContext } from "react";
 import Chatbot from "./Chatbot/Chatbot";
 import InterfaceCard from "./Interface-Card/InterfaceCard";
@@ -111,5 +110,5 @@ function ComponentRenderer({
 }
 
 export default React.memo(
-  addUrlDataHoc(React.memo(ComponentRenderer), [ParamsEnums?.chatbotId])
+  addUrlDataHoc(ComponentRenderer)
 );

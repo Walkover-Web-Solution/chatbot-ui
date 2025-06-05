@@ -1,8 +1,7 @@
+import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { Box } from "@mui/material";
 import React, { createContext, useMemo } from "react";
 import "./Grid.css";
-import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
-import { ParamsEnums } from "@/utils/enums";
 
 const Viewonlygrid = React.lazy(() => import("./Viewonlygrid"));
 export const GridContext = createContext({});
@@ -78,5 +77,5 @@ export default React.memo(
       prevProps.componentJson === nextProps.componentJson &&
       prevProps.msgId === nextProps.msgId
     );
-  }), [ParamsEnums?.projectId])
+  }))
 );

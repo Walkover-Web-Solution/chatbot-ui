@@ -1,22 +1,26 @@
 'use client';
-import { addDomainToHello } from "@/config/helloApi";
+import { addDomainToHello, saveClientDetails } from "@/config/helloApi";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { CBManger } from "@/hooks/coBrowser/CBManger";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
 import {
   addDefaultContext,
-  setConfig,
   setDataInInterfaceRedux,
   setEventsSubsribedByParent,
   setHeaderActionButtons,
-  setModalConfig,
-  setThreadId
+  setModalConfig
 } from "@/store/interface/interfaceSlice";
-import { ALLOWED_EVENTS_TO_SUBSCRIBE, ParamsEnums } from "@/utils/enums";
+import { setDataInTabInfo } from "@/store/tabInfo/tabInfoSlice";
+import { $ReduxCoreType } from "@/types/reduxCore";
+import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
+import { useCustomSelector } from "@/utils/deepCheckSelector";
+import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
 import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
-import React, { useCallback, useEffect } from "react";
+import isPlainObject from "lodash.isplainobject";
+import React, { useCallback, useContext, useEffect } from "react";
 import { useDispatch } from "react-redux";
+import { ThemeContext } from "../AppWrapper";
 import Chatbot from "../Chatbot/Chatbot";
 
 interface InterfaceData {
@@ -24,7 +28,7 @@ interface InterfaceData {
   bridgeName?: string | null;
   vision?: any;
   helloId?: string | null;
-  version_id?: string | null;
+  versionId?: string | null;
   headerButtons?: Array<any>;
   eventsToSubscribe?: Array<string>;
   modalConfig?: Record<string, any>;
@@ -39,7 +43,8 @@ interface InterfaceData {
 }
 
 interface ChatbotWrapperProps {
-  chatbotId?: string;
+  chatSessionId?: string;
+  tabSessionId: string;
 }
 
 const helloToChatbotPropsMap: Record<string, string> = {
@@ -47,12 +52,16 @@ const helloToChatbotPropsMap: Record<string, string> = {
   hideFullScreenButton: 'hideFullScreenButton'
 }
 
-function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
+function ChatbotWrapper({ chatSessionId, tabSessionId }: ChatbotWrapperProps) {
   const dispatch = useDispatch();
-
+  const { handleThemeChange } = useContext(ThemeContext)
+  const { reduxChatSessionId, currentThreadId } = useCustomSelector((state: $ReduxCoreType) => ({
+    reduxChatSessionId: state.tabInfo?.widgetToken || state?.tabInfo?.chatbotId || '',
+    currentThreadId: state.appInfo?.[tabSessionId]?.threadId
+  }));
   // Handle messages from parent window
   const handleMessage = useCallback((event: MessageEvent) => {
-    const allowedEvents = ["interfaceData", "helloData", "parent-route-changed", "ADD_COBROWSE_SCRIPT", "ADD_USER_EVENT_SEGMENTO"];
+    const allowedEvents = ["interfaceData", "helloData", "parent-route-changed", "ADD_COBROWSE_SCRIPT", "ADD_USER_EVENT_SEGMENTO", "UPDATE_USER_DATA_SEGMENTO"];
     if (!allowedEvents.includes(event?.data?.type)) return;
 
     if (event?.data?.type === 'ADD_COBROWSE_SCRIPT') {
@@ -60,15 +69,20 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
     }
 
     // User Event Storing
-    if (event?.data?.type === 'ADD_USER_EVENT_SEGMENTO' && event?.data?.data) {
-      const { websiteUrl, ...rest } = event?.data?.data
-      addDomainToHello(websiteUrl, rest)
+    if (event?.data?.type === 'ADD_USER_EVENT_SEGMENTO' && event?.data?.data && isPlainObject(event?.data?.data)) {
+      addDomainToHello({ userEvent: event?.data?.data })
+      return
+    }
+
+    // UPDATE USER INFO ON SEGMENTO
+    if (event?.data?.type === 'UPDATE_USER_DATA_SEGMENTO' && event?.data?.data && isPlainObject(event?.data?.data)) {
+      saveClientDetails(event?.data?.data)
       return
     }
 
     // Domain Tracking
     if (event?.data?.type == 'parent-route-changed' && event?.data?.data?.websiteUrl) {
-      addDomainToHello(event?.data?.data?.websiteUrl);
+      addDomainToHello({ domain: event?.data?.data?.websiteUrl });
       return;
     }
 
@@ -80,24 +94,30 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
         number,
         user_jwt_token,
         name,
+        sdkConfig,
         ...restProps
       } = event.data.data;
 
-      const prevWidgetId = getLocalStorage('WidgetId');
+      if (sdkConfig?.customTheme) {
+        handleThemeChange(sdkConfig?.customTheme)
+      }
+
+      const fullWidgetToken = unique_id ? `${widgetToken}_${unique_id}` : `${widgetToken}`;
+      const prevWidgetId = GetSessionStorageData('widgetToken');
       const prevUser = JSON.parse(getLocalStorage('userData') || '{}');
+      SetSessionStorage('widgetToken', fullWidgetToken)
       const hasUserIdentity = Boolean(unique_id || mail || number);
 
       // Helper: reset Redux keys and sub-thread
       const resetKeys = () => {
-        dispatch(setHelloKeysData({ currentChannelId: '', currentChatId: '', currentTeamId: '' }));
-        dispatch(setDataInAppInfoReducer({ subThreadId: '' }));
+        dispatch(setDataInAppInfoReducer({ subThreadId: '', currentChannelId: '', currentChatId: '', currentTeamId: '' }));
       };
 
       // 1. Widget token changed
-      if (widgetToken !== prevWidgetId) {
+      if (unique_id ? `${widgetToken}_${unique_id}` !== prevWidgetId : widgetToken !== prevWidgetId) {
         resetKeys();
-        ['a_clientId', 'k_clientId', 'userData', 'client', 'default_client_created'].forEach(key => setLocalStorage(key, ''));
-        setLocalStorage('is_anon', hasUserIdentity ? 'false' : 'true');
+        // ['a_clientId', 'k_clientId', 'userData', 'client', 'default_client_created'].forEach(key => setLocalStorage(key, ''));
+        // setLocalStorage('is_anon', hasUserIdentity ? 'false' : 'true');
       }
 
       // 2. User identity changed
@@ -146,6 +166,8 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
       // 8. Persist new widget token and config
       setLocalStorage('WidgetId', widgetToken);
       dispatch(setHelloConfig(event.data.data));
+      SetSessionStorage('helloConfig', JSON.stringify(event.data.data))
+      dispatch(setDataInTabInfo({ widgetToken: fullWidgetToken }));
       return;
     }
 
@@ -153,22 +175,23 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
     if (Object.keys(receivedData || {}).length === 0) return;
     // Process thread-related data
     if (receivedData.threadId) {
-      dispatch(setThreadId({ threadId: receivedData.threadId }));
       dispatch(setDataInAppInfoReducer({ threadId: receivedData.threadId }))
+      if (receivedData?.threadId !== currentThreadId) {
+        dispatch(setDataInAppInfoReducer({ subThreadId: '' }))
+      }
     }
 
     if (receivedData.helloId) {
-      dispatch(setThreadId({ helloId: receivedData.helloId }));
+      dispatch(setDataInAppInfoReducer({ helloId: receivedData.helloId }))
     }
 
     if (receivedData.version_id === 'null' || receivedData.version_id) {
-      dispatch(setThreadId({ version_id: receivedData.version_id }));
+      dispatch(setDataInAppInfoReducer({ versionId: receivedData.version_id }))
     }
 
     // Process bridge data
     if (receivedData.bridgeName) {
       dispatch(setDataInAppInfoReducer({ bridgeName: receivedData.bridgeName }))
-      dispatch(setThreadId({ bridgeName: receivedData.bridgeName || "root" }));
       dispatch(
         addDefaultContext({
           variables: { ...receivedData.variables },
@@ -181,7 +204,7 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
 
     // Process vision config
     if (receivedData.vision) {
-      dispatch(setConfig({ vision: receivedData.vision }));
+      dispatch(setDataInAppInfoReducer({ isVision: receivedData.vision }))
     }
 
     // Process UI-related data
@@ -218,12 +241,25 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
     }
   }, [dispatch]);
 
+  const handleStorageUpdate = (e: CustomEvent<{ key: string, value: string | boolean }>) => {
+    if (e.detail.key === 'k_clientId' || e.detail.key === 'a_clientId') {
+      dispatch(setHelloKeysData({ [e.detail.key]: e.detail.value }))
+    }
+    if (e.detail.key === 'is_anon') {
+      dispatch(setHelloKeysData({ is_anon: e.detail.value }));
+    }
+  };
+
   useEffect(() => {
     window.addEventListener("message", handleMessage);
+    window.addEventListener("localstorage-updated", handleStorageUpdate);
+
     return () => {
       window.removeEventListener("message", handleMessage);
+      window.removeEventListener("localstorage-updated", handleStorageUpdate);
+
     };
-  }, [handleMessage, chatbotId]);
+  }, [handleMessage, chatSessionId]);
 
   // Notify parent when interface is loaded
   useEffect(() => {
@@ -232,9 +268,13 @@ function ChatbotWrapper({ chatbotId }: ChatbotWrapperProps) {
     }, 0);
   }, []);
 
+  if (!reduxChatSessionId) {
+    return null
+  }
+
   return <Chatbot />
 }
 
 export default React.memo(
-  addUrlDataHoc(React.memo(ChatbotWrapper), [ParamsEnums.chatbotId])
+  addUrlDataHoc(React.memo(ChatbotWrapper))
 );

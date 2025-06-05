@@ -1,17 +1,17 @@
+import { ChatbotContext } from '@/components/context';
+import { setThreads } from '@/store/interface/interfaceSlice';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
+import { generateNewId } from '@/utils/utilities';
 import React, { useCallback, useContext, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import WebSocketClient from 'rtlayer-client';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
-import { ChatbotContext } from '@/components/context';
-import { generateNewId } from '@/utils/utilities';
-import { setThreads } from '@/store/interface/interfaceSlice';
-import { useDispatch } from 'react-redux';
 
 // Create a separate hook to manage the WebSocket client instance
 function useWebSocketClient(isHelloUser: boolean) {
   const [client, setClient] = React.useState(null);
-  
+
   // Only create the WebSocket client when needed
   React.useEffect(() => {
     if (!isHelloUser) {
@@ -32,19 +32,16 @@ function useWebSocketClient(isHelloUser: boolean) {
   return client;
 }
 
-function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef, timeoutIdRef }: { chatbotId: string, chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null> }) {
+function useRtlayerEventManager({ chatDispatch, chatState, messageRef, timeoutIdRef, chatSessionId, tabSessionId }: { chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, chatSessionId: string, tabSessionId: string }) {
   const { isHelloUser } = useContext(ChatbotContext)
-  const { reduxThreadId, reduxBridgeName} = useCustomSelector((state: $ReduxCoreType) => ({
-    threadId: state.appInfo.threadId,
-    bridgeName: state.appInfo.bridgeName,    
-}))
+  const { reduxThreadId, reduxBridgeName } = useCustomSelector((state: $ReduxCoreType) => ({
+    reduxThreadId: state.appInfo?.[tabSessionId]?.threadId,
+    reduxBridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
+  }))
   const dispatch = useDispatch()
-  if (isHelloUser) {
-    return null
-  }
   const client = useWebSocketClient(isHelloUser);
   const { threadId, subThreadId } = chatState
-  const { userId } = useCustomSelector((state: $ReduxCoreType) => ({ userId: state.appInfo.userId }))
+  const { userId } = useCustomSelector((state: $ReduxCoreType) => ({ userId: state.appInfo?.[tabSessionId]?.userId }))
 
   const handleMessageRTLayer = useCallback((message: string) => {
     // Parse the incoming message string into an object
@@ -60,17 +57,17 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
     switch (true) {
       // Case: Function call is present without a message
       case function_call && !responseMessage:
-        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Function Calling", Name: parsedMessage?.response?.Name || [] , id:generateNewId()} });
+        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Function Calling", Name: parsedMessage?.response?.Name || [], id: generateNewId() } });
         break;
 
       // Case: Function call is present with a message
       case function_call && !!responseMessage:
-        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Talking with AI" ,id:generateNewId()} });
+        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Talking with AI", id: generateNewId() } });
         break;
- 
+
       // Case: Error is present without response data
       case !data && !!parsedMessage?.error:
-        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", content: `${parsedMessage?.error || error || "Error while talking to AI"}` ,id:generateNewId()} });
+        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", content: `${parsedMessage?.error || error || "Error while talking to AI"}`, id: generateNewId() } });
         chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: false });
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
         break;
@@ -79,7 +76,7 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
       case data?.role === "reset" && !data?.mode:
         chatDispatch({
           type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: {
-            message:{
+            message: {
               role: "reset",
               mode: data?.mode,
               content: "Resetting the chat",
@@ -94,7 +91,7 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
           type: ChatActionTypes.SET_OPTIONS, payload: Array.isArray(data?.suggestions) ? data?.suggestions : []
         });
         break;
-      
+
       case !!data?.display_name:
         dispatch(setThreads({
           newThreadData: { ...data },
@@ -124,7 +121,7 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
   useEffect(() => {
     if (!client) return;
     const newChannelId = (
-      chatbotId +
+      chatSessionId +
       (threadId || userId) +
       (subThreadId || userId)
     )?.replace(/ /g, "_");
@@ -138,7 +135,8 @@ function useRtlayerEventManager({ chatbotId, chatDispatch, chatState, messageRef
         clearTimeout(timeoutIdRef.current);
       }
     };
-  }, [chatbotId, userId, threadId, subThreadId]);
+  }, [chatSessionId, userId, threadId, subThreadId]);
+
   return null
 }
 

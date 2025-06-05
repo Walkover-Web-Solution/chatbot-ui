@@ -1,7 +1,7 @@
-import React, { useContext } from 'react';
+import { linkify } from '@/utils/utilities';
+import { useContext } from 'react';
 import { MessageContext } from '../Interface-Chatbot/InterfaceChatbot';
 import ImageWithFallback from '../Interface-Chatbot/Messages/ImageWithFallback';
-import { linkify } from '@/utils/utilities';
 
 function RenderHelloInteractiveMessage({ message }: { message: any }) {
   const messageJson = message?.messageJson || {};
@@ -55,11 +55,11 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
             )}
 
             {messageJson.action?.buttons && (
-              <div className="flex flex-col gap-2 mt-1">
+              <div className="flex flex-col gap-2 mt-1 w-fit min-w-40">
                 {messageJson.action.buttons.map((button: any, index: number) => (
                   <button
                     key={index}
-                    className="btn btn-sm btn-outline w-full max-w-md rounded-md normal-case"
+                    className="btn btn-sm btn-outline w-full max-w-md rounded-md normal-case justify-start px-4 font-medium"
                     onClick={() => sendMessageToHello?.(button?.reply?.title)}
                   >
                     {button.reply?.title}
@@ -109,7 +109,7 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
 
       case 'list':
         return (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
             {messageJson?.header && renderHeader(messageJson?.header)}
 
             {messageJson?.body?.text && (
@@ -121,17 +121,17 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
             {messageJson?.action?.sections && (
               <div className="overflow-hidden">
                 {messageJson?.action?.sections?.map((section: any, sectionIndex: number) => (
-                  <div key={sectionIndex} className="mb-2">
+                  <div key={sectionIndex}>
                     {section?.title && (
-                      <div className="px-4 py-2 font-semibold text-md self-center">
+                      <div className="py-2 font-semibold text-md self-center">
                         {section?.title}
                       </div>
                     )}
-                    <div className="grid gap-2 p-3">
+                    <div className="grid gap-2 w-fit min-w-40">
                       {section?.rows?.map((row: any, rowIndex: number) => (
                         <button
                           key={row?.id || rowIndex}
-                          className="btn btn-sm btn-outline w-full justify-center normal-case max-w-md"
+                          className="btn btn-sm btn-outline w-full justify-start normal-case px-4"
                           onClick={() => sendMessageToHello?.(row?.title)}
                         >
                           <div className="flex flex-col">

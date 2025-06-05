@@ -22,10 +22,7 @@ axios.interceptors.response.use(
       }
 
       store.dispatch(setDataInAppInfoReducer({
-        subThreadId: ''
-      }))
-
-      store.dispatch(setHelloKeysData({
+        subThreadId: '',
         currentChannelId: '',
         currentChatId: '',
         currentTeamId: ''

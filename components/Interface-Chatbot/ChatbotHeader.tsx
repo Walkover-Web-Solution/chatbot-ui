@@ -21,10 +21,9 @@ import { useDispatch } from "react-redux";
 // App imports
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
-import { setDataInInterfaceRedux, setSelectedAIServiceAndModal, setThreads } from "@/store/interface/interfaceSlice";
+import { setSelectedAIServiceAndModal, setThreads } from "@/store/interface/interfaceSlice";
 import { SelectedAiServicesType } from "@/types/interface/InterfaceReduxType";
 import { $ReduxCoreType } from "@/types/reduxCore";
-import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 import { createRandomId, DEFAULT_AI_SERVICE_MODALS, ParamsEnums } from "@/utils/enums";
@@ -37,10 +36,9 @@ import { MessageContext } from "./InterfaceChatbot";
 import "./InterfaceChatbot.css";
 
 
-function getAgentTeamName(state: $ReduxCoreType) {
-  const agent_teams = state.Hello?.agent_teams || {};
-  const currentChannelId = state.Hello?.currentChannelId || "";
-  const channel = state.Hello?.channelListData?.channels?.find(
+function getAgentTeamName(state: $ReduxCoreType, chatSessionId: string, currentChannelId: string = "") {
+  const agent_teams = state.Hello?.[chatSessionId]?.agent_teams || {};
+  const channel = state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
     (channel: any) => channel?.channel === currentChannelId
   );
   const assigned_type = channel?.assigned_type;
@@ -55,11 +53,16 @@ function getAgentTeamName(state: $ReduxCoreType) {
 }
 
 interface ChatbotHeaderProps {
-  chatbotId: string;
   preview?: boolean;
+  chatSessionId: string
+  tabSessionId: string
+  currentTeamId: string
+  currentChannelId: string
+  threadId: string
+  bridgeName: string
 }
 
-const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotId }) => {
+const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSessionId, currentTeamId = "", currentChannelId = "", threadId = "", bridgeName = "" }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const {
@@ -67,7 +70,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
     setLoading,
     setToggleDrawer,
     isToggledrawer,
-    threadId,
     bridgeName: reduxBridgeName,
     headerButtons,
     messageIds
@@ -96,68 +98,57 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
     hideCloseButton,
     chatTitle,
     chatIcon,
-    currentSelectedBridgeSlug,
     chatSubTitle,
     allowBridgeSwitchViaProp,
     subThreadList,
     hideFullScreenButton,
-    isHuman,
+    isHelloUser,
     teams,
-    currentTeamId,
     agentTeamName,
     isMobileSDK,
     voice_call_widget
   } = useCustomSelector((state: $ReduxCoreType) => {
-    const show_close_button = state.Hello?.helloConfig?.show_close_button
+    const show_close_button = state.Hello?.[chatSessionId]?.helloConfig?.show_close_button
     return ({
-      isMobileSDK: state.Hello?.helloConfig?.isMobileSDK || false,
-      allowModalSwitch: state.Interface.allowModalSwitch || false,
-      hideCloseButton: typeof show_close_button === 'boolean' ? !show_close_button : state.Interface.hideCloseButton || false,
-      hideFullScreenButton: state.Interface.hideFullScreenButton || false,
-      chatTitle: state.Interface.chatTitle || "",
-      chatSubTitle: state.Interface.chatSubTitle || "",
-      chatIcon: state.Interface.chatIcon || "",
-      currentSelectedBridgeSlug: state?.Interface?.bridgeName,
-      allowBridgeSwitchViaProp: state?.Interface?.allowBridgeSwitch,
-      teams: state.Hello?.widgetInfo?.teams || [],
-      currentTeamId: state.Hello?.currentTeamId || "",
-      agentTeamName: getAgentTeamName(state),
-      subThreadList:
-        state.Interface?.interfaceContext?.[chatbotId]?.[
-          GetSessionStorageData("bridgeName") ||
-          state.appInfo?.bridgeName ||
-          "root"
-        ]?.threadList?.[
-        GetSessionStorageData("threadId") || state.appInfo?.threadId
-        ] || [],
-      isHuman: state.Hello?.isHuman || false,
-      voice_call_widget: state.Hello?.widgetInfo?.voice_call_widget || false
+      isMobileSDK: state.Hello?.[chatSessionId]?.helloConfig?.isMobileSDK || false,
+      allowModalSwitch: state.Interface?.[chatSessionId]?.allowModalSwitch || false,
+      hideCloseButton: typeof show_close_button === 'boolean' ? !show_close_button : state.Interface?.[chatSessionId]?.hideCloseButton || false,
+      hideFullScreenButton: state.Interface?.[chatSessionId]?.hideFullScreenButton || false,
+      chatTitle: state.Interface?.[chatSessionId]?.chatTitle || "",
+      chatSubTitle: state.Interface?.[chatSessionId]?.chatSubTitle || "",
+      chatIcon: state.Interface?.[chatSessionId]?.chatIcon || "",
+      allowBridgeSwitchViaProp: state?.Interface?.[chatSessionId]?.allowBridgeSwitch,
+      teams: state.Hello?.[chatSessionId]?.widgetInfo?.teams || [],
+      agentTeamName: getAgentTeamName(state, chatSessionId, currentChannelId),
+      subThreadList: state.Interface?.[chatSessionId]?.interfaceContext?.[bridgeName]?.threadList?.[threadId] || [],
+      isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
+      voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false
     })
   });
   // Determine if we should show the create thread button
   const showCreateThreadButton = useMemo(() => {
-    return !isHuman && !(subThreadList?.length < 2 && (!messageIds || messageIds.length === 0));
-  }, [subThreadList?.length, messageIds?.length, isHuman]);
+    return !isHelloUser && !(subThreadList?.length < 2 && (!messageIds || messageIds.length === 0));
+  }, [subThreadList?.length, messageIds?.length, isHelloUser]);
 
   // Handler for creating a new thread
   const handleCreateNewSubThread = async () => {
     if (preview) return;
-    if (subThreadList?.[0]?.newChat){
+    if (subThreadList?.[0]?.newChat) {
       return;
     }
 
-    const newThreadData  = {
+    const newThreadData = {
       sub_thread_id: createRandomId(),
       thread_id: threadId,
       display_name: "New Chat",
-      newChat : true
-  }
+      newChat: true
+    }
 
     if (!subThreadList?.[0]?.newChat) {
       dispatch(
         setThreads({
           newThreadData,
-          bridgeName: GetSessionStorageData("bridgeName") || reduxBridgeName,
+          bridgeName: reduxBridgeName,
           threadId: threadId,
         })
       );
@@ -200,7 +191,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
 
   // Memoized drawer toggle button
   const DrawerToggleButton = useMemo(() => {
-    if (!(subThreadList?.length > 1 || isHuman)) return null;
+    if (!(subThreadList?.length > 1 || isHelloUser)) return null;
 
     return (
       <button
@@ -210,7 +201,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
         {isToggledrawer ? null : <AlignLeft size={22} color="#555555" />}
       </button>
     );
-  }, [subThreadList?.length, isHuman, isToggledrawer, setToggleDrawer]);
+  }, [subThreadList?.length, isHelloUser, isToggledrawer, setToggleDrawer]);
 
   // Memoized create thread button
   const CreateThreadButton = useMemo(() => {
@@ -230,7 +221,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
 
   // Memoized header title section
   const HeaderTitleSection = useMemo(() => {
-    const displayTitle = chatTitle || chatbotTitle || (isHuman ? (agentTeamName || teamName || "Conversation")?.toString().split(' ')?.[0] : "AI Assistant");
+    const displayTitle = chatTitle || chatbotTitle || (isHelloUser ? (agentTeamName || teamName || "Conversation")?.toString().split(' ')?.[0] : "AI Assistant");
     const displaySubtitle = chatSubTitle || chatbotSubtitle || "Do you have any questions? Ask us!";
 
     return (
@@ -256,7 +247,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
         )}
       </div>
     );
-  }, [chatIcon, chatTitle, chatbotTitle, isHuman, teamName, chatSubTitle, chatbotSubtitle, agentTeamName]);
+  }, [chatIcon, chatTitle, chatbotTitle, isHelloUser, teamName, chatSubTitle, chatbotSubtitle, agentTeamName]);
 
   // Memoized fullscreen toggle button
   const ScreenSizeToggleButton = useMemo(() => {
@@ -299,7 +290,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
 
   // Memoized call button
   const CallButton = useMemo(() => {
-    if (!isHuman) return null;
+    if (!isHelloUser) return null;
     if (!voice_call_widget) return null;
 
     const isCallDisabled = callState !== "idle";
@@ -317,7 +308,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
         </div>
       </div>
     );
-  }, [isHuman, callState, handleVoiceCall, voice_call_widget]);
+  }, [isHelloUser, callState, handleVoiceCall, voice_call_widget]);
 
   return (
     <div className="px-2 sm:py-4 py-3 w-full">
@@ -337,12 +328,12 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
         <div className="flex justify-end items-center gap-1 flex-1 sm:absolute sm:right-0">
           {allowBridgeSwitchViaProp && allowBridgeSwitch && (
             <BridgeSwitchDropdown
-              currentSelectedBridgeSlug={currentSelectedBridgeSlug}
+              currentSelectedBridgeSlug={bridgeName}
               bridges={bridges}
             />
           )}
 
-          {allowModalSwitch && <AiServicesToSwitch />}
+          {allowModalSwitch && <AiServicesToSwitch chatSessionId={chatSessionId} />}
 
           {headerButtons?.map((item, index) => (
             <React.Fragment key={`header-button-${index}`}>
@@ -360,7 +351,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
 
       <ChatbotDrawer
         setLoading={setLoading}
-        chatbotId="chatbotId"
         isToggledrawer={isToggledrawer}
         setToggleDrawer={setToggleDrawer}
         preview={preview}
@@ -369,7 +359,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatbotI
   );
 };
 
-export default React.memo(addUrlDataHoc(React.memo(ChatbotHeader), [ParamsEnums.chatbotId]));
+export default React.memo(addUrlDataHoc(ChatbotHeader, [ParamsEnums.currentTeamId, ParamsEnums.currentChannelId, ParamsEnums.threadId, ParamsEnums.bridgeName]));
 interface ChatbotFeedbackFormProps {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -499,11 +489,11 @@ const renderIconsByType = (item: { type: string }) => {
 }
 
 
-const AiServicesToSwitch = () => {
+const AiServicesToSwitch = ({ chatSessionId }: { chatSessionId: string }) => {
   const { currentSelectedModal, aiServiceAndModalOptions, defaultModal } = useCustomSelector((state: $ReduxCoreType) => {
-    const selectedAiServiceAndModal = state.Interface?.selectedAiServiceAndModal || {};
-    const modalConfig = state.Interface?.modalConfig || {};
-    const availableAiServicesToSwitch = state.Interface?.availableAiServicesToSwitch || [];
+    const selectedAiServiceAndModal = state.Interface?.[chatSessionId]?.selectedAiServiceAndModal || {};
+    const modalConfig = state.Interface?.[chatSessionId]?.modalConfig || {};
+    const availableAiServicesToSwitch = state.Interface?.[chatSessionId]?.availableAiServicesToSwitch || [];
     const { defaultSelected = {}, aiServices = [] } = modalConfig;
 
     const filteredUserRequestedOptions = aiServices.filter((item: any) =>
@@ -550,7 +540,7 @@ const AiServicesToSwitch = () => {
       const firstOption = aiServiceAndModalOptions[0];
       dispatch(setSelectedAIServiceAndModal({ service: firstOption.service, modal: firstOption.modals[0] }));
     }
-  }, [defaultModal, currentSelectedModal, aiServiceAndModalOptions]);
+  }, [defaultModal, currentSelectedModal, aiServiceAndModalOptions, chatSessionId]);
 
   const handleSelectedModalChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const [service, modal] = event.target.value.split('|');
@@ -596,8 +586,7 @@ function BridgeSwitchDropdown({ currentSelectedBridgeSlug, bridges }: { currentS
     <select
       value={currentSelectedBridgeSlug}
       onChange={(e) => {
-        dispatch(setDataInInterfaceRedux({ bridgeName: e.target.value }))
-        sessionStorage.setItem("bridgeName", e.target.value);
+        dispatch(setDataInAppInfoReducer({ bridgeName: e.target.value }))
       }}
       className="select select-sm select-bordered"
     >

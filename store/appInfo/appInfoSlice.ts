@@ -10,28 +10,31 @@ const interfaceSlice = createSlice({
     builder.addCase(setThreads, (state, action) => {
       const threadData = action.payload?.newThreadData || {};
       const allThreadList = action.payload?.threadList || [];
-
+      const tabSessionId = action?.urlData?.tabSessionId;
+    if(!state[tabSessionId]){
+      state[tabSessionId] = {};
+    }
       if (!(Object.keys(threadData || {}).length > 0)) {
-        if (state.threadId) {
+        if (state[tabSessionId]?.threadId) {
           const selectedThread = allThreadList.find(
-            (thread: any) => thread.thread_id === state.threadId
+            (thread: any) => thread.thread_id === state[tabSessionId]?.threadId
           );
 
           if (!selectedThread) {
-            state.subThreadId = state.threadId;
-          } else if (!state.subThreadId && state.threadId === selectedThread.thread_id) {
+            state[tabSessionId].subThreadId = state[tabSessionId]?.threadId;
+          } else if (!state[tabSessionId]?.subThreadId && state[tabSessionId]?.threadId === selectedThread.thread_id) {
             const lastSubThreadId = allThreadList[allThreadList.length - 1]?.sub_thread_id;
             if (lastSubThreadId) {
-              state.subThreadId = lastSubThreadId;
+              state[tabSessionId].subThreadId = lastSubThreadId;
             }
           }
         }
         if (allThreadList?.length === 0) {
-          state.subThreadId = state.threadId;
+          state[tabSessionId].subThreadId = state[tabSessionId]?.threadId;
         }
 
       } else {
-        state.subThreadId = threadData?.sub_thread_id || "";
+        state[tabSessionId].subThreadId = threadData?.sub_thread_id || "";
       }
     });
   }

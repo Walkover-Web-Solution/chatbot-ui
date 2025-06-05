@@ -1,6 +1,5 @@
 // useSocketEvents.ts
 import { ChatActionTypes, ChatState } from '@/components/Chatbot/hooks/chatTypes';
-import { useChatActions } from '@/components/Chatbot/hooks/useChatActions';
 import { useReduxStateManagement } from '@/components/Chatbot/hooks/useReduxManagement';
 import { changeChannelAssigned, setUnReadCount } from '@/store/hello/helloSlice';
 import { playMessageRecivedSound } from '@/utils/utilities';
@@ -20,31 +19,32 @@ export interface HelloMessage {
 /**
  * Hook for handling socket events
  * @param options - Options for socket events
- * @param options.chatbotId - The chatbot ID
  * @param options.chatState - The current chat state
  * @param options.chatDispatch - Function to dispatch chat actions
  * @param options.messageRef - Reference to message element
  * @returns timeoutIdRef - Reference to timeout for cleanup
  */
 export const useSocketEvents = ({
-    chatbotId,
     chatState,
     chatDispatch,
     messageRef,
     fetchChannels,
+    chatSessionId,
+    tabSessionId,
     setLoading
 }: {
-    chatbotId: string,
     chatState: ChatState,
     chatDispatch: (action: { type: string; payload?: any }) => void,
     messageRef: React.RefObject<HTMLDivElement>,
     fetchChannels: () => void,
-    setLoading:(data:boolean)=>void
+    setLoading: (data: boolean) => void
+    chatSessionId: string;
+    tabSessionId:string
 }) => {
     const dispatch = useDispatch();
 
     const { isToggledrawer } = chatState;
-    const { currentChannelId, isSmallScreen } = useReduxStateManagement({ chatbotId, chatDispatch });
+    const { currentChannelId, isSmallScreen } = useReduxStateManagement({ chatDispatch, chatSessionId , tabSessionId});
     const addHelloMessage = (message: HelloMessage, subThreadId: string = '') => {
         chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message, subThreadId } });
     }
@@ -62,15 +62,16 @@ export const useSocketEvents = ({
         const { type } = message || {};
 
         // Handle unread count updates
-        if (message?.new_event && (type === 'chat' || type === 'feedback')) {
+        if (message?.new_event && (type === 'chat' || type === 'feedback') && !message?.chat_id) {
             const channelId = message?.channel;
             const isCurrentChannel = isSameChannel(channelId);
-            const shouldResetCount = isCurrentChannel &&
-                ((isToggledrawer && !isSmallScreen) || (isSmallScreen && !isToggledrawer));
-            dispatch(setUnReadCount({
-                channelId,
-                resetCount: shouldResetCount || false
-            }));
+            const shouldIncreaseCount = isCurrentChannel ? (isSmallScreen && isToggledrawer) : true
+            if(shouldIncreaseCount){
+                dispatch(setUnReadCount({
+                    channelId,
+                    resetCount: false
+                }));
+            }
         }
 
         switch (type) {
@@ -101,12 +102,12 @@ export const useSocketEvents = ({
                 break;
             }
             case 'feedback': {
-                const { channel, channel_details } = message || {};
+                const { channel } = message || {};
                 if (message?.new_event) {
                     const messageId = response.timetoken || response.id;
                     addHelloMessage(
                         { ...message, id: messageId },
-                        channel_details?.channel
+                        channel
                     );
                 }
                 break;

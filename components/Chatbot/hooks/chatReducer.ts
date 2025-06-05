@@ -1,6 +1,4 @@
-import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { convertChatHistoryToGenericFormat, convertEventMessageToGenericFormat } from "@/utils/dataConvertWrappers/makeGenericDataFormatUtility";
-import { generateNewId } from "@/utils/utilities";
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 
 export const initialChatState: ChatState = {
@@ -25,11 +23,11 @@ export const initialChatState: ChatState = {
   headerButtons: [],
 
   // Chat Metadata
-  threadId: GetSessionStorageData("threadId") || "",
+  threadId: "",
   subThreadId: "",
-  bridgeName: GetSessionStorageData("bridgeName") || "root",
-  helloId: GetSessionStorageData("helloId") || null,
-  bridgeVersionId: GetSessionStorageData("version_id") || null,
+  bridgeName: "",
+  helloId: "",
+  bridgeVersionId: "",
 
   // Pagination & Message Handling
   currentPage: 1,
@@ -69,7 +67,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
       const updatedMapping = { ...state.msgIdAndDataMap[subThreadId] };
 
       // Get the message IDs that will be removed
-      const messageIdsToRemove = state.messageIds?.[subThreadId].slice(-numberOfMessages);
+      const messageIdsToRemove = state.messageIds?.[subThreadId]?.slice(-numberOfMessages);
 
       // Remove these message IDs from the mapping
       messageIdsToRemove.forEach(msgId => {

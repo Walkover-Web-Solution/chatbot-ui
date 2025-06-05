@@ -1,8 +1,7 @@
-import { Button, ButtonProps } from "@mui/material";
-import React, { useContext } from "react";
-import { ParamsEnums } from "@/utils/enums";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { perFormAction } from "@/utils/ChatbotUtility";
+import { Button, ButtonProps } from "@mui/material";
+import React, { useContext } from "react";
 import { MessageContext } from "../Interface-Chatbot/InterfaceChatbot";
 
 interface InterfaceButtonProps {
@@ -47,5 +46,5 @@ function InterfaceButton({ props, action, componentId }: InterfaceButtonProps): 
   );
 }
 export default React.memo(
-  addUrlDataHoc(React.memo(InterfaceButton), [ParamsEnums?.chatbotId])
+  addUrlDataHoc(React.memo(InterfaceButton))
 );

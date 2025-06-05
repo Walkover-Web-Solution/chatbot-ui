@@ -1,6 +1,5 @@
 import ComponentRenderer from "@/components/ComponentRenderer";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
-import { ParamsEnums } from "@/utils/enums";
 import { Box } from "@mui/material";
 import React, { useContext } from "react";
 import { GridContext } from "./Grid";
@@ -27,5 +26,5 @@ function Viewonlygrid({ dragRef }) {
   );
 }
 export default React.memo(
-  addUrlDataHoc(React.memo(Viewonlygrid), [ParamsEnums?.chatbotId])
+  addUrlDataHoc(React.memo(Viewonlygrid))
 );

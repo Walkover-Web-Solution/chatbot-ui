@@ -1,19 +1,21 @@
-import { getUserData, saveClientDetails } from "@/config/helloApi";
+import countryCodes from "@/assests/countryCode.json";
+import { saveClientDetails } from "@/config/helloApi";
+import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { setHelloKeysData } from "@/store/hello/helloSlice";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { isColorLight } from "@/utils/themeUtility";
+import { getLocalStorage } from "@/utils/utilities";
 import { useTheme } from "@mui/material";
 import { BookText, Mail, Phone, Send, User } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import countryCodes from "@/assests/countryCode.json";
-import { getLocalStorage } from "@/utils/utilities";
 
 interface FormComponentProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   isSmallScreen: boolean;
+  chatSessionId:string
 }
 
 interface FormData {
@@ -30,10 +32,10 @@ interface FormErrors {
   countryCode: string;
 }
 
-function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
+function FormComponent({ open, setOpen, isSmallScreen ,chatSessionId}: FormComponentProps) {
   const theme = useTheme();
   const { showWidgetForm } = useCustomSelector((state: $ReduxCoreType) => ({
-    showWidgetForm: state.Hello.showWidgetForm
+    showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm
   }));
   const dispatch = useDispatch();
   const backgroundColor = theme.palette.primary.main;
@@ -93,13 +95,11 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
     e.preventDefault();
     if (validate()) {
       let clientData = {
-        n: formData?.name,
-        p: formData?.number ? `${formData?.countryCode}${formData?.number}` : undefined,
-        e: formData?.email,
+        Name: formData?.name,
+        Phonenumber: formData?.number ? `${formData?.countryCode}${formData?.number}` : undefined,
+        Email: formData?.email,
         country_code: formData?.countryCode,
-        number_without_CC : formData?.number,
-        user_data: getUserData(),
-        is_anon: false,
+        number_without_CC : formData?.number
       }
 
       // Dispatch setHelloKeysData if all three fields are filled
@@ -116,10 +116,10 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
   if (!open && !showWidgetForm) return null;
   if (!open && showWidgetForm) return (
     <div
-      className={`bg-white p-2 px-4 cursor-pointer hover:shadow-md transition-all border border-gray-300 mx-auto rounded-br-md rounded-bl-md ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
+      className={`bg-white p-2 px-4 cursor-pointer hover:shadow-md transition-all mx-auto rounded-br-md rounded-bl-md ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
       onClick={() => setOpen(true)}
       style={{
-        backgroundColor: backgroundColor,
+        background: `linear-gradient(to right, ${backgroundColor}, ${backgroundColor}CC)`,
         color: textColor
       }}
     >
@@ -139,7 +139,7 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 relative">
         {/* Card header */}
         <div className="bg-primary text-white p-6 rounded-t-lg" style={{
-          backgroundColor: backgroundColor,
+          background: `linear-gradient(to right, ${backgroundColor}, ${backgroundColor}CC)`,
           color: textColor
         }}>
           <h2 className="text-xl font-bold">Enter your details</h2>
@@ -273,4 +273,4 @@ function FormComponent({ open, setOpen, isSmallScreen }: FormComponentProps) {
   );
 }
 
-export default FormComponent;
+export default React.memo(addUrlDataHoc(FormComponent));
