@@ -1,0 +1,791 @@
+/* Document List Modal Styles */
+
+/* Theme Variables */
+:root {
+    /* Light Theme */
+    --rag-light-background: #ffffff;
+    --rag-light-container: #ffffff;
+    --rag-light-border: #e5e7eb;
+    --rag-light-text: #1f2937;
+    --rag-light-text-light: #111827;
+    --rag-light-text-muted: #6b7280;
+    --rag-light-button-hover: #f3f4f6;
+    --rag-light-scroll-track: #f1f5f9;
+    --rag-light-scroll-thumb: #cbd5e1;
+    --rag-light-scroll-thumb-hover: #94a3b8;
+    --rag-light-overlay: rgba(0, 0, 0, 0.5);
+    --rag-light-item-bg: #f9fafb;
+    --rag-light-item-bg-hover: #f3f4f6;
+    --rag-light-item-text: #1f2937;
+    --rag-light-item-text-muted: #6b7280;
+  
+    --rag-dark-background: #1a1a1a;
+    --rag-dark-container: #2d2d2d;
+    --rag-dark-border: #404040;
+    --rag-dark-text: #e5e5e5;
+    --rag-dark-text-light: #f9fafb;
+    --rag-dark-text-muted: #9ca3af;
+    --rag-dark-button-hover: #374151;
+    --rag-dark-scroll-track: #1a1a1a;
+    --rag-dark-scroll-thumb: #404040;
+    --rag-dark-scroll-thumb-hover: #525252;
+    --rag-dark-overlay: rgba(0, 0, 0, 0.8);
+    --rag-dark-item-bg: #374151;
+    --rag-dark-item-bg-hover: #4b5563;
+    --rag-dark-item-text: #f3f4f6;
+    --rag-dark-item-text-muted: #d1d5db;
+  }
+  
+  /* Base Modal Styles */
+  #rag-document-list-modal {
+    transition: opacity 0.3s ease-in-out;
+    opacity: 0;
+    display: none;
+  }
+  
+  /* Modal Overlay (Popup Mode) */
+  #rag-document-list-modal.modal-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* Embedded Mode */
+  #rag-document-list-modal.modal-embedded {
+    position: relative;
+    width: 100%;
+    z-index: 10;
+  }
+  
+  /* No Height Constraints */
+  #rag-document-list-modal.no-height-constraints {
+    height: auto;
+    min-height: fit-content;
+    max-height: none;
+    overflow: visible;
+    flex: none;
+  }
+  
+  /* With Height Constraints */
+  #rag-document-list-modal.with-height-constraints {
+    height: 100%;
+    max-height: 100%;
+    overflow: auto;
+    box-sizing: border-box;
+    flex: none;
+  }
+  
+  /* List Container Base Styles */
+  .rag-list-container {
+    border-radius: 8px;
+    padding: 24px;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  
+  /* Container - Embedded Mode */
+  .rag-list-container.embedded {
+    border-radius: 8px;
+  }
+  
+  .rag-list-container.embedded.no-height-constraints {
+    height: auto;
+    min-height: fit-content;
+    max-height: none;
+    overflow: visible;
+  }
+  
+  .rag-list-container.embedded.with-height-constraints {
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+    min-height: 0;
+  }
+  
+  /* Container - Modal Mode */
+  .rag-list-container.modal {
+    border-radius: 16px;
+    width: 90vw;
+    height: auto;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow: hidden;
+  }
+  
+  /* Header Styles */
+  .rag-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    flex-shrink: 0;
+  }
+  
+  .rag-modal-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    background: linear-gradient(135deg, currentColor, currentColor);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .rag-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  /* Button Styles */
+  .rag-action-btn {
+    background: none;
+    border: none;
+    font-size: 32px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+  
+  .rag-refresh-btn {
+    font-size: 32px;
+  }
+  
+  .rag-close-btn {
+    font-size: 32px;
+  }
+  
+  .rag-add-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+  }
+  
+  .rag-add-btn:hover {
+    transform: translateY(-2px);
+  }
+  
+  /* Documents Container */
+  #rag-documents-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  /* Scrollable Container */
+  #rag-documents-container.scrollable {
+    flex: 1;
+    overflow: none;
+    min-height: 0;
+    max-height: 100%;
+  }
+  
+  /* Natural Growth Container */
+  #rag-documents-container.natural-growth {
+    height: auto;
+    min-height: fit-content;
+    max-height: none;
+    overflow: visible;
+    flex: none;
+  }
+  
+  /* Custom Scrollbar Styles */
+  #rag-documents-container::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  /* Empty State */
+  .rag-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  
+  /* Theme-specific styles */
+  .rag-theme-light {
+    --rag-background: var(--rag-light-background);
+    --rag-container: var(--rag-light-container);
+    --rag-border: var(--rag-light-border);
+    --rag-text: var(--rag-light-text);
+    --rag-text-light: var(--rag-light-text-light);
+    --rag-text-muted: var(--rag-light-text-muted);
+    --rag-button-hover: var(--rag-light-button-hover);
+    --rag-scroll-track: var(--rag-light-scroll-track);
+    --rag-scroll-thumb: var(--rag-light-scroll-thumb);
+    --rag-scroll-thumb-hover: var(--rag-light-scroll-thumb-hover);
+    --rag-overlay: var(--rag-light-overlay);
+    --rag-item-bg: var(--rag-light-item-bg);
+    --rag-item-bg-hover: var(--rag-light-item-bg-hover);
+    --rag-item-text: var(--rag-light-item-text);
+    --rag-item-text-muted: var(--rag-light-item-text-muted);
+  
+    background-color: var(--rag-background);
+    color: var(--rag-text);
+  }
+  
+  .rag-theme-dark {
+    --rag-background: var(--rag-dark-background);
+    --rag-container: var(--rag-dark-container);
+    --rag-border: var(--rag-dark-border);
+    --rag-text: var(--rag-dark-text);
+    --rag-text-light: var(--rag-dark-text-light);
+    --rag-text-muted: var(--rag-dark-text-muted);
+    --rag-button-hover: var(--rag-dark-button-hover);
+    --rag-scroll-track: var(--rag-dark-scroll-track);
+    --rag-scroll-thumb: var(--rag-dark-scroll-thumb);
+    --rag-scroll-thumb-hover: var(--rag-dark-scroll-thumb-hover);
+    --rag-overlay: var(--rag-dark-overlay);
+    --rag-item-bg: var(--rag-dark-item-bg);
+    --rag-item-bg-hover: var(--rag-dark-item-bg-hover);
+    --rag-item-text: var(--rag-dark-item-text);
+    --rag-item-text-muted: var(--rag-dark-item-text-muted);
+  
+    background-color: var(--rag-background);
+    color: var(--rag-text);
+  }
+  
+  /* Apply theme colors to elements */
+  .rag-theme-light .rag-list-container,
+  .rag-theme-dark .rag-list-container {
+    background-color: var(--rag-background);
+    border: 1px solid var(--rag-border);
+    color: var(--rag-text);
+  }
+  
+  .rag-theme-light .rag-modal-header,
+  .rag-theme-dark .rag-modal-header {
+    border-bottom: 1px solid var(--rag-border);
+  }
+  
+  .rag-theme-light .rag-modal-title,
+  .rag-theme-dark .rag-modal-title {
+    color: var(--rag-text-light);
+  }
+  
+  .rag-theme-light.modal-popup,
+  .rag-theme-dark.modal-popup {
+    background-color: var(--rag-overlay);
+  }
+  
+  .rag-theme-light .rag-action-btn,
+  .rag-theme-dark .rag-action-btn {
+    color: var(--rag-text);
+  }
+  
+  .rag-theme-light .rag-close-btn,
+  .rag-theme-dark .rag-close-btn {
+    color: var(--rag-text-muted);
+  }
+  
+  .rag-theme-light .rag-action-btn:hover,
+  .rag-theme-dark .rag-action-btn:hover {
+    background-color: var(--rag-button-hover);
+  }
+  
+  .rag-theme-light .rag-close-btn:hover,
+  .rag-theme-dark .rag-close-btn:hover {
+    color: var(--rag-text-light);
+  }
+  
+  .rag-theme-light .rag-empty-state,
+  .rag-theme-dark .rag-empty-state {
+    color: var(--rag-text-muted);
+  }
+  
+  /* Scrollbar theming */
+  .rag-theme-light #rag-documents-container::-webkit-scrollbar-track,
+  .rag-theme-dark #rag-documents-container::-webkit-scrollbar-track {
+    background: var(--rag-scroll-track);
+    border-radius: 4px;
+  }
+  
+  .rag-theme-light #rag-documents-container::-webkit-scrollbar-thumb,
+  .rag-theme-dark #rag-documents-container::-webkit-scrollbar-thumb {
+    background: var(--rag-scroll-thumb);
+    border-radius: 4px;
+  }
+  
+  .rag-theme-light #rag-documents-container::-webkit-scrollbar-thumb:hover,
+  .rag-theme-dark #rag-documents-container::-webkit-scrollbar-thumb:hover {
+    background: var(--rag-scroll-thumb-hover);
+  }
+  
+  /* Box Shadow for Modal Mode */
+  .rag-theme-light .rag-list-container.modal {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+  
+  .rag-theme-dark .rag-list-container.modal {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  }
+  
+  /* Visibility States */
+  .rag-modal-visible {
+    display: block !important;
+    opacity: 1 !important;
+  }
+  
+  .rag-modal-popup-visible {
+    display: flex !important;
+    opacity: 1 !important;
+  }
+
+  /* Document Item Styles */
+.rag-document-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border: 1px solid var(--rag-border);
+    border-radius: 8px;
+    background-color: var(--rag-item-bg);
+    transition: background-color 0.2s;
+    position: relative;
+}
+
+.rag-document-item:hover {
+    background-color: var(--rag-item-bg-hover);
+}
+
+.rag-document-left-section {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.rag-document-info-container {
+    flex: 1;
+}
+
+.rag-document-name {
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--rag-item-text);
+    margin-bottom: 4px;
+}
+
+.rag-document-details {
+    font-size: 14px;
+    color: var(--rag-item-text-muted);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.rag-document-type {
+    font-weight: 500;
+}
+
+.rag-document-url {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Modal Overlay */
+.rag-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--rag-overlay-bg);
+    backdrop-filter: blur(2px);
+    z-index: 999997;
+    display: none;
+    transition: opacity 0.3s ease-in-out;
+    opacity: 0;
+}
+
+.rag-modal-overlay.show {
+    display: block;
+    opacity: 1;
+}
+
+/* Modal Iframe Container Styles */
+.rag-iframe-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100vw;
+    height: 90vh;
+    max-width: 1200px;
+    max-height: 800px;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 
+                0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    z-index: 1000;
+}
+
+/* Optional: Backdrop/overlay for better modal experience */
+.rag-iframe-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .rag-iframe-modal {
+        width: 95vw;
+        height: 85vh;
+        border-radius: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .rag-iframe-modal {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        max-width: none;
+        max-height: none;
+    }
+}
+
+
+.rag-document-date-info {
+    position: absolute;
+    top: 0;
+    right: 4px;
+    font-size: 0.75rem;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+/* Error Message Toast Styles */
+.error-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    padding: 12px 16px;
+    border-radius: 8px;
+    z-index: 1000000;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    max-width: 300px;
+    word-wrap: break-word;
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Animation for smooth entrance */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Animation for smooth exit */
+.error-message.fade-out {
+    animation: fadeOut 0.3s ease-in forwards;
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+/* Hover effect for better UX */
+.error-message:hover {
+    background-color: #fecaca;
+    cursor: pointer;
+}
+
+/* Success message variant (bonus) */
+.success-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #dcfce7;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    padding: 12px 16px;
+    border-radius: 8px;
+    z-index: 1000000;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    max-width: 300px;
+    word-wrap: break-word;
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Warning message variant (bonus) */
+.warning-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #fef3c7;
+    border: 1px solid #fde68a;
+    color: #92400e;
+    padding: 12px 16px;
+    border-radius: 8px;
+    z-index: 1000000;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    max-width: 300px;
+    word-wrap: break-word;
+    animation: slideIn 0.3s ease-out;
+}
+
+
+/* Main container for the ellipsis menu */
+.ellipsis-menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Ellipsis button (three dots) */
+.ellipsis-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  width: 36px;
+  height: 36px;
+}
+
+.ellipsis-btn:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.ellipsis-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
+.ellipsis-btn:active {
+  transform: scale(0.95);
+}
+
+/* Dropdown menu */
+.ellipsis-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 
+              0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  min-width: 140px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px) scale(0.95);
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.ellipsis-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+/* 
+/* Menu items (Edit/Delete buttons) */
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  font-weight: 500;
+}
+
+.menu-item:hover {
+  background-color: #f9fafb;
+}
+
+.menu-item:active {
+  background-color: #f3f4f6;
+} */
+
+/* Edit button specific styling */
+.menu-item.edit-btn:hover {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.menu-item.edit-btn:hover svg {
+  stroke: #2563eb;
+}
+
+/* Delete button specific styling */
+.menu-item.delete-btn:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.menu-item.delete-btn:hover svg {
+  stroke: #dc2626;
+}
+
+/* SVG icons in menu items */
+.menu-item svg {
+  flex-shrink: 0;
+  transition: stroke 0.2s ease;
+}
+
+/* ========================================
+ RESPONSIVE DESIGN
+ ======================================== */
+
+@media (max-width: 768px) {  
+  .ellipsis-menu {
+      min-width: 120px;
+  }
+  
+  .menu-item {
+      padding: 14px 16px;
+      font-size: 15px;
+  }
+}
+
+@media (max-width: 640px) {  
+  .ellipsis-menu {
+      right: 0;
+      left: auto;
+  }
+}
+
+/* ========================================
+ DARK THEME SUPPORT
+ ======================================== */
+
+@media (prefers-color-scheme: dark) {
+  .ellipsis-btn {
+      color: #9ca3af;
+  }
+  
+  .ellipsis-btn:hover {
+      background-color: #374151;
+      color: #f3f4f6;
+  }
+  
+  .ellipsis-menu {
+      background: #1f2937;
+      border-color: #374151;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 
+                  0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  }
+  
+  .menu-item {
+      color: #f3f4f6;
+  }
+  
+  .menu-item:hover {
+      background-color: #374151;
+  }
+  
+  .menu-item.edit-btn:hover {
+      background-color: #1e40af;
+      color: #60a5fa;
+  }
+  
+  .menu-item.delete-btn:hover {
+      background-color: #991b1b;
+      color: #f87171;
+  }
+}
+/* ========================================
+ ACCESSIBILITY IMPROVEMENTS
+ ======================================== */
+
+/* Focus visible for keyboard navigation */
+.ellipsis-btn:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.menu-item:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .ellipsis-menu {
+      border-width: 2px;
+  }
+  
+  .menu-item {
+      border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .menu-item:last-child {
+      border-bottom: none;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .ellipsis-btn,
+  .ellipsis-menu,
+  .menu-item,
+  
+  .ellipsis-menu.show {
+      transform: translateY(0);
+  }
+}
