@@ -30,7 +30,15 @@ export interface $ReduxCoreType {
   Hello: $HelloReduxType;
   Interface: $InterfaceReduxType;
   appInfo:$AppInfoReduxType
+  tabInfo: $TabInfoReduxType
 }
+
+export interface $TabInfoReduxType {
+  widgetToken: string;
+  chatbotId: string;
+  tabSessionId: string;
+}
+
 export interface $UserInfoReduxType {
   first_name: string;
   last_name: string;
