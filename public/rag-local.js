@@ -10,7 +10,8 @@
             this.urls = {
                 ragUrl: 'http://localhost:3001/rag',
                 login: 'http://localhost:7072/user/embed/login',
-                docsApi: 'http://localhost:7072/rag/docs'
+                docsApi: 'http://localhost:7072/rag/docs',
+                cssURL: 'http://localhost:3001/rag.css'
             };
             this.state = {
                 bodyLoaded: false,
@@ -20,6 +21,7 @@
                 showDocumentList: false,
                 cachedElements: {},
                 isModalOpen: false,
+                isDarkTheme: false,
 
                 themeColors: {
                     container: '#1a1a1a',
@@ -29,10 +31,29 @@
                     button: '#667eea',
                     buttonHover: '#556dd9',
                     border: '#ccc'
+                },
+                messageType:{
+                    success: 'success-message',
+                    error: 'error-message',
+                    warning: 'warning-message'
                 }
             };
 
             this.initializeEventListeners();
+        }
+
+        loadCSS() {
+            // Check if CSS is already loaded to avoid duplicates
+            if (document.getElementById('rag-embed-styles')) {
+                return;
+            }
+        
+            const link = document.createElement('link');
+            link.id = 'rag-embed-styles';
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = this.urls.cssURL; // Uses your existing CSS URL
+            document.head.appendChild(link);
         }
 
 
@@ -41,59 +62,17 @@
             const parentId = this.props.parentId || this.state.tempDataToSend?.parentId || '';
             const parentContainer = parentId ? document.getElementById(parentId) : null;
             const isEmbedded = parentContainer && this.state.isEmbeddedInParent;
-
+        
             // Determine theme - default to light if not specified
             const theme = this.props.theme || this.state.tempDataToSend?.theme || 'light';
-            const isDark = theme === 'dark';
-
-            // Theme-based colors
-            const colors = {
-                dark: {
-                    background: '#1a1a1a',
-                    container: '#2d2d2d',
-                    border: '#404040',
-                    text: '#e5e5e5',
-                    textLight: '#f9fafb',
-                    textMuted: '#9ca3af',
-                    buttonHover: '#374151',
-                    scrollTrack: '#1a1a1a',
-                    scrollThumb: '#404040',
-                    scrollThumbHover: '#525252',
-                    overlay: 'rgba(0, 0, 0, 0.8)',
-                    itemBg: '#374151',
-                    itemBgHover: '#4b5563',
-                    itemText: '#f3f4f6',
-                    itemTextMuted: '#d1d5db'
-                },
-                light: {
-                    background: '#ffffff',
-                    container: '#ffffff',
-                    border: '#e5e7eb',
-                    text: '#1f2937',
-                    textLight: '#111827',
-                    textMuted: '#6b7280',
-                    buttonHover: '#f3f4f6',
-                    scrollTrack: '#f1f5f9',
-                    scrollThumb: '#cbd5e1',
-                    scrollThumbHover: '#94a3b8',
-                    overlay: 'rgba(0, 0, 0, 0.5)',
-                    itemBg: '#f9fafb',
-                    itemBgHover: '#f3f4f6',
-                    itemText: '#1f2937',
-                    itemTextMuted: '#6b7280'
-                }
-            };
-
-            const themeColors = colors[isDark ? 'dark' : 'light'];
-            this.state.themeColors = themeColors;
-
+        
             // Helper function to check if parent has height constraints
             const hasParentHeightConstraints = () => {
                 if (!parentContainer) return false;
-
+        
                 const computedStyle = window.getComputedStyle(parentContainer);
                 const inlineStyle = parentContainer.style;
-
+        
                 // Check for explicit height (not auto or empty)
                 const hasExplicitHeight = (inlineStyle.height &&
                     inlineStyle.height !== '' &&
@@ -102,7 +81,7 @@
                         computedStyle.height !== 'auto' &&
                         computedStyle.height !== '0px' &&
                         !computedStyle.height.includes('auto'));
-
+        
                 // Check for max-height constraints
                 const hasMaxHeight = (inlineStyle.maxHeight &&
                     inlineStyle.maxHeight !== '' &&
@@ -111,350 +90,193 @@
                     (computedStyle.maxHeight &&
                         computedStyle.maxHeight !== 'none' &&
                         computedStyle.maxHeight !== 'auto');
-
+        
                 // Also check if parent has any CSS that would constrain height
                 const hasFlexConstraints = computedStyle.display === 'flex' &&
                     (computedStyle.alignItems === 'stretch' || computedStyle.height !== 'auto');
-
+        
                 return hasExplicitHeight || hasMaxHeight || hasFlexConstraints;
             };
-
+        
             const parentHasHeightConstraints = hasParentHeightConstraints();
-
-            console.log('Parent height constraints detected:', parentHasHeightConstraints);
-            if (parentContainer) {
-                console.log('Parent computed height:', window.getComputedStyle(parentContainer).height);
-                console.log('Parent inline height:', parentContainer.style.height);
-                console.log('Parent maxHeight:', parentContainer.style.maxHeight);
-            }
-
             // Helper function to make parent and ancestors grow with content
             const ensureParentCanGrow = () => {
-                if (!parentContainer) return;
-
-                let currentElement = parentContainer;
-                const elementsToRestore = [];
-
-                // Walk up the DOM tree and ensure all ancestors can grow
-                while (currentElement && currentElement !== document.body) {
-                    const computedStyle = window.getComputedStyle(currentElement);
-                    const originalStyles = {
-                        element: currentElement,
-                        height: currentElement.style.height,
-                        minHeight: currentElement.style.minHeight,
-                        maxHeight: currentElement.style.maxHeight,
-                        overflow: currentElement.style.overflow,
-                        flex: currentElement.style.flex,
-                        display: currentElement.style.display
-                    };
-                    elementsToRestore.push(originalStyles);
-
-                    // Remove height constraints to allow natural growth
-                    currentElement.style.height = 'auto';
-                    currentElement.style.minHeight = '';
-                    currentElement.style.maxHeight = 'none';
-                    currentElement.style.overflow = 'visible';
-
-                    // Ensure proper display
-                    if (!currentElement.style.display || currentElement.style.display === 'none') {
-                        currentElement.style.display = 'block';
-                    }
-
-                    // Handle flex containers properly
-                    if (computedStyle.display === 'flex' || computedStyle.display === 'inline-flex') {
-                        currentElement.style.alignItems = 'flex-start';
-                        currentElement.style.flexDirection = computedStyle.flexDirection || 'column';
-                    }
-
-                    currentElement = currentElement.parentElement;
+                if (!parentContainer) return [];
+        
+                // Store original styles of ONLY the immediate parent
+                const computedStyle = window.getComputedStyle(parentContainer);
+                const originalStyles = {
+                    element: parentContainer,
+                    height: parentContainer.style.height,
+                    minHeight: parentContainer.style.minHeight,
+                    maxHeight: parentContainer.style.maxHeight,
+                    overflow: parentContainer.style.overflow,
+                    flex: parentContainer.style.flex,
+                    display: parentContainer.style.display
+                };
+        
+                // ONLY modify the immediate parent - NO LOOP, NO TRAVERSAL
+                parentContainer.style.height = 'auto';
+                parentContainer.style.minHeight = '';
+                parentContainer.style.maxHeight = 'none';
+                parentContainer.style.overflow = 'visible';
+        
+                // Ensure proper display
+                if (!parentContainer.style.display || parentContainer.style.display === 'none') {
+                    parentContainer.style.display = 'block';
                 }
-
-                return elementsToRestore;
+        
+                // Handle flex containers properly
+                if (computedStyle.display === 'flex' || computedStyle.display === 'inline-flex') {
+                    parentContainer.style.alignItems = 'flex-start';
+                    parentContainer.style.flexDirection = computedStyle.flexDirection || 'column';
+                }
+        
+                // Set up a mutation observer to catch WHO is modifying the grandparent
+                const grandparent = parentContainer.parentElement;
+                if (grandparent) {
+                    const observer = new MutationObserver((mutations) => {
+                        mutations.forEach((mutation) => {
+                            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                                // Debug logging for style changes
+                            }
+                        });
+                    });
+        
+                    observer.observe(grandparent, {
+                        attributes: true,
+                        attributeFilter: ['style']
+                    });
+        
+                    // Clean up observer after 5 seconds
+                    setTimeout(() => observer.disconnect(), 5000);
+                }
+        
+                return [originalStyles];
             };
-
+        
             let listModal;
-
+        
             if (isEmbedded) {
                 // Handle parent container with explicit logging
                 if (parentContainer) {
                     if (!parentHasHeightConstraints) {
-                        console.log('Applying NO HEIGHT CONSTRAINTS mode - Ensuring parent can grow');
-
                         // Store original styles for potential restoration
                         this.originalParentStyles = ensureParentCanGrow();
-
+        
                         // Ensure parent is properly configured for growth
                         parentContainer.style.display = parentContainer.style.display || 'block';
                         parentContainer.style.position = parentContainer.style.position || 'relative';
-
+        
                     } else {
-                        console.log('Applying HEIGHT CONSTRAINTS mode');
                         // Has height constraints - FORCE container to respect them
                         parentContainer.style.overflow = 'hidden';
-
+        
                         // Ensure box-sizing is border-box
                         if (!parentContainer.style.boxSizing) {
                             parentContainer.style.boxSizing = 'border-box';
                         }
-
+        
                         // Preserve existing height constraints
                         const computedStyle = window.getComputedStyle(parentContainer);
                         const currentHeight = parentContainer.style.height || computedStyle.height;
                         const currentMaxHeight = parentContainer.style.maxHeight || computedStyle.maxHeight;
-
+        
                         if (currentHeight && currentHeight !== 'auto' && currentHeight !== '') {
                             parentContainer.style.height = currentHeight;
-                            console.log('Preserved height:', currentHeight);
                         }
-
+        
                         if (currentMaxHeight && currentMaxHeight !== 'none' && currentMaxHeight !== 'auto' && currentMaxHeight !== '') {
                             parentContainer.style.maxHeight = currentMaxHeight;
-                            console.log('Preserved maxHeight:', currentMaxHeight);
                         }
                     }
                 }
-
-                // Create embedded div with relative positioning
+        
+                // Create embedded div
                 listModal = document.createElement('div');
                 listModal.id = 'rag-document-list-modal';
-                listModal.style.position = 'relative';
-                listModal.style.width = '100%';
-                listModal.style.backgroundColor = themeColors.background;
-                listModal.style.color = themeColors.text;
-                listModal.style.zIndex = '10';
-                listModal.style.display = 'none';
-                listModal.style.transition = 'opacity 0.3s ease-in-out';
-                listModal.style.opacity = '0';
-
-                // Set height based on parent constraints - handle both cases properly
-                if (parentHasHeightConstraints) {
-                    // Parent has height constraints - strictly contained
-                    listModal.style.height = '100%';
-                    listModal.style.maxHeight = '100%';
-                    listModal.style.overflow = 'auto';
-                    listModal.style.boxSizing = 'border-box';
-                    listModal.style.flex = 'none';
-                } else {
-                    // No height constraints - completely natural growth
-                    listModal.style.height = 'auto';
-                    listModal.style.minHeight = 'fit-content';
-                    listModal.style.maxHeight = 'none';
-                    listModal.style.overflow = 'visible';
-                    listModal.style.flex = 'none';
-
-                    // Add observer to trigger parent resize when content changes
-                    if (window.ResizeObserver) {
-                        const resizeObserver = new ResizeObserver(() => {
-                            // Force parent to recalculate its size
-                            if (parentContainer) {
-                                const event = new Event('resize');
-                                parentContainer.dispatchEvent(event);
-
-                                // Trigger layout recalculation
-                                parentContainer.style.height = 'auto';
-                                void parentContainer.offsetHeight; // Force reflow
-                            }
-                        });
-
-                        resizeObserver.observe(listModal);
-                        listModal._resizeObserver = resizeObserver;
-                    }
+                
+                // Add CSS classes
+                listModal.className = `modal-embedded rag-theme-${theme} ${parentHasHeightConstraints ? 'with-height-constraints' : 'no-height-constraints'}`;
+        
+                // Add resize observer for no height constraints mode
+                if (!parentHasHeightConstraints && window.ResizeObserver) {
+                    const resizeObserver = new ResizeObserver(() => {
+                        // Force parent to recalculate its size
+                        if (parentContainer) {
+                            const event = new Event('resize');
+                            parentContainer.dispatchEvent(event);
+        
+                            // Trigger layout recalculation
+                            parentContainer.style.height = 'auto';
+                            void parentContainer.offsetHeight; // Force reflow
+                        }
+                    });
+        
+                    resizeObserver.observe(listModal);
+                    listModal._resizeObserver = resizeObserver;
                 }
             } else {
                 // Create modal overlay for popup mode
                 listModal = document.createElement('div');
                 listModal.id = 'rag-document-list-modal';
-                listModal.style.position = 'fixed';
-                listModal.style.top = '0';
-                listModal.style.left = '0';
-                listModal.style.width = '100vw';
-                listModal.style.height = '100vh';
-                listModal.style.backgroundColor = themeColors.overlay;
-                listModal.style.backdropFilter = 'blur(4px)';
-                listModal.style.zIndex = '999';
-                listModal.style.display = 'none';
-                listModal.style.justifyContent = 'center';
-                listModal.style.alignItems = 'center';
-                listModal.style.transition = 'opacity 0.3s ease-in-out';
-                listModal.style.opacity = '0';
+                listModal.className = `modal-popup rag-theme-${theme}`;
             }
-
+        
+            // Create list container
             const listContainer = document.createElement('div');
-            listContainer.style.backgroundColor = themeColors.background;
-            listContainer.style.border = `1px solid ${themeColors.border}`;
-            listContainer.style.borderRadius = isEmbedded ? '8px' : '16px';
-            listContainer.style.padding = '24px';
-            listContainer.style.width = '100%';
-            listContainer.style.boxSizing = 'border-box';
-            listContainer.style.color = themeColors.text;
-            listContainer.style.display = 'flex';
-            listContainer.style.flexDirection = 'column';
-
-            if (isEmbedded) {
-                listContainer.style.position = 'relative';
-
-                if (parentHasHeightConstraints) {
-                    // Parent has height constraints - STRICTLY fit within them
-                    listContainer.style.height = '100%';
-                    listContainer.style.maxHeight = '100%';
-                    listContainer.style.overflow = 'hidden';
-                    listContainer.style.boxSizing = 'border-box';
-                    listContainer.style.minHeight = '0';
-                } else {
-                    // Parent has no height constraints - COMPLETELY natural growth
-                    listContainer.style.height = 'auto';
-                    listContainer.style.minHeight = 'fit-content';
-                    listContainer.style.maxHeight = 'none';
-                    listContainer.style.overflow = 'visible';
-                }
-            } else {
-                // Modal mode
-                listContainer.style.width = '90vw';
-                listContainer.style.height = 'auto';
-                listContainer.style.maxWidth = '800px';
-                listContainer.style.maxHeight = '80vh';
-                listContainer.style.overflow = 'hidden';
-            }
-
-            if (!isEmbedded) {
-                listContainer.style.boxShadow = isDark
-                    ? '0 25px 50px -12px rgba(0, 0, 0, 0.8)'
-                    : '0 25px 50px -12px rgba(0, 0, 0, 0.25)';
-            }
-
+            listContainer.className = `rag-list-container ${isEmbedded ? 'embedded' : 'modal'} ${parentHasHeightConstraints && isEmbedded ? 'with-height-constraints' : 'no-height-constraints'}`;
+        
             // Header
             const header = document.createElement('div');
-            header.style.display = 'flex';
-            header.style.justifyContent = 'space-between';
-            header.style.alignItems = 'center';
-            header.style.marginBottom = '20px';
-            header.style.borderBottom = `1px solid ${themeColors.border}`;
-            header.style.paddingBottom = '16px';
-            header.style.flexShrink = '0'; // Prevent header from shrinking
-
+            header.className = 'rag-modal-header';
+        
             const title = document.createElement('h2');
             title.textContent = 'Knowledge Base Management';
-            title.style.margin = '0';
-            title.style.fontSize = '24px';
-            title.style.fontWeight = '600';
-            title.style.color = themeColors.textLight;
-            title.style.background = themeColors.text;
-            title.style.webkitBackgroundClip = 'text';
-            title.style.webkitTextFillColor = 'transparent';
-            title.style.backgroundClip = 'text';
+            title.className = 'rag-modal-title';
             header.appendChild(title);
-
-            //refresh button 
+        
+            // Header actions container
             const headerRight = document.createElement('div');
-            headerRight.style.display = 'flex';
-            headerRight.style.alignItems = 'center';
-            headerRight.style.gap = '8px';
-
+            headerRight.className = 'rag-header-actions';
+        
+            // Refresh button
             const refreshBtn = document.createElement('button');
             refreshBtn.innerHTML = '⟳';
-            refreshBtn.style.background = 'none';
-            refreshBtn.style.border = 'none';
-            refreshBtn.style.fontSize = '32px';
-            refreshBtn.style.cursor = 'pointer';
-            refreshBtn.style.color = isDark ? 'white' : 'black';
-            refreshBtn.style.padding = '0';
-            refreshBtn.style.width = '32px';
-            refreshBtn.style.height = '32px';
-            refreshBtn.style.display = 'flex';
-            refreshBtn.style.alignItems = 'center';
-            refreshBtn.style.justifyContent = 'center';
-            refreshBtn.style.borderRadius = '8px';
-            refreshBtn.style.transition = 'all 0.2s ease';
+            refreshBtn.className = 'rag-action-btn rag-refresh-btn';
             refreshBtn.title = 'Refresh Document List';
-            refreshBtn.addEventListener('mouseenter', () => {
-                refreshBtn.style.backgroundColor = themeColors.buttonHover;
-                refreshBtn.style.color = isDark ? 'white' : 'black';
-            });
-            refreshBtn.addEventListener('mouseleave', () => {
-                refreshBtn.style.backgroundColor = 'transparent';
-                refreshBtn.style.color = isDark ? 'white' : 'black';
-            });
             refreshBtn.addEventListener('click', () => this.showDocumentList());
             headerRight.appendChild(refreshBtn);
-
-            if(!parentContainer){
-            const closeBtn = document.createElement('button');
-            closeBtn.innerHTML = '×';
-            closeBtn.style.background = 'none';
-            closeBtn.style.border = 'none';
-            closeBtn.style.fontSize = '32px';
-            closeBtn.style.cursor = 'pointer';
-            closeBtn.style.color = themeColors.textMuted;
-            closeBtn.style.padding = '0';
-            closeBtn.style.width = '32px';
-            closeBtn.style.height = '32px';
-            closeBtn.style.display = 'flex';
-            closeBtn.style.alignItems = 'center';
-            closeBtn.style.justifyContent = 'center';
-            closeBtn.style.borderRadius = '8px';
-            closeBtn.style.transition = 'all 0.2s ease';
-            closeBtn.addEventListener('mouseenter', () => {
-                closeBtn.style.backgroundColor = themeColors.buttonHover;
-                closeBtn.style.color = themeColors.textLight;
-            });
-            closeBtn.addEventListener('mouseleave', () => {
-                closeBtn.style.backgroundColor = 'transparent';
-                closeBtn.style.color = themeColors.textMuted;
-            });
-            closeBtn.addEventListener('click', () => this.closeDocumentList());
-            headerRight.appendChild(closeBtn);
+        
+            // Close button (only for non-embedded mode)
+            if (!parentContainer) {
+                const closeBtn = document.createElement('button');
+                closeBtn.innerHTML = '×';
+                closeBtn.className = 'rag-action-btn rag-close-btn';
+                closeBtn.addEventListener('click', () => this.closeDocumentList());
+                headerRight.appendChild(closeBtn);
             }
+            
             header.appendChild(headerRight);
+        
             // Add Document Button
             const addBtn = document.createElement('button');
             addBtn.textContent = '+ Add New Document';
-            addBtn.style.background = '#667eea';
-            addBtn.style.color = 'white';
-            addBtn.style.border = 'none';
-            addBtn.style.padding = '12px 24px';
-            addBtn.style.borderRadius = '10px';
-            addBtn.style.cursor = 'pointer';
-            addBtn.style.fontSize = '14px';
-            addBtn.style.fontWeight = '600';
-            addBtn.style.marginBottom = '20px';
-            addBtn.style.transition = 'all 0.3s ease';
-            addBtn.style.flexShrink = '0'; // Prevent button from shrinking
-
-            addBtn.addEventListener('mouseenter', () => {
-                addBtn.style.transform = 'translateY(-2px)';
-            });
-            addBtn.addEventListener('mouseleave', () => {
-                addBtn.style.transform = 'translateY(0)';
-            });
+            addBtn.className = 'rag-add-btn';
             addBtn.addEventListener('click', () => this.openRag());
-
+        
             // Documents List Container
             const documentsContainer = document.createElement('div');
             documentsContainer.id = 'rag-documents-container';
-            documentsContainer.style.display = 'flex';
-            documentsContainer.style.flexDirection = 'column';
-            documentsContainer.style.gap = '12px';
-
-            // Handle scrolling vs natural growth properly
+            
+            // Set container scroll behavior based on constraints
             if (isEmbedded && parentHasHeightConstraints) {
-                // Parent has height constraints - make documents container scrollable
-                documentsContainer.style.flex = '1';
-                documentsContainer.style.overflow = 'auto';
-                documentsContainer.style.minHeight = '0';
-                documentsContainer.style.maxHeight = '100%';
+                documentsContainer.className = 'scrollable';
             } else if (!isEmbedded) {
-                // Modal mode - also needs scrolling
-                documentsContainer.style.flex = '1';
-                documentsContainer.style.overflow = 'auto';
-                documentsContainer.style.minHeight = '0';
+                documentsContainer.className = 'scrollable';
             } else {
-                // Embedded with no height constraints - completely natural growth
-                documentsContainer.style.height = 'auto';
-                documentsContainer.style.minHeight = 'fit-content';
-                documentsContainer.style.maxHeight = 'none';
-                documentsContainer.style.overflow = 'visible';
-                documentsContainer.style.flex = 'none';
-
+                documentsContainer.className = 'natural-growth';
+                
                 // Add mutation observer to trigger parent resize when content changes
                 if (window.MutationObserver) {
                     const mutationObserver = new MutationObserver(() => {
@@ -463,105 +285,62 @@
                             if (parentContainer) {
                                 parentContainer.style.height = 'auto';
                                 void parentContainer.offsetHeight; // Force reflow
-
+        
                                 // Also trigger any parent resize observers
                                 const event = new Event('resize');
                                 parentContainer.dispatchEvent(event);
                             }
                         }, 0);
                     });
-
+        
                     mutationObserver.observe(documentsContainer, {
                         childList: true,
                         subtree: true,
                         attributes: true,
                         attributeFilter: ['style']
                     });
-
+        
                     documentsContainer._mutationObserver = mutationObserver;
                 }
             }
-
-            // Custom scrollbar styles based on theme
-            const style = document.createElement('style');
-            style.textContent = `
-                #rag-documents-container::-webkit-scrollbar {
-                    width: 8px;
-                }
-                #rag-documents-container::-webkit-scrollbar-track {
-                    background: ${themeColors.scrollTrack};
-                    border-radius: 4px;
-                }
-                #rag-documents-container::-webkit-scrollbar-thumb {
-                    background: ${themeColors.scrollThumb};
-                    border-radius: 4px;
-                }
-                #rag-documents-container::-webkit-scrollbar-thumb:hover {
-                    background: ${themeColors.scrollThumbHover};
-                }
-                .rag-empty-state {
-                    text-align: center;
-                    padding: 40px 20px;
-                    color: ${themeColors.textMuted};
-                }
-                /* Store theme colors for document items */
-                :root {
-                    --rag-item-bg: ${themeColors.itemBg};
-                    --rag-item-bg-hover: ${themeColors.itemBgHover};
-                    --rag-item-text: ${themeColors.itemText};
-                    --rag-item-text-muted: ${themeColors.itemTextMuted};
-                    --rag-border: ${themeColors.border};
-                }
-            `;
-            document.head.appendChild(style);
-
+        
+            // Assemble the modal
             listContainer.appendChild(header);
             listContainer.appendChild(addBtn);
             listContainer.appendChild(documentsContainer);
-
-            if (isEmbedded) {
-                listModal.appendChild(listContainer);
-            } else {
-                listModal.appendChild(listContainer);
-
-                // Close modal when clicking on overlay (only for modal mode)
+            listModal.appendChild(listContainer);
+        
+            // Close modal when clicking on overlay (only for modal mode)
+            if (!isEmbedded) {
                 listModal.addEventListener('click', (e) => {
                     if (e.target === listModal) {
                         // this.closeDocumentList();
                     }
                 });
             }
-
-            // Add a method to show the modal properly
+        
+            // Add show/hide methods
             listModal.showModal = function () {
                 if (isEmbedded) {
-                    listModal.style.display = 'block';
-                    requestAnimationFrame(() => {
-                        listModal.style.opacity = '1';
-
-                        // Force parent layout recalculation after showing
-                        if (!parentHasHeightConstraints && parentContainer) {
-                            setTimeout(() => {
-                                parentContainer.style.height = 'auto';
-                                void parentContainer.offsetHeight; // Force reflow
-                            }, 50);
-                        }
-                    });
+                    listModal.classList.add('rag-modal-visible');
+                    
+                    // Force parent layout recalculation after showing
+                    if (!parentHasHeightConstraints && parentContainer) {
+                        setTimeout(() => {
+                            parentContainer.style.height = 'auto';
+                            void parentContainer.offsetHeight; // Force reflow
+                        }, 50);
+                    }
                 } else {
-                    listModal.style.display = 'flex';
-                    requestAnimationFrame(() => {
-                        listModal.style.opacity = '1';
-                    });
+                    listModal.classList.add('rag-modal-popup-visible');
                 }
             };
-
-            // Add a method to hide the modal
+        
             listModal.hideModal = function () {
-                listModal.style.opacity = '0';
+                listModal.classList.remove('rag-modal-visible', 'rag-modal-popup-visible');
+                
+                // Clean up observers after transition
                 setTimeout(() => {
-                    listModal.style.display = 'none';
-
-                    // Clean up observers
                     if (listModal._resizeObserver) {
                         listModal._resizeObserver.disconnect();
                     }
@@ -570,7 +349,7 @@
                     }
                 }, 300);
             };
-
+        
             return listModal;
         }
 
@@ -699,64 +478,45 @@
 
         createDocumentItem(doc) {
             const item = document.createElement('div');
-            item.style.display = 'flex';
-            item.style.justifyContent = 'space-between';
-            item.style.alignItems = 'center';
-            item.style.padding = '16px';
-            item.style.border = '1px solid var(--rag-border)';
-            item.style.borderRadius = '8px';
-            item.style.backgroundColor = 'var(--rag-item-bg)';
-            item.style.transition = 'background-color 0.2s';
-
-            item.addEventListener('mouseenter', () => item.style.backgroundColor = 'var(--rag-item-bg-hover)');
-            item.addEventListener('mouseleave', () => item.style.backgroundColor = 'var(--rag-item-bg)');
-
+            item.className = 'rag-document-item';
+        
             // Left section with icon and info
             const leftSection = document.createElement('div');
-            leftSection.style.display = 'flex';
-            leftSection.style.alignItems = 'center';
-            leftSection.style.flex = '1';
-
+            leftSection.className = 'rag-document-left-section';
+        
             // Get file format from document source
             const fileFormat = doc.source?.fileFormat || doc.fileFormat || 'doc';
-
+        
             // Create and add icon
             const icon = this.getFileIcon(fileFormat);
             leftSection.appendChild(icon);
-
+        
             const infoContainer = document.createElement('div');
-            infoContainer.style.flex = '1';
-
+            infoContainer.className = 'rag-document-info-container';
+        
             const name = document.createElement('div');
+            name.className = 'rag-document-name';
             name.textContent = doc.name || doc.title || 'Untitled Document';
-            name.style.fontWeight = '500';
-            name.style.fontSize = '16px';
-            name.style.color = 'var(--rag-item-text)';
-            name.style.marginBottom = '4px';
-
+        
             const details = document.createElement('div');
-            details.style.fontSize = '14px';
-            details.style.color = 'var(--rag-item-text-muted)';
-            details.style.display = 'flex';
-            details.style.flexDirection = 'column';
-            details.style.gap = '2px';
-
+            details.className = 'rag-document-details';
+        
             const createdDate = doc.created_at ? new Date(doc.created_at).toLocaleDateString() : 'Unknown date';
             const dateInfo = document.createElement('div');
+            dateInfo.className = 'rag-document-date-info';
             dateInfo.textContent = `Created: ${createdDate}`;
-
-            const typeInfo = document.createElement('div');
-            typeInfo.textContent = `Type: ${fileFormat.toUpperCase()}`;
-            typeInfo.style.fontWeight = '500';
-
+            dateInfo.style.gridRow = '1';
+            dateInfo.style.gridColumn = '1';
+        
             // Add source type if available
             if (doc.source?.type) {
                 const sourceInfo = document.createElement('div');
                 sourceInfo.textContent = `Source: ${doc.source.type}`;
                 details.appendChild(sourceInfo);
-
+        
                 if (doc.source?.data?.url) {
                     const url = document.createElement('div');
+                    url.className = 'rag-document-url';
                     const text = doc.source.data.url;
                     const truncateLength = 40;
                     if (text.length > truncateLength) {
@@ -764,85 +524,121 @@
                     } else {
                         url.textContent = text;
                     }
-                    url.style.overflow = 'hidden';
-                    url.style.textOverflow = 'ellipsis';
-                    url.style.whiteSpace = 'nowrap';
                     details.appendChild(url);
                 }
             }
-
-            details.appendChild(dateInfo);
-            details.appendChild(typeInfo);
-
             infoContainer.appendChild(name);
             infoContainer.appendChild(details);
             leftSection.appendChild(infoContainer);
-
-            const buttonsContainer = document.createElement('div');
-            buttonsContainer.style.display = 'flex';
-            buttonsContainer.style.gap = '8px';
-
-            // Edit Button
+        
+            // Create ellipsis menu container
+            const ellipsisMenuContainer = document.createElement('div');
+            ellipsisMenuContainer.className = 'ellipsis-menu-container';
+            
+            // Create ellipsis button
+            const ellipsisBtn = document.createElement('button');
+            ellipsisBtn.className = 'ellipsis-btn';
+            ellipsisBtn.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="5" r="2"/>
+                    <circle cx="12" cy="12" r="2"/>
+                    <circle cx="12" cy="19" r="2"/>
+                </svg>
+            `;
+            
+            // Create menu dropdown
+            const ellipsisMenu = document.createElement('div');
+            ellipsisMenu.className = 'ellipsis-menu';
+            
+            // Edit button
             const editBtn = document.createElement('button');
-            editBtn.textContent = 'Edit';
-            editBtn.style.backgroundColor = '#3b82f6';
-            editBtn.style.color = 'white';
-            editBtn.style.border = 'none';
-            editBtn.style.padding = '8px 16px';
-            editBtn.style.borderRadius = '6px';
-            editBtn.style.cursor = 'pointer';
-            editBtn.style.fontSize = '14px';
-            editBtn.style.transition = 'background-color 0.2s';
-            editBtn.addEventListener('mouseenter', () => editBtn.style.backgroundColor = '#2563eb');
-            editBtn.addEventListener('mouseleave', () => editBtn.style.backgroundColor = '#3b82f6');
-            editBtn.addEventListener('click', () => this.openEditDocumentModal(doc));
-
-            // Delete Button
+            editBtn.className = 'menu-item edit-btn';
+            editBtn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Edit
+            `;
+            editBtn.addEventListener('click', () => {
+                this.openEditDocumentModal(doc);
+                ellipsisMenu.classList.remove('show');
+            });
+            
+            // Delete button
             const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'Delete';
-            deleteBtn.style.backgroundColor = '#ef4444';
-            deleteBtn.style.color = 'white';
-            deleteBtn.style.border = 'none';
-            deleteBtn.style.padding = '8px 16px';
-            deleteBtn.style.borderRadius = '6px';
-            deleteBtn.style.cursor = 'pointer';
-            deleteBtn.style.fontSize = '14px';
-            deleteBtn.style.transition = 'background-color 0.2s';
-            deleteBtn.addEventListener('mouseenter', () => deleteBtn.style.backgroundColor = '#dc2626');
-            deleteBtn.addEventListener('mouseleave', () => deleteBtn.style.backgroundColor = '#ef4444');
-            deleteBtn.addEventListener('click', () => this.confirmDeleteDocument(doc));
-
-            buttonsContainer.appendChild(editBtn);
-            buttonsContainer.appendChild(deleteBtn);
-
+            deleteBtn.className = 'menu-item delete-btn';
+            deleteBtn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3,6 5,6 21,6"/>
+                    <path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
+                    <line x1="10" y1="11" x2="10" y2="17"/>
+                    <line x1="14" y1="11" x2="14" y2="17"/>
+                </svg>
+                Delete
+            `;
+            deleteBtn.addEventListener('click', () => {
+                this.confirmDeleteDocument(doc);
+                ellipsisMenu.classList.remove('show');
+            });
+            
+            // Toggle menu functionality
+            ellipsisBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Close all other menus
+                document.querySelectorAll('.ellipsis-menu').forEach(menu => {
+                    if (menu !== ellipsisMenu) {
+                        menu.classList.remove('show');
+                    }
+                });
+                // Toggle current menu
+                ellipsisMenu.classList.toggle('show');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!ellipsisMenuContainer.contains(e.target)) {
+                    ellipsisMenu.classList.remove('show');
+                }
+            });
+            
+            // Append elements
+            ellipsisMenu.appendChild(editBtn);
+            ellipsisMenu.appendChild(deleteBtn);
+            ellipsisMenuContainer.appendChild(ellipsisBtn);
+            ellipsisMenuContainer.appendChild(ellipsisMenu);
+            
+            // Add date info and ellipsis menu to buttons container
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.className = 'rag-document-buttons';
+            
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'rag-document-button-container';
+            buttonContainer.appendChild(dateInfo);
+            buttonContainer.appendChild(ellipsisMenuContainer);
+            buttonsContainer.appendChild(buttonContainer);
+        
             item.appendChild(leftSection);
             item.appendChild(buttonsContainer);
-
+        
             return item;
         }
 
+
+
+        
         createModalOverlay() {
             const overlay = document.createElement('div');
             overlay.id = 'rag-modal-overlay';
-            overlay.style.position = 'fixed';
-            overlay.style.top = '0';
-            overlay.style.left = '0';
-            overlay.style.width = '100vw';
-            overlay.style.height = '100vh';
-            overlay.style.backgroundColor = this.state.themeColors.overlay;
-            overlay.style.backdropFilter = 'blur(2px)';
-            overlay.style.zIndex = '999997';
-            overlay.style.display = 'none';
-            overlay.style.transition = 'opacity 0.3s ease-in-out';
-            overlay.style.opacity = '0';
-
+            overlay.className = 'rag-modal-overlay';
+        
             // Close modal when clicking on overlay
             overlay.addEventListener('click', (e) => {
                 if (e.target === overlay) {
                     this.closeRag();
                 }
             });
-
+        
             return overlay;
         }
 
@@ -862,7 +658,9 @@
             return attributes.reduce((props, attr) => {
                 if (interfaceScript.hasAttribute(attr)) {
                     let value = interfaceScript.getAttribute(attr);
-                    console.log(value)
+                    if (attr === 'theme') {
+                        this.state.isDarkTheme = value === 'dark';
+                    }
                     props[attr] = value;
                     this.state.tempDataToSend = { ...this.state.tempDataToSend, [attr]: value }
                 }
@@ -871,6 +669,7 @@
         }
 
         initializeEventListeners() {
+            this.loadCSS();
             this.observeScriptChanges();
             this.setupMessageListeners();
             this.setupResizeObserver();
@@ -882,13 +681,26 @@
                 // Optionally validate event.origin for security
 
                 const message = event.data;
+                const error = message?.error;
                 if (!message || !message.type) return;
+                console.log(error)
 
-                if (message.type === 'rag') {
-                    console.log(message)
+                if (message.type === 'rag' || message.type === 'iframe-message-rag') {
                     if (['create', 'update', 'delete'].includes(message.status)) {
                         // Refresh document list on document update or create
+                        if(message.status === 'create' && !message.error){
+                            this.showMessage(this.state.messageType.success, 'Document created successfully');
+                        }
+                        if(message.status === 'update' && !message.error){
+                            this.showMessage(this.state.messageType.success, 'Document updated successfully');
+                        }
+                        if(message.status === 'delete' && !message.error){
+                            this.showMessage(this.state.messageType.success, 'Document deleted successfully');
+                        }
                         this.showDocumentList();
+                    }
+                    if(error){
+                        this.showMessage(this.state.messageType.error, error);
                     }
                 } else {
                     console.log('Unknown message type:', message.type);
@@ -921,9 +733,6 @@
             });
         }
 
-        
-
-
         destroy() {
             // Disconnect observers
             if (this.mutationObserver) {
@@ -944,6 +753,20 @@
 
             // Remove DOM elements
             this.cleanupRag();
+        }
+
+       cleanupRag() {
+            // Remove modal overlay
+            if (this.modalOverlay) {
+                this.modalOverlay.remove();
+                this.modalOverlay = null;
+            }
+
+            // Remove document list modal
+            const documentListModal = document.getElementById('rag-document-list-modal');
+            if (documentListModal) {
+                documentListModal.remove();
+            }
         }
 
         setupMessageListeners() {
@@ -1013,27 +836,17 @@
         applyConfig() {
             const iframeContainer = document.getElementById('rag-iframe-parent-container');
             if (!iframeContainer) return;
-            // Modal popup mode - centered with max dimensions and proper spacing
-            iframeContainer.style.position = 'fixed';
-            iframeContainer.style.top = '50%';
-            iframeContainer.style.left = '50%';
-            iframeContainer.style.transform = 'translate(-50%, -50%)';
-            iframeContainer.style.width = '100vw';
-            iframeContainer.style.height = '90vh';
-            iframeContainer.style.maxWidth = '1200px';
-            iframeContainer.style.maxHeight = '800px';
-            iframeContainer.style.borderRadius = '12px';
-            iframeContainer.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
-            iframeContainer.style.overflow = 'hidden';
+            
+            // Remove any existing modal classes
+            iframeContainer.classList.remove('rag-iframe-modal');
+            
+            // Apply modal popup configuration using CSS class
+            iframeContainer.classList.add('rag-iframe-modal');
         }
 
         updateProps(newProps) {
             this.props = { ...this.props, ...newProps };
         }
-
-
-
-
 
         async showDocumentList() {
             try {
@@ -1078,7 +891,7 @@
                 }
             } catch (error) {
                 console.error('Error showing document list:', error);
-                this.showErrorMessage('Failed to load documents');
+                this.showMessage(this.messageHandler.error , 'Failed to load documents');
             }
         }
 
@@ -1468,25 +1281,21 @@
             }
         }
 
-        showErrorMessage(message) {
+        showMessage(type, message) {
             const errorDiv = document.createElement('div');
-            errorDiv.style.position = 'fixed';
-            errorDiv.style.top = '20px';
-            errorDiv.style.right = '20px';
-            errorDiv.style.backgroundColor = '#fee2e2';
-            errorDiv.style.border = '1px solid #fecaca';
-            errorDiv.style.color = '#991b1b';
-            errorDiv.style.padding = '12px 16px';
-            errorDiv.style.borderRadius = '8px';
-            errorDiv.style.zIndex = '1000000';
-            errorDiv.style.fontSize = '14px';
+            errorDiv.className = type;
             errorDiv.textContent = message;
-
+            
             document.body.appendChild(errorDiv);
-
+            
             setTimeout(() => {
                 if (errorDiv.parentNode) {
-                    errorDiv.parentNode.removeChild(errorDiv);
+                    errorDiv.classList.add('fade-out');
+                    setTimeout(() => {
+                        if (errorDiv.parentNode) {
+                            errorDiv.parentNode.removeChild(errorDiv);
+                        }
+                    }, 300); // Wait for fade-out animation to complete
                 }
             }, 5000);
         }
@@ -1735,6 +1544,9 @@
         showDocuments() {
             this.showDocumentList();
         }
+        closeDocuments() {
+            this.closeDocumentList();
+        }
 
         updateConfiguration(newConfig) {
             this.updateProps(newConfig);
@@ -1761,15 +1573,17 @@
         openRag: () => ragEmbedManager.open(),
         closeRag: () => ragEmbedManager.close(),
         showDocuments: () => ragEmbedManager.showDocuments(),
+        closeDocuments: () => ragEmbedManager.closeDocuments(),
         updateConfig: (config) => ragEmbedManager.updateConfiguration(config),
         destroy: () => ragEmbedManager.destroy()
+
     };
 
     window.openRag = () => ragEmbedManager.open();
     window.closeRag = () => ragEmbedManager.close();
     window.showDocuments = () => ragEmbedManager.showDocuments();
+    window.closeDocuments = () => ragEmbedManager.closeDocuments();
     window.updateConfig = (config) => ragEmbedManager.updateConfiguration(config);
     window.destroy = () => ragEmbedManager.destroy();
-
 
 })(); 

@@ -56,11 +56,6 @@ function RagComponent() {
     const [chunkingType, setChunkingType] = React.useState<keyof typeof KNOWLEDGE_BASE_CUSTOM_SECTION | "">("auto");
     const [isLoading, setIsLoading] = React.useState(false);
     const [file, setFile] = React.useState<File | null>(null);
-    const [alert, setAlert] = React.useState<AlertState>({
-        show: false,
-        message: "",
-        severity: "success",
-    });
     const [editingKnowledgeBase, setEditingKnowledgeBase] = React.useState<KnowledgeBaseType | null>(null);
     const [fileType, setFileType] = React.useState<"url" | "file">("url");
 
@@ -73,15 +68,6 @@ function RagComponent() {
     // Computed values
     const theme = configuration?.theme || "light";
     const isDarkTheme = theme === 'dark';
-
-    // Utility functions
-    const showAlert = React.useCallback((message: string, severity: AlertState['severity'] = 'success') => {
-        setAlert({ show: true, message, severity });
-    }, []);
-
-    const hideAlert = React.useCallback(() => {
-        setAlert(prev => ({ ...prev, show: false }));
-    }, []);
 
     const resetForm = React.useCallback(() => {
         setEditingKnowledgeBase(null);
@@ -98,16 +84,15 @@ function RagComponent() {
                     { type: "rag", status: "delete", data: result?.data || { id } },
                     "*"
                 );
-                showAlert("Knowledge base deleted successfully", "success");
                 handleClose();
             }
         } catch (error: any) {
-            showAlert(
-                error?.response?.data?.message || "Failed to delete knowledge base",
-                "error"
+            window.parent.postMessage(
+                { type: "iframe-message-rag", status: "delete", error: error?.response?.data || { id } },
+                "*"
             );
         }
-    }, [showAlert]);
+    }, []);
 
     const populateFormForEdit = React.useCallback((document: KnowledgeBaseType) => {
         // Use setTimeout to ensure form is rendered
@@ -194,7 +179,6 @@ function RagComponent() {
                 });
                 
                 if (response?.success) {
-                    showAlert("Document updated successfully!", "success");
                     window?.parent?.postMessage({ 
                         type: "rag", 
                         status: "update", 
@@ -208,7 +192,10 @@ function RagComponent() {
                 }
             } else {
                 if (!file && !formData.get("url")) {
-                    showAlert("Please upload a file or provide a URL", "error");
+                    window.parent.postMessage(
+                        { type: "iframe-message-rag", status: "update", error: "Please upload a file or provide a URL" },
+                        "*"
+                    );
                     return;
                 }
 
@@ -230,7 +217,6 @@ function RagComponent() {
 
                 const response = await createKnowledgeBaseEntry(payloadFormData);
                 if (response?.data) {
-                    showAlert("Document will be uploaded soon.", "success");
                     window.parent.postMessage(
                         { type: "rag", status: "create", data: response.data },
                         "*"
@@ -242,10 +228,9 @@ function RagComponent() {
             }
         } catch (error: any) {
             console.error("Error saving:", error);
-            showAlert(
-                error?.response?.data?.message || 
-                (editingKnowledgeBase ? "Failed to update knowledge base" : "Failed to upload document. Please try again."),
-                "error"
+            window.parent.postMessage(
+                { type: "iframe-message-rag", status: "create", error: error?.response?.data || { id } },
+                "*"
             );
         } finally {
             setIsLoading(false);
@@ -258,10 +243,13 @@ function RagComponent() {
         if (selectedFile && VALID_FILE_TYPES.includes(selectedFile.type as any)) {
             setFile(selectedFile);
         } else {
-            showAlert("Please upload a valid file (PDF, Word, or CSV).", "error");
+            window.parent.postMessage(
+                { type: "iframe-message-rag", status: "update", error: "Please upload a valid file (PDF, Word, or CSV)." },
+                "*"
+            );
             setFile(null);
         }
-    }, [showAlert]);
+    }, []);
 
     const handleClose = React.useCallback(() => {
         resetForm();
@@ -555,7 +543,7 @@ function RagComponent() {
             </form>
 
             {/* Alert notification */}
-            {alert.show && (
+            {/* {alert.show && (
                 <div className={`fixed bottom-4 right-4 p-4 rounded-lg shadow-lg max-w-sm transition-all duration-300 z-50 ${
                     alert.severity === 'error' 
                         ? (isDarkTheme ? 'bg-red-900 text-red-200 border border-red-700' : 'bg-red-100 text-red-800 border border-red-300')
@@ -573,7 +561,7 @@ function RagComponent() {
                         </button>
                     </div>
                 </div>
-            )}
+            )} */}
         </div>
     );
 }
