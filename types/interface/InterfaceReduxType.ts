@@ -16,11 +16,6 @@ export interface $InterfaceReduxType {
     headerButtons: HeaderButtonType
     modalConfig: ModalConfigType
     isLoading: boolean;
-    threadId: string;
-    subThreadId?: string;
-    helloId?: string | null;
-    version_id?: string | null;
-    bridgeName: string;
     interfaceData: InterFaceDataType;
     interfaceContext:  { [bridgeName: string]: any };
     currentSelectedComponent: {

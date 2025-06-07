@@ -10,7 +10,10 @@ const interfaceSlice = createSlice({
     builder.addCase(setThreads, (state, action) => {
       const threadData = action.payload?.newThreadData || {};
       const allThreadList = action.payload?.threadList || [];
-      const tabSessionId = action.urlData?.tabSessionId;
+      const tabSessionId = action?.urlData?.tabSessionId;
+    if(!state[tabSessionId]){
+      state[tabSessionId] = {};
+    }
       if (!(Object.keys(threadData || {}).length > 0)) {
         if (state[tabSessionId]?.threadId) {
           const selectedThread = allThreadList.find(

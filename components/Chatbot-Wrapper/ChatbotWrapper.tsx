@@ -7,9 +7,10 @@ import { useCustomSelector } from "@/utils/deepCheckSelector";
 import React, { useEffect } from "react";
 import Chatbot from "../Chatbot/Chatbot";
 
-function ChatbotWrapper() {
-  const { reduxChatSessionId } = useCustomSelector((state: $ReduxCoreType) => ({
+function ChatbotWrapper({tabSessionId}:{tabSessionId:string}) {
+  const { reduxChatSessionId ,currentThreadId} = useCustomSelector((state: $ReduxCoreType) => ({
     reduxChatSessionId: state.tabInfo?.widgetToken || state?.tabInfo?.chatbotId || '',
+    currentThreadId: state.appInfo?.[tabSessionId]?.threadId
   }));
 
   useScriptEventHandler();

@@ -1,16 +1,8 @@
 import { $ReduxCoreType } from '@/types/reduxCore';
-import { GetSessionStorageData } from '@/utils/ChatbotUtility';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { useEffect } from 'react';
 import { ChatAction, ChatActionTypes } from './chatTypes';
-
-// Helper to get storage with fallback
-const getStoredValueOrDefault = (key: string, defaultValue: any, isJson = false) => {
-  const storedValue = GetSessionStorageData(key);
-  if (!storedValue) return defaultValue;
-  return isJson ? JSON.parse(storedValue) : storedValue;
-};
 
 function isDefaultNavigateToChatScreenFn(state: $ReduxCoreType, chatSessionId: string) {
   const teams = state.Hello?.[chatSessionId]?.widgetInfo?.teams || [];
@@ -62,8 +54,8 @@ export const useReduxStateManagement = ({
     reduxSubThreadId: state.appInfo?.[tabSessionId]?.subThreadId || "",
     reduxHeaderButtons: state.Interface?.[chatSessionId]?.headerButtons || [],
     reduxBridgeName: state.appInfo?.[tabSessionId]?.bridgeName || "root",
-    reduxHelloId: state.Interface?.[chatSessionId]?.helloId || null,
-    reduxBridgeVersionId: state.Interface?.[chatSessionId]?.version_id || null,
+    reduxHelloId: state.appInfo?.[tabSessionId]?.helloId || null,
+    reduxBridgeVersionId: state.appInfo?.[tabSessionId]?.versionId || null,
     isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
     uuid: state.Hello?.[chatSessionId]?.channelListData?.uuid,
     unique_id: state.Hello?.[chatSessionId]?.channelListData?.unique_id,
@@ -85,7 +77,7 @@ export const useReduxStateManagement = ({
   useEffect(() => {
     chatDispatch({
       type: ChatActionTypes.SET_THREAD_ID,
-      payload: getStoredValueOrDefault("threadId", reduxThreadId)
+      payload: reduxThreadId
     });
   }, [reduxThreadId, chatDispatch]);
 
@@ -101,7 +93,7 @@ export const useReduxStateManagement = ({
   useEffect(() => {
     chatDispatch({
       type: ChatActionTypes.SET_BRIDGE_NAME,
-      payload: getStoredValueOrDefault("bridgeName", reduxBridgeName)
+      payload: reduxBridgeName
     });
   }, [reduxBridgeName, chatDispatch]);
 
@@ -109,7 +101,7 @@ export const useReduxStateManagement = ({
   useEffect(() => {
     chatDispatch({
       type: ChatActionTypes.SET_HEADER_BUTTONS,
-      payload: getStoredValueOrDefault("headerButtons", reduxHeaderButtons, true)
+      payload: reduxHeaderButtons
     });
   }, [reduxHeaderButtons, chatDispatch]);
 
@@ -117,7 +109,7 @@ export const useReduxStateManagement = ({
   useEffect(() => {
     chatDispatch({
       type: ChatActionTypes.SET_HELLO_ID,
-      payload: getStoredValueOrDefault("helloId", reduxHelloId)
+      payload: reduxHelloId
     });
   }, [reduxHelloId, chatDispatch]);
 
@@ -125,7 +117,7 @@ export const useReduxStateManagement = ({
   useEffect(() => {
     chatDispatch({
       type: ChatActionTypes.SET_BRIDGE_VERSION_ID,
-      payload: getStoredValueOrDefault("version_id", reduxBridgeVersionId)
+      payload: reduxBridgeVersionId
     });
   }, [reduxBridgeVersionId, chatDispatch]);
 
