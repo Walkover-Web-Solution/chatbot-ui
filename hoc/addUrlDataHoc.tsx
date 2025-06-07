@@ -1,8 +1,9 @@
-import React, { FC } from "react";
-import { useSearchParams, useParams } from "next/navigation";
+import useTabData from "@/components/Chatbot/hooks/useTabData";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
+import { useParams, useSearchParams } from "next/navigation";
+import { FC } from "react";
 
-export function addUrlDataHoc(WrappedComponent: FC<any>) {
+export function addUrlDataHoc(WrappedComponent: FC<any>, paramsToInject: string[] = []) {
   return function AddUrlDataHoc(props: any) {
     const params = useParams();
     const searchParams = useSearchParams();
@@ -16,6 +17,12 @@ export function addUrlDataHoc(WrappedComponent: FC<any>) {
     data.chatSessionId = params.chatbotId === 'hello' ? widgetToken : chatbotId;
     data.tabSessionId = `${data.chatSessionId}_${tabSessionId}`;
 
+    const tabData = useTabData({ tabSessionId: data.tabSessionId });
+    if (paramsToInject.length > 0) {
+      paramsToInject.forEach((param) => {
+        data[param] = tabData[param as keyof typeof tabData];
+      });
+    }
     return <WrappedComponent {...props} {...data} searchParams={searchParams} />;
   };
 }
