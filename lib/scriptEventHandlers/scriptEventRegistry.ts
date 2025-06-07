@@ -1,6 +1,6 @@
 import { Dispatch, UnknownAction } from "redux";
 
-type EventHandler = (event: MessageEvent, dispatch: Dispatch<UnknownAction> , handleThemeChange: (theme: string) => void) => void;
+type EventHandler = (event: MessageEvent, dispatch: Dispatch<UnknownAction> , handleThemeChange: (theme: string) => void, currentThreadId: string) => void;
 
 const eventHandlers: Record<string, EventHandler[]> = {};
 const allowedEventsToSubscribe: Set<string> = new Set<string>();

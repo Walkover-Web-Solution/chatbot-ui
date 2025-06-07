@@ -9,17 +9,23 @@ import '@/lib/scriptEventHandlers/hello/helloScriptEventHandler';
 import { ThemeContext } from "@/components/AppWrapper";
 import { useCallback, useContext, useEffect } from "react";
 import { useDispatch } from "react-redux";
+import { useCustomSelector } from "@/utils/deepCheckSelector";
+import { $ReduxCoreType } from "@/types/reduxCore";
 
-const useScriptEventHandler = () => {
+const useScriptEventHandler = (tabSessionId: string) => {
     const dispatch = useDispatch()
     const { handleThemeChange } = useContext(ThemeContext)
+    const { currentThreadId} = useCustomSelector((state: $ReduxCoreType) => ({
+        currentThreadId: state.appInfo?.[tabSessionId]?.threadId
+      }));
+    
     const handleMessage = useCallback((event: MessageEvent) => {
         const eventType = event?.data?.type;
         if (!eventType) return;
         if (!isEventAllowedToSubscribe(eventType)) return;
         
         const handlers = getHandlersForEvent(eventType);
-        handlers.forEach(handler => handler(event, dispatch, handleThemeChange));
+        handlers.forEach(handler => handler(event, dispatch, handleThemeChange, currentThreadId));
     }, [dispatch]);
 
     useEffect(() => {

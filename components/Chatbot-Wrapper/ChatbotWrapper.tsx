@@ -13,7 +13,7 @@ function ChatbotWrapper({tabSessionId}:{tabSessionId:string}) {
     currentThreadId: state.appInfo?.[tabSessionId]?.threadId
   }));
 
-  useScriptEventHandler();
+  useScriptEventHandler(tabSessionId);
   useLocalStorageEventHandler();
 
   useEffect(() => {

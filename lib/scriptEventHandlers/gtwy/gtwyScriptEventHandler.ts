@@ -1,95 +1,78 @@
 
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
-import { addDefaultContext, setDataInInterfaceRedux, setEventsSubsribedByParent, setHeaderActionButtons, setModalConfig, setThreadId } from "@/store/interface/interfaceSlice";
-import { setConfig } from "next/config";
+import { addDefaultContext, setDataInInterfaceRedux, setEventsSubsribedByParent, setHeaderActionButtons, setModalConfig } from "@/store/interface/interfaceSlice";
+import { InterfaceData } from "@/types/interface/InterfaceReduxType";
 import { Dispatch, UnknownAction } from "redux";
 import { registerEventHandler } from "../scriptEventRegistry";
-import { InterfaceData } from "@/types/interface/InterfaceReduxType";
 
-registerEventHandler('interfaceData', (event: MessageEvent, dispatch: Dispatch<UnknownAction>) => {
+registerEventHandler('interfaceData', (event: MessageEvent, dispatch: Dispatch<UnknownAction>, handleThemeChange: (theme: string) => void, currentThreadId: string) => {
   const receivedData: InterfaceData = event.data.data;
   if (!receivedData || Object.keys(receivedData).length === 0) return;
-
-  const {
-    threadId,
-    helloId,
-    version_id,
-    bridgeName,
-    variables = {},
-    vision,
-    headerButtons,
-    eventsToSubscribe = [],
-    modalConfig,
-  } = receivedData;
-
-  // Thread-related data
-  if (threadId) {
-    dispatch(setThreadId({ threadId }));
-    dispatch(setDataInAppInfoReducer({ threadId }));
+  
+  // Process thread-related data
+  if (receivedData.threadId) {
+    dispatch(setDataInAppInfoReducer({ threadId: receivedData.threadId }))
+    if (receivedData?.threadId !== currentThreadId) {
+      dispatch(setDataInAppInfoReducer({ subThreadId: '' }))
+    }
   }
 
-  if (helloId) {
-    dispatch(setThreadId({ helloId }));
+  if (receivedData.helloId) {
+    dispatch(setDataInAppInfoReducer({ helloId: receivedData.helloId }))
   }
 
-  if ('version_id' in receivedData) {
-    dispatch(setThreadId({ version_id }));
+  if (receivedData.version_id === 'null' || receivedData.version_id) {
+    dispatch(setDataInAppInfoReducer({ versionId: receivedData.version_id }))
   }
 
-  // Bridge data
-  if (bridgeName) {
-    dispatch(setDataInAppInfoReducer({ bridgeName }));
-    dispatch(setThreadId({ bridgeName }));
+  // Process bridge data
+  if (receivedData.bridgeName) {
+    dispatch(setDataInAppInfoReducer({ bridgeName: receivedData.bridgeName }))
     dispatch(
       addDefaultContext({
-        variables: { ...variables },
-        bridgeName,
+        variables: { ...receivedData.variables },
+        bridgeName: receivedData.bridgeName,
       })
     );
-  } else if (Object.keys(variables).length > 0) {
-    dispatch(addDefaultContext({ variables: { ...variables } }));
+  } else if (receivedData.variables) {
+    dispatch(addDefaultContext({ variables: { ...receivedData.variables } }));
   }
 
-  // Vision config
-  if (vision) {
-    dispatch(setConfig({ vision }));
+  // Process vision config
+  if (receivedData.vision) {
+    dispatch(setDataInAppInfoReducer({ isVision: receivedData.vision }))
   }
 
-  // UI-related data
-  if (Array.isArray(headerButtons)) {
-    dispatch(setHeaderActionButtons(headerButtons));
+  // Process UI-related data
+  if (Array.isArray(receivedData.headerButtons)) {
+    dispatch(setHeaderActionButtons(receivedData.headerButtons));
   }
 
-  if (eventsToSubscribe.length > 0) {
-    const validEvents = eventsToSubscribe.filter((item) =>
-      Object.values(ALLOWED_EVENTS_TO_SUBSCRIBE).includes(item)
+  if (Array.isArray(receivedData.eventsToSubscribe) && receivedData.eventsToSubscribe.length > 0) {
+    const validEvents = receivedData.eventsToSubscribe.filter(
+      (item) => Object.values(ALLOWED_EVENTS_TO_SUBSCRIBE).includes(item)
     );
     dispatch(setEventsSubsribedByParent(validEvents));
   }
 
-  if (modalConfig) {
-    dispatch(setModalConfig(modalConfig));
+  if (receivedData.modalConfig) {
+    dispatch(setModalConfig(receivedData.modalConfig));
   }
 
-  // Interface properties
+  // Extract and process interface data properties
   const interfaceProperties = [
-    'allowModalSwitch',
-    'hideCloseButton',
-    'chatTitle',
-    'chatIcon',
-    'chatSubTitle',
-    'allowBridgeSwitch',
-    'hideFullScreenButton',
+    'allowModalSwitch', 'hideCloseButton', 'chatTitle',
+    'chatIcon', 'chatSubTitle', 'allowBridgeSwitch', 'hideFullScreenButton'
   ];
 
-  const interfaceDataToUpdate = interfaceProperties.reduce<Record<string, any>>((acc, prop) => {
+  const interfaceDataToUpdate = interfaceProperties.reduce((acc, prop) => {
     if (prop in receivedData) {
-      acc[prop] = (receivedData as any)[prop];
+      acc[prop] = receivedData[prop];
     }
     return acc;
-  }, {});
+  }, {} as Record<string, any>);
 
-  if (Object.keys(interfaceDataToUpdate).length > 0) {
+  if (Object.keys(interfaceDataToUpdate || {}).length > 0) {
     dispatch(setDataInInterfaceRedux(interfaceDataToUpdate));
   }
 });
