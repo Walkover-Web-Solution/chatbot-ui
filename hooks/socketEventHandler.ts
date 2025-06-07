@@ -2,7 +2,7 @@
 import { ChatActionTypes, ChatState } from '@/components/Chatbot/hooks/chatTypes';
 import { useReduxStateManagement } from '@/components/Chatbot/hooks/useReduxManagement';
 import { changeChannelAssigned, setUnReadCount } from '@/store/hello/helloSlice';
-import { playMessageRecivedSound } from '@/utils/utilities';
+import { getLocalStorage, playMessageRecivedSound, setLocalStorage } from '@/utils/utilities';
 import { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import socketManager from './socketManager';
@@ -113,10 +113,14 @@ export const useSocketEvents = ({
                 break;
             }
             case 'update': {
-                const { channel, client_id, n } = message || {};
+                const { channel, client_id } = message || {};
                 if (message?.new_event) {
-                    console.log(message, 232312123)
                     if (client_id) {
+                        if (getLocalStorage('k_clientId')) {
+                            setLocalStorage('k_clientId', client_id);
+                        } else {
+                            setLocalStorage('a_clientId', client_id);
+                        }
                         socketManager.unsubscribe([channel]);
                         // Replace the old client id in the channel with the new client_id
                         const newUserChannel = `ch-comp-${company_id}-${client_id}`;

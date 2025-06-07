@@ -92,7 +92,7 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
 
   useEffect(() => {
     if (isHelloUser && currentChannelId) {
-      // fetchHelloPreviousHistory()
+      fetchHelloPreviousHistory()
     }
   }, [currentChannelId, isHelloUser])
 

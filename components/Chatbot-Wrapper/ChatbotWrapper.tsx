@@ -97,7 +97,7 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
         sdkConfig,
         ...restProps
       } = event.data.data;
-      
+
       if (sdkConfig?.customTheme) {
         handleThemeChange(sdkConfig?.customTheme)
       }
@@ -145,9 +145,9 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
       }
 
       // 5. Determine anonymity status
-      const defaultClientCreated = getLocalStorage('default_client_created') === 'true';
-      const isAnon = hasUserIdentity || defaultClientCreated ? 'false' : 'true';
+      const isAnon = hasUserIdentity ? 'false' : getLocalStorage('is_anon') === 'false' ? 'false' : 'true';
 
+      console.log(getLocalStorage('is_anon'), 123123)
       if (getLocalStorage('is_anon') != isAnon) {
         resetKeys();
       }
@@ -166,7 +166,7 @@ function ChatbotWrapper({ chatSessionId }: ChatbotWrapperProps) {
       // 8. Persist new widget token and config
       setLocalStorage('WidgetId', widgetToken);
       dispatch(setHelloConfig(event.data.data));
-      SetSessionStorage('helloConfig',JSON.stringify( event.data.data))
+      SetSessionStorage('helloConfig', JSON.stringify(event.data.data))
       dispatch(setDataInTabInfo({ widgetToken: fullWidgetToken }));
       return;
     }
