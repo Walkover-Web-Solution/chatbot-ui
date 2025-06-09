@@ -103,8 +103,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         }
 
         // 5. Determine anonymity status
-        const defaultClientCreated = getLocalStorage('default_client_created') === 'true';
-        const isAnon = hasUserIdentity || defaultClientCreated ? 'false' : 'true';
+        const isAnon = hasUserIdentity ? 'false' : getLocalStorage('is_anon') === 'false' ? 'false' : 'true';
 
         if (getLocalStorage('is_anon') != isAnon) {
             resetKeys();
