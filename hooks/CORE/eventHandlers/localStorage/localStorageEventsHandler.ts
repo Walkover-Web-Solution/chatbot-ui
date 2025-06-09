@@ -10,13 +10,11 @@ class LocalStorageEventRegistry {
   private eventHandlers: Record<string, (event: CustomEvent<{ key: string, value: string | boolean }>) => void> = {}
 
   private tabSessionId: string
-  private isHelloUser: boolean
 
-  constructor(tabSessionId: string, isHelloUser: boolean = false) {
+  constructor(tabSessionId: string) {
     this.allowedEvents = []
     this.eventHandlers = {}
     this.tabSessionId = tabSessionId
-    this.isHelloUser = isHelloUser
   }
 
   isEventAllowed(eventName: string) {
@@ -36,18 +34,14 @@ class LocalStorageEventRegistry {
     this.eventHandlers[eventName](event)
   }
 
-  getIsHelloUser() {
-    return this.isHelloUser
-  }
-
   getTabSessionId() {
     return this.tabSessionId
   }
 }
 
-export const useLocalStorageEventHandler = (tabSessionId: string, isHelloUser: boolean = false) => {
+export const useLocalStorageEventHandler = (tabSessionId: string) => {
 
-  const LocalStorageEventHandler: LocalStorageEventRegistryInstance = new LocalStorageEventRegistry(tabSessionId, isHelloUser)
+  const LocalStorageEventHandler: LocalStorageEventRegistryInstance = new LocalStorageEventRegistry(tabSessionId)
 
   useHelloLocalStorageEventHandlers(LocalStorageEventHandler)
 

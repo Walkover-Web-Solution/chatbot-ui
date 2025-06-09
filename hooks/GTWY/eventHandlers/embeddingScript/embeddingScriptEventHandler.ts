@@ -107,10 +107,7 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
     }
 
     useEffect(() => {
-        const isHelloUser = eventHandler.getIsHelloUser()
-        if (!isHelloUser) {
-            eventHandler.addEventHandler('interfaceData', handleInterfaceData)
-        }
+        eventHandler.addEventHandler('interfaceData', handleInterfaceData)
     }, [])
 
     return null

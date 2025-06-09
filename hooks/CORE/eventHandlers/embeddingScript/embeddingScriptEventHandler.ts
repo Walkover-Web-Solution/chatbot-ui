@@ -10,13 +10,11 @@ class EmbeddingScrpitEventRegistry {
   private eventHandlers: Record<string, (event: MessageEvent) => void> = {}
 
   private tabSessionId: string
-  private isHelloUser: boolean
 
-  constructor(tabSessionId: string, isHelloUser: boolean = false) {
+  constructor(tabSessionId: string) {
     this.allowedEvents = []
     this.eventHandlers = {}
     this.tabSessionId = tabSessionId
-    this.isHelloUser = isHelloUser
   }
 
   isEventAllowed(eventName: string) {
@@ -36,18 +34,14 @@ class EmbeddingScrpitEventRegistry {
     this.eventHandlers[eventName](event)
   }
 
-  getIsHelloUser() {
-    return this.isHelloUser
-  }
-
   getTabSessionId() {
     return this.tabSessionId
   }
 }
 
-export const useEmbeddingScriptEventHandler = (tabSessionId: string, isHelloUser: boolean = false) => {
+export const useEmbeddingScriptEventHandler = (tabSessionId: string) => {
 
-  const EmebeddingScriptEventHandler: EmbeddingScriptEventRegistryInstance = new EmbeddingScrpitEventRegistry(tabSessionId, isHelloUser)
+  const EmebeddingScriptEventHandler: EmbeddingScriptEventRegistryInstance = new EmbeddingScrpitEventRegistry(tabSessionId)
 
   useHandleGtwyEmbeddingScriptEvents(EmebeddingScriptEventHandler)
   useHandleHelloEmbeddingScriptEvents(EmebeddingScriptEventHandler)
