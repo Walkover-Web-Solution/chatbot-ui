@@ -1,13 +1,15 @@
 import { useEffect } from "react";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import socketManager from "./socketManager"; // Import the singleton socket manager
+import { getLocalStorage } from "@/utils/utilities";
 
-const useSocket = ({chatSessionId}) => {
-  const { jwtToken, channelId, eventChannels, channelListData } = useCustomSelector((state) => ({
+const useSocket = ({ chatSessionId }) => {
+  const { jwtToken, channelId, eventChannels, channelListData, company_id } = useCustomSelector((state) => ({
     jwtToken: state.Hello?.[chatSessionId]?.socketJwt?.jwt,
     channelId: state.Hello?.[chatSessionId]?.Channel?.channel || null,
     channelListData: state.Hello?.[chatSessionId]?.channelListData?.channels || [],
     eventChannels: state.Hello?.[chatSessionId]?.widgetInfo?.event_channels || [],
+    company_id: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || [],
   }));
 
   useEffect(() => {
@@ -17,10 +19,15 @@ const useSocket = ({chatSessionId}) => {
     socketManager.connect(jwtToken);
 
     // Setup channels for subscription
+    const clientId = getLocalStorage('k_clientId') || getLocalStorage('a_clientId')
     if (channelId) {
       // Create array of channels to subscribe to
       const channels = [];
-      
+
+      if (company_id && clientId) {
+        channels.push(`ch-comp-${company_id}-${clientId}`);
+      }
+
       // Add channels from channelListData if available
       if (channelListData && channelListData.length > 0) {
         channels.push(...channelListData.map((channel) => channel?.channel).filter(Boolean));
