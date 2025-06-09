@@ -103,6 +103,7 @@
             this.urls = {
                 chatbotUrl: 'https://ctest.msg91.com/chatbot',
                 styleSheet: 'https://ctest.msg91.com/chat-widget-style.css',
+                urlMonitor: 'http://ctest.msg91.com/urlMonitor.js'
             };
             this.icons = {
                 white: this.makeImageUrl('b1357e23-2fc6-4dc3-855a-7a213b1fa100'),
@@ -114,7 +115,8 @@
                 tempDataToSend: null,
                 interfaceLoaded: false,
                 delayElapsed: false,
-                domainTrackingStarted: false
+                domainTrackingStarted: false,
+                urlMonitorAdded: false
             };
 
             this.initializeEventListeners();
@@ -785,6 +787,22 @@
                 helloChatbotManager.updateProps({ config: newConfig });
             }
         }
+
+        addUrlMonitor(data) {
+            if(data.urlsToOpenInIFrame.length > 0 ){
+                if(this.state.urlMonitorAdded === false) {
+                    const urlTrackerScript = document.createElement('script');
+                    urlTrackerScript.src = this.urls.urlMonitor;
+                    urlTrackerScript.onload = () => {
+                        this.state.urlMonitorAdded = true;
+                        window.chatWidget.initUrlTracker({ urls: data.urlsToOpenInIFrame });
+                    };
+                    document.head.appendChild(urlTrackerScript);
+                }else{
+                    window.chatWidget.initUrlTracker({ urls: data.urlsToOpenInIFrame });
+                }
+            }
+        }
     }
 
     const helloChatbotManager = new HelloChatbotEmbedManager();
@@ -857,6 +875,9 @@
     // Initialize the widget function
     window.initChatWidget = (data, delay = 0) => {
         if (block_chatbot) return;
+        if (data.urlsToOpenInIFrame) {
+            helloChatbotManager.addUrlMonitor(data);
+        }
         if (data) {
             helloChatbotManager.helloProps = { ...data };
             if ('hide_launcher' in data) {
