@@ -29,8 +29,15 @@ import { $AppInfoReduxType } from "./appInfo/appInfoReduxType.js";
 export interface $ReduxCoreType {
   Hello: $HelloReduxType;
   Interface: $InterfaceReduxType;
-  appInfo:$AppInfoReduxType
+  appInfo:$AppInfoReduxType,
+  tabInfo:$TabInfoReduxType
 }
+
+export interface $TabInfoReduxType {
+  widgetToken: string;
+  chatbotId:string
+}
+
 export interface $UserInfoReduxType {
   first_name: string;
   last_name: string;
