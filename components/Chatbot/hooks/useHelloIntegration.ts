@@ -9,6 +9,7 @@ import socketManager from '@/hooks/socketManager';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
 import { setAgentTeams, setChannelListData, setGreeting, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
 import { $ReduxCoreType } from '@/types/reduxCore';
+import { GetSessionStorageData } from '@/utils/ChatbotUtility';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 import { PAGE_SIZE } from '@/utils/enums';
@@ -18,7 +19,6 @@ import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import helloVoiceService from './HelloVoiceService';
 import { useReduxStateManagement } from './useReduxManagement';
-import { GetSessionStorageData } from '@/utils/ChatbotUtility';
 
 interface HelloMessage {
   role: string;
@@ -378,7 +378,7 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
           is_domain_enable = widgetData?.is_domain_enable
           dispatch(setWidgetInfo(widgetData));
           const customTheme = (JSON.parse(GetSessionStorageData('helloConfig') || `{}`))?.sdkConfig?.customTheme || ''
-          if(!customTheme){
+          if (!customTheme) {
             handleThemeChange(widgetData?.primary_color || "#000000");
           }
           if (widgetData?.teams && widgetData?.teams.length <= 1) {
