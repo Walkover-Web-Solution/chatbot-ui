@@ -23,7 +23,7 @@ export const getInfoParametersFromUrl = () => {
   }
 
   const params = window.location.pathname.slice(1)?.split("/");
-  const urlParameters = {};
+  let urlParameters = {};
   if (params[0] === "chatbot") {
     const chatbotId = params[1];
     if (chatbotId === 'hello') {
@@ -33,7 +33,7 @@ export const getInfoParametersFromUrl = () => {
     }
   }
   urlParameters.tabSessionId = `${urlParameters.chatSessionId}_${store.getState().tabInfo.tabSessionId}`
-
+  urlParameters = { ...urlParameters , ...store.getState().appInfo?.[urlParameters?.tabSessionId] }
   return urlParameters;
 };
 

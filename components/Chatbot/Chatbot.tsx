@@ -34,7 +34,6 @@ interface ChatbotProps {
 
 function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
   // Refs
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const mountedRef = useRef<boolean>(false);
   const messageRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
@@ -190,11 +189,7 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
           {isChatEmpty ? (
             <EmptyChatView />
           ) : (
-            <ActiveChatView
-              containerRef={containerRef}
-              subThreadId={subThreadId}
-              messageIds={messageIds}
-            />
+            <ActiveChatView />
           )}
         </div>
       </div>
@@ -202,10 +197,8 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
   );
 }
 
-interface EmptyChatViewProps { }
-
 // Empty chat component
-function EmptyChatView({ }: EmptyChatViewProps) {
+const EmptyChatView = React.memo(function EmptyChatView({ }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-70px] p-5">
       <div className="flex flex-col items-center w-full">
@@ -227,17 +220,12 @@ function EmptyChatView({ }: EmptyChatViewProps) {
       <StarterQuestions />
     </div>
   );
-}
-
-interface ActiveChatViewProps {
-  containerRef: React.RefObject<HTMLDivElement>;
-}
+});
 
 // Active chat component
-function ActiveChatView({ containerRef }: ActiveChatViewProps) {
+const ActiveChatView = React.memo(function ActiveChatView({ }) {
   return (
     <div
-      ref={containerRef}
       className="flex flex-col h-full overflow-auto"
       style={{ height: '100vh' }}
     >
@@ -252,7 +240,7 @@ function ActiveChatView({ containerRef }: ActiveChatViewProps) {
       </div>
     </div>
   );
-}
+});
 
 // Export with HOC for URL data
 export default React.memo(addUrlDataHoc(Chatbot));

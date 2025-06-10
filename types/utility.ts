@@ -20,5 +20,7 @@ export interface UrlDataType {
   sectionIdOrScriptId: string;
   versionIdOrStepId: string;
   versionId: string;
-  chatSessionId:String
+  chatSessionId:string
+  bridgeName:string
+  threadId:string
 }

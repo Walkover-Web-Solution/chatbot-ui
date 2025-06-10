@@ -9,6 +9,7 @@ import socketManager from '@/hooks/socketManager';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
 import { setAgentTeams, setChannelListData, setGreeting, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
 import { $ReduxCoreType } from '@/types/reduxCore';
+import { GetSessionStorageData } from '@/utils/ChatbotUtility';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 import { PAGE_SIZE } from '@/utils/enums';
@@ -18,7 +19,6 @@ import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 import helloVoiceService from './HelloVoiceService';
 import { useReduxStateManagement } from './useReduxManagement';
-import { GetSessionStorageData } from '@/utils/ChatbotUtility';
 
 interface HelloMessage {
   role: string;
@@ -326,32 +326,12 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
     return true;
   }, [onSendHello, addHelloMessage, images, messageRef, currentChannelId]);
 
-  // Effect hooks
-  // useEffect(() => {
-  //   window.addEventListener("localstorage-updated", handleStorageUpdate);
-  //   return () => {
-  //     window.removeEventListener("localstorage-updated", handleStorageUpdate);
-  //   };
-  // }, []);
-
   useEffect(() => {
     if (reduxChatSessionId) {
       const widgetToken = reduxChatSessionId?.split('_')[0] // Extract first part (e.g., "d1bc7")
       initializeHelloServices(widgetToken);
     }
   }, [reduxChatSessionId])
-
-  // const handleStorageUpdate = (e: CustomEvent<{ key: string, value: string | boolean }>) => {
-  //   if (e.detail.key === 'WidgetId') {
-  //     initializeHelloServices(e.detail.value);
-  //   }
-  //   if (e.detail.key === 'k_clientId' || e.detail.key === 'a_clientId') {
-  //     dispatch(setHelloKeysData({ [e.detail.key]: e.detail.value }))
-  //   }
-  //   if (e.detail.key === 'is_anon') {
-  //     dispatch(setHelloKeysData({ is_anon: e.detail.value }));
-  //   }
-  // };
 
   const initializeHelloServices = async (widgetToken: string = '') => {
     // Prevent duplicate initialization
@@ -398,7 +378,7 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
           is_domain_enable = widgetData?.is_domain_enable
           dispatch(setWidgetInfo(widgetData));
           const customTheme = (JSON.parse(GetSessionStorageData('helloConfig') || `{}`))?.sdkConfig?.customTheme || ''
-          if(!customTheme){
+          if (!customTheme) {
             handleThemeChange(widgetData?.primary_color || "#000000");
           }
           if (widgetData?.teams && widgetData?.teams.length <= 1) {

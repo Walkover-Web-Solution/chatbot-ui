@@ -15,8 +15,9 @@ import { MessageContext } from "../InterfaceChatbot";
 import MoveToDownButton from "../MoveToDownButton";
 import Message from "./Message";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
+import { ParamsEnums } from "@/utils/enums";
 
-function MessageList({chatSessionId,tabSessionId}:{chatSessionId:string, tabSessionId:string}) {
+function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: string, currentChannelId: string }) {
   const {
     hasMoreMessages = false,
     newMessage,
@@ -31,12 +32,9 @@ function MessageList({chatSessionId,tabSessionId}:{chatSessionId:string, tabSess
   const scrollableDivRef = useRef(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
-  const { isHelloUser, assigned_type, currentChannelId, greetingMessage } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { isHelloUser, assigned_type, greetingMessage } = useCustomSelector((state: $ReduxCoreType) => ({
     isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser,
-    assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
-      (channel: any) => channel?.channel === state?.appInfo?.[tabSessionId]?.currentChannelId
-    )?.assigned_type,
-    currentChannelId: state?.appInfo?.[tabSessionId]?.currentChannelId,
+    assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find((channel: any) => channel?.channel === currentChannelId)?.assigned_type,
     greetingMessage: state.Hello?.[chatSessionId]?.greeting
   }));
 
@@ -192,4 +190,4 @@ function MessageList({chatSessionId,tabSessionId}:{chatSessionId:string, tabSess
 
 }
 
-export default React.memo(addUrlDataHoc(MessageList));
+export default React.memo(addUrlDataHoc(MessageList, [ParamsEnums.currentChannelId]));

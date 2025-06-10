@@ -66,6 +66,7 @@
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid #cecece;
+  box-shadow: rgba(15, 15, 15, 0.08) 0px 5px 40px 0px;
 }
 
 .popup-interfaceEmbed {
