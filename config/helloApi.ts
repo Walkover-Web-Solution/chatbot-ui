@@ -6,6 +6,7 @@ import { PAGE_SIZE } from "@/utils/enums";
 const urlParams = new URLSearchParams(window.location.search);
 const env = urlParams.get('env');
 const HELLO_HOST_URL = env !== 'stage' ? process.env.NEXT_PUBLIC_MSG91_HOST_URL : 'https://stageapi.phone91.com';
+const PUSH_NOTIFICATION_URL = process.env.NEXT_PUBLIC_PUSH_NOTIFICATION_URL;
 
 export function getUserData() {
   const userData = JSON.parse(getLocalStorage('userData') || '{}');
@@ -449,5 +450,23 @@ export async function submitFeedback(params: {
   } catch (error: any) {
     errorToast(error?.message || "Failed to submit feedback");
     return null;
+  }
+}
+
+export async function subscribeForFCMPushNotification(data: Record<string, any>, jwtToken: string): Promise<any> {
+  try {
+    const response = await axios.post(
+      `${PUSH_NOTIFICATION_URL}/add-user-fcm-token/`,
+      data,
+      {
+        headers: {
+          'authorization': jwtToken,
+          'content-type': 'application/json'
+        }
+      }
+    );
+    return response?.data;
+  } catch (error: any) {
+    throw error;
   }
 }
