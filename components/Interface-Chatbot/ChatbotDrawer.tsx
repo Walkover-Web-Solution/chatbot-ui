@@ -25,6 +25,7 @@ import { $ReduxCoreType } from "@/types/reduxCore";
 import { ParamsEnums } from "@/utils/enums";
 import { getLocalStorage } from "@/utils/utilities";
 import { MessageContext } from "./InterfaceChatbot";
+import Parakh from "parakh";
 
 const createRandomId = () => Math.random().toString(36).substring(2, 15);
 
@@ -434,6 +435,7 @@ const ChatbotDrawer = ({
                   <p className="text-xs text-gray-500 text-center">{tagline}</p>
                 )}
               </div>
+              <Parakh />
               <div className="w-10 flex items-center justify-end">
                 {isToggledrawer && !isHelloUser && (
                   <div className="tooltip tooltip-bottom z-[9999]" data-tip="New Chat">
