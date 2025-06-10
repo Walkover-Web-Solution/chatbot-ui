@@ -1,7 +1,8 @@
 {
-  "name": "chatbot-nextjs",
-  "version": "0.1.0",
-  "private": true,
+  "name": "parakh",
+  "version": "0.1.7",
+  "private": false,
+  "main": "dist/app/layout.js",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",

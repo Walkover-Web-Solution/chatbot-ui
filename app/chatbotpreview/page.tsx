@@ -3,7 +3,6 @@ import { ThemeContext } from '@/components/AppWrapper';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Send, Menu, X, Image, Paperclip, Mic, Bot, User, ChevronDown, MessageSquare, Phone, Video } from 'lucide-react';
-export const runtime = "edge";
 
 function ChatbotPreview() {
     const theme = useTheme();

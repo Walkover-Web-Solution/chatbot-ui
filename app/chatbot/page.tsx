@@ -6,7 +6,6 @@ import { EmbedVerificationStatus } from "@/utils/enums";
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-export const runtime = "edge";
 
 export default function InterfaceEmbed() {
     const { chatbot_id, userId, token, isHelloUser, environment = null } = useContext(ChatbotContext);
