@@ -83,9 +83,9 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
     });
 
   const { show_widget_form, is_anon, greetingMessage } = useCustomSelector((state: $ReduxCoreType) => {
-    const helloConfig = state.Hello?.[chatSessionId]?.helloConfig
+    const widgetInfo = state.Hello?.[chatSessionId]?.widgetInfo
     return ({
-      show_widget_form: typeof helloConfig?.show_widget_form === 'boolean' ? helloConfig?.show_widget_form : state.Hello?.[chatSessionId]?.showWidgetForm,
+      show_widget_form: typeof widgetInfo?.show_widget_form === 'boolean' ? widgetInfo?.show_widget_form : state.Hello?.[chatSessionId]?.showWidgetForm,
       is_anon: state.Hello?.[chatSessionId]?.is_anon == 'true',
       greetingMessage: state.Hello?.[chatSessionId]?.greeting
     })
