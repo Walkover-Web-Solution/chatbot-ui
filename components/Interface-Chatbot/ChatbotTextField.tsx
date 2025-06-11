@@ -265,7 +265,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
 
     return (
       <div className="relative w-7 h-7 z-[2]">
-        <Image
+        <img
           src={AiIcon}
           width={28}
           height={28}

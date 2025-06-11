@@ -102,7 +102,7 @@ const AssistantMessageCard = React.memo(
         <div className="flex items-end sm:max-w-[90%] max-w-[98%] animate-slide-left">
           <div className="flex flex-col items-center justify-end w-8 pb-3">
             <div className="sm:w-7 sm:h-7 w-6 h-6 rounded-full bg-primary/10 p-1 flex items-center justify-center">
-              <Image
+              <img
                 src={AiIcon}
                 width="28"
                 height="28"
@@ -299,7 +299,7 @@ const HumanOrBotMessageCard = React.memo(
                     {message?.from_name?.charAt(0)?.toUpperCase()}
                   </div>
                 ) : (
-                  <Image
+                  <img
                     width={24}
                     height={24}
                     src={UserAssistant}
@@ -376,7 +376,7 @@ const HumanOrBotMessageCard = React.memo(
   }
 );
 
-const ShadowDomComponent = ({ htmlContent, messageId }:{htmlContent:string, messageId:string}) => {
+const ShadowDomComponent = ({ htmlContent, messageId }: { htmlContent: string, messageId: string }) => {
   const containerRef = useRef(null);
   const [contentHeight, setContentHeight] = useState('auto');
   const shadowRootRef = useRef(null);
@@ -490,7 +490,7 @@ const ShadowDomComponent = ({ htmlContent, messageId }:{htmlContent:string, mess
   );
 };
 
-function Message({ message, addMessage, prevTime ,chatSessionId}: { message: any, addMessage?: any, prevTime?: string | number | null ,chatSessionId:string}) {
+function Message({ message, addMessage, prevTime, chatSessionId }: { message: any, addMessage?: any, prevTime?: string | number | null, chatSessionId: string }) {
   const theme = useTheme();
   const backgroundColor = theme.palette.primary.main;
   const textColor = isColorLight(backgroundColor) ? "#000000" : "#ffffff";

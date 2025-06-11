@@ -3,6 +3,7 @@ import AppWrapper from '@/components/AppWrapper';
 import ChatbotLayoutWrapper from '@/components/Chatbot-Wrapper/ChatbotLayoutWrapper';
 import ChatbotWrapper from '@/components/Chatbot-Wrapper/ChatbotWrapper';
 import React, { useCallback, useEffect } from 'react';
+import './index.css';
 
 export default function ChatbotProvider({ embedToken, threadId, defaultOpen, bridgeName }: { embedToken: string, threadId?: string, defaultOpen?: any, bridgeName: string }) {
     const [interfaceDetails, setInterfaceDetails] = React.useState<any>({});

@@ -1,15 +1,36 @@
 {
   "name": "parakh",
-  "version": "0.2.6",
+  "version": "0.3.5",
+  "type": "module",
   "description": "A chatbot UI application package with MUI, Redux, Socket.IO, and Next.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./styles.css": {
+      "default": "./dist/index.css"
+    }
+  },
   "files": [
-    "dist"
+    "dist",
+    "dist/*",
+    "dist/*.gif",
+    "dist/*.png",
+    "dist/*.css",
+    "dist/*.js",
+    "dist/*.d.ts",
+    "dist/*.json",
+    "dist/*.svg",
+    "dist/*.webp",
+    "dist/tailwind.css"
   ],
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "tsup",
+    "build:css": "npx tailwindcss -c ./tailwind.config.ts -i ./app/globals.css -o ./src/index.css --minify",
     "start": "next start",
     "lint": "next lint",
     "build:pages": "npx @cloudflare/next-on-pages",
@@ -57,9 +78,11 @@
     "socket.io-client": "^4.8.1"
   },
   "peerDependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "^15.1.6"
+    "react": "^18 || ^19",
+    "react-dom": "^18 || ^19",
+    "next": "^13 || ^14 || ^15",
+    "react-redux": "^9",
+    "redux": "^5"
   },
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.8",

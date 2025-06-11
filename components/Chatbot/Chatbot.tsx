@@ -202,13 +202,13 @@ const EmptyChatView = React.memo(function EmptyChatView({ }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-70px] p-5">
       <div className="flex flex-col items-center w-full">
-        <Image
+        <img
           src={ChatBotGif}
           alt="Chatbot"
           className="block"
           width={100}
           height={100}
-          priority
+          // priority
         />
         <h2 className="text-xl font-bold text-black">
           What can I help with?

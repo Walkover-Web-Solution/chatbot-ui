@@ -5,7 +5,7 @@ export default defineConfig({
     entry: ['src/index.tsx'],
 
     // Output formats
-    format: ['cjs'],
+    format: ['esm'],
 
     // Generate TypeScript declaration files
     dts: {
@@ -16,7 +16,7 @@ export default defineConfig({
     clean: true,
 
     // Split chunks for better tree shaking
-    splitting: false,
+    splitting: true,
 
     // Generate sourcemap
     // sourcemap: true,
@@ -29,11 +29,23 @@ export default defineConfig({
 
     // Target environment
     target: 'es2020',
+    define: {
+        'process.env.NEXT_PUBLIC_API_BASE_URL': JSON.stringify(process.env.NEXT_PUBLIC_API_BASE_URL || 'https://db.gtwy.ai'),
+        'process.env.NEXT_PUBLIC_API_ENVIRONMENT': JSON.stringify(process.env.NEXT_PUBLIC_API_ENVIRONMENT || 'PROD'),
+        'process.env.NEXT_PUBLIC_PYTHON_API_BASE_URL': JSON.stringify(process.env.NEXT_PUBLIC_PYTHON_API_BASE_URL || 'https://api.gtwy.ai'),
+        'process.env.NEXT_PUBLIC_FRONTEND_URL': JSON.stringify(process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://gtwy.ai'),
+        'process.env.NEXT_PUBLIC_CHATBOT_FEEDBACK_URL': JSON.stringify(process.env.NEXT_PUBLIC_CHATBOT_FEEDBACK_URL || 'https://dev.sokt.io/func/scriW07Woc4M'),
+        'process.env.NODE_VERSION': JSON.stringify(process.env.NODE_VERSION || '20.18.3s'),
+        'process.env.NEXT_PUBLIC_MSG91_HOST_URL': JSON.stringify(process.env.NEXT_PUBLIC_MSG91_HOST_URL || 'https://api.phone91.com'),
+        'process.env.NEXT_PUBLIC_SOCKET_URL': JSON.stringify(process.env.NEXT_PUBLIC_SOCKET_URL || 'https://chat.phone91.com'),
+        'process.env.NEXT_PUBLIC_NOTIFICATOIN_SOCKET_URL': JSON.stringify(process.env.NEXT_PUBLIC_NOTIFICATOIN_SOCKET_URL || 'https://notifications.phone91.com'),
+    },
 
     // Path alias resolution and asset loader support
     esbuildOptions(options) {
         options.loader = {
             '.ts': 'ts',
+            '.css': 'css',
             '.tsx': 'tsx',
             '.js': 'jsx',
             '.mjs': 'jsx',
@@ -44,7 +56,7 @@ export default defineConfig({
             '.ico': 'file',    // Added support for .ico files
             '.scss': 'css',    // Added support for .scss files
         };
-        options.jsx = 'preserve'
+        options.jsx = 'automatic'
         options.alias = {
             '@': './',
         };
