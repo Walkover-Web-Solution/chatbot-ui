@@ -8,21 +8,19 @@ import { useContext, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
 export default function InterfaceEmbed() {
+    debugger
     const { chatbot_id, userId, token, isHelloUser, environment = null } = useContext(ChatbotContext);
     const router = useRouter();
     const [verifiedState, setVerifiedState] = useState(EmbedVerificationStatus.VERIFYING);
     const dispatch = useDispatch();
 
     useEffect(() => {
-
         let tabSessionId = GetSessionStorageData('tab_session_id');
-
         if (!tabSessionId) {
             tabSessionId = Date.now().toString();
             SetSessionStorage('tab_session_id', tabSessionId);
             dispatch(setDataInTabInfo({ tabSessionId }))
         }
-
     }, [])
 
     useEffect(() => {

@@ -40,7 +40,7 @@ class EmbeddingScrpitEventRegistry {
 }
 
 export const useEmbeddingScriptEventHandler = (tabSessionId: string) => {
-
+  console.log(tabSessionId,'tabSessionId in useEmbeddingScriptEventHandler');
   const EmebeddingScriptEventHandler: EmbeddingScriptEventRegistryInstance = new EmbeddingScrpitEventRegistry(tabSessionId)
 
   useHandleGtwyEmbeddingScriptEvents(EmebeddingScriptEventHandler)
@@ -48,7 +48,7 @@ export const useEmbeddingScriptEventHandler = (tabSessionId: string) => {
 
   const handleMessage = (event: MessageEvent) => {
     const { type } = event.data;
-    if ( EmebeddingScriptEventHandler.isEventAllowed(type) ) {
+    if (EmebeddingScriptEventHandler.isEventAllowed(type)) {
       EmebeddingScriptEventHandler.on(type, event)
     }
   }

@@ -25,7 +25,6 @@ import { $ReduxCoreType } from "@/types/reduxCore";
 import { ParamsEnums } from "@/utils/enums";
 import { getLocalStorage } from "@/utils/utilities";
 import { MessageContext } from "./InterfaceChatbot";
-import Parakh from "parakh";
 
 const createRandomId = () => Math.random().toString(36).substring(2, 15);
 
@@ -395,7 +394,17 @@ const ChatbotDrawer = ({
   }, [hideCloseButton, handleCloseChatbot]);
 
   return (
-    <div className={`drawer ${isSmallScreen ? 'z-[99999]' : 'z-[999]'}`}>
+    <div
+      className={`drawer ${isSmallScreen ? 'z-[99999]' : 'z-[0]'}`}
+      style={{
+        position: isSmallScreen ? "absolute" : "static",
+        top: isSmallScreen ? 0 : undefined,
+        left: isSmallScreen ? 0 : undefined,
+        width: isSmallScreen ? "100%" : undefined,
+        height: isSmallScreen ? "100%" : undefined,
+        pointerEvents: 'auto'
+      }}
+    >
       <input
         id="chatbot-drawer"
         type="checkbox"
@@ -407,12 +416,23 @@ const ChatbotDrawer = ({
       {/* Backdrop overlay for mobile */}
       {isToggledrawer && (
         <div
-          className="fixed inset-0 bg-black/30 backdrop-blur-sm lg:hidden"
+          className="absolute inset-0 bg-black/30 backdrop-blur-sm lg:hidden"
+          style={{ zIndex: 10 }}
           onClick={() => closeToggleDrawer(false)}
         />
       )}
 
-      <div className={`drawer-side ${isHelloUser && isSmallScreen ? '100%' : 'max-w-[286px]'} ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
+      <div
+        className={`drawer-side ${isHelloUser && isSmallScreen ? 'w-full' : 'max-w-[286px]'} ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          height: "100%",
+          // zIndex: 20,
+          pointerEvents: 'auto'
+        }}
+      >
         <div className="w-full h-full text-base-content relative bg-base-200 border-r-base-300 border flex flex-col">
           {/* Header with padding */}
           <div className="px-4 pt-4 pb-4">
@@ -435,7 +455,6 @@ const ChatbotDrawer = ({
                   <p className="text-xs text-gray-500 text-center">{tagline}</p>
                 )}
               </div>
-              <Parakh />
               <div className="w-10 flex items-center justify-end">
                 {isToggledrawer && !isHelloUser && (
                   <div className="tooltip tooltip-bottom z-[9999]" data-tip="New Chat">

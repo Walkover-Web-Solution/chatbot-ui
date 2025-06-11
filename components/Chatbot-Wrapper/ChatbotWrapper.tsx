@@ -12,7 +12,6 @@ interface ChatbotWrapperProps {
 }
 
 function ChatbotWrapper({ tabSessionId }: ChatbotWrapperProps) {
-  
   useEmbeddingScriptEventHandler(tabSessionId);
   useLocalStorageEventHandler(tabSessionId);
 
@@ -21,11 +20,11 @@ function ChatbotWrapper({ tabSessionId }: ChatbotWrapperProps) {
   }));
 
   // Notify parent when interface is loaded
-  useEffect(() => {
-    setTimeout(() => {
-      window?.parent?.postMessage({ type: "interfaceLoaded" }, "*");
-    }, 0);
-  }, []);
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     window?.parent?.postMessage({ type: "interfaceLoaded" }, "*");
+  //   }, 0);
+  // }, []);
 
   if (!reduxChatSessionId) {
     return null

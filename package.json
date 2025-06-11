@@ -1,13 +1,9 @@
 {
   "name": "parakh",
-  "version": "0.1.7",
-  "private": false,
+  "version": "0.2.6",
+  "description": "A chatbot UI application package with MUI, Redux, Socket.IO, and Next.js",
   "main": "dist/index.js",
-  "exports": {
-    ".": {
-      "require": "./dist/index.js"
-    }
-  },
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
@@ -17,9 +13,19 @@
     "start": "next start",
     "lint": "next lint",
     "build:pages": "npx @cloudflare/next-on-pages",
-    "preview": "npm run pages:build && wrangler pages dev",
-    "deploy": "npm run pages:build && wrangler pages deploy"
+    "preview": "npm run build:pages && wrangler pages dev",
+    "deploy": "npm run build:pages && wrangler pages deploy"
   },
+  "keywords": [
+    "chatbot",
+    "mui",
+    "redux",
+    "typescript",
+    "nextjs",
+    "tsup"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
@@ -36,7 +42,6 @@
     "lucide-react": "^0.474.0",
     "msg91-webrtc-call": "^1.4.1",
     "next": "15.1.6",
-    "parakh": "^0.1.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-infinite-scroll-component": "^6.1.0",
@@ -50,6 +55,11 @@
     "remark-gfm": "^4.0.1",
     "rtlayer-client": "^1.5.5",
     "socket.io-client": "^4.8.1"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "next": "^15.1.6"
   },
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.8",

@@ -2,13 +2,15 @@ import { defineConfig } from 'tsup'
 
 export default defineConfig({
     // Entry points - specify your main files
-    entry: ['app/'],
+    entry: ['src/index.tsx'],
 
     // Output formats
     format: ['cjs'],
 
     // Generate TypeScript declaration files
-    dts: true,
+    dts: {
+        resolve: true
+    },
 
     // Clean output directory before build
     clean: true,
@@ -17,7 +19,7 @@ export default defineConfig({
     splitting: false,
 
     // Generate sourcemap
-    sourcemap: true,
+    // sourcemap: true,
 
     // Minify output
     minify: false,
@@ -42,6 +44,7 @@ export default defineConfig({
             '.ico': 'file',    // Added support for .ico files
             '.scss': 'css',    // Added support for .scss files
         };
+        options.jsx = 'preserve'
         options.alias = {
             '@': './',
         };

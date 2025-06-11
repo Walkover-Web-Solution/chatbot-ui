@@ -31,9 +31,11 @@ export const getInfoParametersFromUrl = () => {
     } else {
       urlParameters.chatSessionId = store.getState().tabInfo.chatbotId
     }
+  } else {
+    urlParameters.chatSessionId = store.getState().tabInfo.chatbotId || store.getState().tabInfo.widgetToken;
   }
   urlParameters.tabSessionId = `${urlParameters.chatSessionId}_${store.getState().tabInfo.tabSessionId}`
-  urlParameters = { ...urlParameters , ...store.getState().appInfo?.[urlParameters?.tabSessionId] }
+  urlParameters = { ...urlParameters, ...store.getState().appInfo?.[urlParameters?.tabSessionId] }
   return urlParameters;
 };
 

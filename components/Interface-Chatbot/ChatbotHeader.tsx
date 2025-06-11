@@ -125,6 +125,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
       voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false
     })
   });
+
   // Determine if we should show the create thread button
   const showCreateThreadButton = useMemo(() => {
     return !isHelloUser && !(subThreadList?.length < 2 && (!messageIds || messageIds.length === 0));
@@ -192,7 +193,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
   // Memoized drawer toggle button
   const DrawerToggleButton = useMemo(() => {
     if (!(subThreadList?.length > 1 || isHelloUser)) return null;
-
     return (
       <button
         className="p-2 hover:bg-gray-200 rounded-full transition-colors"
