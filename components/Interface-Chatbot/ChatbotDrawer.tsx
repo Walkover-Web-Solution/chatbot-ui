@@ -80,7 +80,8 @@ const ChatbotDrawer = ({
     Name,
     tagline,
     hideCloseButton,
-    voice_call_widget
+    voice_call_widget,
+    show_msg91
   } = useCustomSelector((state: $ReduxCoreType) => {
     return {
       subThreadList: state.Interface?.[chatSessionId]?.interfaceContext?.[bridgeName]?.threadList?.[threadId] || [],
@@ -90,7 +91,8 @@ const ChatbotDrawer = ({
       Name: JSON.parse(getLocalStorage("client") || '{}')?.name || state.Hello?.[chatSessionId]?.channelListData?.customer_name || '',
       tagline: state.Hello?.[chatSessionId]?.widgetInfo?.tagline || '',
       hideCloseButton: state.Interface?.[chatSessionId]?.hideCloseButton || false,
-      voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false
+      voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false,
+      show_msg91: state.Hello?.[chatSessionId]?.widgetInfo?.show_msg91 || false
     };
   });
 
@@ -460,10 +462,21 @@ const ChatbotDrawer = ({
           {/* Footer with branding - always stays at bottom */}
           <div className="px-4 pt-2 pb-2 flex items-center justify-center mt-auto">
             <div className="text-xs text-gray-500 flex items-baseline gap-1">
-              Powered by
-              {isHelloUser ? <a href="https://msg91.com" target="_blank" rel="noopener noreferrer" className="flex hover:opacity-80 transition-opacity ml-1">
-                <img src="/msg91-logo.svg" alt="MSG91" className="h-4" />
-              </a> : <a href="https://gtwy.ai" target="_blank" rel="noopener noreferrer" className="flex hover:opacity-80 transition-opacity"><span className="font-bold">GTWY</span></a>}
+              {isHelloUser && show_msg91 ? (
+                <>
+                  Powered by
+                  <a href="https://msg91.com" target="_blank" rel="noopener noreferrer" className="flex hover:opacity-80 transition-opacity ml-1">
+                    <img src="/msg91-logo.svg" alt="MSG91" className="h-4" />
+                  </a>
+                </>
+              ) : !isHelloUser ? (
+                <>
+                  Powered by
+                  <a href="https://gtwy.ai" target="_blank" rel="noopener noreferrer" className="flex hover:opacity-80 transition-opacity">
+                    <span className="font-bold">GTWY</span>
+                  </a>
+                </>
+              ) : null}
             </div>
           </div>
         </div>
