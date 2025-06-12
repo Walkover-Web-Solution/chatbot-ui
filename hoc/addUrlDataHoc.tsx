@@ -14,17 +14,18 @@ export function addUrlDataHoc(WrappedComponent: FC<any>, paramsToInject: string[
       tabSessionId: state.tabInfo.tabSessionId,
       isHelloUser: state.tabInfo.isHelloUser,
     }));
+    // Set chatSessionId only if it hasn't been set yet
+    if (typeof params.chatbotId !== "undefined" && !data.chatSessionId) {
+      data.chatSessionId = params.chatbotId === 'hello' ? widgetToken : chatbotId;
+    }
 
-    if (typeof params.chatbotId !== "undefined") {
-      if (params.chatbotId === 'hello') {
+    // Only set these values if chatSessionId hasn't been set yet
+    if (!data.chatSessionId) {
+      if (isHelloUser) {
         data.chatSessionId = typeof widgetToken !== "undefined" ? widgetToken : "";
       } else {
         data.chatSessionId = typeof chatbotId !== "undefined" ? chatbotId : "";
       }
-    } else if (isHelloUser) {
-      data.chatSessionId = typeof widgetToken !== "undefined" ? widgetToken : "";
-    } else {
-      data.chatSessionId = typeof chatbotId !== "undefined" ? chatbotId : "";
     }
     data.tabSessionId = `${data.chatSessionId}_${tabSessionId}`;
     const tabData = useTabData({ tabSessionId: data.tabSessionId });

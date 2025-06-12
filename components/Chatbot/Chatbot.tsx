@@ -146,9 +146,9 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
 
   return (
     <MessageContext.Provider value={contextValue}>
-      <div className="flex h-full w-full overflow-hidden relative">
+      <div className={`flex ${window == window.parent ? 'h-full' : 'h-screen'} w-full overflow-hidden relative`}>
         {/* Sidebar - visible on large screens */}
-        <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? 'w-96 max-w-[286px]' : 'w-0'}`}>
+        <div className={`hidden lg:block bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer && !isSmallScreen ? 'w-96 max-w-[286px]' : 'w-0'}`}>
           <ChatbotDrawer
             setToggleDrawer={chatActions.setToggleDrawer}
             isToggledrawer={isToggledrawer}
@@ -208,7 +208,7 @@ const EmptyChatView = React.memo(function EmptyChatView({ }) {
           className="block"
           width={100}
           height={100}
-          // priority
+        // priority
         />
         <h2 className="text-xl font-bold text-black">
           What can I help with?

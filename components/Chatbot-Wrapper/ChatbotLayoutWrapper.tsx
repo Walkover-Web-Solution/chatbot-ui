@@ -17,7 +17,7 @@ function ChatbotLayoutWrapper({ children, chatSessionId, tabSessionId, props }: 
     const dispatch = useDispatch();
     // Use useMemo to parse interfaceDetails once and avoid repeated parsing
     const { chatbot_id, userId, token, config, isHelloUser = false } = useMemo(() => {
-        const interfaceDetails = search.get("interfaceDetails") || props?.interfaceDetails;
+        const interfaceDetails = props?.interfaceDetails || {};
         // Default values if parsing fails or interfaceDetails is not provided
         const defaultValues = {
             chatbot_id: null,

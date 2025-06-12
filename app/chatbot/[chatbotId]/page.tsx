@@ -1,8 +1,11 @@
+'use client';
+import React from 'react';
 import ChatbotWrapper from '@/components/Chatbot-Wrapper/ChatbotWrapper';
 
-export function generateStaticParams() {
-    return [{ chatbotId: 'hello' }];
-}
+export const runtime = 'edge';
+// export function generateStaticParams() {
+//     return [{ chatbotId: 'hello' }];
+// }
 
 function Chatbot() {
     return (

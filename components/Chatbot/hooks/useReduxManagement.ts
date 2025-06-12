@@ -3,6 +3,7 @@ import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { useEffect } from 'react';
 import { ChatAction, ChatActionTypes } from './chatTypes';
+import { useContainerWidthQuery } from './useContainerWidthQuery';
 
 function isDefaultNavigateToChatScreenFn(state: $ReduxCoreType, chatSessionId: string) {
   const teams = state.Hello?.[chatSessionId]?.widgetInfo?.teams || [];
@@ -10,19 +11,18 @@ function isDefaultNavigateToChatScreenFn(state: $ReduxCoreType, chatSessionId: s
   return teams && teams.length <= 1 && channels?.length <= 1 && !channels?.[0]?.id;
 }
 
-export const useReduxStateManagement = ({ 
-  chatDispatch, 
-  chatSessionId ,
+export const useReduxStateManagement = ({
+  chatDispatch,
+  chatSessionId,
   tabSessionId
-}: { 
-  chatDispatch: React.Dispatch<ChatAction>; 
+}: {
+  chatDispatch: React.Dispatch<ChatAction>;
   chatSessionId: string;
   tabSessionId: string;
 }) => {
   // FIXED: Always call hooks at the top level, in the same order
   const theme = useTheme();
-  const isLargeScreen = useMediaQuery('(max-width: 1024px)');
-  const isSmallScreen = useMediaQuery('(max-width: 1023px)');
+  const isSmallScreen = useContainerWidthQuery({});
 
   // Get Redux state
   const {
@@ -72,7 +72,7 @@ export const useReduxStateManagement = ({
     currentChannelId: state?.appInfo?.[tabSessionId]?.currentChannelId,
     currentTeamId: state?.appInfo?.[tabSessionId]?.currentTeamId,
   }));
-  
+
   // Sync Redux threadId with local state
   useEffect(() => {
     chatDispatch({
@@ -135,9 +135,9 @@ export const useReduxStateManagement = ({
   useEffect(() => {
     chatDispatch({
       type: ChatActionTypes.SET_TOGGLE_DRAWER,
-      payload: !isLargeScreen
+      payload: !isSmallScreen
     });
-  }, [isLargeScreen, chatDispatch]);
+  }, [isSmallScreen, chatDispatch]);
 
   return {
     interfaceContextData,

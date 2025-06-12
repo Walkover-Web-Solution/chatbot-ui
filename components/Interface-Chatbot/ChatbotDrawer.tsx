@@ -1,6 +1,6 @@
 'use client';
 
-import { lighten, useMediaQuery, useTheme } from "@mui/material";
+import { lighten, useTheme } from "@mui/material";
 import { AlignLeft, ChevronRight, SquarePen, Users, X } from "lucide-react";
 import { useContext, useEffect, useMemo } from "react";
 import { useDispatch } from "react-redux";
@@ -24,6 +24,7 @@ import { setThreads } from "@/store/interface/interfaceSlice";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { ParamsEnums } from "@/utils/enums";
 import { getLocalStorage } from "@/utils/utilities";
+import { useContainerWidthQuery } from "../Chatbot/hooks/useContainerWidthQuery";
 import { MessageContext } from "./InterfaceChatbot";
 
 const createRandomId = () => Math.random().toString(36).substring(2, 15);
@@ -52,7 +53,7 @@ const ChatbotDrawer = ({
 }: ChatbotDrawerProps) => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const isSmallScreen = useMediaQuery('(max-width:1023px)');
+  const isSmallScreen = useContainerWidthQuery({});
 
   // Context hooks
   const {
@@ -189,7 +190,7 @@ const ChatbotDrawer = ({
 
   // Memoized components
   const DrawerList = useMemo(() => (
-    <div className="menu p-0 w-full h-full bg-base-200 text-base-content">
+    <div className="menu p-0 w-full h-full bg-base-200 text-base-content pb-64">
       {(subThreadList || []).length === 0 ? (
         <div className="flex justify-center items-center mt-5">
           <span>No Conversations</span>
@@ -397,13 +398,13 @@ const ChatbotDrawer = ({
 
   return (
     <div
-      className={`drawer ${isSmallScreen ? 'z-[99999]' : 'z-[0]'}`}
+      className={`drawer ${isSmallScreen ? 'z-[99999]' : 'z-[999]'}`}
       style={{
         position: isSmallScreen ? "absolute" : "static",
         top: isSmallScreen ? 0 : undefined,
         left: isSmallScreen ? 0 : undefined,
-        width: isSmallScreen ? "100%" : undefined,
-        height: isSmallScreen ? "100%" : undefined,
+        // width: isSmallScreen ? "100%" : undefined,
+        // height: isSmallScreen ? "100%" : undefined,
         pointerEvents: 'auto'
       }}
     >
@@ -424,15 +425,14 @@ const ChatbotDrawer = ({
         />
       )}
 
-      <div
-        className={`drawer-side ${isHelloUser && isSmallScreen ? 'w-full' : 'max-w-[286px]'} ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}
+      <div className={`drawer-side ${isHelloUser && isSmallScreen ? '100%' : 'max-w-[286px]'} ${isToggledrawer ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-00 ease-in`}
         style={{
           position: "absolute",
           top: 0,
           left: 0,
-          height: "100%",
+          // height: "100%",
           // zIndex: 20,
-          pointerEvents: 'auto'
+          // pointerEvents: 'auto'
         }}
       >
         <div className="w-full h-full text-base-content relative bg-base-200 border-r-base-300 border flex flex-col">
@@ -502,7 +502,7 @@ const ChatbotDrawer = ({
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

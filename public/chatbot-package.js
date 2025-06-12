@@ -670,7 +670,7 @@
         }
 
         sendInitialData() {
-            const interfaceEmbedElement = document.getElementById('interfaceEmbed');
+            const interfaceEmbedElement = document.getElementById(this.elements.chatbotIconContainer);
             if (interfaceEmbedElement) {
                 interfaceEmbedElement.style.display = (this.props.hideIcon === true || this.props.hideIcon === 'true') ? 'none' : 'unset';
             }
