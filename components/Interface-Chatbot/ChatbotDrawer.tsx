@@ -69,7 +69,7 @@ const ChatbotDrawer = ({
     setLoading,
   } = useContext(MessageContext);
 
-  const { currentChatId, currentTeamId } = useReduxStateManagement({ chatDispatch, chatSessionId, tabSessionId });
+  const { currentChatId, currentTeamId, isIframe } = useReduxStateManagement({ chatDispatch, chatSessionId, tabSessionId });
   const { callState } = useCallUI();
 
   // Consolidated Redux state selection
@@ -190,7 +190,7 @@ const ChatbotDrawer = ({
 
   // Memoized components
   const DrawerList = useMemo(() => (
-    <div className="menu p-0 w-full h-full bg-base-200 text-base-content pb-64">
+    <div className="menu p-0 w-full h-full bg-base-200 text-base-content pb-6">
       {(subThreadList || []).length === 0 ? (
         <div className="flex justify-center items-center mt-5">
           <span>No Conversations</span>
@@ -400,12 +400,12 @@ const ChatbotDrawer = ({
     <div
       className={`drawer ${isSmallScreen ? 'z-[99999]' : 'z-[999]'}`}
       style={{
-        position: isSmallScreen ? "absolute" : "static",
-        top: isSmallScreen ? 0 : undefined,
-        left: isSmallScreen ? 0 : undefined,
-        // width: isSmallScreen ? "100%" : undefined,
-        // height: isSmallScreen ? "100%" : undefined,
-        pointerEvents: 'auto'
+        position: isIframe ? "fixed" : (isSmallScreen ? "absolute" : "static"),
+        top: isIframe || isSmallScreen ? 0 : undefined,
+        left: isIframe || isSmallScreen ? 0 : undefined,
+        width: isIframe ? undefined : (isSmallScreen ? "100%" : undefined),
+        height: isIframe ? undefined : (isSmallScreen ? "100%" : undefined),
+        pointerEvents: isIframe ? undefined : (isToggledrawer || !isSmallScreen ? 'auto' : 'none')
       }}
     >
       <input
@@ -417,27 +417,30 @@ const ChatbotDrawer = ({
       />
 
       {/* Backdrop overlay for mobile */}
-      {isToggledrawer && (
+      {isToggledrawer && isSmallScreen && !isHelloUser && (
         <div
-          className="absolute inset-0 bg-black/30 backdrop-blur-sm lg:hidden"
+          className={`${isIframe ? "fixed inset-0" : "absolute inset-0"} bg-black/30 backdrop-blur-sm`}
           style={{ zIndex: 10 }}
           onClick={() => closeToggleDrawer(false)}
         />
       )}
 
-      <div className={`drawer-side ${isHelloUser && isSmallScreen ? '100%' : 'max-w-[286px]'} ${isToggledrawer ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-00 ease-in`}
+      <div
+        className={`drawer-side ${isHelloUser && isSmallScreen ? 'w-full' : 'w-full max-w-[286px]'} ${isToggledrawer ? 'translate-x-0' : '-translate-x-full'
+          } transition-transform duration-300 ease-in-out`}
         style={{
-          position: "absolute",
+          position: isIframe ? "fixed" : (isSmallScreen ? "absolute" : "absolute"),
           top: 0,
           left: 0,
-          // height: "100%",
-          // zIndex: 20,
-          // pointerEvents: 'auto'
+          height: isIframe ? "100vh" : "100%",
+          zIndex: 20,
+          pointerEvents: 'auto'
         }}
       >
+        {/* Rest of your existing code stays the same */}
         <div className="w-full h-full text-base-content relative bg-base-200 border-r-base-300 border flex flex-col">
-          {/* Header with padding */}
-          <div className="px-4 pt-4 pb-4">
+          {/* Header with padding - fixed height */}
+          <div className="flex-shrink-0 px-4 pt-4 pb-4">
             <div className="flex items-center justify-between">
               <div className="w-10">
                 {isToggledrawer && (
@@ -473,27 +476,37 @@ const ChatbotDrawer = ({
             </div>
           </div>
 
-          {/* Content area with overflow handling - the scrollbar will appear at the edge */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="px-4">
+          {/* Content area with proper scrolling - takes remaining space */}
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="px-4 pb-4">
               {!isHelloUser ? DrawerList : TeamsList}
             </div>
           </div>
 
-          {/* Footer with branding - always stays at bottom */}
-          <div className="px-4 pt-2 pb-2 flex items-center justify-center mt-auto">
-            <div className="text-xs text-gray-500 flex items-baseline gap-1">
+          {/* Footer with branding - fixed at bottom, always visible */}
+          <div className="flex-shrink-0 px-4 py-3 border-t border-base-300">
+            <div className="text-xs text-gray-500 flex items-center justify-center">
               {isHelloUser && show_msg91 ? (
                 <>
                   Powered by
-                  <a href="https://msg91.com" target="_blank" rel="noopener noreferrer" className="flex hover:opacity-80 transition-opacity ml-1">
+                  <a
+                    href="https://msg91.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex hover:opacity-80 transition-opacity ml-1"
+                  >
                     <img src="/msg91-logo.svg" alt="MSG91" className="h-4" />
                   </a>
                 </>
               ) : !isHelloUser ? (
                 <>
                   Powered by
-                  <a href="https://gtwy.ai" target="_blank" rel="noopener noreferrer" className="flex hover:opacity-80 transition-opacity">
+                  <a
+                    href="https://gtwy.ai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex hover:opacity-80 transition-opacity ml-1"
+                  >
                     <span className="font-bold">GTWY</span>
                   </a>
                 </>
@@ -502,7 +515,7 @@ const ChatbotDrawer = ({
           </div>
         </div>
       </div>
-    </div >
+    </div>
   );
 };
 

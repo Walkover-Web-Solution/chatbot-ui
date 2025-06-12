@@ -12,14 +12,15 @@ export const useContainerWidthQuery = ({
 }: UseContainerWidthQueryProps) => {
     const [isSmallScreen, setIsSmallScreen] = useState(false);
     const isSmallScreenIframe = useMediaQuery('(max-width:1023px)');
-    useEffect(() => {
-        let container = document.getElementById(containerId);
+    const isIframe = typeof window !== 'undefined' && window.self !== window.top;
 
-        if (!container) {
-            console.warn(`Container with id "${containerId}" not found. Falling back to window.innerWidth.`);
+    useEffect(() => {
+
+        if (isIframe) {
             setIsSmallScreen(isSmallScreenIframe);
             return;
         }
+        let container = document.getElementById(containerId);
 
         const checkWidth = (width: number) => {
             setIsSmallScreen(width <= maxWidth);
@@ -38,7 +39,7 @@ export const useContainerWidthQuery = ({
         return () => {
             resizeObserver.disconnect();
         };
-    }, [containerId, maxWidth,]);
+    }, [containerId, maxWidth, isSmallScreenIframe]);
 
     return isSmallScreen;
 };

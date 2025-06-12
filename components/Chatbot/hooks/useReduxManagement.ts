@@ -23,6 +23,7 @@ export const useReduxStateManagement = ({
   // FIXED: Always call hooks at the top level, in the same order
   const theme = useTheme();
   const isSmallScreen = useContainerWidthQuery({});
+  const isIframe = typeof window !== 'undefined' && window.self !== window.top;
 
   // Get Redux state
   const {
@@ -157,6 +158,7 @@ export const useReduxStateManagement = ({
     currentChatId,
     currentChannelId,
     currentTeamId,
-    isSmallScreen
+    isSmallScreen,
+    isIframe
   };
 };
