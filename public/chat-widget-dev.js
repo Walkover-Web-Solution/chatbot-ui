@@ -260,8 +260,7 @@
                     break;
                 case 'PUSH_NOTIFICATION':
                     if (this.helloProps?.isMobileSDK) {
-                        console.log("sending fcm")
-                        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'PUSH_NOTIFICATION', data }));
+                        sendDataToMobileSDK({ type: 'PUSH_NOTIFICATION', data })
                     } else {
                         this.handlePushNotification(data)
                     }
@@ -387,8 +386,8 @@
         }
 
         handleDownloadAttachment(data) {
-            if (window.ReactNativeWebView) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'downloadAttachment', data: data?.url }));
+            if (this.helloProps.isMobileSDK) {
+                sendDataToMobileSDK({ type: 'downloadAttachment', data: data?.url })
                 return
             }
             const url = data?.url;
@@ -416,8 +415,8 @@
 
         setUUID(uuid) {
             this.uuid = uuid;
-            if (window.ReactNativeWebView) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'uuid', data: { uuid } }));
+            if (this.helloProps.isMobileSDK) {
+                sendDataToMobileSDK({ type: 'uuid', data: { uuid } })
             } else {
                 CBManager.updateDeviceId(uuid)
             }
@@ -429,7 +428,7 @@
 
                 if (!iframeParentContainer || this.state.fullscreen) return;
 
-                if (!window.ReactNativeWebView || !this.helloProps?.isMobileSDK) {
+                if (!this.helloProps?.isMobileSDK) {
                     const { width } = entries[0].contentRect;
                     if (width < 600) {
                         iframeParentContainer.style.height = '100%';
@@ -466,8 +465,8 @@
             if (window.parent) {
                 window.parent.postMessage?.(openMessage, '*');
             }
-            if (window.ReactNativeWebView) {
-                window.ReactNativeWebView.postMessage?.(JSON.stringify(openMessage));
+            if (this.helloProps.isMobileSDK) {
+                sendDataToMobileSDK(openMessage)
             }
 
             const iframeComponent = document.getElementById(this.elements.chatbotIframeComponent);
@@ -475,8 +474,8 @@
         }
 
         closeChatbot() {
-            if (window.ReactNativeWebView) {
-                window.ReactNativeWebView.postMessage?.(JSON.stringify({ type: 'close', data: {} }));
+            if (this.helloProps.isMobileSDK) {
+                sendDataToMobileSDK({ type: 'close', data: {} })
                 return
             }
             const iframeContainer = document.getElementById(this.elements.chatbotIframeContainer);
@@ -489,9 +488,6 @@
                     // Send message to parent window normally, but stringify for ReactNativeWebView
                     if (window.parent) {
                         window.parent.postMessage?.({ type: 'close', data: {} }, '*');
-                    }
-                    if (window.ReactNativeWebView) {
-                        window.ReactNativeWebView.postMessage?.(JSON.stringify({ type: 'close', data: {} }));
                     }
 
                     iframeContainer.style.display = 'none';
@@ -804,8 +800,8 @@
         }
 
         // Send to React Native if available
-        if (window.ReactNativeWebView) {
-            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'data', data: dataToSend }));
+        if (this.helloProps.isMobileSDK) {
+            sendDataToMobileSDK({ type: 'data', data: dataToSend })
         }
 
         // Handle parent container changes
@@ -844,6 +840,12 @@
         const iframeComponent = document.getElementById(helloChatbotManager.elements.chatbotIframeComponent);
         if (iframeComponent?.contentWindow) {
             iframeComponent?.contentWindow?.postMessage(messageObj, '*');
+        }
+    }
+
+    function sendDataToMobileSDK(messageObj) {
+        if (window.postMessage) {
+            window.postMessage(JSON.stringify(messageObj))
         }
     }
 
