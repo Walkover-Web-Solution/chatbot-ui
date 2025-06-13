@@ -28,7 +28,7 @@
             };
             this.urls = {
                 chatbotUrl: 'http://localhost:3001/chatbot',
-                styleSheet: 'https://blacksea.msg91.com/chat-widget-style.css',
+                styleSheet: 'http://localhost:3001/chat-widget-style.css',
                 // login: 'http://localhost:7072/chatbot/loginuser'
                 login: 'https://db.gtwy.ai/chatbot/loginuser'
             };
@@ -470,6 +470,7 @@
             this.attachIconEvents(chatBotIcon);
             this.createIframeContainer();
             this.loadChatbotEmbed();
+            this.updateProps(this.state.tempDataToSend || {});
 
             this.state.bodyLoaded = true;
         }
@@ -528,8 +529,7 @@
             // iframe.allow = 'microphone *; camera *; midi *; encrypted-media *';
 
             // this.parentContainer.appendChild(iframe);
-
-            const parentId = this.props.parentId || '';
+            const parentId = this.props.parentId || this.state.tempDataToSend?.parentId || '';
             this.changeContainer(parentId, this.parentContainer);
         }
 
@@ -660,12 +660,22 @@
                 document.getElementById("hello-popup-interfaceEmbed").src = newprops.iconColor === 'dark' ? AI_WHITE_ICON : AI_BLACK_ICON
             } if (newprops.fullScreen === true || newprops.fullScreen === 'true') {
                 document.getElementById(this.elements.chatbotIframeContainer)?.classList.add('full-screen-interfaceEmbed')
+                this.state.tempDataToSend = { ...this.state.tempDataToSend, hideFullScreenButton: true }
+                sendMessageToChatbot({ type: 'interfaceData', data: { hideFullScreenButton: true } });
+                this.state.fullscreen = true
             } if (newprops.fullScreen === false || newprops.fullScreen === 'false') {
                 document.getElementById(this.elements.chatbotIframeContainer)?.classList.remove('full-screen-interfaceEmbed')
+                this.state.tempDataToSend = { ...this.state.tempDataToSend, hideFullScreenButton: false }
+                sendMessageToChatbot({ type: 'interfaceData', data: { hideFullScreenButton: false } });
+                this.state.fullscreen = false
             } if ('hideIcon' in newprops && document.getElementById(this.elements.chatbotIconContainer)) {
                 document.getElementById(this.elements.chatbotIconContainer).style.display = (newprops.hideIcon === true || newprops.hideIcon === 'true') ? 'none' : 'unset';
             } if ('hideCloseButton' in newprops && document.getElementById('hello-close-button-interfaceEmbed')) {
                 document.getElementById('hello-close-button-interfaceEmbed').style.display = (newprops.hideCloseButton === true || newprops.hideCloseButton === 'true') ? 'none' : 'unset';
+            } if (newprops.fullScreen === true || newprops.fullScreen === 'true') {
+                document.getElementById(this.elements.chatbotIframeContainer)?.classList.add('full-screen-interfaceEmbed')
+                this.state.tempDataToSend = { ...this.state.tempDataToSend, hideFullScreenButton: true }
+                sendMessageToChatbot({ type: 'interfaceData', data: { hideFullScreenButton: true } });
             }
         }
 
