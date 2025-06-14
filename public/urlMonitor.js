@@ -1,170 +1,172 @@
-;(function () {
-    // === Global Variables ===
+(function () {
     let trackedUrls = [];
-    let isManualNavigation = false;
-    let iframeContainer = null;
-    let closeButton = null;
-    let fullscreenButton = null;
-    let currentIframe = null;
-    const debugMode = false;
+    let ignoreNextOpen = false;  // Flag to skip interception once
 
-    // === Default Iframe Styling ===
-    let iframeConfig = {
-        width: '50%',
-        height: '100%',
-        position: 'fixed',
-        top: '0',
-        right: '0',
-        zIndex: '10000',
-        border: 'none',
-        borderRadius: '0px',
-        backgroundColor: 'transparent',
-        boxShadow: 'none'
-    };
+    // Create iframe panel UI (hidden by default)
+    const panel = document.createElement('div');
+    panel.id = 'url-monitor-panel';
+    panel.style.position = 'fixed';
+    panel.style.top = '0';
+    panel.style.right = '-100%'; // hidden offscreen initially
+    panel.style.width = 'calc(min(800px, 100%))';
+    panel.style.height = '100vh';
+    panel.style.background = 'white';
+    panel.style.borderRadius = '12px 0 0 12px';
+    panel.style.boxShadow = '-2px 0 8px rgba(0,0,0,0.2)';
+    panel.style.transition = 'right 0.3s ease';
+    panel.style.zIndex = '999999';
+    panel.style.display = 'flex';
+    panel.style.flexDirection = 'column';
+    panel.style.border = '1px solid #ddd';
 
-    // === Initialize with Tracked URLs and Custom Iframe Styling ===
-    window.chatWidget = {
-        ...window.chatWidget,
-        initUrlTracker: function (config) {
-            trackedUrls = config.urls || [];
-            iframeConfig = { ...iframeConfig, ...(config.iframeConfig || {}) };
-        }
-    };
+    // Toolbar container
+    const toolbar = document.createElement('div');
+    toolbar.style.flex = '0 0 40px';
+    toolbar.style.display = 'flex';
+    toolbar.style.alignItems = 'center';
+    toolbar.style.justifyContent = 'flex-end';
+    toolbar.style.padding = '0 8px';
+    toolbar.style.borderBottom = '1px solid #ddd';
 
-    // === URL Match Checker ===
-    function shouldTrackUrl(url) {
-        if (!url) return false;
+    // Buttons
+    const btnClose = document.createElement('button');
+    btnClose.textContent = '×';
+    btnClose.title = 'Close';
+    btnClose.style.fontSize = '24px';
+    btnClose.style.border = 'none';
+    btnClose.style.background = 'none';
+    btnClose.style.cursor = 'pointer';
 
-        try {
-            const testUrl = new URL(url, window.location.origin);
-            const currentOrigin = new URL(window.location.href).origin;
+    const btnFullscreen = document.createElement('button');
+    btnFullscreen.textContent = '⛶';
+    btnFullscreen.title = 'Fullscreen';
+    btnFullscreen.style.fontSize = '18px';
+    btnFullscreen.style.border = 'none';
+    btnFullscreen.style.background = 'none';
+    btnFullscreen.style.cursor = 'pointer';
 
-            return trackedUrls.some(tracked => {
-                if (tracked.startsWith('/')) return testUrl.pathname === tracked;
-                if (tracked.startsWith('http'))
-                    return testUrl.href === tracked || testUrl.href === new URL(tracked, currentOrigin).href;
-                return testUrl.href === new URL(tracked, currentOrigin).href;
-            });
-        } catch {
-            return trackedUrls.includes(url);
-        }
-    }
+    const btnRedirect = document.createElement('button');
+    btnRedirect.textContent = '↗';
+    btnRedirect.title = 'Open in new tab';
+    btnRedirect.style.fontSize = '18px';
+    btnRedirect.style.border = 'none';
+    btnRedirect.style.background = 'none';
+    btnRedirect.style.cursor = 'pointer';
 
-    // === Iframe Management ===
-    function createIframe(url) {
-        if (!iframeContainer) buildIframeContainer();
+    const loader = document.createElement('div');
+    loader.style.position = 'absolute';
+    loader.style.top = '50%';
+    loader.style.left = '50%';
+    loader.style.transform = 'translate(-50%, -50%)';
+    loader.style.padding = '10px 20px';
+    loader.style.zIndex = '1000000';
+    loader.textContent = 'Loading...';
+    loader.style.display = 'none';
 
-        try {
-            currentIframe.src = new URL(url, window.location.origin).href;
-        } catch {
-            currentIframe.src = url;
-        }
+    toolbar.appendChild(btnRedirect);
+    toolbar.appendChild(btnFullscreen);
+    toolbar.appendChild(btnClose);
 
-        iframeContainer.style.display = 'block';
-        if (debugMode) console.log('Iframe loaded with:', url);
-    }
+    // Iframe
+    const iframe = document.createElement('iframe');
+    iframe.style.border = 'none';
+    iframe.style.flex = '1 1 auto';
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
 
-    function closeIframe() {
-        if (iframeContainer) iframeContainer.style.display = 'none';
-        if (debugMode) console.log('Iframe hidden');
-    }
+    panel.appendChild(toolbar);
+    panel.appendChild(iframe);
+    panel.appendChild(loader);
+
+    iframe.addEventListener('load', function () {
+        loader.style.display = 'none'; // Hide loader when iframe loads
+    });
+    document.body.appendChild(panel);
+
+    let isFullscreen = false;
 
     function handleEscKey(event) {
-        if (event.key === 'Escape') closeIframe();
+        if (event.key === 'Escape') closePanel();
     }
 
-    // === Build Iframe UI Elements ===
-    function buildIframeContainer() {
-        iframeContainer = document.createElement('div');
-        iframeContainer.style.cssText = `
-            position: ${iframeConfig.position};
-            top: ${iframeConfig.top};
-            right: ${iframeConfig.right};
-            width: ${iframeConfig.width};
-            height: ${iframeConfig.height};
-            z-index: ${iframeConfig.zIndex};
-            border: ${iframeConfig.border};
-            border-radius: ${iframeConfig.borderRadius};
-            background-color: ${iframeConfig.backgroundColor};
-            box-shadow: ${iframeConfig.boxShadow};
-            display: none;
-        `;
-
-        // Close Button
-        closeButton = document.createElement('button');
-        closeButton.innerHTML = '✕';
-        closeButton.title = 'Close';
-        closeButton.style.cssText = `
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            border: none;
-            background-color: #ff4444;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            z-index: ${parseInt(iframeConfig.zIndex) + 1};
-        `;
-        closeButton.addEventListener('click', closeIframe);
-
-        // Fullscreen Button
-        fullscreenButton = document.createElement('button');
-        fullscreenButton.innerHTML = '⛶';
-        fullscreenButton.title = 'Open in new tab';
-        fullscreenButton.style.cssText = `
-            position: absolute;
-            top: 10px;
-            right: 50px;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            border: none;
-            background-color: #007bff;
-            color: white;
-            font-size: 14px;
-            cursor: pointer;
-            z-index: ${parseInt(iframeConfig.zIndex) + 1};
-        `;
-        fullscreenButton.addEventListener('click', () => {
-            isManualNavigation = true;
-            window.open(currentIframe.src, '_blank');
-        });
-
-        // Iframe
-        currentIframe = document.createElement('iframe');
-        currentIframe.allowTransparency = true;
-        currentIframe.style.cssText = `
-            width: 100%;
-            height: 100%;
-            border: 1px solid rgba(0, 0, 0, 0.2);
-            background-color: transparent;
-        `;
-
+    function openPanel(url) {
+        loader.style.display = 'block';
+        iframe.src = url;
+        panel.style.right = '0';
         document.addEventListener('keydown', handleEscKey);
-        iframeContainer.addEventListener('click', e => e.stopPropagation());
-
-        iframeContainer.appendChild(closeButton);
-        iframeContainer.appendChild(fullscreenButton);
-        iframeContainer.appendChild(currentIframe);
-        document.body.appendChild(iframeContainer);
     }
 
-    // === Link Click Handler ===
-    function handleTrackedUrl(url, element, event) {
-        if (event) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-        if (debugMode) {
-            console.log('Tracked URL clicked:', { url, element, event: event?.type || 'programmatic' });
-        }
-        createIframe(url);
+    function closePanel() {
+        iframe.src = 'about:blank';
+        panel.style.right = '-100%';
+        document.removeEventListener('keydown', handleEscKey);
+        if (isFullscreen) toggleFullscreen();
     }
 
-    // === Global Click Listener ===
+    function toggleFullscreen() {
+        if (!isFullscreen) {
+            panel.style.transition = 'width 0.3s ease, height 0.3s ease, top 0.3s ease, right 0.3s ease, border-radius 0.3s ease';
+            panel.style.width = '100vw';
+            panel.style.height = '100vh';
+            panel.style.top = '0';
+            panel.style.right = '0';
+            panel.style.borderRadius = '0';
+            isFullscreen = true;
+            btnFullscreen.textContent = '🗗'; // change icon to indicate exit fullscreen
+            btnFullscreen.title = 'Exit fullscreen';
+        } else {
+            panel.style.transition = 'width 0.3s ease, height 0.3s ease, border-radius 0.3s ease';
+            panel.style.width = 'calc(min(800px, 100%))';
+            panel.style.height = '100vh';
+            panel.style.borderRadius = '12px 0 0 12px';
+            isFullscreen = false;
+            btnFullscreen.textContent = '⛶';
+            btnFullscreen.title = 'Fullscreen';
+        }
+    }
+
+    btnClose.onclick = closePanel;
+    btnFullscreen.onclick = toggleFullscreen;
+    btnRedirect.onclick = () => {
+        if (iframe.src && iframe.src !== 'about:blank') {
+            ignoreNextOpen = true;   // set flag to skip interception once
+            window.open(iframe.src, '_blank');
+            closePanel();
+        }
+    };
+
+    // --- Override navigation methods ---
+    function openInIframeOrNavigate(url) {
+        if (shouldPrevent(url)) {
+            openPanel(url);
+            return true; // intercepted
+        }
+        return false; // not intercepted
+    }
+
+    const originalOpen = window.open;
+    window.open = function (...args) {
+        if (ignoreNextOpen) {
+            ignoreNextOpen = false; // reset flag after skipping once
+            return originalOpen.apply(window, args);
+        }
+        const url = args[0] || '';
+        if (openInIframeOrNavigate(url)) return null;
+        return originalOpen.apply(window, args);
+    };
+
+    const originalPushState = history.pushState;
+    history.pushState = function (state, title, url) {
+        if (openInIframeOrNavigate(url)) return;
+        return originalPushState.apply(history, [state, title, url]);
+    };
+
+    const originalReplaceState = history.replaceState;
+    history.replaceState = function (state, title, url) {
+        if (openInIframeOrNavigate(url)) return;
+        return originalReplaceState.apply(history, [state, title, url]);
+    };
+
     document.addEventListener('click', function (event) {
         let url = null;
         let element = null;
@@ -200,66 +202,81 @@
             }
         }
 
-        if (url && shouldTrackUrl(url)) {
-            handleTrackedUrl(url, element, event);
+        if (url && shouldPrevent(url)) {
+            event.preventDefault(); // Stop normal navigation
+            event.stopPropagation(); // Stop propagation to avoid triggering other click handlers
+            openPanel(url);
         }
     }, true);
 
-    // === Overriding Navigation APIs ===
-    const originalPushState = history.pushState;
-    history.pushState = function (state, title, url) {
-        if (!isManualNavigation && url && shouldTrackUrl(url)) {
-            createIframe(url);
-            return;
-        }
-        return originalPushState.apply(this, arguments);
-    };
+    document.addEventListener('submit', function (event) {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement)) return;
 
-    const originalWindowOpen = window.open;
-    window.open = function (url, target, features) {
-        if (!isManualNavigation && shouldTrackUrl(url)) {
-            createIframe(url);
-            return null;
-        }
-        isManualNavigation = false;
-        return originalWindowOpen.call(this, url, target, features);
-    };
+        // Only intercept GET method forms (you can extend for POST if needed)
+        if ((form.method || 'get').toLowerCase() !== 'get') return;
 
-    const originalAssign = Location.prototype.assign;
-    Location.prototype.assign = function (url) {
-        if (!isManualNavigation && shouldTrackUrl(url)) {
-            createIframe(url);
-            return;
-        }
-        isManualNavigation = false;
-        return originalAssign.call(this, url);
-    };
+        try {
+            // Construct full URL with query parameters
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData).toString();
 
-    const originalReplace = window.location.replace;
-    window.location.replace = function (url) {
-        if (!isManualNavigation && shouldTrackUrl(url)) {
-            createIframe(url);
-            return;
-        }
-        return originalReplace.call(window.location, url);
-    };
-    
+            // Resolve action URL relative to current location
+            const actionUrl = form.action || window.location.href;
+            const url = new URL(actionUrl, window.location.origin);
 
-    // === MutationObserver for Dynamic DOM Changes ===
-    const observer = new MutationObserver(mutations => {
-        mutations.forEach(mutation => {
-            mutation.addedNodes.forEach(node => {
-                if (node.nodeType === Node.ELEMENT_NODE) {
-                    const elements = [node, ...node.querySelectorAll('a, [data-url], [onclick]')];
-                    elements.forEach(el => {
-                        if (el.tagName === 'A' && shouldTrackUrl(el.href)) {
-                            el.addEventListener('click', e => handleTrackedUrl(el.href, el, e));
-                        }
-                    });
-                }
-            });
-        });
+            // Append query string
+            if (params) {
+                url.search = params;
+            }
+
+            // Check if we should intercept and open in iframe
+            if (shouldPrevent(url.href)) {
+                event.preventDefault(); // Stop normal navigation
+                openPanel(url.href);
+            }
+        } catch (e) {
+            // On error, do nothing and allow normal submit
+            console.warn('Form interception error:', e);
+        }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
 
+    function shouldPrevent(url) {
+        if (!url || trackedUrls.length === 0) return false;
+        try {
+            const parsedUrl = new URL(url, window.location.origin);
+            const fullUrl = parsedUrl.href;
+            const path = parsedUrl.pathname;
+
+            return trackedUrls.some(prefix => {
+                try {
+                    const prefixUrl = new URL(prefix, window.location.origin);
+
+                    if (prefixUrl.origin === parsedUrl.origin) {
+                        // Match exact path or deeper sub-paths only
+                        return path === prefixUrl.pathname || path.startsWith(prefixUrl.pathname + '/');
+                    }
+                } catch {
+                    // prefix is relative path or something else
+                    if (prefix.startsWith('/')) {
+                        return path === prefix || path.startsWith(prefix + '/');
+                    }
+                    // fallback for anything else (e.g. full URLs without trailing slash)
+                    return fullUrl === prefix || fullUrl.startsWith(prefix);
+                }
+                return false;
+            });
+        } catch {
+            return false;
+        }
+    }
+
+    // --- chatWidget.initUrlTracker method ---
+    window.chatWidget = {
+        ...window.chatWidget,
+        initUrlTracker: function (config) {
+            trackedUrls = Array.isArray(config.urls) ? config.urls : [];
+            console.log('chatWidget.initUrlTracker set with URLs:', trackedUrls);
+        }
+    };
 })();
