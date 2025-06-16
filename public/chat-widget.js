@@ -103,6 +103,7 @@
             this.urls = {
                 chatbotUrl: 'https://blacksea.msg91.com/chatbot',
                 styleSheet: 'https://blacksea.msg91.com/chat-widget-style.css',
+                urlMonitor: 'https://blacksea.msg91.com/urlMonitor.js'
             };
             this.icons = {
                 white: this.makeImageUrl('b1357e23-2fc6-4dc3-855a-7a213b1fa100'),
@@ -114,7 +115,8 @@
                 tempDataToSend: null,
                 interfaceLoaded: false,
                 delayElapsed: false,
-                domainTrackingStarted: false
+                domainTrackingStarted: false,
+                urlMonitorAdded: false
             };
 
             this.initializeEventListeners();
@@ -489,7 +491,7 @@
                     if (window.parent) {
                         window.parent.postMessage?.({ type: 'close', data: {} }, '*');
                     }
-        
+
                     iframeContainer.style.display = 'none';
                     // document.body.style.overflow = 'auto';
 
@@ -776,6 +778,22 @@
                 helloChatbotManager.updateProps({ config: newConfig });
             }
         }
+
+        addUrlMonitor(data) {
+            if (data.urlsToOpenInIFrame.length > 0) {
+                if (this.state.urlMonitorAdded === false) {
+                    const urlTrackerScript = document.createElement('script');
+                    urlTrackerScript.src = this.urls.urlMonitor;
+                    urlTrackerScript.onload = () => {
+                        this.state.urlMonitorAdded = true;
+                        window.chatWidget.initUrlTracker({ urls: data.urlsToOpenInIFrame });
+                    };
+                    document.head.appendChild(urlTrackerScript);
+                } else {
+                    window.chatWidget.initUrlTracker({ urls: data.urlsToOpenInIFrame });
+                }
+            }
+        }
     }
 
     const helloChatbotManager = new HelloChatbotEmbedManager();
@@ -838,8 +856,8 @@
         }
     }
 
-    function sendDataToMobileSDK(messageObj){
-        if(window.postMessage){
+    function sendDataToMobileSDK(messageObj) {
+        if (window.postMessage) {
             window.postMessage(JSON.stringify(messageObj))
         }
     }
@@ -855,6 +873,9 @@
     // Initialize the widget function
     window.initChatWidget = (data, delay = 0) => {
         if (block_chatbot) return;
+        if (data.urlsToOpenInIFrame) {
+            helloChatbotManager.addUrlMonitor(data);
+        }
         if (data) {
             helloChatbotManager.helloProps = { ...data };
             if ('hide_launcher' in data) {
