@@ -818,7 +818,7 @@
         }
 
         // Send to React Native if available
-        if (this.helloProps.isMobileSDK) {
+        if (helloChatbotManager.helloProps?.isMobileSDK) {
             sendDataToMobileSDK({ type: 'data', data: dataToSend })
         }
 
