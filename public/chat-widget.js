@@ -86,6 +86,7 @@
                 chatbotIframeContainer: `${this.prefix}chatbot-iframe-container`,
                 chatbotIframeComponent: `${this.prefix}chatbot-iframe-component`,
                 chatbotStyle: `${this.prefix}chatbot-style`,
+                unReadMsgCountBadge: `${this.prefix}unread-msg-count-badge`,
             }
             this.props = {};
             this.helloProps = null;
@@ -147,6 +148,12 @@
             const textElement = document.createElement('span');
             textElement.id = this.elements.chatbotIconText;
             chatBotIcon.appendChild(textElement);
+
+            const badgeElement = document.createElement('span');
+            badgeElement.id = this.elements.unReadMsgCountBadge;
+            badgeElement.className = 'hello-badge-count';
+            badgeElement.textContent = ''; // Will be populated dynamically
+            chatBotIcon.appendChild(badgeElement);
 
             return { chatBotIcon, imgElement, textElement };
         }
@@ -270,8 +277,23 @@
                 case 'ENABLE_DOMAIN_TRACKING':
                     this.enableDomainTracking();
                     break;
+                case 'SET_BADGE_COUNT':
+                    this.updateBadgeCount(data?.badgeCount);
+                    break;
                 default:
                     break;
+            }
+        }
+
+        updateBadgeCount(data) {
+            const badgeElement = document.getElementById(this.elements.unReadMsgCountBadge);
+            if (badgeElement) {
+                if (!data || parseInt(data) === 0) {
+                    badgeElement.style.display = 'none';
+                } else {
+                    badgeElement.textContent = data;
+                    badgeElement.style.display = 'block'; // or 'block' depending on your layout
+                }
             }
         }
 
@@ -491,7 +513,7 @@
                     if (window.parent) {
                         window.parent.postMessage?.({ type: 'close', data: {} }, '*');
                     }
-        
+
                     iframeContainer.style.display = 'none';
                     // document.body.style.overflow = 'auto';
 
@@ -856,8 +878,8 @@
         }
     }
 
-    function sendDataToMobileSDK(messageObj){
-        if(window.postMessage){
+    function sendDataToMobileSDK(messageObj) {
+        if (window.postMessage) {
             window.postMessage(JSON.stringify(messageObj))
         }
     }
