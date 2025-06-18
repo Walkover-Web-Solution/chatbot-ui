@@ -86,6 +86,7 @@
                 chatbotIframeContainer: `${this.prefix}chatbot-iframe-container`,
                 chatbotIframeComponent: `${this.prefix}chatbot-iframe-component`,
                 chatbotStyle: `${this.prefix}chatbot-style`,
+                unReadMsgCountBadge: `${this.prefix}unread-msg-count-badge`,
             }
             this.props = {};
             this.helloProps = null;
@@ -147,6 +148,12 @@
             const textElement = document.createElement('span');
             textElement.id = this.elements.chatbotIconText;
             chatBotIcon.appendChild(textElement);
+
+            const badgeElement = document.createElement('span');
+            badgeElement.id = this.elements.unReadMsgCountBadge;
+            badgeElement.className = 'hello-badge-count';
+            badgeElement.textContent = ''; // Will be populated dynamically
+            chatBotIcon.appendChild(badgeElement);
 
             return { chatBotIcon, imgElement, textElement };
         }
@@ -270,8 +277,23 @@
                 case 'ENABLE_DOMAIN_TRACKING':
                     this.enableDomainTracking();
                     break;
+                case 'SET_BADGE_COUNT':
+                    this.updateBadgeCount(data?.badgeCount);
+                    break;
                 default:
                     break;
+            }
+        }
+
+        updateBadgeCount(data) {
+            const badgeElement = document.getElementById(this.elements.unReadMsgCountBadge);
+            if (badgeElement) {
+                if (!data || parseInt(data) === 0) {
+                    badgeElement.style.display = 'none';
+                } else {
+                    badgeElement.textContent = data;
+                    badgeElement.style.display = 'block'; // or 'block' depending on your layout
+                }
             }
         }
 
@@ -786,8 +808,8 @@
         }
 
         addUrlMonitor(data) {
-            if(data.urlsToOpenInIFrame.length > 0 ){
-                if(this.state.urlMonitorAdded === false) {
+            if (data.urlsToOpenInIFrame.length > 0) {
+                if (this.state.urlMonitorAdded === false) {
                     const urlTrackerScript = document.createElement('script');
                     urlTrackerScript.src = this.urls.urlMonitor;
                     urlTrackerScript.onload = () => {
@@ -795,7 +817,7 @@
                         window.chatWidget.initUrlTracker({ urls: data.urlsToOpenInIFrame });
                     };
                     document.head.appendChild(urlTrackerScript);
-                }else{
+                } else {
                     window.chatWidget.initUrlTracker({ urls: data.urlsToOpenInIFrame });
                 }
             }
