@@ -495,6 +495,7 @@
 
             const iframeComponent = document.getElementById(this.elements.chatbotIframeComponent);
             iframeComponent?.contentWindow?.postMessage(openMessage, '*');
+            sendMessageToChatbot({ type: "CHATBOT_OPEN" })
         }
 
         closeChatbot() {
@@ -525,6 +526,9 @@
                                 : 'unset';
                     }
                 }, 100);
+
+                sendMessageToChatbot({ type: "CHATBOT_CLOSE" })
+                
             }
         }
 
