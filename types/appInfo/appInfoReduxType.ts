@@ -9,6 +9,7 @@ export interface $AppInfoReduxType {
         config: Record<string, unknown>
         currentChannelId: string,
         currentChatId: string,
-        currentTeamId: string
+        currentTeamId: string,
+        isChatbotOpen: boolean
     }
 }
