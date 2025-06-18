@@ -59,14 +59,21 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
     currentChannelId
   } = useReduxStateManagement({ chatDispatch, chatSessionId, tabSessionId });
 
-  const { assigned_type, companyId, botId, showWidgetForm, reduxChatSessionId } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { assigned_type, companyId, botId, showWidgetForm, reduxChatSessionId, totalNoOfUnreadMsgs } = useCustomSelector((state: $ReduxCoreType) => ({
     assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === currentChannelId
     )?.assigned_type,
     companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
     botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
     showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm,
-    reduxChatSessionId: state.tabInfo?.widgetToken
+    reduxChatSessionId: state.tabInfo?.widgetToken,
+    totalNoOfUnreadMsgs: (() => {
+      const channelListData = state.Hello?.[chatSessionId]?.channelListData;
+      const unreadCount = channelListData?.channels?.reduce((acc, channel) => {
+        return acc + channel?.widget_unread_count;
+      }, 0);
+      return unreadCount;
+    })()
   }));
 
   const isBot = assigned_type === 'bot';
@@ -332,6 +339,10 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
       initializeHelloServices(widgetToken);
     }
   }, [reduxChatSessionId])
+
+  useEffect(() => {
+    emitEventToParent('SET_BADGE_COUNT', { badgeCount: totalNoOfUnreadMsgs > 99 ? '99+' : totalNoOfUnreadMsgs })
+  }, [totalNoOfUnreadMsgs])
 
   const initializeHelloServices = async (widgetToken: string = '') => {
     // Prevent duplicate initialization

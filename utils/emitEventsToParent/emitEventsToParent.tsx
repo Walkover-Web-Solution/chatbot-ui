@@ -9,7 +9,8 @@ export type ParentEventType =
   | 'BRIDGE_SWITCH'
   | 'CLOSE_CHATBOT'
   | 'uuid'
-  | 'ENABLE_DOMAIN_TRACKING';
+  | 'ENABLE_DOMAIN_TRACKING'
+  | 'SET_BADGE_COUNT'
 
 /**
  * Emits an event to the parent window using postMessage
