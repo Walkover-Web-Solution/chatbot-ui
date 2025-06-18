@@ -6,6 +6,7 @@ import { getLocalStorage, playMessageRecivedSound, setLocalStorage } from '@/uti
 import { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import socketManager from './socketManager';
+import { deleteReadReceipt } from '@/config/helloApi';
 
 // Define types for better type safety
 export interface HelloMessage {
@@ -66,13 +67,20 @@ export const useSocketEvents = ({
             const channelId = message?.channel;
             const isCurrentChannel = isSameChannel(channelId);
             const shouldIncreaseCount = isCurrentChannel ? (isSmallScreen && isToggledrawer) : true
+            const shouldMarkAsRead = isCurrentChannel && (!isSmallScreen || (isSmallScreen && !isToggledrawer));
+
             if (shouldIncreaseCount) {
                 dispatch(setUnReadCount({
                     channelId,
                     resetCount: false
                 }));
             }
+
+            if (shouldMarkAsRead && channelId) {
+                deleteReadReceipt(channelId);
+            }
         }
+        
 
         switch (type) {
             case 'chat': {
