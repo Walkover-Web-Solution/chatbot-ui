@@ -315,7 +315,7 @@ const ChatbotDrawer = ({
 
       {/* Teams Section */}
       <div className="teams-section">
-        <div className="teams-header mb-1 border-b pb-2 flex items-center">
+        <div className="teams-header mb-1  pb-2 flex items-center">
           <h3 className="text-lg font-semibold">Talk to our experts</h3>
         </div>
         <div className="teams-list space-y-0">
