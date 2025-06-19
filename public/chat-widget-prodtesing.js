@@ -410,7 +410,7 @@
         }
 
         handleDownloadAttachment(data) {
-            if (this.helloProps.isMobileSDK) {
+            if (this.helloProps?.isMobileSDK) {
                 sendDataToMobileSDK({ type: 'downloadAttachment', data: data?.url })
                 return
             }
@@ -439,7 +439,7 @@
 
         setUUID(uuid) {
             this.uuid = uuid;
-            if (this.helloProps.isMobileSDK) {
+            if (this.helloProps?.isMobileSDK) {
                 sendDataToMobileSDK({ type: 'uuid', data: { uuid } })
             } else {
                 CBManager.updateDeviceId(uuid)
@@ -489,7 +489,7 @@
             if (window.parent) {
                 window.parent.postMessage?.(openMessage, '*');
             }
-            if (this.helloProps.isMobileSDK) {
+            if (this.helloProps?.isMobileSDK) {
                 sendDataToMobileSDK(openMessage)
             }
 
@@ -498,7 +498,7 @@
         }
 
         closeChatbot() {
-            if (this.helloProps.isMobileSDK) {
+            if (this.helloProps?.isMobileSDK) {
                 sendDataToMobileSDK({ type: 'close', data: {} })
                 return
             }
