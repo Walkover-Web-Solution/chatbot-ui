@@ -410,7 +410,7 @@
         }
 
         handleDownloadAttachment(data) {
-            if (this.helloProps.isMobileSDK) {
+            if (this.helloProps?.isMobileSDK) {
                 sendDataToMobileSDK({ type: 'downloadAttachment', data: data?.url })
                 return
             }
@@ -439,7 +439,7 @@
 
         setUUID(uuid) {
             this.uuid = uuid;
-            if (this.helloProps.isMobileSDK) {
+            if (this.helloProps?.isMobileSDK) {
                 sendDataToMobileSDK({ type: 'uuid', data: { uuid } })
             } else {
                 CBManager.updateDeviceId(uuid)
@@ -489,17 +489,17 @@
             if (window.parent) {
                 window.parent.postMessage?.(openMessage, '*');
             }
-            if (this.helloProps.isMobileSDK) {
+            if (this.helloProps?.isMobileSDK) {
                 sendDataToMobileSDK(openMessage)
             }
 
             const iframeComponent = document.getElementById(this.elements.chatbotIframeComponent);
             iframeComponent?.contentWindow?.postMessage(openMessage, '*');
-            sendMessageToChatbot({ type: "CHATBOT_OPEN" })   
+            sendMessageToChatbot({ type: "CHATBOT_OPEN" })
         }
 
         closeChatbot() {
-            if (this.helloProps.isMobileSDK) {
+            if (this.helloProps?.isMobileSDK) {
                 sendDataToMobileSDK({ type: 'close', data: {} })
                 return
             }
