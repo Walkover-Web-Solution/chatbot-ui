@@ -260,7 +260,7 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
                 }
             }
         },
-        []
+        [chatState?.loading]
     );
 
     useEffect(() => {
