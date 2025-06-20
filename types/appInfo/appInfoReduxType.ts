@@ -11,5 +11,6 @@ export interface $AppInfoReduxType {
         currentChatId: string,
         currentTeamId: string,
         isChatbotOpen: boolean
+        isVision: boolean
     }
 }
