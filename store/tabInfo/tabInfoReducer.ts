@@ -9,5 +9,8 @@ export const reducers: ValidateSliceCaseReducers<
 > = {
   setDataInTabInfo:(state,action)=> {
     return {...state,...action.payload}
+  },
+  resetTabInfoReducer:(state)=> {
+    return initialState;
   }
 };

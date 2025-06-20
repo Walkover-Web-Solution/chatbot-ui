@@ -277,6 +277,9 @@
                 case 'SET_BADGE_COUNT':
                     this.updateBadgeCount(data?.badgeCount);
                     break;
+                case 'RELOAD_PARENT':
+                    window.location.reload()
+                    break;
                 default:
                     break;
             }
