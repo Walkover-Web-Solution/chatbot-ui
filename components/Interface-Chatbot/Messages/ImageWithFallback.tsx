@@ -11,7 +11,8 @@ type ImageWithFallbackProps = {
 };
 
 const getFileType = (url: string): string => {
-  const extension = url.split(".").pop()?.toLowerCase().split("?")[0] || "";
+  if (!url) return "other"; // e.g. null, undefined, empty string
+  const extension = url?.split(".")?.pop()?.toLowerCase()?.split("?")[0] || "";
   if (["jpg", "jpeg", "png", "gif", "webp", "bmp"].includes(extension)) return "image";
   if (["mp4", "webm", "ogg"].includes(extension)) return "video";
   if (["mp3", "wav", "aac", "flac"].includes(extension)) return "audio";
@@ -27,7 +28,7 @@ const ImageWithFallback = ({ src, alt = "attachment", style, canDownload = true,
   const downloadFile = () => {
     window.parent.postMessage({
       type: "downloadAttachment",
-      data:{
+      data: {
         url: src
       }
     }, "*");
@@ -50,20 +51,19 @@ const ImageWithFallback = ({ src, alt = "attachment", style, canDownload = true,
             src={src}
             alt={alt}
             onError={() => setError(true)}
-         
             onClick={() => window.open(src, "_blank")}
             style={style}
           />
         );
       case "video":
         return preview ? (
-          <div 
-            className="max-w-full rounded-md relative" 
+          <div
+            className="max-w-full rounded-md relative"
             style={style}
             onClick={() => window.open(src, "_blank")}
           >
-            <video 
-              className="w-full h-full object-cover rounded-md" 
+            <video
+              className="w-full h-full object-cover rounded-md"
               onError={() => setError(true)}
             >
               <source src={src} type={`video/${src.split('.').pop()}`} />
@@ -85,8 +85,8 @@ const ImageWithFallback = ({ src, alt = "attachment", style, canDownload = true,
       case "audio":
         return (
           <div className="w-full min-w-[300px] pr-10 relative">
-            <audio 
-              controls 
+            <audio
+              controls
               onError={() => setError(true)}
               className="w-full"
             >
@@ -108,9 +108,8 @@ const ImageWithFallback = ({ src, alt = "attachment", style, canDownload = true,
   };
 
   return (
-    <div  
-    
-    className={`flex relative group ${isSmallScreen ? 'max-w-[80%]' : 'max-w-[40%]'} h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity`}
+    <div
+      className={`flex relative group ${isSmallScreen ? 'max-w-[80%]' : 'max-w-[40%]'} h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity`}
     >
       {renderContent()}
       {!error && canDownload && (
