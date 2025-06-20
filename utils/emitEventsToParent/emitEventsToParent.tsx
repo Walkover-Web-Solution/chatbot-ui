@@ -11,6 +11,7 @@ export type ParentEventType =
   | 'uuid'
   | 'ENABLE_DOMAIN_TRACKING'
   | 'SET_BADGE_COUNT'
+  | 'RELOAD_PARENT'
 
 /**
  * Emits an event to the parent window using postMessage

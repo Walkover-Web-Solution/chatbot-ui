@@ -41,7 +41,8 @@ const interfaceSlice = createSlice({
 });
 
 export const {
-  setDataInAppInfoReducer
+  setDataInAppInfoReducer,
+  resetAppInfoReducer
 } = interfaceSlice.actions;
 
 export default interfaceSlice.reducer;

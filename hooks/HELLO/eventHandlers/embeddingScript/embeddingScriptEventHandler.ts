@@ -128,6 +128,10 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         return;
     }
 
+    function handleChatbotVisibility(isChatbotOpen = false) {
+        dispatch(setDataInAppInfoReducer({ isChatbotOpen }))
+    }
+
     useEffect(() => {
 
         eventHandler.addEventHandler('parent-route-changed', handleParentRouteChanged)
@@ -139,7 +143,11 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         eventHandler.addEventHandler('ADD_COBROWSE_SCRIPT', handleAddCoBrowseScript)
 
         eventHandler.addEventHandler('helloData', handleHelloData)
-        
+
+        eventHandler.addEventHandler('CHATBOT_OPEN', () => handleChatbotVisibility(true))
+
+        eventHandler.addEventHandler('CHATBOT_CLOSE', () => handleChatbotVisibility(false))
+
     }, [])
 
     return null

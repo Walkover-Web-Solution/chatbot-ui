@@ -246,7 +246,7 @@ export const useChatActions = ({ chatDispatch, chatState, messageRef, timeoutIdR
                 }
             }
         },
-        []
+        [chatState?.loading]
     );
 
     useEffect(() => {

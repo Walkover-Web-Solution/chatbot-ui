@@ -280,6 +280,9 @@
                 case 'SET_BADGE_COUNT':
                     this.updateBadgeCount(data?.badgeCount);
                     break;
+                case 'RELOAD_PARENT':
+                    window.location.reload()
+                    break;
                 default:
                     break;
             }
@@ -495,6 +498,7 @@
 
             const iframeComponent = document.getElementById(this.elements.chatbotIframeComponent);
             iframeComponent?.contentWindow?.postMessage(openMessage, '*');
+            sendMessageToChatbot({ type: "CHATBOT_OPEN" })
         }
 
         closeChatbot() {
@@ -525,6 +529,9 @@
                                 : 'unset';
                     }
                 }, 100);
+
+                sendMessageToChatbot({ type: "CHATBOT_CLOSE" })
+
             }
         }
 
