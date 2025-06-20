@@ -26,11 +26,12 @@ interface ChatbotTextFieldProps {
   currentTeamId: string
   currentChannelId: string
   isVision:Record<string, any>
+  versionId:string
 }
 
 const MAX_IMAGES = 4;
 
-const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "" ,isVision:reduxIsVision={}}) => {
+const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "" ,isVision:reduxIsVision={}, versionId=null}) => {
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const theme = useTheme();
@@ -61,8 +62,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   } = useContext(MessageContext);
 
   const isVisionEnabled = useMemo(() =>
-    (reduxIsVision?.vision || mode?.includes("vision")) || isHelloUser,
-    [reduxIsVision, mode, isHelloUser]
+    (reduxIsVision?.vision || (mode?.includes("vision") && versionId === null)) || isHelloUser,
+    [reduxIsVision, mode, isHelloUser, versionId]
   );
 
   const buttonDisabled = useMemo(() =>
@@ -360,4 +361,4 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   );
 };
 
-export default React.memo(addUrlDataHoc(ChatbotTextField, [ParamsEnums.subThreadId, ParamsEnums.currentTeamId, ParamsEnums.currentChannelId,ParamsEnums.isVision]));
+export default React.memo(addUrlDataHoc(ChatbotTextField, [ParamsEnums.subThreadId, ParamsEnums.currentTeamId, ParamsEnums.currentChannelId,ParamsEnums.isVision, ParamsEnums.versionId]));
