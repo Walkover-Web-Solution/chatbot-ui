@@ -15,7 +15,7 @@ interface FormComponentProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   isSmallScreen: boolean;
-  chatSessionId:string
+  chatSessionId: string
 }
 
 interface FormData {
@@ -32,20 +32,21 @@ interface FormErrors {
   countryCode: string;
 }
 
-function FormComponent({ open, setOpen, isSmallScreen ,chatSessionId}: FormComponentProps) {
+function FormComponent({ open, setOpen, isSmallScreen, chatSessionId }: FormComponentProps) {
   const theme = useTheme();
-  const { showWidgetForm } = useCustomSelector((state: $ReduxCoreType) => ({
-    showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm
+  const { showWidgetForm, clientInfo } = useCustomSelector((state: $ReduxCoreType) => ({
+    showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm,
+    clientInfo: state.Hello?.[chatSessionId]?.clientInfo || {}
   }));
   const dispatch = useDispatch();
   const backgroundColor = theme.palette.primary.main;
   const textColor = isColorLight(backgroundColor) ? "black" : "white";
-  const userData = JSON.parse(getLocalStorage("client") || "{}");
+  const userData = JSON.parse(getLocalStorage("userData") || "{}");
   const [formData, setFormData] = useState<FormData>({
-    name: userData?.name || "",
-    email: userData?.email || "",
-    number: userData?.number || "",
-    countryCode: userData?.country_code || "+91"
+    name: clientInfo?.name || userData?.name || "",
+    email: clientInfo?.email || userData?.mail || "",
+    number: clientInfo?.number_without_CC || userData?.number || "",
+    countryCode: clientInfo?.countryCode || "+91"
   });
 
   const [errors, setErrors] = useState<FormErrors>({
@@ -97,9 +98,7 @@ function FormComponent({ open, setOpen, isSmallScreen ,chatSessionId}: FormCompo
       let clientData = {
         Name: formData?.name,
         Phonenumber: formData?.number ? `${formData?.countryCode}${formData?.number}` : undefined,
-        Email: formData?.email,
-        country_code: formData?.countryCode,
-        number_without_CC : formData?.number
+        Email: formData?.email
       }
 
       // Dispatch setHelloKeysData if all three fields are filled
@@ -109,6 +108,13 @@ function FormComponent({ open, setOpen, isSmallScreen ,chatSessionId}: FormCompo
 
       saveClientDetails(clientData).then(() => {
         setOpen(false);
+        dispatch(setHelloKeysData({
+          clientInfo: {
+            ...formData,
+            countryCode: formData?.countryCode,
+            number_without_CC: formData?.number
+          }
+        }));
       })
     }
   };

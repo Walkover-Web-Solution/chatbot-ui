@@ -59,7 +59,7 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
     currentChannelId
   } = useReduxStateManagement({ chatDispatch, chatSessionId, tabSessionId });
 
-  const { assigned_type, companyId, botId, showWidgetForm, reduxChatSessionId, totalNoOfUnreadMsgs } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { assigned_type, companyId, botId, showWidgetForm, reduxChatSessionId, totalNoOfUnreadMsgs , clientInfo } = useCustomSelector((state: $ReduxCoreType) => ({
     assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === currentChannelId
     )?.assigned_type,
@@ -73,7 +73,8 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
         return acc + channel?.widget_unread_count;
       }, 0);
       return unreadCount;
-    })()
+    })(),
+    clientInfo: state.Hello?.[chatSessionId]?.clientInfo || {}
   }));
 
   const isBot = assigned_type === 'bot';
@@ -180,6 +181,14 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
         if (data?.customer_name === null || data?.customer_number === null || data?.customer_mail === null) {
           dispatch(setHelloKeysData({ showWidgetForm: true }));
         }
+        dispatch(setHelloKeysData({
+          clientInfo:{
+            ...clientInfo,
+            name: data?.customer_name,
+            email: data?.customer_mail,
+            number: data?.customer_number
+          }
+        }))
         return data;
       })
       .catch(error => {
