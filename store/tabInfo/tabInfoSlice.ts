@@ -8,6 +8,7 @@ const interfaceSlice = createSlice({
 });
 
 export const {
-  setDataInTabInfo
+  setDataInTabInfo,
+  resetTabInfoReducer
 } = interfaceSlice.actions;
 export default interfaceSlice.reducer;
