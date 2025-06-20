@@ -95,18 +95,6 @@ export async function getAllChannels(): Promise<any> {
     } else {
       setLocalStorage('a_clientId', response?.data?.uuid)
     }
-
-    // Update userData with customer details from response if available
-    if (response?.data?.customer_name || response?.data?.customer_number || response?.data?.customer_mail) {
-      const userData = JSON.parse(getLocalStorage('client') || '{}');
-      const updatedUserData = {
-        ...userData,
-        name: response?.data?.customer_name || userData.name,
-        number: response?.data?.customer_number?.replace(/^\+/, '') || userData.number,
-        mail: response?.data?.customer_mail || userData.mail
-      };
-      setLocalStorage('client', JSON.stringify(updatedUserData));
-    }
     return response?.data || [];
   } catch (error: any) {
     errorToast(error?.response?.data?.message || "Failed to get channels");
@@ -194,16 +182,6 @@ export async function saveClientDetails(clientData = {}): Promise<any> {
         authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
       },
     });
-    if (response?.data) {
-      const existingUserData = JSON.parse(getLocalStorage('client') || '{}');
-      setLocalStorage("client", JSON.stringify({
-        ...existingUserData,
-        name: response?.data?.name || clientData?.Name,
-        email: response?.data?.mail || clientData?.Email,
-        number: clientData?.number_without_CC,
-        country_code: clientData?.country_code,
-      }));
-    }
     return response?.data;
   } catch (error: any) {
     errorToast(error?.response?.data?.message || "Failed to save client details");

@@ -80,18 +80,13 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
 
         // 2. User identity changed
         if (unique_id !== prevUser.unique_id) {
-            setLocalStorage('client', '{}');
             setLocalStorage('userData', '{}');
             resetKeys();
         }
 
         // 3. Update stored userData
-        const { mail: clientMail, number: clientNumber, name: clientName, country_code: clientCountryCode } = JSON.parse(getLocalStorage('client') || '{}');
         if (mail && number && name) {
-            setLocalStorage('client', JSON.stringify({ mail: mail, number: number, name: name, country_code: clientCountryCode || "+91" }));
             dispatch(setHelloKeysData({ showWidgetForm: false }));
-        } else {
-            setLocalStorage('client', JSON.stringify({ mail: clientMail, number: clientNumber, name: clientName, country_code: clientCountryCode || "+91" }));
         }
 
         setLocalStorage('userData', JSON.stringify({ unique_id, mail, number, user_jwt_token: hasUserIdentity ? user_jwt_token : undefined, name }));
