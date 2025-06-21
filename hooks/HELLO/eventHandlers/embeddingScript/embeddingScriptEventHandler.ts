@@ -1,17 +1,18 @@
-import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
-import { useDispatch } from "react-redux";
-import { useEffect } from "react";
-import { CBManger } from "@/hooks/coBrowser/CBManger";
-import { addDomainToHello, saveClientDetails } from "@/config/helloApi";
-import isPlainObject from "lodash.isplainobject";
-import { useContext } from "react";
 import { ThemeContext } from "@/components/AppWrapper";
-import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
-import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
+import { addDomainToHello, saveClientDetails } from "@/config/helloApi";
+import { CBManger } from "@/hooks/coBrowser/CBManger";
+import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
-import { setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
+import { setHelloConfig } from "@/store/hello/helloSlice";
 import { setDataInInterfaceRedux } from "@/store/interface/interfaceSlice";
 import { setDataInTabInfo } from "@/store/tabInfo/tabInfoSlice";
+import { $ReduxCoreType } from "@/types/reduxCore";
+import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
+import { useCustomSelector } from "@/utils/deepCheckSelector";
+import { cleanObject, getLocalStorage, setLocalStorage } from "@/utils/utilities";
+import isPlainObject from "lodash.isplainobject";
+import { useContext, useEffect } from "react";
+import { useDispatch } from "react-redux";
 
 
 const helloToChatbotPropsMap: Record<string, string> = {
@@ -21,8 +22,13 @@ const helloToChatbotPropsMap: Record<string, string> = {
 
 const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
 
-    const dispatch = useDispatch()
-    const { handleThemeChange } = useContext(ThemeContext)
+    const dispatch = useDispatch();
+    const chatSessionId = eventHandler.getChatSessionId();
+    console.log(chatSessionId, 'chatSesstionId')
+    const { handleThemeChange } = useContext(ThemeContext);
+    const { clientInfo: existingClientInfo } = useCustomSelector((state: $ReduxCoreType) => ({
+        clientInfo: state?.Hello?.[chatSessionId]?.clientInfo || {}
+    }))
 
     const handleParentRouteChanged = (event: MessageEvent) => {
         if (event?.data?.data?.websiteUrl) {
@@ -55,6 +61,11 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
             user_jwt_token,
             name,
             sdkConfig,
+            hide_launcher,
+            show_widget_form,
+            show_close_button,
+            launch_widget,
+            show_send_button,
             ...restProps
         } = event.data.data;
 
@@ -80,21 +91,8 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
 
         // 2. User identity changed
         if (unique_id !== prevUser.unique_id) {
-            setLocalStorage('client', '{}');
-            setLocalStorage('userData', '{}');
             resetKeys();
         }
-
-        // 3. Update stored userData
-        const { mail: clientMail, number: clientNumber, name: clientName, country_code: clientCountryCode } = JSON.parse(getLocalStorage('client') || '{}');
-        if (mail && number && name) {
-            setLocalStorage('client', JSON.stringify({ mail: mail, number: number, name: name, country_code: clientCountryCode || "+91" }));
-            dispatch(setHelloKeysData({ showWidgetForm: false }));
-        } else {
-            setLocalStorage('client', JSON.stringify({ mail: clientMail, number: clientNumber, name: clientName, country_code: clientCountryCode || "+91" }));
-        }
-
-        setLocalStorage('userData', JSON.stringify({ unique_id, mail, number, user_jwt_token: hasUserIdentity ? user_jwt_token : undefined, name }));
 
         // 4. Anonymous cleanup when no identity
         if (!hasUserIdentity && getLocalStorage('k_clientId')) {
@@ -125,6 +123,12 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         dispatch(setHelloConfig(event.data.data));
         SetSessionStorage('helloConfig', JSON.stringify(event.data.data))
         dispatch(setDataInTabInfo({ widgetToken: fullWidgetToken }));
+
+        // 9. Update stored userData
+        const finalClientInfo = { ...{ mail, number, name, country_code: existingClientInfo?.countryCode || '+91' }, ...(cleanObject(existingClientInfo || {})), ...(restProps || {}) }
+        setLocalStorage('clientData', JSON.stringify(finalClientInfo));
+        setLocalStorage('userData', JSON.stringify({ unique_id, mail: finalClientInfo?.mail, number: finalClientInfo?.number, user_jwt_token: hasUserIdentity ? user_jwt_token : undefined, name }));
+
         return;
     }
 

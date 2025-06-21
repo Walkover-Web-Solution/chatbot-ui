@@ -71,9 +71,6 @@ export async function getAllChannels(): Promise<any> {
     const response = await axios.post(
       `${HELLO_HOST_URL}/pubnub-channels/list/`,
       {
-        name,
-        mail,
-        number,
         unique_id,
         user_data: getUserData(),
         is_anon: getLocalStorage('is_anon') == 'true',
@@ -194,17 +191,7 @@ export async function saveClientDetails(clientData = {}): Promise<any> {
         authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
       },
     });
-    if (response?.data) {
-      const existingUserData = JSON.parse(getLocalStorage('client') || '{}');
-      setLocalStorage("client", JSON.stringify({
-        ...existingUserData,
-        name: response?.data?.name || clientData?.Name,
-        email: response?.data?.mail || clientData?.Email,
-        number: clientData?.number_without_CC,
-        country_code: clientData?.country_code,
-      }));
-    }
-    return response?.data;
+    return response?.data?.data;
   } catch (error: any) {
     errorToast(error?.response?.data?.message || "Failed to save client details");
     return null;

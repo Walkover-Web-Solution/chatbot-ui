@@ -1,11 +1,10 @@
 import countryCodes from "@/assests/countryCode.json";
 import { saveClientDetails } from "@/config/helloApi";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
-import { setHelloKeysData } from "@/store/hello/helloSlice";
+import { setClientInfo, setHelloKeysData } from "@/store/hello/helloSlice";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { isColorLight } from "@/utils/themeUtility";
-import { getLocalStorage } from "@/utils/utilities";
 import { useTheme } from "@mui/material";
 import { BookText, Mail, Phone, Send, User } from "lucide-react";
 import React, { useState } from "react";
@@ -15,7 +14,7 @@ interface FormComponentProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   isSmallScreen: boolean;
-  chatSessionId:string
+  chatSessionId: string
 }
 
 interface FormData {
@@ -32,21 +31,35 @@ interface FormErrors {
   countryCode: string;
 }
 
-function FormComponent({ open, setOpen, isSmallScreen ,chatSessionId}: FormComponentProps) {
+function FormComponent({ open, setOpen, isSmallScreen, chatSessionId }: FormComponentProps) {
   const theme = useTheme();
-  const { showWidgetForm } = useCustomSelector((state: $ReduxCoreType) => ({
-    showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm
+  const { showWidgetForm, clientInfo } = useCustomSelector((state: $ReduxCoreType) => ({
+    showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm,
+    clientInfo: state.Hello?.[chatSessionId]?.clientInfo || {}
   }));
   const dispatch = useDispatch();
   const backgroundColor = theme.palette.primary.main;
   const textColor = isColorLight(backgroundColor) ? "black" : "white";
-  const userData = JSON.parse(getLocalStorage("client") || "{}");
+
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>({
-    name: userData?.name || "",
-    email: userData?.email || "",
-    number: userData?.number || "",
-    countryCode: userData?.country_code || "+91"
+    name: clientInfo?.name || "",
+    email: clientInfo?.mail || clientInfo?.email || "",
+    number: clientInfo?.number || "",
+    countryCode: clientInfo?.country_code || "+91"
   });
+
+  // Update form data when clientInfo changes in Redux
+  React.useEffect(() => {
+    if (clientInfo) {
+      setFormData({
+        name: clientInfo?.name || formData.name,
+        email: clientInfo?.mail || formData.email,
+        number: clientInfo?.number || formData.number,
+        countryCode: clientInfo?.country_code || formData.countryCode
+      });
+    }
+  }, [clientInfo]);
 
   const [errors, setErrors] = useState<FormErrors>({
     name: "",
@@ -93,13 +106,14 @@ function FormComponent({ open, setOpen, isSmallScreen ,chatSessionId}: FormCompo
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true)
     if (validate()) {
       let clientData = {
         Name: formData?.name,
         Phonenumber: formData?.number ? `${formData?.countryCode}${formData?.number}` : undefined,
         Email: formData?.email,
         country_code: formData?.countryCode,
-        number_without_CC : formData?.number
+        number_without_CC: formData?.number
       }
 
       // Dispatch setHelloKeysData if all three fields are filled
@@ -107,8 +121,11 @@ function FormComponent({ open, setOpen, isSmallScreen ,chatSessionId}: FormCompo
         dispatch(setHelloKeysData({ showWidgetForm: false }));
       }
 
-      saveClientDetails(clientData).then(() => {
+      saveClientDetails(clientData).then((data) => {
+        dispatch(setClientInfo({ clientInfo: { name: data?.name, mail: data?.mail, number: data?.number } }))
         setOpen(false);
+      }).finally(() => {
+        setLoading(false);
       })
     }
   };
@@ -252,6 +269,7 @@ function FormComponent({ open, setOpen, isSmallScreen ,chatSessionId}: FormCompo
               type="button"
               className="btn btn-outline flex-1"
               onClick={() => setOpen(false)}
+              disabled={loading}
             >
               Skip
             </button>
@@ -262,9 +280,19 @@ function FormComponent({ open, setOpen, isSmallScreen ,chatSessionId}: FormCompo
                 backgroundColor: backgroundColor,
                 color: textColor
               }}
+              disabled={loading}
             >
-              <Send size={18} className="mr-2" />
-              Submit
+              {loading ? (
+                <>
+                  <span className="loading loading-spinner loading-sm mr-2"></span>
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Send size={18} className="mr-2" />
+                  Submit
+                </>
+              )}
             </button>
           </div>
         </form>

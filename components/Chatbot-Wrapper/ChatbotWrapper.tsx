@@ -9,11 +9,12 @@ import Chatbot from "../Chatbot/Chatbot";
 
 interface ChatbotWrapperProps {
   tabSessionId: string;
+  chatSessionId: string;
 }
 
-function ChatbotWrapper({ tabSessionId }: ChatbotWrapperProps) {
+function ChatbotWrapper({ tabSessionId, chatSessionId }: ChatbotWrapperProps) {
   
-  useEmbeddingScriptEventHandler(tabSessionId);
+  useEmbeddingScriptEventHandler(tabSessionId, chatSessionId);
   useLocalStorageEventHandler(tabSessionId);
 
   const { reduxChatSessionId } = useCustomSelector((state: $ReduxCoreType) => ({

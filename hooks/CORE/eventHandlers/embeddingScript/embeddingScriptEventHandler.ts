@@ -10,11 +10,13 @@ class EmbeddingScrpitEventRegistry {
   private eventHandlers: Record<string, (event: MessageEvent) => void> = {}
 
   private tabSessionId: string
+  private chatSessionId: string
 
-  constructor(tabSessionId: string) {
+  constructor(tabSessionId: string, chatSessionId: string) {
     this.allowedEvents = []
     this.eventHandlers = {}
     this.tabSessionId = tabSessionId
+    this.chatSessionId = chatSessionId
   }
 
   isEventAllowed(eventName: string) {
@@ -37,18 +39,22 @@ class EmbeddingScrpitEventRegistry {
   getTabSessionId() {
     return this.tabSessionId
   }
+
+  getChatSessionId() {
+    return this.chatSessionId
+  }
 }
 
-export const useEmbeddingScriptEventHandler = (tabSessionId: string) => {
+export const useEmbeddingScriptEventHandler = (tabSessionId: string, chatSessionId: string) => {
 
-  const EmebeddingScriptEventHandler: EmbeddingScriptEventRegistryInstance = new EmbeddingScrpitEventRegistry(tabSessionId)
+  const EmebeddingScriptEventHandler: EmbeddingScriptEventRegistryInstance = new EmbeddingScrpitEventRegistry(tabSessionId, chatSessionId)
 
   useHandleGtwyEmbeddingScriptEvents(EmebeddingScriptEventHandler)
   useHandleHelloEmbeddingScriptEvents(EmebeddingScriptEventHandler)
 
   const handleMessage = (event: MessageEvent) => {
     const { type } = event.data;
-    if ( EmebeddingScriptEventHandler.isEventAllowed(type) ) {
+    if (EmebeddingScriptEventHandler.isEventAllowed(type)) {
       EmebeddingScriptEventHandler.on(type, event)
     }
   }

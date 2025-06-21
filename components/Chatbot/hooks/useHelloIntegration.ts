@@ -1,19 +1,19 @@
 import { ThemeContext } from '@/components/AppWrapper';
 import { ChatbotContext } from '@/components/context';
-import { getAgentTeamApi, getAllChannels, getCallToken, getClientToken, getGreetingQuestions, getHelloChatHistoryApi, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
+import { getAgentTeamApi, getAllChannels, getCallToken, getClientToken, getGreetingQuestions, getHelloChatHistoryApi, getJwtToken, initializeHelloChat, registerAnonymousUser, saveClientDetails, sendMessageToHelloApi } from '@/config/helloApi';
 import useNotificationSocket from '@/hooks/notifications/notificationSocket';
 import useNotificationSocketEventHandler from '@/hooks/notifications/notificationSocketEventHandler';
 import useSocket from '@/hooks/socket';
 import useSocketEvents from '@/hooks/socketEventHandler';
 import socketManager from '@/hooks/socketManager';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
-import { setAgentTeams, setChannelListData, setGreeting, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
+import { setAgentTeams, setChannelListData, setClientInfo, setGreeting, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { GetSessionStorageData } from '@/utils/ChatbotUtility';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 import { PAGE_SIZE } from '@/utils/enums';
-import { generateNewId, getLocalStorage } from '@/utils/utilities';
+import { generateNewId, getLocalStorage, setLocalStorage } from '@/utils/utilities';
 import { useCallback, useContext, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
@@ -59,7 +59,7 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
     currentChannelId
   } = useReduxStateManagement({ chatDispatch, chatSessionId, tabSessionId });
 
-  const { assigned_type, companyId, botId, showWidgetForm, reduxChatSessionId, totalNoOfUnreadMsgs } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { assigned_type, companyId, botId, showWidgetForm, reduxChatSessionId, totalNoOfUnreadMsgs, clientInfo } = useCustomSelector((state: $ReduxCoreType) => ({
     assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === currentChannelId
     )?.assigned_type,
@@ -67,6 +67,7 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
     botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
     showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm,
     reduxChatSessionId: state.tabInfo?.widgetToken,
+    clientInfo: state?.Hello?.[chatSessionId]?.clientInfo || {},
     totalNoOfUnreadMsgs: (() => {
       const channelListData = state.Hello?.[chatSessionId]?.channelListData;
       const unreadCount = channelListData?.channels?.reduce((acc, channel) => {
@@ -402,10 +403,6 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
         }
       }
 
-      if (is_domain_enable) {
-        emitEventToParent("ENABLE_DOMAIN_TRACKING")
-      }
-
       // Only get JWT token if widgetData is valid and HelloClientId exists
       if (widgetData && (getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`))) {
         try {
@@ -445,6 +442,16 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
 
       // Step 6: Fetch channels
       needsAnonymousRegistration && fetchChannels();
+
+      // Step 7: Update clientInfo and extra parameters on segmento
+      if (a_clientId || k_clientId) {
+        setLocalStorage('clientInfo', getLocalStorage('clientData') || '{}');
+      }
+
+      // Step 8: Enable domain tracking if enabled
+      if (is_domain_enable) {
+        emitEventToParent("ENABLE_DOMAIN_TRACKING")
+      }
 
       mountedRef.current = true;
     } catch (error) {
