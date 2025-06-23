@@ -4,9 +4,8 @@ import socketManager from "./socketManager"; // Import the singleton socket mana
 import { getLocalStorage } from "@/utils/utilities";
 
 const useSocket = ({ chatSessionId }) => {
-  const { jwtToken, channelId, eventChannels, channelListData, company_id } = useCustomSelector((state) => ({
+  const { jwtToken, eventChannels, channelListData, company_id } = useCustomSelector((state) => ({
     jwtToken: state.Hello?.[chatSessionId]?.socketJwt?.jwt,
-    channelId: state.Hello?.[chatSessionId]?.Channel?.channel || null,
     channelListData: state.Hello?.[chatSessionId]?.channelListData?.channels || [],
     eventChannels: state.Hello?.[chatSessionId]?.widgetInfo?.event_channels || [],
     company_id: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || [],
@@ -20,10 +19,11 @@ const useSocket = ({ chatSessionId }) => {
 
     // Setup channels for subscription
     const clientId = getLocalStorage('k_clientId') || getLocalStorage('a_clientId')
-    if (channelId) {
+
       // Create array of channels to subscribe to
       const channels = [];
 
+      // Add user events channels via clientId
       if (company_id && clientId) {
         channels.push(`ch-comp-${company_id}-${clientId}`);
       }
@@ -31,9 +31,6 @@ const useSocket = ({ chatSessionId }) => {
       // Add channels from channelListData if available
       if (channelListData && channelListData.length > 0) {
         channels.push(...channelListData.map((channel) => channel?.channel).filter(Boolean));
-      } else if (channelId) {
-        // Otherwise use the single channelId
-        channels.push(channelId);
       }
       
       // Add event channels if available
@@ -49,14 +46,14 @@ const useSocket = ({ chatSessionId }) => {
             console.error("Failed to subscribe to channels:", error);
           });
       }
-    }
+
 
     // Cleanup function - no need to disconnect as the manager handles multiple components
     return () => {
       // We don't disconnect here as other components might be using the socket
       // The socket manager will handle cleanup when the app unmounts
     };
-  }, [jwtToken, channelId, eventChannels, channelListData]);
+  }, [jwtToken, eventChannels, channelListData]);
 
   return null;
 };
