@@ -112,7 +112,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         setLocalStorage('is_anon', isAnon);
 
         // 7. Map additional interface props
-        Object.entries(restProps).forEach(([key, value]) => {
+        Object.entries(restProps || {})?.forEach(([key, value]) => {
             const mappedKey = helloToChatbotPropsMap[key];
             if (!mappedKey) return;
 
@@ -124,7 +124,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         setLocalStorage('WidgetId', widgetToken);
         dispatch(setHelloConfig(event.data.data));
         SetSessionStorage('helloConfig', JSON.stringify(event.data.data))
-        dispatch(setDataInDraftReducer({ chatSessionId : fullWidgetToken , widgetToken : fullWidgetToken}));
+        dispatch(setDataInDraftReducer({ chatSessionId: fullWidgetToken, widgetToken: fullWidgetToken }));
         return;
     }
 

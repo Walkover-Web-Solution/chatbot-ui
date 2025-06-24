@@ -12,13 +12,13 @@ export function addUrlDataHoc(WrappedComponent: FC<any>, paramsToInject: string[
       tabSessionId: state.draftData.tabSessionId,
       chatSessionId: state.draftData.chatSessionId
     }));
-    
+
     data.chatSessionId = chatSessionId;
     data.tabSessionId = `${chatSessionId}_${tabSessionId}`;
 
     const tabData = useTabData({ tabSessionId: data.tabSessionId });
     if (paramsToInject.length > 0) {
-      paramsToInject.forEach((param) => {
+      paramsToInject?.forEach((param) => {
         data[param] = tabData[param as keyof typeof tabData];
       });
     }

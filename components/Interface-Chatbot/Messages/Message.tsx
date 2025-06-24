@@ -376,7 +376,7 @@ const HumanOrBotMessageCard = React.memo(
   }
 );
 
-const ShadowDomComponent = ({ htmlContent, messageId }:{htmlContent:string, messageId:string}) => {
+const ShadowDomComponent = ({ htmlContent, messageId }: { htmlContent: string, messageId: string }) => {
   const containerRef = useRef(null);
   const [contentHeight, setContentHeight] = useState('auto');
   const shadowRootRef = useRef(null);
@@ -456,7 +456,7 @@ const ShadowDomComponent = ({ htmlContent, messageId }:{htmlContent:string, mess
           const scripts = contentContainer.querySelectorAll('script');
           scripts.forEach(oldScript => {
             const newScript = document.createElement('script');
-            Array.from(oldScript.attributes).forEach(attr => {
+            Array.from(oldScript.attributes)?.forEach(attr => {
               newScript.setAttribute(attr.name, attr.value);
             });
             newScript.textContent = oldScript.textContent;
@@ -490,7 +490,7 @@ const ShadowDomComponent = ({ htmlContent, messageId }:{htmlContent:string, mess
   );
 };
 
-function Message({ message, addMessage, prevTime ,chatSessionId}: { message: any, addMessage?: any, prevTime?: string | number | null ,chatSessionId:string}) {
+function Message({ message, addMessage, prevTime, chatSessionId }: { message: any, addMessage?: any, prevTime?: string | number | null, chatSessionId: string }) {
   const theme = useTheme();
   const backgroundColor = theme.palette.primary.main;
   const textColor = isColorLight(backgroundColor) ? "#000000" : "#ffffff";

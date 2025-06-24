@@ -60,7 +60,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         }
       }
     }
-    
+
     case ChatActionTypes.REMOVE_MESSAGES: {
       const { numberOfMessages } = action.payload;
       const subThreadId = state.subThreadId;
@@ -70,7 +70,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
       const messageIdsToRemove = state.messageIds?.[subThreadId]?.slice(-numberOfMessages);
 
       // Remove these message IDs from the mapping
-      messageIdsToRemove.forEach(msgId => {
+      messageIdsToRemove?.forEach(msgId => {
         delete updatedMapping[msgId];
       });
 
