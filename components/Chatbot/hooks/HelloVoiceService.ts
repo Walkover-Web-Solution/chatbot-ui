@@ -38,6 +38,25 @@ class HelloVoiceService {
 
     private handleOutgoingCall = (call: any) => {
         if (call.type === "incoming-call") return;
+
+        const isBotCall = call.type === "bot-call";
+        console.log('visibility changed', document.visibilityState)
+        if (this.currentCall && isBotCall) {
+            console.log('existing call ended, hanging call')
+            this.endCall();
+            this.resetCall();
+        }
+
+        if (document.visibilityState === "hidden" && isBotCall) {
+            console.log('Not in focus end call ending call')
+            call.on("answered", (data: any) => {
+                console.log('answered while hidden, hanging call')
+                call.hang();
+                this.resetCall();
+            });
+            return;
+        }
+        // Only persist the call if this tab is currently active
         this.currentCall = call;
         this.callState = "ringing";
         this.eventEmitter.emit("callStateChanged", { state: this.callState });
@@ -66,11 +85,7 @@ class HelloVoiceService {
         });
 
         call.on("ended", (data: any) => {
-            this.callState = "idle";
-            this.isMuted = false;
-            this.eventEmitter.emit("callStateChanged", { state: this.callState, data });
-            this.eventEmitter.emit("muteStatusChanged", { muted: false });
-            this.currentCall = null;
+            this.resetCall();
         });
 
         call.on("mute", ({ uid }: { uid: string }) => {
@@ -145,6 +160,14 @@ class HelloVoiceService {
 
     public isInitialized(): boolean {
         return !!this.webrtc;
+    }
+
+    public resetCall(): void {
+        this.callState = "idle";
+        this.isMuted = false;
+        this.eventEmitter.emit("callStateChanged", { state: this.callState });
+        this.eventEmitter.emit("muteStatusChanged", { muted: false });
+        this.currentCall = null;
     }
 
     public cleanUp(): void {
