@@ -49,7 +49,7 @@ const VALID_FILE_TYPES = [
 ] as const;
 
 function RagComponent() {
-    
+
     // State management
     const [configuration, setConfiguration] = React.useState<Configuration>({});
     const [aiGenerationEnabled, setAiGenerationEnabled] = React.useState(false);
@@ -111,19 +111,19 @@ function RagComponent() {
 
     // Message handler
     const handleMessage = React.useCallback((event: MessageEvent) => {
-        const { type, data } = event.data || {};      
+        const { type, data } = event.data || {};
         switch (type) {
             case "INITIAL_CONFIG":
                 setConfiguration(data);
                 break;
-                
+
             case "OPEN_ADD_DOCUMENT":
                 if (data?.action === 'add') {
                     setEditingKnowledgeBase(null);
                     resetForm();
                 }
                 break;
-                
+
             case "EDIT_DOCUMENT":
                 const document = data?.document;
                 if (document) {
@@ -131,7 +131,7 @@ function RagComponent() {
                     populateFormForEdit(document);
                 }
                 break;
-                
+
             case "DELETE_DOCUMENT":
                 if (data?.document?._id) {
                     handleDeleteKnowledgeBase(data?.document?._id);
@@ -149,7 +149,7 @@ function RagComponent() {
     React.useEffect(() => {
         if (configuration?.token) {
             SetSessionStorage("ragToken", configuration.token);
-            
+
         }
     }, [configuration?.token]);
 
@@ -161,7 +161,7 @@ function RagComponent() {
     const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setIsLoading(true);
-        
+
         try {
             const formData = new FormData(event.currentTarget);
             const payload = {
@@ -177,14 +177,14 @@ function RagComponent() {
                     id: editingKnowledgeBase._id,
                     data: payload,
                 });
-                
+
                 if (response?.success) {
-                    window?.parent?.postMessage({ 
-                        type: "rag", 
-                        status: "update", 
+                    window?.parent?.postMessage({
+                        type: "rag",
+                        status: "update",
                         data: {
-                            name: response?.data?.name, 
-                            description: response?.data?.description, 
+                            name: response?.data?.name,
+                            description: response?.data?.description,
                             id: response?.data?._id
                         }
                     }, "*");
@@ -200,7 +200,7 @@ function RagComponent() {
                 }
 
                 const payloadFormData = new FormData();
-                Object.entries(payload).forEach(([key, value]) => {
+                Object.entries(payload)?.forEach(([key, value]) => {
                     if (value !== null) {
                         payloadFormData.append(key, String(value));
                     }
@@ -239,7 +239,7 @@ function RagComponent() {
 
     const handleFileChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
-        
+
         if (selectedFile && VALID_FILE_TYPES.includes(selectedFile.type as any)) {
             setFile(selectedFile);
         } else {
@@ -276,20 +276,18 @@ function RagComponent() {
 
     // Style classes
     const getInputClassName = (disabled = false) => `
-        w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 ${
-            disabled
-                ? (isDarkTheme ? 'bg-gray-700 border-gray-600 text-gray-400' : 'bg-gray-100 border-gray-300 text-gray-400')
-                : (isDarkTheme 
-                    ? 'bg-gray-800 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500' 
-                    : 'bg-white border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500')
+        w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 ${disabled
+            ? (isDarkTheme ? 'bg-gray-700 border-gray-600 text-gray-400' : 'bg-gray-100 border-gray-300 text-gray-400')
+            : (isDarkTheme
+                ? 'bg-gray-800 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500'
+                : 'bg-white border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500')
         }
     `;
 
     const getButtonClassName = (variant: 'primary' | 'secondary' = 'secondary') => `
-        px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 ${
-            variant === 'primary'
-                ? (isDarkTheme ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white')
-                : (isDarkTheme ? 'border border-gray-600 text-gray-300 hover:bg-gray-800 hover:border-gray-500' : 'border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400')
+        px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 ${variant === 'primary'
+            ? (isDarkTheme ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white')
+            : (isDarkTheme ? 'border border-gray-600 text-gray-300 hover:bg-gray-800 hover:border-gray-500' : 'border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400')
         }
     `;
 
@@ -302,7 +300,7 @@ function RagComponent() {
 
     return (
         <div className={`flex flex-col ${isDarkTheme ? 'bg-gray-900 text-white border border-gray-700' : 'bg-white text-gray-900 border border-gray-200'} transition-all duration-200 min-h-screen w-screen p-4`}>
-            
+
             <div className={`flex justify-between items-center font-bold text-xl px-4 pt-4 w-full ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>
                 {editingKnowledgeBase ? "Edit Knowledge Base" : "Create Knowledge Base"}
             </div>
@@ -311,11 +309,11 @@ function RagComponent() {
                 <div className={`flex flex-col flex-grow overflow-auto p-4 gap-4 scrollbar-hide`}>
                     {/* Name Field */}
                     <div className="form-control">
-                    <div className="flex items-center justify-between gap-3">
-                                <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
+                        <div className="flex items-center justify-between gap-3">
+                            <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
                                 Knowledge Base Name <span className={`${theme === 'dark' ? 'text-red-400' : 'text-red-500'}`}>*</span>
-                                </label>
-                                   {/* {!editingKnowledgeBase && <label className={`flex items-center gap-2 text-sm font-medium mt-[-24px] ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                            </label>
+                            {/* {!editingKnowledgeBase && <label className={`flex items-center gap-2 text-sm font-medium mt-[-24px] ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                                         <input
                                             type="checkbox"
                                             className={`toggle toggle-sm ${theme === 'dark' ? 'toggle-primary' : 'toggle-success'}`}
@@ -327,7 +325,7 @@ function RagComponent() {
                                             Generate name and decription using AI
                                         </span>
                                     </label>} */}
-                                </div>
+                        </div>
                         <input
                             ref={nameInputRef}
                             name="name"
@@ -362,7 +360,7 @@ function RagComponent() {
                                 URL
                             </label>
                         )}
-                        
+
                         {!editingKnowledgeBase && (
                             <div className="flex gap-4 mb-4">
                                 <label className={`flex items-center gap-2 cursor-pointer ${isDarkTheme ? 'text-gray-200' : 'text-gray-700'}`}>
@@ -404,11 +402,10 @@ function RagComponent() {
 
                         {fileType === "file" && !editingKnowledgeBase && (
                             <div
-                                className={`border-2 flex items-center justify-center gap-4 flex-col border-dashed rounded-lg p-4 text-center transition-all duration-200 ${
-                                    file 
+                                className={`border-2 flex items-center justify-center gap-4 flex-col border-dashed rounded-lg p-4 text-center transition-all duration-200 ${file
                                         ? `${isDarkTheme ? 'border-green-400 bg-green-900/20' : 'border-green-500 bg-green-50'}`
                                         : `${isDarkTheme ? 'border-gray-600 hover:border-gray-400 bg-gray-800/50' : 'border-gray-300 hover:border-gray-400 bg-gray-50'} cursor-pointer`
-                                }`}
+                                    }`}
                                 onDrop={handleFileDrop}
                                 onDragOver={(e) => e.preventDefault()}
                                 onClick={triggerFileInput}
@@ -444,8 +441,8 @@ function RagComponent() {
                                         }}
                                     >
                                         <div className="flex items-center gap-2">
-                                        <Upload />
-                                        <span>Upload file</span>
+                                            <Upload />
+                                            <span>Upload file</span>
                                         </div>
                                     </button>
                                 )}
@@ -462,9 +459,8 @@ function RagComponent() {
                                 </label>
                                 <select
                                     name="chunking_type"
-                                    className={`px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 ${
-                                        chunkingType === "semantic" || chunkingType === "auto" ? 'w-1/3' : 'w-full'
-                                    } ${getInputClassName().replace('w-full', '')}`}
+                                    className={`px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 ${chunkingType === "semantic" || chunkingType === "auto" ? 'w-1/3' : 'w-full'
+                                        } ${getInputClassName().replace('w-full', '')}`}
                                     required
                                     disabled={isLoading}
                                     value={chunkingType}
@@ -513,7 +509,7 @@ function RagComponent() {
                         </div>
                     )}
                 </div>
-                
+
                 {/* Form Actions */}
                 <div className={`sticky bottom-0 border-t p-4 flex justify-end gap-2 ${isDarkTheme ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
                     <button
