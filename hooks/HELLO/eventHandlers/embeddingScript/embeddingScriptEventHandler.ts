@@ -11,7 +11,7 @@ import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
 import { setDataInInterfaceRedux } from "@/store/interface/interfaceSlice";
-import { setDataInTabInfo } from "@/store/tabInfo/tabInfoSlice";
+import { setDataInDraftReducer } from "@/store/draftData/draftDataSlice";
 
 
 const helloToChatbotPropsMap: Record<string, string> = {
@@ -124,7 +124,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         setLocalStorage('WidgetId', widgetToken);
         dispatch(setHelloConfig(event.data.data));
         SetSessionStorage('helloConfig', JSON.stringify(event.data.data))
-        dispatch(setDataInTabInfo({ widgetToken: fullWidgetToken }));
+        dispatch(setDataInDraftReducer({ chatSessionId : fullWidgetToken , widgetToken : fullWidgetToken}));
         return;
     }
 

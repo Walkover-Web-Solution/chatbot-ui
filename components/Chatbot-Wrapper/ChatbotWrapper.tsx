@@ -16,8 +16,8 @@ function ChatbotWrapper({ tabSessionId }: ChatbotWrapperProps) {
   useEmbeddingScriptEventHandler(tabSessionId);
   useLocalStorageEventHandler(tabSessionId);
 
-  const { reduxChatSessionId } = useCustomSelector((state: $ReduxCoreType) => ({
-    reduxChatSessionId: state.tabInfo?.widgetToken || state?.tabInfo?.chatbotId || '',
+  const {  tempChatSessionId } = useCustomSelector((state: $ReduxCoreType) => ({
+    tempChatSessionId: state?.draftData.chatSessionId || ''
   }));
 
   // Notify parent when interface is loaded
@@ -27,7 +27,7 @@ function ChatbotWrapper({ tabSessionId }: ChatbotWrapperProps) {
     }, 0);
   }, []);
 
-  if (!reduxChatSessionId) {
+  if (!tempChatSessionId) {
     return null
   }
 
