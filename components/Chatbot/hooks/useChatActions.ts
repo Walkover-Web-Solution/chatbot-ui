@@ -210,8 +210,8 @@ export const useChatActions = ({ chatbotId, chatDispatch, chatState, messageRef,
         }
         const response = await sendDataToAction(payload);
         if (!response?.success) {
-            chatDispatch({ type: ChatActionTypes.REMOVE_MESSAGES, payload: { numberOfMessages: 1 } })
             chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: false })
+            chatDispatch({ type: ChatActionTypes.REMOVE_MESSAGES, payload: { numberOfMessages: 2 } })
             return
         }
     }
