@@ -184,7 +184,7 @@ export const useChatActions = ({ chatDispatch, chatState, messageRef, timeoutIdR
             interfaceContextData: { ...variables, ...customVariables } || {},
             threadId: customThreadId || threadId,
             subThreadId: subThreadId,
-            slugName: customBridgeSlug || bridgeName + 'hai',
+            slugName: customBridgeSlug || bridgeName,
             thread_flag: (firstThread?.newChat && firstThread?.sub_thread_id === subThreadId) ? true : false,
             chatBotId: chatSessionId,
             version_id: versionId === "null" ? null : versionId,
