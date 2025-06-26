@@ -580,7 +580,7 @@
             iframe.id = this.elements.chatbotIframeComponent;
             iframe.title = 'iframe';
             iframe.allowFullscreen = true;
-            iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-forms');
+            iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation-by-user-activation');
             iframe.allow = 'microphone *; camera *; midi *; encrypted-media *';
 
             this.parentContainer.appendChild(iframe);
