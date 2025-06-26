@@ -1,5 +1,7 @@
 import useHelloLocalStorageEventHandlers from "@/hooks/HELLO/eventHandlers/localStorage/localStorageEventsHandler";
-import { setHelloKeysData } from "@/store/hello/helloSlice";
+import { resetAppInfoReducer } from "@/store/appInfo/appInfoSlice";
+import { resetDraftDataReducer } from "@/store/draftData/draftDataSlice";
+import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 
@@ -40,7 +42,7 @@ class LocalStorageEventRegistry {
 }
 
 export const useLocalStorageEventHandler = (tabSessionId: string) => {
-
+  const dispatch = useDispatch();
   const LocalStorageEventHandler: LocalStorageEventRegistryInstance = new LocalStorageEventRegistry(tabSessionId)
 
   useHelloLocalStorageEventHandlers(LocalStorageEventHandler)
@@ -52,12 +54,22 @@ export const useLocalStorageEventHandler = (tabSessionId: string) => {
     }
   };
 
-  useEffect(() => {
+  const handleLocalStorageChange = (event: StorageEvent) => {
+    if (event.key === null) {
+      // LOCAL STORAGE FULL CLEAR THEN RESET THE REDUCERS AND RELOAD THE PARENT
+      dispatch(resetDraftDataReducer())
+      dispatch(resetAppInfoReducer())
+      emitEventToParent('RELOAD_PARENT')
+    }
+  }
 
-    window.addEventListener("localstorage-updated", handleStorageUpdate);
+  useEffect(() => {
+    window.addEventListener("localstorage-updated", handleStorageUpdate as EventListener);
+    window.addEventListener("storage", handleLocalStorageChange);
 
     return () => {
-      window.removeEventListener("localstorage-updated", handleStorageUpdate);
+      window.removeEventListener("localstorage-updated", handleStorageUpdate as EventListener);
+      window.removeEventListener("storage", handleLocalStorageChange);
 
     };
   }, []);

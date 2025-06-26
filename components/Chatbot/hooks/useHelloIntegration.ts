@@ -1,23 +1,17 @@
-import { ThemeContext } from '@/components/AppWrapper';
-import { ChatbotContext } from '@/components/context';
-import { getAgentTeamApi, getAllChannels, getCallToken, getClientToken, getGreetingQuestions, getHelloChatHistoryApi, getJwtToken, initializeHelloChat, registerAnonymousUser, sendMessageToHelloApi } from '@/config/helloApi';
-import useNotificationSocket from '@/hooks/notifications/notificationSocket';
-import useNotificationSocketEventHandler from '@/hooks/notifications/notificationSocketEventHandler';
-import useSocket from '@/hooks/socket';
-import useSocketEvents from '@/hooks/socketEventHandler';
+import { ChatContext } from '@/components/Chatbot-Wrapper/ChatbotWrapper';
+import { MessageContext } from '@/components/Interface-Chatbot/InterfaceChatbot';
+import { getAllChannels, getHelloChatHistoryApi, sendMessageToHelloApi } from '@/config/helloApi';
 import socketManager from '@/hooks/socketManager';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
-import { setAgentTeams, setChannelListData, setGreeting, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
-import { $ReduxCoreType } from '@/types/reduxCore';
-import { GetSessionStorageData } from '@/utils/ChatbotUtility';
+import { setData, setHelloEventMessage, setImages, setInitialMessages, setOpenHelloForm, setPaginateMessages } from '@/store/chat/chatSlice';
+import { setChannelListData, setHelloKeysData } from '@/store/hello/helloSlice';
+import { useAppDispatch } from '@/store/useTypedHooks';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
-import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 import { PAGE_SIZE } from '@/utils/enums';
-import { generateNewId, getLocalStorage } from '@/utils/utilities';
-import { useCallback, useContext, useEffect, useRef } from 'react';
+import { generateNewId } from '@/utils/utilities';
+import { useCallback, useContext, useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
-import helloVoiceService from './HelloVoiceService';
+import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
 
 interface HelloMessage {
@@ -31,73 +25,45 @@ interface HelloMessage {
   channel?: string;
 }
 
-interface UseHelloIntegrationProps {
-  chatState: ChatState;
-  chatDispatch: React.Dispatch<ChatAction>;
-  messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLDivElement>;
-  chatSessionId: string;
-  tabSessionId: string;
-  chatActions: {
-    setLoading: (data: boolean) => void
-    setChatsLoading: (data: boolean) => void
-    setNewMessage: (data: boolean) => void
+export const useHelloContext = () => {
+  const context = useContext(ChatContext);
+  if (context === undefined) {
+    throw new Error('useHelloContext must be used within a HelloContextProvider');
   }
-}
+  return context;
+};
 
-const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRef, chatActions, tabSessionId }: UseHelloIntegrationProps) => {
-  const { handleThemeChange } = useContext(ThemeContext);
-  const { isHelloUser } = useContext(ChatbotContext);
-  const { loading, helloMessages, images } = chatState;
-  const { setLoading, setChatsLoading, setNewMessage } = chatActions
-
-  const {
-    uuid,
-    unique_id,
-    presence_channel,
-    currentChatId,
-    currentTeamId,
-    currentChannelId
-  } = useReduxStateManagement({ chatDispatch, chatSessionId, tabSessionId });
-
-  const { assigned_type, companyId, botId, showWidgetForm, reduxChatSessionId } = useCustomSelector((state: $ReduxCoreType) => ({
-    assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
-      (channel: any) => channel?.channel === currentChannelId
-    )?.assigned_type,
-    companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
-    botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
-    showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm,
-    reduxChatSessionId: state.tabInfo?.widgetToken
-  }));
-
-  const isBot = assigned_type === 'bot';
-  const dispatch = useDispatch();
-  const mountedRef = useRef(false);
-  const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
-
-  useSocket({ chatSessionId });
-  useNotificationSocket({ chatSessionId });
+// Individual Hello hooks
+export const useHelloMessages = () => {
+  const globalDispatch = useAppDispatch();
 
   const setHelloMessages = useCallback((messages: HelloMessage[]) => {
-    chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages, subThreadId: messages?.[0]?.channel || "" } });
-  }, [chatDispatch]);
+    globalDispatch(setInitialMessages({ messages, subThreadId: messages?.[0]?.channel || "" }));
+  }, [globalDispatch]);
 
-  const addHelloMessage = useCallback((message: HelloMessage, subThreadId?: string) => {
+  const addHelloMessage = useCallback((message: HelloMessage | HelloMessage[], subThreadId?: string) => {
     if (Array.isArray(message)) {
-      chatDispatch({ type: ChatActionTypes.SET_PAGINATE_MESSAGES, payload: { messages: message } });
-      return
+      globalDispatch(setPaginateMessages({ messages: message }));
+      return;
     }
-    chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message: message, subThreadId } });
-  }, [chatDispatch]);
+    globalDispatch(setHelloEventMessage({ message, subThreadId }));
+  }, [globalDispatch]);
 
+  return { setHelloMessages, addHelloMessage };
+};
 
-  useEffect(() => {
-    if (isHelloUser && currentChannelId) {
-      fetchHelloPreviousHistory()
-    }
-  }, [currentChannelId, isHelloUser])
+export const useFetchHelloPreviousHistory = () => {
+  const { chatSessionId } = useHelloContext();
+  const globalDispatch = useAppDispatch();
+  const { setChatsLoading } = useChatActions();
+  const { setHelloMessages } = useHelloMessages();
 
-  // Fetch previous Hello chat history
-  const fetchHelloPreviousHistory = useCallback((dynamicChannelId?: string) => {
+  const { uuid, currentChannelId } = useReduxStateManagement({
+    chatSessionId,
+    tabSessionId: useHelloContext().tabSessionId
+  });
+
+  return useCallback((dynamicChannelId?: string) => {
     const channelId = dynamicChannelId || currentChannelId;
     if (!channelId || !uuid) return;
 
@@ -106,20 +72,15 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
       .then((response) => {
         const helloChats = response?.data?.data;
         if (Array.isArray(helloChats) && helloChats.length > 0) {
-          const chatsToStore = helloChats
-          setHelloMessages(chatsToStore);
-          chatDispatch({
-            type: ChatActionTypes.SET_DATA, payload: {
-              hasMoreMessages: helloChats.length >= PAGE_SIZE.hello,
-              skip: helloChats.length,
-            }
-          });
+          setHelloMessages(helloChats);
+          globalDispatch(setData({
+            hasMoreMessages: helloChats.length >= PAGE_SIZE.hello,
+            skip: helloChats.length,
+          }));
         } else {
-          chatDispatch({
-            type: ChatActionTypes.SET_DATA, payload: {
-              hasMoreMessages: false,
-            }
-          });
+          globalDispatch(setData({
+            hasMoreMessages: false,
+          }));
         }
       })
       .catch((error) => {
@@ -128,33 +89,42 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
       .finally(() => {
         setChatsLoading(false);
       });
-  }, [currentChannelId, uuid, setChatsLoading, setHelloMessages]);
+  }, [currentChannelId, uuid, setChatsLoading, setHelloMessages, globalDispatch]);
+};
 
+export const useGetMoreHelloChats = () => {
+  const { chatSessionId } = useHelloContext();
+  const globalDispatch = useAppDispatch();
+  const { setChatsLoading } = useChatActions();
+  const { addHelloMessage } = useHelloMessages();
 
-  const getMoreHelloChats = useCallback(() => {
-    if (!currentChannelId || !uuid) return;
-    const { hasMoreMessages, skip } = chatState;
-    if (!hasMoreMessages) return;
+  const { uuid, currentChannelId } = useReduxStateManagement({
+    chatSessionId,
+    tabSessionId: useHelloContext().tabSessionId
+  });
+
+  const { hasMoreMessages, skip } = useCustomSelector((state) => ({
+    hasMoreMessages: state.Chat.hasMoreMessages,
+    skip: state.Chat.skip
+  }));
+
+  return useCallback(() => {
+    if (!currentChannelId || !uuid || !hasMoreMessages) return;
 
     setChatsLoading(true);
     getHelloChatHistoryApi(currentChannelId, skip)
       .then((response) => {
         const helloChats = response?.data?.data;
         if (Array.isArray(helloChats) && helloChats.length > 0) {
-          const chatsToStore = helloChats;
-          addHelloMessage(chatsToStore);
-          chatDispatch({
-            type: ChatActionTypes.SET_DATA, payload: {
-              hasMoreMessages: helloChats.length >= PAGE_SIZE.hello,
-              skip: skip + helloChats.length,
-            }
-          });
+          addHelloMessage(helloChats);
+          globalDispatch(setData({
+            hasMoreMessages: helloChats.length >= PAGE_SIZE.hello,
+            skip: skip + helloChats.length,
+          }));
         } else {
-          chatDispatch({
-            type: ChatActionTypes.SET_DATA, payload: {
-              hasMoreMessages: false,
-            }
-          });
+          globalDispatch(setData({
+            hasMoreMessages: false,
+          }));
         }
       })
       .catch((error) => {
@@ -163,10 +133,13 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
       .finally(() => {
         setChatsLoading(false);
       });
-  }, [currentChannelId, uuid, setChatsLoading, setHelloMessages]);
+  }, [currentChannelId, uuid, setChatsLoading, addHelloMessage, hasMoreMessages, skip, globalDispatch]);
+};
 
-  // Fetch all channels
-  const fetchChannels = useCallback(() => {
+export const useFetchChannels = () => {
+  const dispatch = useDispatch();
+
+  return useCallback(() => {
     return getAllChannels()
       .then(data => {
         dispatch(setChannelListData(data));
@@ -179,11 +152,12 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
         console.error("Error fetching channels:", error);
       });
   }, [dispatch]);
+};
 
-  useSocketEvents({ chatState, chatDispatch, messageRef, fetchChannels, chatSessionId, setLoading, tabSessionId });
-  useNotificationSocketEventHandler({ chatDispatch, chatSessionId })
+export const useHelloTimeout = () => {
+  const { setLoading } = useChatActions();
+  const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Start timeout timer for response waiting
   const startTimeoutTimer = useCallback(() => {
     if (timeoutIdRef.current) {
       clearTimeout(timeoutIdRef.current);
@@ -201,9 +175,42 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
     };
   }, [setLoading]);
 
-  // Send message to Hello
-  const onSendHello = useCallback(async (message: string, newMessage: HelloMessage) => {
-    if (!message.trim() && images.length === 0) return;
+  return { startTimeoutTimer };
+};
+
+export const useOnSendHello = () => {
+  const { chatSessionId } = useHelloContext();
+  const globalDispatch = useAppDispatch();
+  const dispatch = useDispatch();
+  const { setLoading } = useChatActions();
+  const { addHelloMessage } = useHelloMessages();
+  const { startTimeoutTimer } = useHelloTimeout();
+  const fetchChannels = useFetchChannels();
+
+  const {
+    uuid,
+    unique_id,
+    presence_channel,
+    currentChatId,
+    currentTeamId,
+    currentChannelId
+  } = useReduxStateManagement({
+    chatSessionId,
+    tabSessionId: useHelloContext().tabSessionId
+  });
+
+  const { assigned_type, showWidgetForm, images } = useCustomSelector((state) => ({
+    assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
+      (channel: any) => channel?.channel === currentChannelId
+    )?.assigned_type,
+    showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm,
+    images: state.Chat.images,
+  }));
+
+  const isBot = assigned_type === 'bot';
+
+  return useCallback(async (message: string, newMessage: HelloMessage) => {
+    if (!message.trim() && (!images || images.length === 0)) return;
 
     try {
       const channelDetail = !currentChatId ? {
@@ -222,15 +229,16 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
         team_id: currentTeamId,
         new: true,
       } : undefined;
-      // show widget form only if in case of new chat and showWidgetForm is true i.e if all the fields are not filled
+
+      // Show widget form only if in case of new chat and showWidgetForm is true
       if (!currentChatId && showWidgetForm) {
-        chatDispatch({ type: ChatActionTypes.SET_OPEN_HELLO_FORM, payload: true });
+        globalDispatch(setOpenHelloForm(true));
       }
 
       const attachments = Array.isArray(images) && images?.length ? images : null;
 
       if (attachments) {
-        chatDispatch({ type: ChatActionTypes.SET_IMAGES, payload: [] });
+        globalDispatch(setImages([]));
       }
 
       if (isBot || !assigned_type) {
@@ -246,8 +254,7 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
           currentChatId: data?.['id'],
           currentChannelId: data?.['channel']
         }));
-        addHelloMessage(newMessage, data?.['channel'])
-        // chatDispatch({ type: ChatActionTypes.SET_INTIAL_MESSAGES, payload: { messages: [newMessage], subThreadId: data?.['channel'] } })
+        addHelloMessage(newMessage, data?.['channel']);
         fetchChannels();
         if (data?.['presence_channel'] && data?.['channel']) {
           try {
@@ -256,7 +263,6 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
             console.error("Failed to subscribe to channels:", error);
           }
         }
-
       }
     } catch (error) {
       if (isBot) {
@@ -270,7 +276,7 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
     uuid,
     unique_id,
     presence_channel,
-    chatDispatch,
+    globalDispatch,
     images,
     isBot,
     startTimeoutTimer,
@@ -278,10 +284,34 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
     dispatch,
     fetchChannels,
     currentChannelId,
-    showWidgetForm
+    showWidgetForm,
+    assigned_type,
+    addHelloMessage
   ]);
+};
 
-  const sendMessageToHello = useCallback((message: string = '') => {
+export const useSendMessageToHello = ({
+  messageRef: propMessageRef,
+}: {
+  messageRef?: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>,
+}) => {
+  const context = useContext(MessageContext);
+  const messageRef = propMessageRef ?? context.messageRef;
+  const { chatSessionId } = useHelloContext();
+  const { setNewMessage } = useChatActions();
+  const { addHelloMessage } = useHelloMessages();
+  const onSendHello = useOnSendHello();
+
+  const { currentChatId, currentChannelId } = useReduxStateManagement({
+    chatSessionId,
+    tabSessionId: useHelloContext().tabSessionId
+  });
+
+  const { images } = useCustomSelector((state) => ({
+    images: state.Chat.images,
+  }));
+
+  return useCallback((message: string = '') => {
     // Handle different types of input elements
     let textMessage = '';
     if (messageRef?.current) {
@@ -292,7 +322,7 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
       }
     }
 
-    if (!textMessage.trim() && images?.length === 0) return false;
+    if (!textMessage.trim() && (!images || images?.length === 0)) return false;
 
     const messageId = generateNewId();
     const newMessage = {
@@ -324,133 +354,5 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
     }
 
     return true;
-  }, [onSendHello, addHelloMessage, images, messageRef, currentChannelId]);
-
-  useEffect(() => {
-    if (reduxChatSessionId) {
-      const widgetToken = reduxChatSessionId?.split('_')[0] // Extract first part (e.g., "d1bc7")
-      initializeHelloServices(widgetToken);
-    }
-  }, [reduxChatSessionId])
-
-  const initializeHelloServices = async (widgetToken: string = '') => {
-    // Prevent duplicate initialization
-    if (!widgetToken || widgetToken !== getLocalStorage("WidgetId")) {
-      return;
-    }
-
-    try {
-      let a_clientId = getLocalStorage('a_clientId');
-      let k_clientId = getLocalStorage('k_clientId');
-      let enable_call = false
-      let is_domain_enable = false
-      let { mail, number, unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
-
-      let needsAnonymousRegistration = !a_clientId && !k_clientId && !unique_id && widgetToken && isHelloUser && !mail && !number;
-
-      if (needsAnonymousRegistration) {
-        await registerAnonymousUser();
-        a_clientId = getLocalStorage(`a_clientId`);
-      } else {
-        // it gives the Hello Client Id for the registered user
-        await fetchChannels();
-        k_clientId = getLocalStorage(`k_clientId`);
-      }
-
-      //  used to subscribe to cobrowse
-      emitEventToParent('uuid', { uuid: k_clientId || a_clientId })
-      // Step 2: Handle domain (if needed)
-
-      let widgetData = null;
-      let jwtData = null;
-      let botType = '';
-      if (isHelloUser && widgetToken) {
-        try {
-          widgetData = await initializeHelloChat();
-          if (!widgetData) {
-            window.parent.postMessage({ type: 'initializeHelloChat_failed' }, '*');
-          }
-          window.parent.postMessage({ type: 'hide_widget', data: widgetData?.hide_launcher }, '*');
-          window.parent.postMessage({ type: 'setDataInLocal', data: { key: 'widgetInfo', payload: JSON.stringify({ additionalData: { widgetToken } }) } }, '*');
-          window.parent.postMessage({ type: 'launch_widget', data: widgetData?.launch_widget }, '*');
-          botType = widgetData?.bot_type;
-          enable_call = widgetData?.voice_call_widget;
-          is_domain_enable = widgetData?.is_domain_enable
-          dispatch(setWidgetInfo(widgetData));
-          const customTheme = (JSON.parse(GetSessionStorageData('helloConfig') || `{}`))?.sdkConfig?.customTheme || ''
-          if (!customTheme) {
-            handleThemeChange(widgetData?.primary_color || "#000000");
-          }
-          if (widgetData?.teams && widgetData?.teams.length <= 1) {
-            dispatch(setDataInAppInfoReducer({ currentTeamId: widgetData?.teams?.[0]?.id || null }));
-          }
-        } catch (error) {
-          window.parent.postMessage({ type: 'initializeHelloChat_failed' }, '*');
-          console.error("Failed to initialize Hello Chat:", error);
-          return; // Exit early, don't proceed to getJwtToken
-        }
-      }
-
-      if (is_domain_enable) {
-        emitEventToParent("ENABLE_DOMAIN_TRACKING")
-      }
-
-      // Only get JWT token if widgetData is valid and HelloClientId exists
-      if (widgetData && (getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`))) {
-        try {
-          jwtData = await getJwtToken();
-          if (jwtData !== null) {
-            dispatch(setJwtToken(jwtData));
-          }
-        } catch (error) {
-          console.error("Failed to fetch JWT token:", error);
-        }
-      }
-      // Step 4: Get greeting questions (depends on widget info for company/bot IDs)
-      const greetingCompanyId = widgetData?.company_id || companyId;
-      const greetingBotId = widgetData?.bot_id || botId;
-      if (widgetData && greetingCompanyId && greetingBotId && (getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`)) && (botType === 'lex' || botType === 'chatgpt')) {
-        await getGreetingQuestions(greetingCompanyId, greetingBotId, botType).then((data) => {
-          dispatch(setGreeting({ ...data?.greeting }));
-        });
-      }
-
-      if (widgetToken) {
-        getAgentTeamApi().then((data) => {
-          dispatch(setAgentTeams(data));
-        });
-      }
-
-      // Step 5: Get client token and call token (depend on JWT)
-      if ((getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`)) && widgetToken && enable_call) {
-        const clientTokenPromise = getClientToken().then(() => {
-          helloVoiceService.initialize();
-        });
-
-        const callTokenPromise = getCallToken();
-
-        await Promise.all([clientTokenPromise, callTokenPromise]);
-      }
-
-      // Step 6: Fetch channels
-      needsAnonymousRegistration && fetchChannels();
-
-      mountedRef.current = true;
-    } catch (error) {
-      console.error("Error initializing Hello services:", error);
-    }
-  };
-
-  return {
-    helloMessages,
-    loading,
-    setLoading,
-    sendMessageToHello,
-    fetchHelloPreviousHistory,
-    addHelloMessage,
-    fetchChannels,
-    getMoreHelloChats
-  };
+  }, [onSendHello, addHelloMessage, images, messageRef, currentChannelId, currentChatId, setNewMessage]);
 };
-
-export default useHelloIntegration;

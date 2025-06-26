@@ -1,6 +1,6 @@
 'use client';
 import { ChatbotContext } from "@/components/context";
-import { setDataInTabInfo } from "@/store/tabInfo/tabInfoSlice";
+import { setDataInDraftReducer } from "@/store/draftData/draftDataSlice";
 import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
 import { EmbedVerificationStatus } from "@/utils/enums";
 import { useRouter } from "next/navigation";
@@ -21,9 +21,10 @@ export default function InterfaceEmbed() {
         if (!tabSessionId) {
             tabSessionId = Date.now().toString();
             SetSessionStorage('tab_session_id', tabSessionId);
-            dispatch(setDataInTabInfo({ tabSessionId }))
         }
 
+        dispatch(setDataInDraftReducer({ tabSessionId }))
+        
     }, [])
 
     useEffect(() => {
@@ -38,7 +39,7 @@ export default function InterfaceEmbed() {
 
     useEffect(() => {
         if (verifiedState === EmbedVerificationStatus.VERIFIED && chatbot_id) {
-            dispatch(setDataInTabInfo({ chatbotId: chatbot_id }))
+            dispatch(setDataInDraftReducer({chatbotId: chatbot_id , chatSessionId: chatbot_id}))
             router.replace(`/chatbot/${chatbot_id}`);
         }
         if (isHelloUser && verifiedState === EmbedVerificationStatus.VERIFIED) {

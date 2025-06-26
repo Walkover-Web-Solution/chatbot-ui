@@ -185,7 +185,7 @@ export async function saveClientDetails(clientData = {}): Promise<any> {
   try {
     const payload = {
       user_data: getUserData(),
-      is_anon: false,
+      is_anon: getLocalStorage("is_anon") == 'true',
       ...clientData
     }
 

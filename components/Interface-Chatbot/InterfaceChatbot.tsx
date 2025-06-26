@@ -1,7 +1,6 @@
 /* eslint-disable */
 import { HeaderButtonType } from "@/types/interface/InterfaceReduxType";
-import React, { createContext } from "react";
-import { ChatAction } from "../Chatbot/hooks/chatTypes";
+import { createContext } from "react";
 
 interface MessageType {
   content: string;
@@ -46,7 +45,6 @@ export const MessageContext = createContext<{
   setToggleDrawer: (data: boolean) => void;
   setLoading: (data: boolean) => void,
   isToggledrawer: boolean,
-  chatDispatch?: React.Dispatch<ChatAction>;
   getMoreChats: () => void;
   getMoreHelloChats: () => void;
   handleMessageFeedback: (data: any) => void;

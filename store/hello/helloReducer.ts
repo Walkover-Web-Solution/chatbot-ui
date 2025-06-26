@@ -24,7 +24,7 @@ export const reducers: ValidateSliceCaseReducers<
     if (!chatSessionId) return;
 
     const { widgetInfo, ChannelList, Jwt, anonymousClientId, mode, vision } = action.payload;
-    
+
     state[chatSessionId] = {
       ...state[chatSessionId],
       widgetInfo,
@@ -63,8 +63,8 @@ export const reducers: ValidateSliceCaseReducers<
       state[chatSessionId] = {
         ...state[chatSessionId],
         helloConfig: action.payload,
-        showWidgetForm: state[chatSessionId]?.showWidgetForm !== null ? 
-          state[chatSessionId].showWidgetForm : 
+        showWidgetForm: state[chatSessionId]?.showWidgetForm !== null || state[chatSessionId]?.showWidgetForm !== undefined ?
+          state[chatSessionId]?.showWidgetForm :
           (action.payload?.show_widget_form ?? true)
       };
     }
@@ -128,12 +128,12 @@ export const reducers: ValidateSliceCaseReducers<
       const channel = state[chatSessionId]?.channelListData?.channels?.find(
         (channel: any) => channel?.channel === channelId
       );
-      
+
       if (channel) {
         channel.assigned_type = assigned_type;
         channel.assigned_id = assignee_id;
-        channel.assigned_to = assigned_type === 'team' 
-          ? { name: state[chatSessionId]?.agent_teams?.teams?.[assignee_id] } 
+        channel.assigned_to = assigned_type === 'team'
+          ? { name: state[chatSessionId]?.agent_teams?.teams?.[assignee_id] }
           : { name: state[chatSessionId]?.agent_teams?.agents?.[assignee_id] };
       }
     }
@@ -171,7 +171,7 @@ export const reducers: ValidateSliceCaseReducers<
     const chatSessionId = action.urlData?.chatSessionId
     if (chatSessionId) {
       const { agents = [], teams = [] } = action.payload;
-      
+
       const agentsMap = agents.reduce((map: Record<string, any>, agent: any) => {
         if (agent && agent.id) {
           map[agent.id] = agent?.name;

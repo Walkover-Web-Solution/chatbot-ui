@@ -15,5 +15,8 @@ export const reducers = {
                 }
             }
         }
+    },
+    resetAppInfoReducer() {
+        return initialState;
     }
 };

@@ -1,4 +1,5 @@
-import { useSelector } from "react-redux";
+import { store } from "@/store";
+import { TypedUseSelectorHook, useSelector } from "react-redux";
 
 export default function isEqual(oldValue, newValue) {
   if (oldValue === newValue) return true;
@@ -35,7 +36,8 @@ export default function isEqual(oldValue, newValue) {
 
   return false;
 }
-export const useCustomSelector = (stateChangesKaFuntion) => {
+export type RootState = ReturnType<typeof store.getState>;
+export const useCustomSelector: TypedUseSelectorHook<RootState> = (stateChangesKaFuntion) => {
   const data = useSelector(stateChangesKaFuntion, isEqual);
   return data;
 };

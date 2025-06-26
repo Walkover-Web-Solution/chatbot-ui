@@ -67,7 +67,7 @@ class SocketManager {
       }
 
       // Execute any pending connection callbacks
-      this.connectionCallbacks.forEach(callback => callback());
+      this.connectionCallbacks?.forEach(callback => callback());
       this.connectionCallbacks = [];
     });
 

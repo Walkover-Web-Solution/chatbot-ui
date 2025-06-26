@@ -11,9 +11,9 @@ const interfaceSlice = createSlice({
       const threadData = action.payload?.newThreadData || {};
       const allThreadList = action.payload?.threadList || [];
       const tabSessionId = action?.urlData?.tabSessionId;
-    if(!state[tabSessionId]){
-      state[tabSessionId] = {};
-    }
+      if (!state[tabSessionId]) {
+        state[tabSessionId] = {};
+      }
       if (!(Object.keys(threadData || {}).length > 0)) {
         if (state[tabSessionId]?.threadId) {
           const selectedThread = allThreadList.find(
@@ -41,7 +41,8 @@ const interfaceSlice = createSlice({
 });
 
 export const {
-  setDataInAppInfoReducer
+  setDataInAppInfoReducer,
+  resetAppInfoReducer
 } = interfaceSlice.actions;
 
 export default interfaceSlice.reducer;

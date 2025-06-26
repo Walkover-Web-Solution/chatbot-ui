@@ -1,21 +1,20 @@
 import countryCodes from "@/assests/countryCode.json";
 import { saveClientDetails } from "@/config/helloApi";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
+import { setOpenHelloForm } from "@/store/chat/chatSlice";
 import { setHelloKeysData } from "@/store/hello/helloSlice";
-import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
-import { isColorLight } from "@/utils/themeUtility";
 import { getLocalStorage } from "@/utils/utilities";
-import { useTheme } from "@mui/material";
 import { BookText, Mail, Phone, Send, User } from "lucide-react";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
+import { useColor } from "./Chatbot/hooks/useColor";
 
 interface FormComponentProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   isSmallScreen: boolean;
-  chatSessionId:string
+  chatSessionId: string
 }
 
 interface FormData {
@@ -32,14 +31,17 @@ interface FormErrors {
   countryCode: string;
 }
 
-function FormComponent({ open, setOpen, isSmallScreen ,chatSessionId}: FormComponentProps) {
-  const theme = useTheme();
-  const { showWidgetForm } = useCustomSelector((state: $ReduxCoreType) => ({
-    showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm
-  }));
+function FormComponent({ isSmallScreen, chatSessionId }: FormComponentProps) {
+  const { textColor, backgroundColor } = useColor();
   const dispatch = useDispatch();
-  const backgroundColor = theme.palette.primary.main;
-  const textColor = isColorLight(backgroundColor) ? "black" : "white";
+  const { showWidgetForm, open } = useCustomSelector((state) => ({
+    showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm,
+    open: state.Chat.openHelloForm
+  }));
+  const setOpen = (open: boolean) => {
+    dispatch(setOpenHelloForm(open));
+  };
+  console.log('form')
   const userData = JSON.parse(getLocalStorage("client") || "{}");
   const [formData, setFormData] = useState<FormData>({
     name: userData?.name || "",
@@ -99,7 +101,7 @@ function FormComponent({ open, setOpen, isSmallScreen ,chatSessionId}: FormCompo
         Phonenumber: formData?.number ? `${formData?.countryCode}${formData?.number}` : undefined,
         Email: formData?.email,
         country_code: formData?.countryCode,
-        number_without_CC : formData?.number
+        number_without_CC: formData?.number
       }
 
       // Dispatch setHelloKeysData if all three fields are filled

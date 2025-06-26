@@ -1,25 +1,23 @@
 import useTabData from "@/components/Chatbot/hooks/useTabData";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
-import { useParams, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { FC } from "react";
 
 export function addUrlDataHoc(WrappedComponent: FC<any>, paramsToInject: string[] = []) {
   return function AddUrlDataHoc(props: any) {
-    const params = useParams();
     const searchParams = useSearchParams();
     const data: { [key: string]: string | boolean | undefined } = {};
-    const { widgetToken, chatbotId, tabSessionId } = useCustomSelector((state: any) => ({
-      widgetToken: state.tabInfo.widgetToken,
-      chatbotId: state.tabInfo.chatbotId,
-      tabSessionId: state.tabInfo.tabSessionId,
+    const { tabSessionId, chatSessionId } = useCustomSelector((state) => ({
+      tabSessionId: state.draftData.tabSessionId,
+      chatSessionId: state.draftData.chatSessionId
     }));
 
-    data.chatSessionId = params.chatbotId === 'hello' ? widgetToken : chatbotId;
-    data.tabSessionId = `${data.chatSessionId}_${tabSessionId}`;
+    data.chatSessionId = chatSessionId;
+    data.tabSessionId = `${chatSessionId}_${tabSessionId}`;
 
     const tabData = useTabData({ tabSessionId: data.tabSessionId });
     if (paramsToInject.length > 0) {
-      paramsToInject.forEach((param) => {
+      paramsToInject?.forEach((param) => {
         data[param] = tabData[param as keyof typeof tabData];
       });
     }

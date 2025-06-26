@@ -11,7 +11,7 @@ import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
 import { setDataInInterfaceRedux } from "@/store/interface/interfaceSlice";
-import { setDataInTabInfo } from "@/store/tabInfo/tabInfoSlice";
+import { setDataInDraftReducer } from "@/store/draftData/draftDataSlice";
 
 
 const helloToChatbotPropsMap: Record<string, string> = {
@@ -112,7 +112,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         setLocalStorage('is_anon', isAnon);
 
         // 7. Map additional interface props
-        Object.entries(restProps).forEach(([key, value]) => {
+        Object.entries(restProps || {})?.forEach(([key, value]) => {
             const mappedKey = helloToChatbotPropsMap[key];
             if (!mappedKey) return;
 
@@ -122,10 +122,14 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
 
         // 8. Persist new widget token and config
         setLocalStorage('WidgetId', widgetToken);
-        dispatch(setHelloConfig(event.data.data));
+        dispatch(setDataInDraftReducer({ chatSessionId: fullWidgetToken, widgetToken: fullWidgetToken }));
         SetSessionStorage('helloConfig', JSON.stringify(event.data.data))
-        dispatch(setDataInTabInfo({ widgetToken: fullWidgetToken }));
+        dispatch(setHelloConfig(event.data.data));
         return;
+    }
+
+    function handleChatbotVisibility(isChatbotOpen = false) {
+        dispatch(setDataInAppInfoReducer({ isChatbotOpen }))
     }
 
     useEffect(() => {
@@ -139,7 +143,11 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         eventHandler.addEventHandler('ADD_COBROWSE_SCRIPT', handleAddCoBrowseScript)
 
         eventHandler.addEventHandler('helloData', handleHelloData)
-        
+
+        eventHandler.addEventHandler('CHATBOT_OPEN', () => handleChatbotVisibility(true))
+
+        eventHandler.addEventHandler('CHATBOT_CLOSE', () => handleChatbotVisibility(false))
+
     }, [])
 
     return null

@@ -2,10 +2,6 @@
 import { createNoopStorage, STORAGE_OPTIONS } from "@/utils/storageUtility";
 import { configureStore } from "@reduxjs/toolkit";
 import { persistReducer, persistStore } from "redux-persist";
-import createSagaMiddleware from "redux-saga";
-import rootReducer from "./combineReducer";
-import rootSaga from "./rootSaga.ts";
-import { createStateSyncMiddleware, initMessageListener } from 'redux-state-sync';
 import {
   FLUSH,
   PAUSE,
@@ -14,6 +10,10 @@ import {
   REGISTER,
   REHYDRATE
 } from 'redux-persist/es/constants';
+import createSagaMiddleware from "redux-saga";
+import { createStateSyncMiddleware, initMessageListener } from 'redux-state-sync';
+import rootReducer from "./combineReducer";
+import rootSaga from "./rootSaga.ts";
 
 // import { getInfoParametersFromUrl } from "../utils/utilities";
 
@@ -22,18 +22,12 @@ export const getInfoParametersFromUrl = () => {
     return {}; // Return an empty object if window is not available (server-side)
   }
 
-  const params = window.location.pathname.slice(1)?.split("/");
   let urlParameters = {};
-  if (params[0] === "chatbot") {
-    const chatbotId = params[1];
-    if (chatbotId === 'hello') {
-      urlParameters.chatSessionId = store.getState().tabInfo.widgetToken
-    } else {
-      urlParameters.chatSessionId = store.getState().tabInfo.chatbotId
-    }
-  }
-  urlParameters.tabSessionId = `${urlParameters.chatSessionId}_${store.getState().tabInfo.tabSessionId}`
-  urlParameters = { ...urlParameters , ...store.getState().appInfo?.[urlParameters?.tabSessionId] }
+  const chatSessionId = store.getState().draftData.chatSessionId
+  const tabSessionId = store.getState().draftData.tabSessionId
+  urlParameters.chatSessionId = chatSessionId
+  urlParameters.tabSessionId = `${chatSessionId}_${tabSessionId}`
+  urlParameters = { ...urlParameters, ...store.getState().appInfo?.[urlParameters?.tabSessionId] }
   return urlParameters;
 };
 
@@ -54,8 +48,8 @@ const crossTabSyncConfig = {
   predicate: (action) => {
     const isPersistAction = [PERSIST, REHYDRATE, FLUSH, PAUSE, PURGE, REGISTER].includes(action.type);
     const actionTypeRoot = action.type.split('/')[0];
-    const isAppOrTabInfoAction = actionTypeRoot === 'appInfo' || actionTypeRoot === 'tabInfo';
-    return !isPersistAction && !isAppOrTabInfoAction;
+    const isAppOrDraftAction = actionTypeRoot === 'appInfo' || actionTypeRoot === "draftData" || actionTypeRoot === "Chat";
+    return !isPersistAction && !isAppOrDraftAction;
   }
 };
 
@@ -67,7 +61,7 @@ const rootPersistConfig = {
   key: "root",
   storage: storage,
   version: 1,
-  blacklist: ["appInfo", "tabInfo"],
+  blacklist: ["appInfo", "draftData", "Chat"],
 };
 
 const persistedReducer = persistReducer(rootPersistConfig, rootReducer);

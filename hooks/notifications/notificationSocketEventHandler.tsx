@@ -1,10 +1,11 @@
 // useNotificationSocketEventHandler.ts
-import { ChatAction, ChatActionTypes } from '@/components/Chatbot/hooks/chatTypes';
+import { setHelloEventMessage } from '@/store/chat/chatSlice';
+import { useAppDispatch } from '@/store/useTypedHooks';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 import { generateNewId } from '@/utils/utilities';
-import { Dispatch, useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import socketManager from './notificationSocketManager';
 
 // Define types for better type safety
@@ -19,16 +20,14 @@ export interface HelloMessage {
 /**
  * Hook for handling socket events
  * @param options - Options for socket events
- * @param options.chatState - The current chat state
- * @param options.chatDispatch - Function to dispatch chat actions
  * @param options.messageRef - Reference to message element
- * @returns timeoutIdRef - Reference to timeout for cleanup
  */
-export const useNotificationSocketEventHandler = ({ chatDispatch ,chatSessionId }: { chatDispatch: Dispatch<ChatAction> ,chatSessionId:string}) => {
+export const useNotificationSocketEventHandler = ({ chatSessionId }: { chatSessionId: string }) => {
     // Handler for new messages
-    const conversations = useCustomSelector((state:$ReduxCoreType)=>state.Hello?.[chatSessionId]?.channelListData?.channels || [])
+    const dispatch = useAppDispatch();
+    const conversations = useCustomSelector((state) => state.Hello?.[chatSessionId]?.channelListData?.channels || [])
     const addHelloMessage = (data) => {
-        conversations?.forEach((conversation)=>{
+        conversations?.forEach((conversation) => {
             const messageObj = {
                 "message_type": "pushNotification",
                 "type": "chat",
@@ -43,7 +42,7 @@ export const useNotificationSocketEventHandler = ({ chatDispatch ,chatSessionId 
                 "new_event": true,
                 "id": generateNewId()
             }
-            chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message:messageObj, subThreadId : conversation?.channel } });
+            dispatch(setHelloEventMessage({ message: messageObj, subThreadId: conversation?.channel }));
         })
     }
 

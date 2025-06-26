@@ -6,6 +6,7 @@ import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { store, persistor } from '../store'
 import { generateTheme } from '@/hoc/theme';
+import { GetSessionStorageData } from '@/utils/ChatbotUtility';
 
 interface AppWrapperProps {
     children: React.ReactNode
@@ -24,7 +25,9 @@ export const ThemeContext = createContext({
 function AppWrapper({
     children,
 }: AppWrapperProps) {
-    const [themeColor, setThemeColor] = useState("#333333");
+    const themeFromSession = JSON.parse(GetSessionStorageData('helloConfig') || '{}')?.primary_color;
+
+    const [themeColor, setThemeColor] = useState(themeFromSession || "#333333");
     const theme = generateTheme(themeColor);
 
     const handleThemeChange = useCallback((color: string) => {

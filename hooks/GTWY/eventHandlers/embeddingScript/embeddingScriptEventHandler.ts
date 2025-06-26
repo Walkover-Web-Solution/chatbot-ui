@@ -30,7 +30,7 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
 
     const dispatch = useDispatch()
     const tabSessionId = eventHandler.getTabSessionId()
-    const { currentThreadId } = useCustomSelector((state: $ReduxCoreType) => ({
+    const { currentThreadId } = useCustomSelector((state) => ({
         currentThreadId: state.appInfo?.[tabSessionId]?.threadId
       }));
 

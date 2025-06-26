@@ -1,7 +1,8 @@
 // useSocketEvents.ts
-import { ChatActionTypes, ChatState } from '@/components/Chatbot/hooks/chatTypes';
 import { useReduxStateManagement } from '@/components/Chatbot/hooks/useReduxManagement';
+import { setHelloEventMessage, setTyping } from '@/store/chat/chatSlice';
 import { changeChannelAssigned, setUnReadCount } from '@/store/hello/helloSlice';
+import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { getLocalStorage, playMessageRecivedSound, setLocalStorage } from '@/utils/utilities';
 import { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
@@ -19,22 +20,15 @@ export interface HelloMessage {
 /**
  * Hook for handling socket events
  * @param options - Options for socket events
- * @param options.chatState - The current chat state
- * @param options.chatDispatch - Function to dispatch chat actions
  * @param options.messageRef - Reference to message element
- * @returns timeoutIdRef - Reference to timeout for cleanup
  */
 export const useSocketEvents = ({
-    chatState,
-    chatDispatch,
     messageRef,
     fetchChannels,
     chatSessionId,
     tabSessionId,
     setLoading
 }: {
-    chatState: ChatState,
-    chatDispatch: (action: { type: string; payload?: any }) => void,
     messageRef: React.RefObject<HTMLDivElement>,
     fetchChannels: () => void,
     setLoading: (data: boolean) => void
@@ -42,11 +36,12 @@ export const useSocketEvents = ({
     tabSessionId: string
 }) => {
     const dispatch = useDispatch();
-
-    const { isToggledrawer } = chatState;
-    const { currentChannelId, isSmallScreen } = useReduxStateManagement({ chatDispatch, chatSessionId, tabSessionId });
+    const { currentChannelId, isSmallScreen } = useReduxStateManagement({ chatSessionId, tabSessionId });
+    const { isToggledrawer } = useCustomSelector((state) => ({
+        isToggledrawer: state.Chat.isToggledrawer
+    }))
     const addHelloMessage = (message: HelloMessage, subThreadId: string = '') => {
-        chatDispatch({ type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: { message, subThreadId } });
+        dispatch(setHelloEventMessage({ message, subThreadId }));
     }
 
     function isSameChannel(channelId: string) {
@@ -85,10 +80,10 @@ export const useSocketEvents = ({
 
                     const messageId = response.timetoken || response.id;
                     addHelloMessage({ ...message, id: messageId }, channel);
-                    chatDispatch({
-                        type: ChatActionTypes.SET_TYPING,
-                        payload: { data: false, subThreadId: channel }
-                    });
+                    dispatch(setTyping({
+                        subThreadId: channel,
+                        data: false
+                    }));
                 }
                 break;
             }
@@ -143,17 +138,17 @@ export const useSocketEvents = ({
             switch (action) {
                 case 'typing':
                     // Handle typing indicator logic here
-                    chatDispatch({ type: ChatActionTypes.SET_TYPING, payload: { data: true, subThreadId: channel } });
+                    dispatch(setTyping({ data: true, subThreadId: channel }));
                     break;
                 case 'not-typing':
                     // Handle not typing indicator logic here
-                    chatDispatch({ type: ChatActionTypes.SET_TYPING, payload: { data: false, subThreadId: channel } });
+                    dispatch(setTyping({ data: false, subThreadId: channel }));
                     break;
                 default:
                     break;
             }
         }
-    }, [currentChannelId, chatDispatch]);
+    }, [currentChannelId, dispatch]);
 
     useEffect(() => {
         // Subscribe to socket events

@@ -1,8 +1,8 @@
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { perFormAction } from "@/utils/ChatbotUtility";
 import { Button, ButtonProps } from "@mui/material";
-import React, { useContext } from "react";
-import { MessageContext } from "../Interface-Chatbot/InterfaceChatbot";
+import React from "react";
+import { useSendMessage } from "../Chatbot/hooks/useChatActions";
 
 interface InterfaceButtonProps {
   props: ButtonProps | any;
@@ -16,7 +16,7 @@ interface InterfaceButtonProps {
 
 function InterfaceButton({ props, action, componentId }: InterfaceButtonProps): JSX.Element {
   delete props?.action;
-  const { sendMessage } = useContext(MessageContext);
+  const sendMessage = useSendMessage({});
   const validColors = ["default", "inherit", "primary", "secondary"];
   // If the color is valid, use it; otherwise, default to 'default'
   if (props.color) {

@@ -1,7 +1,7 @@
 /**
  * Event types that can be emitted to the parent window
  */
-export type ParentEventType = 
+export type ParentEventType =
   | 'PUSH_NOTIFICATION'
   | 'FRONT_END_ACTION'
   | 'HEADER_BUTTON_PRESS'
@@ -9,7 +9,9 @@ export type ParentEventType =
   | 'BRIDGE_SWITCH'
   | 'CLOSE_CHATBOT'
   | 'uuid'
-  | 'ENABLE_DOMAIN_TRACKING';
+  | 'ENABLE_DOMAIN_TRACKING'
+  | 'SET_BADGE_COUNT'
+  | 'RELOAD_PARENT'
 
 /**
  * Emits an event to the parent window using postMessage
@@ -21,7 +23,7 @@ export function emitEventToParent(type: ParentEventType, data: any = null): void
     type,
     data,
   };
-  
+
   if (window?.parent) {
     window.parent.postMessage(eventData, "*");
   }

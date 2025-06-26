@@ -273,3 +273,41 @@
 .notification-fade-out {
   opacity: 0;
 }
+
+.hello-badge-count {
+  /* Dimensions & Position */
+  min-width: 20px;
+  height: 20px;
+  position: absolute;
+  top: -25px;
+  right: -2px;
+  padding: 4px;
+  box-sizing: border-box;
+
+  /* Centering */
+  display: flex;
+  justify-content: center;
+
+  /* Styling */
+  background: red;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 10px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+
+  /* Reset all possible interfering styles */
+  margin: 0 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  font-family: Arial, sans-serif !important;
+
+  /* Force GPU rendering (prevents subpixel misalignment) */
+  transform: translateZ(0);
+  z-index: 9999999999;
+
+  /* Handle text overflow */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

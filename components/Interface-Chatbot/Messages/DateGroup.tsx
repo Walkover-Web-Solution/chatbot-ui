@@ -17,10 +17,10 @@ function DateGroup({ prevTime, messageTime, backgroundColor, textColor }: { prev
     }
 
     return (
-        <div className="flex justify-center my-6">
+        <div className="flex justify-center my-8">
             <div className="flex items-center w-full">
                 <div className="flex-1 h-px bg-gray-300"></div>
-                <div className="badge mx-2" style={{ backgroundColor, color: textColor }}>{formatTime(+messageTime, 'shortDate')}</div>
+                <div className="badge mx-2 text-xs bg-transparent border p-3" style={{ borderColor: backgroundColor }}>{formatTime(+messageTime, 'shortDate')}</div>
                 <div className="flex-1 h-px bg-gray-300"></div>
             </div>
         </div>

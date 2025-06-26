@@ -1,14 +1,13 @@
 import { linkify } from '@/utils/utilities';
-import { useContext } from 'react';
-import { MessageContext } from '../Interface-Chatbot/InterfaceChatbot';
+import { ExternalLink } from 'lucide-react';
+import { useColor } from '../Chatbot/hooks/useColor';
+import { useSendMessageToHello } from '../Chatbot/hooks/useHelloIntegration';
 import ImageWithFallback from '../Interface-Chatbot/Messages/ImageWithFallback';
 
 function RenderHelloInteractiveMessage({ message }: { message: any }) {
   const messageJson = message?.messageJson || {};
-
-  const {
-    sendMessageToHello
-  } = useContext(MessageContext);
+  const sendMessageToHello = useSendMessageToHello({});
+  const { textColor, backgroundColor } = useColor();
 
   const renderHeader = (header: any) => {
     if (header?.type === "text") {
@@ -71,80 +70,93 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
         );
 
       case 'cta_url':
+        const { header, body, footer, action } = messageJson ?? {};
+
+        const hasHeader = Boolean(header);
+        const hasBody = Boolean(body?.text);
+        const hasFooter = Boolean(footer?.text);
+        const hasAction = Boolean(action?.parameters?.url);
+
         return (
-          <div className="flex flex-col gap-3">
-            {messageJson.header && renderHeader(messageJson.header)}
+          <article className="space-y-4 shadow-sm">
+            {/* Header (optional) */}
+            {hasHeader && renderHeader(header)}
 
-            {messageJson.body?.text && (
-              <div className="mb-1">
-                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.body?.text) }}></div>
-              </div>
+            {/* Body */}
+            {hasBody && (
+              <section
+                className="prose max-w-none text-gray-800 text-sm"
+                dangerouslySetInnerHTML={{ __html: linkify(body.text) }}
+              />
             )}
 
-            {messageJson.footer?.text && (
-              <div className="text-xs text-gray-800 mb-1">
-                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.footer?.text) }}></div>
-              </div>
+            {/* Footer (optional) */}
+            {hasFooter && (
+              <footer
+                className="text-xs text-gray-500"
+                dangerouslySetInnerHTML={{ __html: linkify(footer.text) }}
+              />
             )}
 
-            {messageJson.action?.parameters && (
-              <div className="mt-2">
+            {/* CTA button */}
+            {hasAction && (
+              <div className="pt-2">
                 <a
-                  href={messageJson?.action?.parameters?.url}
+                  href={action.parameters.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn btn-sm btn-outline rounded-md px-4 py-2 inline-flex items-center gap-2 "
+                  className="inline-flex items-center gap-2 rounded-lg  px-4 py-2 text-sm font-medium"
+                  style={{ backgroundColor: backgroundColor, color: textColor }}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                    <polyline points="15 3 21 3 21 9"></polyline>
-                    <line x1="10" y1="14" x2="21" y2="3"></line>
-                  </svg>
-                  {messageJson.action?.parameters?.display_text || 'View'}
+                  <ExternalLink size={16} strokeWidth={2} />
+                  {action.parameters.display_text || "View"}
                 </a>
               </div>
             )}
-          </div>
+          </article>
         );
 
       case 'list':
         return (
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 min-w-64">
             {messageJson?.header && renderHeader(messageJson?.header)}
-
             {messageJson?.body?.text && (
-              <div className="mb-1">
-                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.body?.text) }}></div>
+              <div className="mb-1 px-1">
+                <div
+                  className="text-sm leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: linkify(messageJson?.body?.text) }}
+                ></div>
               </div>
             )}
 
             {messageJson?.action?.sections && (
               <div className="overflow-hidden">
                 {messageJson?.action?.sections?.map((section: any, sectionIndex: number) => (
-                  <div key={sectionIndex}>
+                  <div key={sectionIndex} className='mb-2'>
                     {section?.title && (
-                      <div className="py-2 font-semibold text-md self-center">
+                      <div className="pt-2 px-1 font-semibold text-md mb-1">
                         {section?.title}
                       </div>
                     )}
-                    <div className="grid gap-2 w-fit min-w-40">
+                    <ul className="menu menu-sm w-fit min-w-40 p-0 gap-2">
                       {section?.rows?.map((row: any, rowIndex: number) => (
-                        <button
-                          key={row?.id || rowIndex}
-                          className="btn btn-sm btn-outline w-full justify-start normal-case px-4"
-                          onClick={() => sendMessageToHello?.(row?.title)}
-                        >
-                          <div className="flex flex-col">
-                            <div className="font-medium">{row?.title}</div>
-                            {row?.description && (
-                              <div className="text-xs text-gray-500 mt-1">
-                                <div dangerouslySetInnerHTML={{ __html: linkify(row?.description) }}></div>
-                              </div>
-                            )}
-                          </div>
-                        </button>
+                        <li key={row?.id || rowIndex} className='border border-gray-500 rounded-lg'>
+                          <a
+                            className="py-2"
+                            onClick={() => sendMessageToHello?.(row?.title)}
+                          >
+                            <div className="flex flex-col w-full items-start">
+                              <div className="font-medium break-words w-full">{row?.title}</div>
+                              {row?.description && (
+                                <div className="text-xs text-gray-500 mt-1 w-full">
+                                  <div className="break-words" dangerouslySetInnerHTML={{ __html: linkify(row?.description) }}></div>
+                                </div>
+                              )}
+                            </div>
+                          </a>
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   </div>
                 ))}
               </div>

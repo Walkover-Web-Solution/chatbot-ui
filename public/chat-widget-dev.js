@@ -86,6 +86,7 @@
                 chatbotIframeContainer: `${this.prefix}chatbot-iframe-container`,
                 chatbotIframeComponent: `${this.prefix}chatbot-iframe-component`,
                 chatbotStyle: `${this.prefix}chatbot-style`,
+                unReadMsgCountBadge: `${this.prefix}unread-msg-count-badge`,
             }
             this.props = {};
             this.helloProps = null;
@@ -147,6 +148,12 @@
             const textElement = document.createElement('span');
             textElement.id = this.elements.chatbotIconText;
             chatBotIcon.appendChild(textElement);
+
+            const badgeElement = document.createElement('span');
+            badgeElement.id = this.elements.unReadMsgCountBadge;
+            badgeElement.className = 'hello-badge-count';
+            badgeElement.textContent = ''; // Will be populated dynamically
+            chatBotIcon.appendChild(badgeElement);
 
             return { chatBotIcon, imgElement, textElement };
         }
@@ -270,8 +277,26 @@
                 case 'ENABLE_DOMAIN_TRACKING':
                     this.enableDomainTracking();
                     break;
+                case 'SET_BADGE_COUNT':
+                    this.updateBadgeCount(data?.badgeCount);
+                    break;
+                case 'RELOAD_PARENT':
+                    window.location.reload()
+                    break;
                 default:
                     break;
+            }
+        }
+
+        updateBadgeCount(data) {
+            const badgeElement = document.getElementById(this.elements.unReadMsgCountBadge);
+            if (badgeElement) {
+                if (!data || parseInt(data) === 0) {
+                    badgeElement.style.display = 'none';
+                } else {
+                    badgeElement.textContent = data;
+                    badgeElement.style.display = 'block'; // or 'block' depending on your layout
+                }
             }
         }
 
@@ -388,7 +413,7 @@
         }
 
         handleDownloadAttachment(data) {
-            if (this.helloProps.isMobileSDK) {
+            if (this.helloProps?.isMobileSDK) {
                 sendDataToMobileSDK({ type: 'downloadAttachment', data: data?.url })
                 return
             }
@@ -417,7 +442,7 @@
 
         setUUID(uuid) {
             this.uuid = uuid;
-            if (this.helloProps.isMobileSDK) {
+            if (this.helloProps?.isMobileSDK) {
                 sendDataToMobileSDK({ type: 'uuid', data: { uuid } })
             } else {
                 CBManager.updateDeviceId(uuid)
@@ -467,16 +492,17 @@
             if (window.parent) {
                 window.parent.postMessage?.(openMessage, '*');
             }
-            if (this.helloProps.isMobileSDK) {
+            if (this.helloProps?.isMobileSDK) {
                 sendDataToMobileSDK(openMessage)
             }
 
             const iframeComponent = document.getElementById(this.elements.chatbotIframeComponent);
             iframeComponent?.contentWindow?.postMessage(openMessage, '*');
+            sendMessageToChatbot({ type: "CHATBOT_OPEN" })
         }
 
         closeChatbot() {
-            if (this.helloProps.isMobileSDK) {
+            if (this.helloProps?.isMobileSDK) {
                 sendDataToMobileSDK({ type: 'close', data: {} })
                 return
             }
@@ -503,6 +529,7 @@
                                 : 'unset';
                     }
                 }, 100);
+                sendMessageToChatbot({ type: "CHATBOT_CLOSE" })
             }
         }
 
@@ -595,13 +622,7 @@
             if (!iframeComponent) return;
             let encodedData = '';
             encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true }));
-            const urlParams = new URLSearchParams(window.location.search);
-            const env = urlParams.get('env');
-            let modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
-
-            if (env === 'stage') {
-                modifiedUrl += `&env=${env}`;
-            }
+            const modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
             iframeComponent.src = modifiedUrl;
 
             this.props.config = { ...this.config };
@@ -786,8 +807,8 @@
         }
 
         addUrlMonitor(data) {
-            if(data.urlsToOpenInIFrame.length > 0 ){
-                if(this.state.urlMonitorAdded === false) {
+            if (data.urlsToOpenInIFrame.length > 0) {
+                if (this.state.urlMonitorAdded === false) {
                     const urlTrackerScript = document.createElement('script');
                     urlTrackerScript.src = this.urls.urlMonitor;
                     urlTrackerScript.onload = () => {
@@ -795,7 +816,7 @@
                         window.chatWidget.initUrlTracker({ urls: data.urlsToOpenInIFrame });
                     };
                     document.head.appendChild(urlTrackerScript);
-                }else{
+                } else {
                     window.chatWidget.initUrlTracker({ urls: data.urlsToOpenInIFrame });
                 }
             }
@@ -818,9 +839,10 @@
         }
 
         // Send to React Native if available
-        if (this.helloProps.isMobileSDK) {
+        if (helloChatbotManager.helloProps?.isMobileSDK) {
             sendDataToMobileSDK({ type: 'data', data: dataToSend })
         }
+
 
         // Handle parent container changes
         if ('parentId' in dataToSend) {

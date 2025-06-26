@@ -5,7 +5,7 @@ interface useTabDataProps {
     tabSessionId: string;
 }
 const useTabData = ({ tabSessionId }: useTabDataProps) => {
-    const { threadId, bridgeName, subThreadId, userId, config, currentChannelId, currentChatId, currentTeamId } = useCustomSelector((state: $ReduxCoreType) => ({
+    const { threadId, bridgeName, subThreadId, userId, config, currentChannelId, currentChatId, currentTeamId } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId || '',
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName || '',
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId || '',

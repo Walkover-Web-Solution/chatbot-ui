@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Download, FileWarning, FileText } from "lucide-react";
 import { useMediaQuery } from "@mui/material";
+import { Download, FileWarning } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 
 type ImageWithFallbackProps = {
   src: string;
@@ -10,8 +10,20 @@ type ImageWithFallbackProps = {
   preview?: boolean;
 };
 
+// Constants
+const FILE_EXTENSIONS = {
+  image: ["jpg", "jpeg", "png", "gif", "webp", "bmp"] as string[],
+  video: ["mp4", "webm", "ogg"] as string[],
+  audio: ["mp3", "wav", "aac", "flac"] as string[],
+  pdf: ["pdf"] as string[],
+};
+
+const FALLBACK_ICON = "https://cdn1.iconfinder.com/data/icons/leto-files/64/leto_files-68-128.png";
+
+// Memoized utility function
 const getFileType = (url: string): string => {
-  const extension = url.split(".").pop()?.toLowerCase().split("?")[0] || "";
+  if (!url) return "other"; // e.g. null, undefined, empty string
+  const extension = url?.split(".")?.pop()?.toLowerCase()?.split("?")[0] || "";
   if (["jpg", "jpeg", "png", "gif", "webp", "bmp"].includes(extension)) return "image";
   if (["mp4", "webm", "ogg"].includes(extension)) return "video";
   if (["mp3", "wav", "aac", "flac"].includes(extension)) return "audio";
@@ -19,29 +31,90 @@ const getFileType = (url: string): string => {
   return "other"; // e.g. xlsx, csv, html, zip, etc.
 };
 
-const ImageWithFallback = ({ src, alt = "attachment", style, canDownload = true, preview = false }: ImageWithFallbackProps) => {
-  const fileType = getFileType(src);
-  const isSmallScreen = useMediaQuery('(max-width:1023px)');
-  const [error, setError] = useState(false);
+// Memoized play button SVG
+const PlayIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="text-white"
+  >
+    <polygon points="5 3 19 12 5 21 5 3" />
+  </svg>
+);
 
-  const downloadFile = () => {
+// Memoized error component
+const ErrorDisplay = () => (
+  <div className="w-60 h-40 flex items-center justify-center border rounded-md bg-gray-100 text-gray-500">
+    <FileWarning className="w-6 h-6 mr-2" />
+    Failed to load
+  </div>
+);
+
+// Memoized download button
+const DownloadButton = ({ onClick }: { onClick: () => void }) => (
+  <button
+    onClick={onClick}
+    className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md"
+    title="Download"
+  >
+    <Download size={16} className="text-gray-800" />
+  </button>
+);
+
+const ImageWithFallback = ({
+  src,
+  alt = "attachment",
+  style,
+  canDownload = true,
+  preview = false
+}: ImageWithFallbackProps) => {
+  const [error, setError] = useState(false);
+  const isSmallScreen = useMediaQuery('(max-width:1023px)');
+
+  // Memoized file type calculation
+  const fileType = useMemo(() => getFileType(src), [src]);
+
+  // Memoized video type for source element
+  const videoType = useMemo(() =>
+    fileType === "video" ? `video/${src.split('.').pop()}` : "",
+    [fileType, src]
+  );
+
+  // Memoized audio type for source element
+  const audioType = useMemo(() =>
+    fileType === "audio" ? `audio/${src.split('.').pop()}` : "",
+    [fileType, src]
+  );
+
+  // Memoized callbacks
+  const handleError = useCallback(() => setError(true), []);
+
+  const handleClick = useCallback(() => {
+    window.open(src, "_blank");
+  }, [src]);
+
+  const downloadFile = useCallback(() => {
     window.parent.postMessage({
       type: "downloadAttachment",
-      data:{
-        url: src
-      }
+      data: { url: src }
     }, "*");
-  };
+  }, [src]);
 
-  const renderContent = () => {
-    if (error) {
-      return (
-        <div className="w-60 h-40 flex items-center justify-center border rounded-md bg-gray-100 text-gray-500">
-          <FileWarning className="w-6 h-6 mr-2" />
-          Failed to load
-        </div>
-      );
-    }
+  // Memoized container classes
+  const containerClasses = useMemo(() =>
+    `flex relative group ${isSmallScreen ? 'max-w-[80%]' : 'max-w-[40%]'} h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity`,
+    [isSmallScreen]
+  );
+
+  const renderContent = useCallback(() => {
+    if (error) return <ErrorDisplay />;
 
     switch (fileType) {
       case "image":
@@ -49,79 +122,73 @@ const ImageWithFallback = ({ src, alt = "attachment", style, canDownload = true,
           <img
             src={src}
             alt={alt}
-            onError={() => setError(true)}
-         
-            onClick={() => window.open(src, "_blank")}
+            onError={handleError}
+            onClick={handleClick}
             style={style}
           />
         );
+
       case "video":
         return preview ? (
-          <div 
-            className="max-w-full rounded-md relative" 
+          <div
+            className="max-w-full rounded-md relative"
             style={style}
-            onClick={() => window.open(src, "_blank")}
+            onClick={handleClick}
           >
-            <video 
-              className="w-full h-full object-cover rounded-md" 
-              onError={() => setError(true)}
+            <video
+              className="w-full h-full object-cover rounded-md"
+              onError={handleError}
             >
-              <source src={src} type={`video/${src.split('.').pop()}`} />
+              <source src={src} type={videoType} />
             </video>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-12 h-12 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
-                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                </svg>
+                <PlayIcon />
               </div>
             </div>
           </div>
         ) : (
-          <video controls className="max-w-full rounded-md" onError={() => setError(true)} style={style}>
-            <source src={src} type={`video/${src.split('.').pop()}`} />
+          <video
+            controls
+            className="max-w-full rounded-md"
+            onError={handleError}
+            style={style}
+          >
+            <source src={src} type={videoType} />
             Your browser does not support the video tag.
           </video>
         );
+
       case "audio":
         return (
           <div className="w-full min-w-[300px] pr-10 relative">
-            <audio 
-              controls 
-              onError={() => setError(true)}
+            <audio
+              controls
+              onError={handleError}
               className="w-full"
             >
-              <source src={src} type={`audio/${src.split('.').pop()}`} />
+              <source src={src} type={audioType} />
             </audio>
           </div>
         );
+
       default:
         return (
           <img
-            src="https://cdn1.iconfinder.com/data/icons/leto-files/64/leto_files-68-128.png"
+            src={FALLBACK_ICON}
             alt={alt}
-            onError={() => setError(true)}
-            onClick={() => window.open(src, "_blank")}
+            onError={handleError}
+            onClick={handleClick}
             style={style}
           />
         );
     }
-  };
+  }, [error, fileType, src, alt, style, preview, handleError, handleClick, videoType, audioType]);
 
   return (
-    <div  
-    
-    className={`flex relative group ${isSmallScreen ? 'max-w-[80%]' : 'max-w-[40%]'} h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity`}
-    >
+    <div className={containerClasses}>
       {renderContent()}
-      {!error && canDownload && (
-        <button
-          onClick={downloadFile}
-          className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md"
-          title="Download"
-        >
-          <Download size={16} className="text-gray-800" />
-        </button>
-      )}
+      {!error && canDownload && <DownloadButton onClick={downloadFile} />}
     </div>
   );
 };
