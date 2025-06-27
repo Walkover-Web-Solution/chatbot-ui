@@ -1,6 +1,6 @@
 import useHelloLocalStorageEventHandlers from "@/hooks/HELLO/eventHandlers/localStorage/localStorageEventsHandler";
 import { resetAppInfoReducer } from "@/store/appInfo/appInfoSlice";
-import { resetTabInfoReducer } from "@/store/tabInfo/tabInfoSlice";
+import { resetDraftDataReducer } from "@/store/draftData/draftDataSlice";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -58,7 +58,7 @@ export const useLocalStorageEventHandler = (tabSessionId: string) => {
   const handleLocalStorageChange = (event: StorageEvent) => {
     if(event.key === null){
       // LOCAL STORAGE FULL CLEAR THEN RESET THE REDUCERS AND RELOAD THE PARENT
-      dispatch(resetTabInfoReducer())
+      dispatch(resetDraftDataReducer())
       dispatch(resetAppInfoReducer())
       emitEventToParent('RELOAD_PARENT')
     }

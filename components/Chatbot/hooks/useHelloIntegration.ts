@@ -66,7 +66,7 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
     companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
     botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
     showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm,
-    reduxChatSessionId: state.tabInfo?.widgetToken,
+    reduxChatSessionId: state.draftData?.chatSessionId,
     totalNoOfUnreadMsgs: (() => {
       const channelListData = state.Hello?.[chatSessionId]?.channelListData;
       const unreadCount = channelListData?.channels?.reduce((acc, channel) => {
@@ -335,6 +335,7 @@ const useHelloIntegration = ({ chatSessionId, chatDispatch, chatState, messageRe
 
   useEffect(() => {
     if (reduxChatSessionId) {
+      console.log("reduxChatSessionId =-=-=", reduxChatSessionId)
       const widgetToken = reduxChatSessionId?.split('_')[0] // Extract first part (e.g., "d1bc7")
       initializeHelloServices(widgetToken);
     }

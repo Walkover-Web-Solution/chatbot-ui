@@ -29,13 +29,15 @@ import { $AppInfoReduxType } from "./appInfo/appInfoReduxType.js";
 export interface $ReduxCoreType {
   Hello: $HelloReduxType;
   Interface: $InterfaceReduxType;
-  appInfo:$AppInfoReduxType,
-  tabInfo:$TabInfoReduxType
+  appInfo: $AppInfoReduxType,
+  draftData: $DraftDataReducerType
 }
 
-export interface $TabInfoReduxType {
-  widgetToken: string;
-  chatbotId:string
+export interface $DraftDataReducerType {
+  chatSessionId?: string
+  tabSessionId?: string
+  widgetToken?: string;
+  chatbotId?: string;
 }
 
 export interface $UserInfoReduxType {

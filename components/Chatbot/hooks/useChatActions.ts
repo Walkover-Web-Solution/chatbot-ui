@@ -9,7 +9,6 @@ import { PAGE_SIZE } from '@/utils/enums';
 import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { ChatAction, ChatActionTypes, ChatState, SendMessagePayloadType } from './chatTypes';
-import { version } from 'os';
 
 export const useChatActions = ({ chatDispatch, chatState, messageRef, timeoutIdRef, chatSessionId, tabSessionId }: { chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, chatSessionId: string, tabSessionId: string }) => {
     const globalDispatch = useDispatch();
@@ -196,8 +195,8 @@ export const useChatActions = ({ chatDispatch, chatState, messageRef, timeoutIdR
         }
         const response = await sendDataToAction(payload);
         if (!response?.success) {
-            chatDispatch({ type: ChatActionTypes.REMOVE_MESSAGES, payload: { numberOfMessages: 1 } })
             chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: false })
+            chatDispatch({ type: ChatActionTypes.REMOVE_MESSAGES, payload: { numberOfMessages: 2 } })
             return
         }
     }

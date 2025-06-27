@@ -45,7 +45,7 @@ const VALID_FILE_TYPES = [
 ] as const;
 
 function RagComponent() {
-    
+
     // State management
     const [configuration, setConfiguration] = React.useState<Configuration>({});
     const [aiGenerationEnabled, setAiGenerationEnabled] = React.useState(false);
@@ -186,7 +186,7 @@ function RagComponent() {
                     id: editingKnowledgeBase._id,
                     data: payload,
                 });
-                
+
                 if (response?.success) {
                     window?.parent?.postMessage({
                         type: "rag",
@@ -209,7 +209,7 @@ function RagComponent() {
                 }
 
                 const payloadFormData = new FormData();
-                Object.entries(payload).forEach(([key, value]) => {
+                Object.entries(payload)?.forEach(([key, value]) => {
                     if (value !== null) {
                         payloadFormData.append(key, String(value));
                     }
@@ -248,7 +248,7 @@ function RagComponent() {
 
     const handleFileChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
-        
+
         if (selectedFile && VALID_FILE_TYPES.includes(selectedFile.type as any)) {
             setFile(selectedFile);
         } else {
