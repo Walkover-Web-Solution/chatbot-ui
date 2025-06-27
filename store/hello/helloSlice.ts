@@ -11,7 +11,6 @@ export const {
   setChannel,
   getHelloDetailsStart,
   getHelloDetailsSuccess,
-  setHuman,
   setIsVision,
   setHelloConfig,
   setWidgetInfo,

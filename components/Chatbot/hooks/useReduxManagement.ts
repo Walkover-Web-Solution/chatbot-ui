@@ -2,8 +2,8 @@ import { setBridgeName, setBridgeVersionId, setData, setHeaderButtons, setHelloI
 import { useAppDispatch } from '@/store/useTypedHooks';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
-import { useMediaQuery, useTheme } from '@mui/material';
 import { useEffect } from 'react';
+import { useScreenSize } from './useScreenSize';
 
 function isDefaultNavigateToChatScreenFn(state: $ReduxCoreType, chatSessionId: string) {
   const teams = state.Hello?.[chatSessionId]?.widgetInfo?.teams || [];
@@ -20,8 +20,7 @@ export const useReduxStateManagement = ({
 }) => {
   // FIXED: Always call hooks at the top level, in the same order
   const dispatch = useAppDispatch();
-  const isLargeScreen = useMediaQuery('(max-width: 1024px)');
-  const isSmallScreen = useMediaQuery('(max-width: 1023px)');
+  const { isSmallScreen } = useScreenSize();
 
   // Get Redux state
   const {
@@ -55,7 +54,7 @@ export const useReduxStateManagement = ({
     reduxBridgeName: state.appInfo?.[tabSessionId]?.bridgeName || "root",
     reduxHelloId: state.appInfo?.[tabSessionId]?.helloId || null,
     reduxBridgeVersionId: state.appInfo?.[tabSessionId]?.versionId || null,
-    isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
+    isHelloUser: state.draftData?.isHelloUser || false,
     uuid: state.Hello?.[chatSessionId]?.channelListData?.uuid,
     unique_id: state.Hello?.[chatSessionId]?.channelListData?.unique_id,
     presence_channel: state.Hello?.[chatSessionId]?.channelListData?.presence_channel,
@@ -109,8 +108,8 @@ export const useReduxStateManagement = ({
 
   // Sync large screen toggle with local state
   useEffect(() => {
-    dispatch(setToggleDrawer(!isLargeScreen));
-  }, [isLargeScreen, dispatch]);
+    dispatch(setToggleDrawer(!isSmallScreen));
+  }, [isSmallScreen, dispatch]);
 
   return {
     interfaceContextData,
@@ -128,7 +127,6 @@ export const useReduxStateManagement = ({
     widgetToken,
     currentChatId,
     currentChannelId,
-    currentTeamId,
-    isSmallScreen
+    currentTeamId
   };
 };

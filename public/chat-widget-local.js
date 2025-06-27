@@ -708,6 +708,10 @@
         sendInitialData() {
             if (this.helloProps) {
                 sendMessageToChatbot({ type: 'helloData', data: this.helloProps });
+                const iframeContainer = document.getElementById(this.elements.chatbotIframeContainer);
+                if (iframeContainer && iframeContainer.style?.display !== 'none') {
+                    sendMessageToChatbot({ type: 'CHATBOT_OPEN' });
+                }
             }
         }
 

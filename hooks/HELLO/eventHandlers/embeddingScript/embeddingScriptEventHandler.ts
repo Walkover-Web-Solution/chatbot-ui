@@ -122,7 +122,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
 
         // 8. Persist new widget token and config
         setLocalStorage('WidgetId', widgetToken);
-        dispatch(setDataInDraftReducer({ chatSessionId: fullWidgetToken, widgetToken: fullWidgetToken }));
+        dispatch(setDataInDraftReducer({ chatSessionId: fullWidgetToken, widgetToken: fullWidgetToken , isHelloUser: true}));
         SetSessionStorage('helloConfig', JSON.stringify(event.data.data))
         dispatch(setHelloConfig(event.data.data));
         return;
