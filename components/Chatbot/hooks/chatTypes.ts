@@ -43,6 +43,7 @@ export interface ChatState {
   isToggledrawer: boolean;
   isTyping: Record<string, boolean>;
   skip: number;
+  isHuman: boolean;
 }
 
 

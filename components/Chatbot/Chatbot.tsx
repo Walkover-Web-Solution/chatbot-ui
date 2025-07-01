@@ -26,6 +26,7 @@ import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { useChatEffects } from './hooks/useChatEffects';
 import { useColor } from './hooks/useColor';
 import { useHelloEffects } from './hooks/useHelloEffects';
+import { useScreenSize } from './hooks/useScreenSize';
 
 interface ChatbotProps {
   chatSessionId: string
@@ -74,6 +75,7 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
   const { backgroundColor } = useColor();
+  const { isSmallScreen } = useScreenSize();
   const dispatch = useAppDispatch();
 
   // State management
@@ -96,7 +98,7 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
   useHelloEffects({ chatSessionId, tabSessionId, messageRef });
   useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId });
 
-  const { isHelloUser, isSmallScreen, currentChatId, isDefaultNavigateToChatScreen } = useReduxStateManagement({ chatSessionId, tabSessionId });
+  const { isHelloUser, currentChatId, isDefaultNavigateToChatScreen } = useReduxStateManagement({ chatSessionId, tabSessionId });
 
   // Initialize RTLayer event listeners
 
@@ -121,12 +123,10 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
   // Context value - memoized to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
     messageRef,
-    timeoutIdRef,
-    isSmallScreen,
+    timeoutIdRef
   }), [
     messageRef,
-    timeoutIdRef,
-    isSmallScreen,
+    timeoutIdRef
   ]);
 
   // Check if chat is empty
@@ -163,7 +163,7 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
 
           {/* Form and UI components */}
           {isHelloUser && show_widget_form && !is_anon && (
-            <FormComponent isSmallScreen={isSmallScreen} />
+            <FormComponent />
           )}
           <CallUI />
           <ChatbotHeaderTab />

@@ -15,7 +15,7 @@ export const useChatEffects = ({ chatSessionId, tabSessionId, messageRef, timeou
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
         versionId: state.appInfo?.[tabSessionId]?.versionId || "null",
-        isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
+        isHelloUser: state.draftData?.isHelloUser || false,
         firstThread: state.Interface?.[chatSessionId]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId]?.[0],
         loading: state.Chat.loading || false,
     }))

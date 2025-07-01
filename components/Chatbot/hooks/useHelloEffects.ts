@@ -1,12 +1,11 @@
 import { ThemeContext } from '@/components/AppWrapper';
-import { ChatbotContext } from '@/components/context';
-import { getAgentTeamApi, getCallToken, getClientToken, getGreetingQuestions, getJwtToken, initializeHelloChat, registerAnonymousUser } from '@/config/helloApi';
+import { deleteReadReceipt, getAgentTeamApi, getCallToken, getClientToken, getGreetingQuestions, getJwtToken, initializeHelloChat, registerAnonymousUser } from '@/config/helloApi';
 import useNotificationSocket from '@/hooks/notifications/notificationSocket';
 import useNotificationSocketEventHandler from '@/hooks/notifications/notificationSocketEventHandler';
 import useSocket from '@/hooks/socket';
 import useSocketEvents from '@/hooks/socketEventHandler';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
-import { setAgentTeams, setGreeting, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
+import { setAgentTeams, setGreeting, setJwtToken, setUnReadCount, setWidgetInfo } from '@/store/hello/helloSlice';
 import { GetSessionStorageData, SetSessionStorage } from '@/utils/ChatbotUtility';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
@@ -17,6 +16,9 @@ import helloVoiceService from './HelloVoiceService';
 import { useChatActions } from './useChatActions';
 import { useFetchChannels, useFetchHelloPreviousHistory } from './useHelloIntegration';
 import { useReduxStateManagement } from './useReduxManagement';
+import { useScreenSize } from './useScreenSize';
+import { useTabVisibility } from './useTabVisibility';
+import debounce from 'lodash.debounce';
 
 interface HelloMessage {
     role: string;
@@ -37,14 +39,15 @@ interface UseHelloIntegrationProps {
 
 export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: UseHelloIntegrationProps) => {
     const { handleThemeChange } = useContext(ThemeContext);
-    const { isHelloUser } = useContext(ChatbotContext);
     const { setLoading } = useChatActions();
     const fetchHelloPreviousHistory = useFetchHelloPreviousHistory();
     const fetchChannels = useFetchChannels();
+    const { isSmallScreen } = useScreenSize();
+    const { isTabVisible } = useTabVisibility();
 
-    const { currentChannelId } = useReduxStateManagement({ chatSessionId, tabSessionId });
+    const { currentChannelId, isHelloUser } = useReduxStateManagement({ chatSessionId, tabSessionId });
 
-    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs } = useCustomSelector((state) => ({
+    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotOpen, unReadCountInCurrentChannel } = useCustomSelector((state) => ({
         companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
         botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
         reduxChatSessionId: state.draftData?.chatSessionId,
@@ -54,6 +57,12 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                 return acc + channel?.widget_unread_count;
             }, 0);
             return unreadCount;
+        })(),
+        isToggledrawer: state.Chat?.isToggledrawer,
+        isChatbotOpen: state.appInfo?.[tabSessionId]?.isChatbotOpen,
+        unReadCountInCurrentChannel: (() => {
+            const channelListData = state.Hello?.[chatSessionId]?.channelListData;
+            return channelListData?.channels?.find((channel) => channel?.channel === currentChannelId)?.widget_unread_count || 0;
         })()
     }));
 
@@ -82,6 +91,30 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             initializeHelloServices(widgetToken);
         }
     }, [reduxChatSessionId])
+
+    useEffect(() => {
+        const handleUnreadReset = async () => {
+            if (
+                currentChannelId &&
+                unReadCountInCurrentChannel > 0 &&
+                (isSmallScreen ? !isToggledrawer : true) &&
+                isChatbotOpen &&
+                isHelloUser &&
+                isTabVisible
+            ) {
+                deleteReadReceipt(currentChannelId)
+                dispatch(setUnReadCount({ channelId: currentChannelId, resetCount: true }));
+            }
+        };
+
+        const debouncedReset = debounce(handleUnreadReset, 1000);
+        debouncedReset();
+
+        return () => {
+            debouncedReset.cancel();
+        };
+    }, [currentChannelId, isToggledrawer, unReadCountInCurrentChannel, isChatbotOpen, isHelloUser, isTabVisible]);
+
 
     const initializeHelloServices = async (widgetToken: string = '') => {
         // Prevent duplicate initialization

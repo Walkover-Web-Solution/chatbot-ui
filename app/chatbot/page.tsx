@@ -24,7 +24,7 @@ export default function InterfaceEmbed() {
         }
 
         dispatch(setDataInDraftReducer({ tabSessionId }))
-        
+
     }, [])
 
     useEffect(() => {
@@ -32,6 +32,7 @@ export default function InterfaceEmbed() {
             SetSessionStorage("interfaceToken", token);
             SetSessionStorage("interfaceUserId", userId);
             setVerifiedState(EmbedVerificationStatus.VERIFIED);
+            dispatch(setDataInDraftReducer({ isHelloUser: false }))
         } else if (isHelloUser) {
             setVerifiedState(EmbedVerificationStatus.VERIFIED);
         }
@@ -39,7 +40,7 @@ export default function InterfaceEmbed() {
 
     useEffect(() => {
         if (verifiedState === EmbedVerificationStatus.VERIFIED && chatbot_id) {
-            dispatch(setDataInDraftReducer({chatbotId: chatbot_id , chatSessionId: chatbot_id}))
+            dispatch(setDataInDraftReducer({ chatbotId: chatbot_id, chatSessionId: chatbot_id }))
             router.replace(`/chatbot/${chatbot_id}`);
         }
         if (isHelloUser && verifiedState === EmbedVerificationStatus.VERIFIED) {
