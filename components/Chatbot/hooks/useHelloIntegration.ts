@@ -199,12 +199,13 @@ export const useOnSendHello = () => {
     tabSessionId: useHelloContext().tabSessionId
   });
 
-  const { assigned_type, showWidgetForm, images } = useCustomSelector((state) => ({
+  const { assigned_type, showWidgetForm, images , helloVariables } = useCustomSelector((state) => ({
     assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === currentChannelId
     )?.assigned_type,
     showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm,
     images: state.Chat.images,
+    helloVariables: state.draftData?.hello?.variables || {}
   }));
 
   const isBot = assigned_type === 'bot';
@@ -247,7 +248,7 @@ export const useOnSendHello = () => {
 
       startTimeoutTimer();
 
-      const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId);
+      const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId,helloVariables);
       if (data && (!currentChatId || !currentChannelId)) {
         dispatch(setDataInAppInfoReducer({
           subThreadId: data?.['channel'],
@@ -286,7 +287,8 @@ export const useOnSendHello = () => {
     currentChannelId,
     showWidgetForm,
     assigned_type,
-    addHelloMessage
+    addHelloMessage,
+    helloVariables
   ]);
 };
 

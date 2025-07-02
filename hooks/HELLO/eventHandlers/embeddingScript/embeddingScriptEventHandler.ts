@@ -11,7 +11,7 @@ import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
 import { setDataInInterfaceRedux } from "@/store/interface/interfaceSlice";
-import { setDataInDraftReducer } from "@/store/draftData/draftDataSlice";
+import { setDataInDraftReducer, setVariablesForHelloBot } from "@/store/draftData/draftDataSlice";
 
 
 const helloToChatbotPropsMap: Record<string, string> = {
@@ -55,11 +55,16 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
             user_jwt_token,
             name,
             sdkConfig,
+            sessionVariables,
             ...restProps
         } = event.data.data;
 
         if (sdkConfig?.customTheme) {
             handleThemeChange(sdkConfig?.customTheme)
+        }
+
+        if(sessionVariables && isPlainObject(sessionVariables)){
+            dispatch(setVariablesForHelloBot(sessionVariables))
         }
 
         const fullWidgetToken = unique_id ? `${widgetToken}_${unique_id}` : `${widgetToken}`;
@@ -132,6 +137,12 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         dispatch(setDataInAppInfoReducer({ isChatbotOpen }))
     }
 
+    function handleSetVariablesForBot(event: MessageEvent) {
+        if(event.data?.data && isPlainObject(event.data?.data)){
+            dispatch(setVariablesForHelloBot(event.data?.data))
+        }
+    }
+
     useEffect(() => {
 
         eventHandler.addEventHandler('parent-route-changed', handleParentRouteChanged)
@@ -141,6 +152,8 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         eventHandler.addEventHandler('UPDATE_USER_DATA_SEGMENTO', handleUpdateUserDataSegmento)
 
         eventHandler.addEventHandler('ADD_COBROWSE_SCRIPT', handleAddCoBrowseScript)
+
+        eventHandler.addEventHandler('SET_VARIABLES_FOR_BOT', handleSetVariablesForBot)
 
         eventHandler.addEventHandler('helloData', handleHelloData)
 
