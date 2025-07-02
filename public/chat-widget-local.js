@@ -923,6 +923,7 @@
 
     // Create chatWidget object with all widget control functions
     window.chatWidget = {
+        setVariablesForBot: (data) => sendMessageToChatbot({ type: "SET_VARIABLES_FOR_BOT", data }),
         addCustomData: (data) => sendMessageToChatbot({ type: "UPDATE_USER_DATA_SEGMENTO", data }),
         modifyCustomData: (data) => sendMessageToChatbot({ type: "UPDATE_USER_DATA_SEGMENTO", data }),
         addUserEvent: (data) => sendMessageToChatbot({ type: "ADD_USER_EVENT_SEGMENTO", data }),
