@@ -262,7 +262,7 @@ export async function initializeHelloChat(): Promise<any> {
 }
 
 // Function to send message to Hello chat
-export async function sendMessageToHelloApi(message: string, attachment: Array<object> = [], channelDetail?: any, chat_id?: string): Promise<any> {
+export async function sendMessageToHelloApi(message: string, attachment: Array<object> = [], channelDetail?: any, chat_id?: string,helloVariables: any ={}): Promise<any> {
   let messageType = 'text'
   // Determine message type based on attachment and message content
   if (attachment?.length > 0) {
@@ -288,6 +288,7 @@ export async function sendMessageToHelloApi(message: string, attachment: Array<o
         session_id: null,
         user_data: getUserData(),
         is_anon: getLocalStorage("is_anon") == 'true',
+        sessionVariables: helloVariables
       },
       {
         headers: {
