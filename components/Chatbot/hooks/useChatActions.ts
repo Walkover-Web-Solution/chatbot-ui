@@ -12,7 +12,7 @@ import { ChatAction, ChatActionTypes, ChatState, SendMessagePayloadType } from '
 
 export const useChatActions = ({ chatDispatch, chatState, messageRef, timeoutIdRef, chatSessionId, tabSessionId }: { chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, chatSessionId: string, tabSessionId: string }) => {
     const globalDispatch = useDispatch();
-    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, isHelloUser, firstThread, versionId = 'null' } = useCustomSelector((state: $ReduxCoreType) => ({
+    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, isHelloUser, threadList, versionId = 'null' } = useCustomSelector((state: $ReduxCoreType) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
@@ -21,9 +21,8 @@ export const useChatActions = ({ chatDispatch, chatState, messageRef, timeoutIdR
         selectedAiServiceAndModal: state.Interface?.[chatSessionId]?.selectedAiServiceAndModal || null,
         userId: state.appInfo?.[tabSessionId]?.userId || null,
         isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
-        firstThread: state.Interface?.[chatSessionId]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId]?.[0]
+        threadList: state.Interface?.[chatSessionId]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId]
     }))
-
     useEffect(() => {
         if (bridgeName) {
             globalDispatch(getHelloDetailsStart({ slugName: bridgeName }));
@@ -35,7 +34,7 @@ export const useChatActions = ({ chatDispatch, chatState, messageRef, timeoutIdR
     }, [threadId, bridgeName, chatSessionId]);
 
     useEffect(() => {
-        if (!(firstThread?.newChat && firstThread?.subThread_id === subThreadId)) {
+        if (!(threadList?.[0]?.newChat && threadList?.[0]?.subThread_id === subThreadId)) {
             getIntialChatHistory();
         }
     }, [threadId, bridgeName, subThreadId]);
@@ -185,7 +184,7 @@ export const useChatActions = ({ chatDispatch, chatState, messageRef, timeoutIdR
             threadId: customThreadId || threadId,
             subThreadId: subThreadId,
             slugName: customBridgeSlug || bridgeName,
-            thread_flag: (firstThread?.newChat && firstThread?.sub_thread_id === subThreadId) ? true : false,
+            thread_flag: ((threadList?.length === 1 && threadList?.[0]?.thread_id === threadList?.[0]?.sub_thread_id &&  threadList?.[0]?.display_name === threadList?.[0]?.thread_id)|| (threadList?.[0]?.newChat && threadList?.[0]?.sub_thread_id === subThreadId)) ? true : false,
             chatBotId: chatSessionId,
             version_id: versionId === "null" ? null : versionId,
             ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {
