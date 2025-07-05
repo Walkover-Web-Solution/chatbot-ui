@@ -96,7 +96,7 @@ function useRtlayerEventManager({ chatDispatch, chatState, messageRef, timeoutId
         dispatch(setThreads({
           newThreadData: { ...data },
           bridgeName: reduxBridgeName,
-          threadId: reduxThreadId
+          threadId: data?.thread_id,
         }))
         break;
 
