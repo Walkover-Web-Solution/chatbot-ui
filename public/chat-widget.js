@@ -492,7 +492,7 @@
             if (window.parent) {
                 window.parent.postMessage?.(openMessage, '*');
             }
-            if (this.helloProps.isMobileSDK) {
+            if (this.helloProps?.isMobileSDK) {
                 sendDataToMobileSDK(openMessage)
             }
 
@@ -502,7 +502,7 @@
         }
 
         closeChatbot() {
-            if (this.helloProps.isMobileSDK) {
+            if (this.helloProps?.isMobileSDK) {
                 sendDataToMobileSDK({ type: 'close', data: {} })
                 return
             }
