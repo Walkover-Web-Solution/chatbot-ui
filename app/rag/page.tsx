@@ -1,4 +1,5 @@
 'use client';
+import { getEmebedToken } from "@/config/api";
 import {
     createKnowledgeBaseEntry,
     deleteKnowBaseData,
@@ -6,7 +7,8 @@ import {
 } from "@/config/ragApi";
 import { SetSessionStorage } from "@/utils/ChatbotUtility";
 import { KNOWLEDGE_BASE_CUSTOM_SECTION } from "@/utils/enums";
-import { CircleX, Loader2, Sparkles, Upload, X } from "lucide-react";
+import DriveIcon from "@/assests/DriveIcon";
+import { CircleX, Loader2, Settings, Upload, X } from "lucide-react";
 import * as React from "react";
 
 interface KnowledgeBaseType {
@@ -35,12 +37,6 @@ interface Configuration {
     hideConfig?: string;
 }
 
-interface AlertState {
-    show: boolean;
-    message: string;
-    severity: "success" | "error";
-}
-
 const VALID_FILE_TYPES = [
     "application/pdf",
     "application/msword",
@@ -53,11 +49,24 @@ function RagComponent() {
     // State management
     const [configuration, setConfiguration] = React.useState<Configuration>({});
     const [aiGenerationEnabled, setAiGenerationEnabled] = React.useState(false);
+    const [isIntegrationsOpen, setIsIntegrationsOpen] = React.useState(false);
     const [chunkingType, setChunkingType] = React.useState<keyof typeof KNOWLEDGE_BASE_CUSTOM_SECTION | "">("auto");
     const [isLoading, setIsLoading] = React.useState(false);
     const [file, setFile] = React.useState<File | null>(null);
     const [editingKnowledgeBase, setEditingKnowledgeBase] = React.useState<KnowledgeBaseType | null>(null);
     const [fileType, setFileType] = React.useState<"url" | "file">("url");
+    const [emebedToken, setEmebedToken] = React.useState<string>("");
+
+
+    React.useEffect(() => {
+        const fetchToken = async () => {
+            const token = await getEmebedToken();
+            if (token) {
+                setEmebedToken(token);
+            }
+        };
+        fetchToken();
+    }, []);
 
     // Form refs for better form handling
     const formRef = React.useRef<HTMLFormElement>(null);
@@ -298,13 +307,95 @@ function RagComponent() {
         }, 0);
     }, []);
 
+    React.useEffect(() => {
+        if (!editingKnowledgeBase && emebedToken) {
+            const script = document.createElement("script");
+            script.id = "viasocket-embed-main-script";
+            script.src = "https://embed.viasocket.com/prod-embedcomponent.js";
+            script.setAttribute("parentId", "viasocketParentId");
+            script.setAttribute("embedToken", emebedToken);
+            document.body.appendChild(script);
+        }
+    }, [emebedToken, editingKnowledgeBase]);
+
+    const handleOpenViasocket = (action: string) => {
+        if (action === "Open") {
+            window?.openViasocket(undefined, { templateId: 'scriSzZZKe6c' });
+            if (document.getElementById("viasocketParentId")) {
+                document.getElementById("viasocketParentId").classList.remove("hidden");
+            }
+            setIsIntegrationsOpen(true);
+        } else {
+            if (document.getElementById("viasocketParentId")) {
+                document.getElementById("viasocketParentId").classList.add("hidden");
+            }
+            setIsIntegrationsOpen(false);
+        }
+
+    };
+
+    React.useEffect(() => {
+        window.addEventListener("message", async (event) => {
+            if (event.origin === "https://embedfrontend.viasocket.com" && event.data.action === "published") {
+                const payload = {
+                    name: event.data.title,
+                    description: event.data.description,
+                    url: event.data.webhookurl
+                };
+
+                const response = await createKnowledgeBaseEntry(payload);
+                if (response?.data) {
+                    window.parent.postMessage(
+                        { type: "iframe-message-rag", status: "create", data: response.data },
+                        "*"
+                    );
+                    handleClose();
+                } else {
+                    throw new Error("Failed to upload document");
+                }
+            }
+        });
+    }, []);
+
     return (
         <div className={`flex flex-col ${isDarkTheme ? 'bg-gray-900 text-white border border-gray-700' : 'bg-white text-gray-900 border border-gray-200'} transition-all duration-200 min-h-screen w-screen p-4`}>
 
             <div className={`flex justify-between items-center font-bold text-xl px-4 pt-4 w-full ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>
                 {editingKnowledgeBase ? "Edit Knowledge Base" : "Create Knowledge Base"}
             </div>
+            {!editingKnowledgeBase && 
+            <>
+            <div className="flex items-center justify-center flex-col mt-4 gap-4 font-bold text-xl w-full">
+                <h1 className="flex items-center gap-2"><DriveIcon height={24} width={24} /> <span>Connect Drive Documents</span></h1>
+            <button
+                className={`btn btn-sm gap-2 mb-2 self-center w-64 ${isIntegrationsOpen
+                        ? 'btn'
+                        : 'btn-primary'
+                    }`}
+                onClick={() => handleOpenViasocket(isIntegrationsOpen ? "Close" : "Open")}
+            >
+                {isIntegrationsOpen ? (
+                    <>
+                        <X className="w-4 h-4" />
+                        Close Drive Integration
+                    </>
+                ) : (
+                    <>
+                        <Settings className="w-4 h-4" />
+                        Open Drive Integration
+                    </>
+                )}
+            </button>
+            </div>
+            </>}
+            
+            <div id="viasocketParentId" className="h-[90vh] w-[90%] mx-auto p-8 hidden pb-4"></div>
 
+            <div className="flex items-center my-4 mt-4 ">
+                <div className="flex-grow h-px bg-base-300"></div>
+                <span className={`mx-4 text-sm text-base-content ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>OR</span>
+                <div className="flex-grow h-px bg-base-300"></div>
+            </div>
             <form ref={formRef} onSubmit={handleSave} className="flex flex-col h-full">
                 <div className={`flex flex-col flex-grow overflow-auto p-4 gap-4 scrollbar-hide`}>
                     {/* Name Field */}
@@ -403,8 +494,8 @@ function RagComponent() {
                         {fileType === "file" && !editingKnowledgeBase && (
                             <div
                                 className={`border-2 flex items-center justify-center gap-4 flex-col border-dashed rounded-lg p-4 text-center transition-all duration-200 ${file
-                                        ? `${isDarkTheme ? 'border-green-400 bg-green-900/20' : 'border-green-500 bg-green-50'}`
-                                        : `${isDarkTheme ? 'border-gray-600 hover:border-gray-400 bg-gray-800/50' : 'border-gray-300 hover:border-gray-400 bg-gray-50'} cursor-pointer`
+                                    ? `${isDarkTheme ? 'border-green-400 bg-green-900/20' : 'border-green-500 bg-green-50'}`
+                                    : `${isDarkTheme ? 'border-gray-600 hover:border-gray-400 bg-gray-800/50' : 'border-gray-300 hover:border-gray-400 bg-gray-50'} cursor-pointer`
                                     }`}
                                 onDrop={handleFileDrop}
                                 onDragOver={(e) => e.preventDefault()}

@@ -371,3 +371,26 @@ export const getAccessToken = async () => {
         return e;
     }
 };
+
+export const getTemplateFlowList = async (emebedToken: string) => {
+    try {
+        const response = await fetch(`https://flow-api.viasocket.com/projects/projUx2QVhnx/integrations`, {
+            headers: {
+                authorization: emebedToken,
+            },
+        });
+        const data = await response.json();
+        return data;
+    } catch (e) {
+        return e;
+    }
+};
+
+export const getEmebedToken = async () => {
+    try {
+        const response = await axios.get(`${URL}/rag/get-emebed-token`);
+        return response?.data?.token;
+    } catch (e) {
+        return e;
+    }
+};
