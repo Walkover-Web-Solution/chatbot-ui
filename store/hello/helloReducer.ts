@@ -52,10 +52,7 @@ export const reducers: ValidateSliceCaseReducers<
     if (chatSessionId) {
       state[chatSessionId] = {
         ...state[chatSessionId],
-        helloConfig: action.payload,
-        showWidgetForm: state[chatSessionId]?.showWidgetForm !== null || state[chatSessionId]?.showWidgetForm !== undefined ?
-          state[chatSessionId]?.showWidgetForm :
-          (action.payload?.show_widget_form ?? true)
+        helloConfig: action.payload
       };
     }
   },
@@ -107,6 +104,20 @@ export const reducers: ValidateSliceCaseReducers<
       state[chatSessionId] = {
         ...state[chatSessionId],
         ...action.payload
+      };
+    }
+  },
+
+  setHelloClientInfo(state, action: actionType<Partial<$HelloReduxType>>) {
+    const chatSessionId = action.urlData?.chatSessionId;
+    const existingClientInfo = state[chatSessionId]?.clientInfo || {};
+    if (chatSessionId && action.payload && typeof action.payload === 'object') {
+      state[chatSessionId] = {
+        ...state[chatSessionId],
+        clientInfo: {
+          ...existingClientInfo,
+          ...(action.payload?.clientInfo || {})
+        }
       };
     }
   },

@@ -20,7 +20,6 @@ import { setThreads } from "@/store/interface/interfaceSlice";
 
 // Utils and Types
 import { ParamsEnums } from "@/utils/enums";
-import { getLocalStorage } from "@/utils/utilities";
 import { useChatActions } from "../Chatbot/hooks/useChatActions";
 import { useColor } from "../Chatbot/hooks/useColor";
 import { useScreenSize } from "../Chatbot/hooks/useScreenSize";
@@ -82,7 +81,7 @@ const ChatbotDrawer = ({
       teamsList: state.Hello?.[chatSessionId]?.widgetInfo?.teams || [],
       channelList: state.Hello?.[chatSessionId]?.channelListData?.channels || [],
       isHelloUser: state.draftData?.isHelloUser || false,
-      Name: JSON.parse(getLocalStorage("client") || '{}')?.name || state.Hello?.[chatSessionId]?.channelListData?.customer_name || '',
+      Name: state?.Hello?.[chatSessionId]?.clientInfo?.Name || state.Hello?.[chatSessionId]?.channelListData?.customer_name || '',
       tagline: state.Hello?.[chatSessionId]?.widgetInfo?.tagline || '',
       hideCloseButton: state.Interface?.[chatSessionId]?.hideCloseButton || false,
       voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false,
@@ -145,7 +144,7 @@ const ChatbotDrawer = ({
     dispatch(setDataInAppInfoReducer({ subThreadId: channelId, currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
     if (isSmallScreen) setToggleDrawer(false);
     if (images?.length > 0) setImages([]);
-    
+
     focusTextField();
     setLoading(false);
   };

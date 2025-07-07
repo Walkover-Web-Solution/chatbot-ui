@@ -1,5 +1,3 @@
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { Box, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import linkifyHtml from "linkify-html";
 import { customAlphabet } from "nanoid";
@@ -11,243 +9,6 @@ export const generateNewId = (length = 8) => {
     length
   );
   return nanoid();
-};
-
-export const Notes = {
-  response: (
-    <Box className="p-3 mt-3 notes-bg">
-      <Typography className="font-bold">
-        Avoid initializing Variables 📌
-      </Typography>
-      <Typography>
-        Always initialize variable outside of response block to prevent
-        unexpected errors{" "}
-      </Typography>
-      <br />
-      <Typography className="font-bold">Keep Functions Simple ➖</Typography>
-      <Typography>
-        When adding functions, make them short, ideally one line, to prevent
-        mistakes and make your code easy to read.👓📝
-      </Typography>
-      <br />
-      <Typography className="font-bold">
-        Return What&apos;s Needed 📉
-      </Typography>
-      <Typography>
-        Only include necessary data in the response to minimize processing and
-        transfer overhead. Leave out unnecessary information. 🚀✨
-      </Typography>
-    </Box>
-  ),
-  function: (
-    <Box className="p-3 notes-bg mt-3">
-      <Typography className="font-bold">Syntax 📝</Typography>
-      <Typography>Just include the core code of the function.</Typography>
-      <br />
-      <Typography className="font-bold">Supported Libraries 📚</Typography>
-      <Typography>
-        moment, axios, FormData, https, fetch and crypto are supported inside
-        the function.
-      </Typography>
-      <Typography
-        className="info-color flex-start-center gap-1"
-        onClick={() => {
-          window.open(
-            "https://dev-interface.viasocket.com/i/65f01b9b4bc027b8ec12a2ed"
-          );
-        }}
-      >
-        Click for more details
-        <OpenInNewIcon fontSize="small" />
-      </Typography>
-      <br />
-      <Typography className="font-bold">Logging Messages</Typography>
-      <Typography>
-        The console allows developers to output messages from their code, which
-        can help in debugging and understanding how the code is running.
-      </Typography>
-      <br />
-      <Typography className="font-bold">Read Blog 📚🔍</Typography>
-      <Typography>
-        For more information, please read our{" "}
-        <a
-          rel="noreferrer"
-          href="https://viasocket.com/faq/functions"
-          target="_blank"
-        >
-          blog.
-        </a>
-      </Typography>
-    </Box>
-  ),
-  variable: (
-    <Box className="notes-bg p-3 mt-3">
-      <Typography className="font-bold">How to Write 📝</Typography>
-      <Typography>
-        Use regular javascript syntax to assign values to variables. For text,
-        use quotes like &quot;name&quot;.
-      </Typography>
-      <br />
-      <Typography className="font-bold">Start Simple</Typography>
-      <Typography>
-        Create variables with the necessary information, without adding extra
-        code.
-      </Typography>
-      <br />
-      <Typography className="font-bold">Use Anywhere 🌐</Typography>
-      <Typography>
-        Once initialized, you can use these variables anywhere you need, like in
-        functions, API calls, or conditions.
-      </Typography>
-      <br />
-      <Typography className="font-bold">Read Blog 📚🔍</Typography>
-      <Typography>
-        For more information, please read our{" "}
-        <a
-          rel="noreferrer"
-          href="https://viasocket.com/faq/variable-customizations"
-          target="_blank"
-        >
-          blog.
-        </a>
-      </Typography>
-    </Box>
-  ),
-  if: (
-    <Box className="p-3 mt-3 notes-bg">
-      <Typography className="font-bold">Check a Condition First ✔️</Typography>
-      <Typography>
-        Before doing something, make sure a condition is met, like checking if
-        something is true: value === true.
-      </Typography>
-      <br />
-      <Typography className="font-bold">Any Type of Check 🔄</Typography>
-      <Typography>
-        This check can be for anything - a number, text, or something stored in
-        a variable you made before.
-      </Typography>
-      <br />
-      <Typography className="font-bold">Use JavaScript Rules 📜 </Typography>
-      <Typography>
-        Write these checks using regular JavaScript rules, just like you
-        normally would.
-      </Typography>
-      <br />
-      <Typography className="font-bold">Read Blog 📚🔍</Typography>
-      <Typography>
-        For more information, please read our{" "}
-        <a
-          rel="noreferrer"
-          href="https://viasocket.com/faq/conditional-logic"
-          target="_blank"
-        >
-          blog.
-        </a>
-      </Typography>
-    </Box>
-  ),
-  transferOptionNotes: (
-    <Box className="p-3 mt-3 notes-bg">
-      <Typography className="font-bold">
-        Match Function Output to Input Format 🔄
-      </Typography>
-      <Typography>
-        Function&apos;s output format will be same as the value&apos;s format
-        passed through flow for trigger activation{" "}
-      </Typography>
-    </Box>
-  ),
-  cron: (
-    <Box className="p-3 mt-3 notes-bg">
-      <Typography className="font-bold">Be Clear 🗣</Typography>
-      <Typography>
-        Use simple and clear terms when setting up your schedule.
-      </Typography>
-      <br />
-      <Typography className="font-bold">Match Your Needs 🎯</Typography>
-      <Typography>
-        {" "}
-        Make sure your schedule&apos;s description clearly states what you need
-        it to do.
-      </Typography>
-      <br />
-      <Typography className="font-bold">Timing ⏱</Typography>
-      <Typography>
-        Cron jobs can only run every minute at the least, not more often.
-      </Typography>
-      <br />
-      <Typography className="font-bold">Read Blog 📚🔍</Typography>
-      <Typography>
-        For more information, please read our{" "}
-        <a
-          rel="noreferrer"
-          href=" https://viasocket.com/faq/scheduled-tasks"
-          target="_blank"
-        >
-          blog.
-        </a>
-      </Typography>
-    </Box>
-  ),
-  emailToFlow: (
-    <Box className="p-3 mt-3 notes-bg">
-      <Typography className="font-bold">Automate Flow ✉️✨</Typography>
-      <Typography>Forward emails to this flow you want to automate</Typography>
-      <br />
-      <Typography className="font-bold">
-        Smart Filtering for Targeted Forwarding 🎯
-      </Typography>
-      <Typography>
-        Enable forwarding for specific emails effortlessly by applying filters,
-        such as those containing resumes or originating from specific IDs.
-      </Typography>
-      <br />
-      <Typography className="font-bold">Read Blog 📚🔍</Typography>
-      <Typography>
-        For more information, please read our{" "}
-        <a
-          rel="noreferrer"
-          href="https://viasocket.com/faq/email-to-flow"
-          target="_blank"
-        >
-          blog.
-        </a>
-      </Typography>
-    </Box>
-  ),
-  API: (
-    <Box className="p-3 mt-3 notes-bg">
-      <Typography className="font-bold">API Basics 🔄</Typography>
-      <Typography>
-        APIs help software talk to each other without needing to know complex
-        code
-      </Typography>
-      <br />
-      <Typography className="font-bold">Custom API Control 🛠️</Typography>
-      <Typography>
-        With viaSocket&apos;s Custom API, you can easily make specific requests
-        for tasks like getting or changing data
-      </Typography>
-      <br />
-      <Typography className="font-bold">Streamlined Workflows</Typography>
-      <Typography>
-        viaSocket&apos;s Custom API automates tasks, making work faster and
-        easier.
-      </Typography>
-      <br />
-      <Typography className="font-bold">Read Blog 📚🔍</Typography>
-      <Typography>
-        For more information, please read our{" "}
-        <a
-          rel="noreferrer"
-          href="https://viasocket.com/faq/custom-api-integration"
-          target="_blank"
-        >
-          blog.
-        </a>
-      </Typography>
-    </Box>
-  ),
 };
 
 function getDomain() {
@@ -325,7 +86,7 @@ export const removeCookie = (cookieName) => {
 export const setLocalStorage = (key, value = '') => {
   const widgetToken = GetSessionStorageData('widgetToken')
   let updatedKey = key
-  if(widgetToken){
+  if (widgetToken) {
     updatedKey = `${widgetToken}_${key}`
   }
   localStorage.setItem(updatedKey, value);
@@ -342,7 +103,7 @@ export const setLocalStorage = (key, value = '') => {
 export const getLocalStorage = (key) => {
   let updatedKey = key
   const widgetToken = GetSessionStorageData('widgetToken')
-  if(widgetToken){
+  if (widgetToken) {
     updatedKey = `${widgetToken}_${key}`
   }
   return key ? localStorage.getItem(updatedKey) : null;
@@ -447,3 +208,27 @@ export const formatTime = (value, format) => {
     }
   }
 };
+
+export function cleanObject(obj) {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([_, value]) => value != null)
+  );
+}
+
+export function splitNumber(value) {
+  const country_codes = ["+1-876", "+1-869", "+1-868", "+1-809", "+1-787", "+1-784", "+1-767", "+1-758", "+1-721", "+1-684", "+1-671", "+1-670", "+1-664", "+1-649", "+1-473", "+1-441", "+1-345", "+1-340", "+1-284", "+1-268", "+1-264", "+1-246", "+1-242", "+44-1624", "+44-1534", "+44-1481", "+998", "+996", "+995", "+994", "+993", "+992", "+977", "+976", "+975", "+974", "+973", "+972", "+971", "+970", "+968", "+967", "+966", "+965", "+964", "+963", "+962", "+961", "+960", "+886", "+880", "+856", "+855", "+853", "+852", "+850", "+692", "+691", "+690", "+689", "+688", "+687", "+686", "+685", "+683", "+682", "+681", "+680", "+679", "+678", "+677", "+676", "+675", "+674", "+673", "+672", "+670", "+599", "+598", "+597", "+595", "+593", "+592", "+591", "+590", "+509", "+508", "+507", "+506", "+505", "+504", "+503", "+502", "+501", "+500", "+423", "+421", "+420", "+389", "+387", "+386", "+385", "+383", "+382", "+381", "+380", "+379", "+378", "+377", "+376", "+375", "+374", "+373", "+372", "+371", "+370", "+359", "+358", "+357", "+356", "+355", "+354", "+353", "+352", "+351", "+350", "+299", "+298", "+297", "+291", "+290", "+269", "+268", "+267", "+266", "+265", "+264", "+263", "+262", "+261", "+260", "+258", "+257", "+256", "+255", "+254", "+253", "+252", "+251", "+250", "+249", "+248", "+246", "+245", "+244", "+243", "+242", "+241", "+240", "+239", "+238", "+237", "+236", "+235", "+234", "+233", "+232", "+231", "+230", "+229", "+228", "+227", "+226", "+225", "+224", "+223", "+222", "+221", "+220", "+218", "+216", "+213", "+212", "+211", "+98", "+95", "+94", "+93", "+92", "+91", "+90", "+86", "+84", "+82", "+81", "+66", "+65", "+64", "+63", "+62", "+61", "+60", "+58", "+57", "+56", "+55", "+54", "+53", "+52", "+51", "+49", "+48", "+47", "+46", "+45", "+44", "+43", "+41", "+40", "+39", "+36", "+34", "+33", "+32", "+31", "+30", "+27", "+20", "+7", "+1"];
+
+  value = value?.trim();
+
+  if (!value?.includes("+")) {
+    console.log("nhi hai")
+    return { "code": "", "number": value };
+  }
+
+  for (let i = 0; i < country_codes.length; i++) {
+    if (value?.includes(country_codes[i])) {
+      let code_size = country_codes[i].length;
+      return { "code": value.substring(0, code_size), "number": value.substring(code_size) };
+    }
+  }
+}
