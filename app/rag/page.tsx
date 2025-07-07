@@ -7,7 +7,7 @@ import {
 } from "@/config/ragApi";
 import { SetSessionStorage } from "@/utils/ChatbotUtility";
 import { KNOWLEDGE_BASE_CUSTOM_SECTION } from "@/utils/enums";
-import DriveIcon from "@/utils/icons/DriveIcon";
+import DriveIcon from "@/assests/DriveIcon";
 import { CircleX, Loader2, Settings, Upload, X } from "lucide-react";
 import * as React from "react";
 
