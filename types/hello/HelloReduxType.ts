@@ -14,6 +14,7 @@ export interface $HelloReduxType {
     showWidgetForm?: boolean | null;
     is_anon?: boolean;
     agent_teams?: { teams?: Record<string, string>, agents?: Record<string, string> };
+    clientInfo: any
   }
 }
 
