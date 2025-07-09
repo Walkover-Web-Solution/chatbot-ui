@@ -185,7 +185,7 @@ export async function saveClientDetails(clientData = {}): Promise<any> {
   try {
     const payload = {
       user_data: getUserData(),
-      is_anon: false,
+      is_anon: getLocalStorage("is_anon") == 'true',
       ...clientData
     }
 
@@ -194,17 +194,7 @@ export async function saveClientDetails(clientData = {}): Promise<any> {
         authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
       },
     });
-    if (response?.data) {
-      const existingUserData = JSON.parse(getLocalStorage('client') || '{}');
-      setLocalStorage("client", JSON.stringify({
-        ...existingUserData,
-        name: response?.data?.name || clientData?.Name,
-        email: response?.data?.mail || clientData?.Email,
-        number: clientData?.number_without_CC,
-        country_code: clientData?.country_code,
-      }));
-    }
-    return response?.data;
+    return response?.data?.data;
   } catch (error: any) {
     errorToast(error?.response?.data?.message || "Failed to save client details");
     return null;
@@ -262,7 +252,7 @@ export async function initializeHelloChat(): Promise<any> {
 }
 
 // Function to send message to Hello chat
-export async function sendMessageToHelloApi(message: string, attachment: Array<object> = [], channelDetail?: any, chat_id?: string): Promise<any> {
+export async function sendMessageToHelloApi(message: string, attachment: Array<object> = [], channelDetail?: any, chat_id?: string,helloVariables: any ={}): Promise<any> {
   let messageType = 'text'
   // Determine message type based on attachment and message content
   if (attachment?.length > 0) {
@@ -288,6 +278,7 @@ export async function sendMessageToHelloApi(message: string, attachment: Array<o
         session_id: null,
         user_data: getUserData(),
         is_anon: getLocalStorage("is_anon") == 'true',
+        sessionVariables: helloVariables
       },
       {
         headers: {

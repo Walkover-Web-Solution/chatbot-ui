@@ -1,13 +1,14 @@
+import { useSendMessage } from '@/components/Chatbot/hooks/useChatActions';
+import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { TrendingUp } from 'lucide-react';
-import { useContext } from 'react';
-import { MessageContext } from '../InterfaceChatbot';
 
 function StarterQuestions() {
-    const {
-        starterQuestions,
-        sendMessage
-    } = useContext(MessageContext)
-    
+    const sendMessage = useSendMessage({});
+
+    const { starterQuestions } = useCustomSelector((state) => ({
+        starterQuestions: state.Chat.starterQuestions || []
+    }))
+
     if (starterQuestions?.length === 0) return null;
 
     return (

@@ -8,7 +8,7 @@
     panel.style.position = 'fixed';
     panel.style.top = '0';
     panel.style.right = '-100%'; // hidden offscreen initially
-    panel.style.width = 'calc(min(800px, 100%))';
+    panel.style.width = 'calc(min(768px, 100%))';
     panel.style.height = '100vh';
     panel.style.background = 'white';
     panel.style.borderRadius = '12px 0 0 12px';
@@ -27,6 +27,7 @@
     toolbar.style.justifyContent = 'flex-end';
     toolbar.style.padding = '0 8px';
     toolbar.style.borderBottom = '1px solid #ddd';
+    toolbar.style.gap = '14px';
 
     // Buttons
     const btnClose = document.createElement('button');
@@ -36,6 +37,7 @@
     btnClose.style.border = 'none';
     btnClose.style.background = 'none';
     btnClose.style.cursor = 'pointer';
+    btnClose.style.color = 'red';
 
     const btnFullscreen = document.createElement('button');
     btnFullscreen.textContent = '⛶';
@@ -44,6 +46,7 @@
     btnFullscreen.style.border = 'none';
     btnFullscreen.style.background = 'none';
     btnFullscreen.style.cursor = 'pointer';
+    btnFullscreen.style.color = "black";
 
     const btnRedirect = document.createElement('button');
     btnRedirect.textContent = '↗';
@@ -52,6 +55,7 @@
     btnRedirect.style.border = 'none';
     btnRedirect.style.background = 'none';
     btnRedirect.style.cursor = 'pointer';
+    btnRedirect.style.color = 'black';
 
     const loader = document.createElement('div');
     loader.style.position = 'absolute';
@@ -116,7 +120,7 @@
             btnFullscreen.title = 'Exit fullscreen';
         } else {
             panel.style.transition = 'width 0.3s ease, height 0.3s ease, border-radius 0.3s ease';
-            panel.style.width = 'calc(min(800px, 100%))';
+            panel.style.width = 'calc(min(768px, 100%))';
             panel.style.height = '100vh';
             panel.style.borderRadius = '12px 0 0 12px';
             isFullscreen = false;
@@ -250,6 +254,12 @@
 
             return trackedUrls.some(prefix => {
                 try {
+                    // Handle full URLs (like https://nextjs.org/)
+                    if (prefix.match(/^https?:\/\//)) {
+                        // For full URLs, check if the URL starts with the prefix
+                        return fullUrl === prefix || fullUrl.startsWith(prefix);
+                    }
+
                     const prefixUrl = new URL(prefix, window.location.origin);
 
                     if (prefixUrl.origin === parsedUrl.origin) {

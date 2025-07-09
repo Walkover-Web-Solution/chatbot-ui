@@ -1,6 +1,5 @@
 export interface $HelloReduxType {
   [chatSessionId: string]: {
-    isHelloUser: boolean;
     widgetInfo: any;
     anonymousClientId: any;
     socketJwt: { jwt: string };
@@ -15,6 +14,7 @@ export interface $HelloReduxType {
     showWidgetForm?: boolean | null;
     is_anon?: boolean;
     agent_teams?: { teams?: Record<string, string>, agents?: Record<string, string> };
+    clientInfo: any
   }
 }
 

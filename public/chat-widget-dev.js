@@ -153,7 +153,7 @@
             badgeElement.id = this.elements.unReadMsgCountBadge;
             badgeElement.className = 'hello-badge-count';
             badgeElement.textContent = ''; // Will be populated dynamically
-            chatBotIcon.appendChild(badgeElement);
+            imgElement.appendChild(badgeElement);
 
             return { chatBotIcon, imgElement, textElement };
         }
@@ -529,9 +529,7 @@
                                 : 'unset';
                     }
                 }, 100);
-
                 sendMessageToChatbot({ type: "CHATBOT_CLOSE" })
-
             }
         }
 
@@ -583,7 +581,7 @@
             iframe.id = this.elements.chatbotIframeComponent;
             iframe.title = 'iframe';
             iframe.allowFullscreen = true;
-            iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-forms');
+            iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation-by-user-activation');
             iframe.allow = 'microphone *; camera *; midi *; encrypted-media *';
 
             this.parentContainer.appendChild(iframe);
@@ -624,13 +622,7 @@
             if (!iframeComponent) return;
             let encodedData = '';
             encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true }));
-            const urlParams = new URLSearchParams(window.location.search);
-            const env = urlParams.get('env');
-            let modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
-
-            if (env === 'stage') {
-                modifiedUrl += `&env=${env}`;
-            }
+            const modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
             iframeComponent.src = modifiedUrl;
 
             this.props.config = { ...this.config };
@@ -717,6 +709,10 @@
         sendInitialData() {
             if (this.helloProps) {
                 sendMessageToChatbot({ type: 'helloData', data: this.helloProps });
+                const iframeContainer = document.getElementById(this.elements.chatbotIframeContainer);
+                if (iframeContainer && iframeContainer.style?.display !== 'none') {
+                    sendMessageToChatbot({ type: 'CHATBOT_OPEN' });
+                }
             }
         }
 
@@ -851,6 +847,7 @@
             sendDataToMobileSDK({ type: 'data', data: dataToSend })
         }
 
+
         // Handle parent container changes
         if ('parentId' in dataToSend) {
             helloChatbotManager.state.tempDataToSend = {
@@ -927,6 +924,7 @@
 
     // Create chatWidget object with all widget control functions
     window.chatWidget = {
+        SendDataToBot: (data) => sendMessageToChatbot({ type: "SET_VARIABLES_FOR_BOT", data }),
         addCustomData: (data) => sendMessageToChatbot({ type: "UPDATE_USER_DATA_SEGMENTO", data }),
         modifyCustomData: (data) => sendMessageToChatbot({ type: "UPDATE_USER_DATA_SEGMENTO", data }),
         addUserEvent: (data) => sendMessageToChatbot({ type: "ADD_USER_EVENT_SEGMENTO", data }),

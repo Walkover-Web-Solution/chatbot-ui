@@ -2,10 +2,6 @@
 import { createNoopStorage, STORAGE_OPTIONS } from "@/utils/storageUtility";
 import { configureStore } from "@reduxjs/toolkit";
 import { persistReducer, persistStore } from "redux-persist";
-import createSagaMiddleware from "redux-saga";
-import rootReducer from "./combineReducer";
-import rootSaga from "./rootSaga.ts";
-import { createStateSyncMiddleware, initMessageListener } from 'redux-state-sync';
 import {
   FLUSH,
   PAUSE,
@@ -14,6 +10,10 @@ import {
   REGISTER,
   REHYDRATE
 } from 'redux-persist/es/constants';
+import createSagaMiddleware from "redux-saga";
+import { createStateSyncMiddleware, initMessageListener } from 'redux-state-sync';
+import rootReducer from "./combineReducer";
+import rootSaga from "./rootSaga.ts";
 
 // import { getInfoParametersFromUrl } from "../utils/utilities";
 
@@ -48,8 +48,9 @@ const crossTabSyncConfig = {
   predicate: (action) => {
     const isPersistAction = [PERSIST, REHYDRATE, FLUSH, PAUSE, PURGE, REGISTER].includes(action.type);
     const actionTypeRoot = action.type.split('/')[0];
-    const isAppOrTabInfoAction = actionTypeRoot === 'appInfo' || actionTypeRoot === 'draftData';
-    return !isPersistAction && !isAppOrTabInfoAction;
+    const isAppOrDraftAction = actionTypeRoot === 'appInfo' || actionTypeRoot === "draftData" || actionTypeRoot === "Chat";
+    const isCountIncreaseAction = action.type === "Hello/setUnReadCount" && !action.payload?.resetCount;
+    return !isPersistAction && !isAppOrDraftAction && !isCountIncreaseAction;
   }
 };
 
@@ -61,7 +62,7 @@ const rootPersistConfig = {
   key: "root",
   storage: storage,
   version: 1,
-  blacklist: ["appInfo", "draftData"],
+  blacklist: ["appInfo", "draftData", "Chat"],
 };
 
 const persistedReducer = persistReducer(rootPersistConfig, rootReducer);

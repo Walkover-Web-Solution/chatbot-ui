@@ -1,23 +1,21 @@
 // CallUI.tsx
-import React, { useContext, useEffect, useRef } from 'react';
-import { useCallUI } from '../Chatbot/hooks/useCallUI';
-import './CallUI.css';
 import { Mic, MicOff, Phone } from 'lucide-react';
-import { MessageContext } from '../Interface-Chatbot/InterfaceChatbot';
+import React, { useEffect, useRef } from 'react';
+import { useCallUI } from '../Chatbot/hooks/useCallUI';
+import { useScreenSize } from '../Chatbot/hooks/useScreenSize';
+import './CallUI.css';
 
 const CallUI: React.FC = () => {
     const {
         callState,
         isMuted,
         mediaStream,
-        makeCall,
-        answerCall,
         endCall,
         toggleMute
     } = useCallUI();
 
     const audioRef = useRef<HTMLAudioElement>(null);
-    const { isSmallScreen } = useContext(MessageContext);
+    const { isSmallScreen } = useScreenSize();
 
     // Connect media stream to audio element when available
     useEffect(() => {

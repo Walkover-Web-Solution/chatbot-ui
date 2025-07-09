@@ -6,7 +6,7 @@ import { getLocalStorage } from "@/utils/utilities";
 import { subscribeForFCMPushNotification } from "@/config/helloApi";
 
 const useNotificationSocket = ({ chatSessionId }: { chatSessionId: string }) => {
-  const { jwtToken, company_id, pushConfig, isMobileSDK } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { jwtToken, company_id, pushConfig, isMobileSDK } = useCustomSelector((state) => ({
     jwtToken: state.Hello?.[chatSessionId]?.socketJwt?.jwt,
     company_id: state.Hello?.[chatSessionId]?.widgetInfo?.company_id,
     pushConfig: state.Hello?.[chatSessionId]?.helloConfig?.pushConfig,

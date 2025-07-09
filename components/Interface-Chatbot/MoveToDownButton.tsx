@@ -3,7 +3,7 @@ import { IconButton } from "@mui/material";
 import React from "react";
 import "./InterfaceChatbot.css";
 
-function MoveToDownButton({ movetoDown, showScrollButton, backgroundColor }: { movetoDown: () => void, showScrollButton: boolean, backgroundColor: string }) {
+function MoveToDownButton({ movetoDown, showScrollButton, backgroundColor, textColor }: { movetoDown: () => void, showScrollButton: boolean, backgroundColor: string, textColor: string }) {
   if (!showScrollButton) return null;
   return (
     <IconButton
@@ -11,7 +11,7 @@ function MoveToDownButton({ movetoDown, showScrollButton, backgroundColor }: { m
       className="move-to-down-button"
       sx={{
         backgroundColor: backgroundColor || "#333",
-        color: "white",
+        color: textColor || "white",
         position: "fixed",
         bottom: "20px",
         right: "20px",

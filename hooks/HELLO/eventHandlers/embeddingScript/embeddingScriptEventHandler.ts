@@ -1,17 +1,16 @@
-import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
-import { useDispatch } from "react-redux";
-import { useEffect } from "react";
-import { CBManger } from "@/hooks/coBrowser/CBManger";
-import { addDomainToHello, saveClientDetails } from "@/config/helloApi";
-import isPlainObject from "lodash.isplainobject";
-import { useContext } from "react";
 import { ThemeContext } from "@/components/AppWrapper";
-import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
-import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
+import { addDomainToHello, saveClientDetails } from "@/config/helloApi";
+import { CBManger } from "@/hooks/coBrowser/CBManger";
+import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
-import { setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
+import { setDataInDraftReducer, setVariablesForHelloBot } from "@/store/draftData/draftDataSlice";
+import { setHelloClientInfo, setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
 import { setDataInInterfaceRedux } from "@/store/interface/interfaceSlice";
-import { setDataInDraftReducer } from "@/store/draftData/draftDataSlice";
+import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
+import { cleanObject, getLocalStorage, setLocalStorage } from "@/utils/utilities";
+import isPlainObject from "lodash.isplainobject";
+import { useContext, useEffect } from "react";
+import { useDispatch } from "react-redux";
 
 
 const helloToChatbotPropsMap: Record<string, string> = {
@@ -38,7 +37,26 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
 
     const handleUpdateUserDataSegmento = (event: MessageEvent) => {
         if (event?.data?.data && isPlainObject(event?.data?.data)) {
-            saveClientDetails(event?.data?.data)
+            const clientData = {
+                Name: event?.data?.data?.name || undefined,
+                Email: event?.data?.data?.mail || undefined,
+                Phonenumber: event?.data?.data?.number || undefined,
+                ...event?.data?.data
+            }
+            const keysToRemove = ['name', 'mail', 'number']
+            keysToRemove.map(key => {
+                if (key in clientData) {
+                    delete clientData[key];
+                }
+            });
+            saveClientDetails(cleanObject(clientData)).then((data) => {
+                dispatch(setHelloClientInfo({ clientInfo: { ...clientData } }));
+                if (!data?.Phonenumber || !data?.Email || !data?.Name) {
+                    dispatch(setHelloKeysData({ showWidgetForm: true }))
+                } else {
+                    dispatch(setHelloKeysData({ showWidgetForm: false }))
+                }
+            })
         }
     }
 
@@ -55,11 +73,16 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
             user_jwt_token,
             name,
             sdkConfig,
+            variables,
             ...restProps
         } = event.data.data;
 
         if (sdkConfig?.customTheme) {
             handleThemeChange(sdkConfig?.customTheme)
+        }
+
+        if (variables && isPlainObject(variables)) {
+            dispatch(setVariablesForHelloBot(variables))
         }
 
         const fullWidgetToken = unique_id ? `${widgetToken}_${unique_id}` : `${widgetToken}`;
@@ -80,20 +103,13 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
 
         // 2. User identity changed
         if (unique_id !== prevUser.unique_id) {
-            setLocalStorage('client', '{}');
             setLocalStorage('userData', '{}');
             resetKeys();
         }
 
-        // 3. Update stored userData
-        const { mail: clientMail, number: clientNumber, name: clientName, country_code: clientCountryCode } = JSON.parse(getLocalStorage('client') || '{}');
-        if (mail && number && name) {
-            setLocalStorage('client', JSON.stringify({ mail: mail, number: number, name: name, country_code: clientCountryCode || "+91" }));
-            dispatch(setHelloKeysData({ showWidgetForm: false }));
-        } else {
-            setLocalStorage('client', JSON.stringify({ mail: clientMail, number: clientNumber, name: clientName, country_code: clientCountryCode || "+91" }));
-        }
 
+
+        // 3. Update stored userData
         setLocalStorage('userData', JSON.stringify({ unique_id, mail, number, user_jwt_token: hasUserIdentity ? user_jwt_token : undefined, name }));
 
         // 4. Anonymous cleanup when no identity
@@ -122,14 +138,24 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
 
         // 8. Persist new widget token and config
         setLocalStorage('WidgetId', widgetToken);
-        dispatch(setHelloConfig(event.data.data));
+        dispatch(setDataInDraftReducer({ chatSessionId: fullWidgetToken, widgetToken: fullWidgetToken, isHelloUser: true }));
         SetSessionStorage('helloConfig', JSON.stringify(event.data.data))
-        dispatch(setDataInDraftReducer({ chatSessionId: fullWidgetToken, widgetToken: fullWidgetToken }));
+        dispatch(setHelloConfig(event.data.data));
+
+        if (mail && number && name) {
+            dispatch(setHelloKeysData({ showWidgetForm: false }));
+        }
         return;
     }
 
     function handleChatbotVisibility(isChatbotOpen = false) {
         dispatch(setDataInAppInfoReducer({ isChatbotOpen }))
+    }
+
+    function handleSetVariablesForBot(event: MessageEvent) {
+        if (event.data?.data?.variables && isPlainObject(event.data?.data?.variables)) {
+            dispatch(setVariablesForHelloBot(event.data?.data?.variables))
+        }
     }
 
     useEffect(() => {
@@ -141,6 +167,8 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         eventHandler.addEventHandler('UPDATE_USER_DATA_SEGMENTO', handleUpdateUserDataSegmento)
 
         eventHandler.addEventHandler('ADD_COBROWSE_SCRIPT', handleAddCoBrowseScript)
+
+        eventHandler.addEventHandler('SET_VARIABLES_FOR_BOT', handleSetVariablesForBot)
 
         eventHandler.addEventHandler('helloData', handleHelloData)
 

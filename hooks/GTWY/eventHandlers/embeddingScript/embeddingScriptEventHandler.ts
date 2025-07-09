@@ -1,7 +1,6 @@
 import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { addDefaultContext, setDataInInterfaceRedux, setEventsSubsribedByParent, setHeaderActionButtons, setModalConfig } from "@/store/interface/interfaceSlice";
-import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
 import { useEffect } from "react";
@@ -30,7 +29,7 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
 
   const dispatch = useDispatch()
   const tabSessionId = eventHandler.getTabSessionId()
-  const { currentThreadId } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { currentThreadId } = useCustomSelector((state) => ({
     currentThreadId: state.appInfo?.[tabSessionId]?.threadId
   }));
 

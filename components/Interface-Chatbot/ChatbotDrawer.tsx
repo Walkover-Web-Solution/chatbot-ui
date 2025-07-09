@@ -1,12 +1,11 @@
 'use client';
 
-import { lighten, useMediaQuery, useTheme } from "@mui/material";
+import { lighten } from "@mui/material";
 import { AlignLeft, ChevronRight, SquarePen, Users, X } from "lucide-react";
 import { useContext, useEffect, useMemo } from "react";
 import { useDispatch } from "react-redux";
 
 // API and Services
-import { deleteReadReceipt } from "@/config/helloApi";
 import helloVoiceService from "../Chatbot/hooks/HelloVoiceService";
 
 // HOCs and Hooks
@@ -17,21 +16,18 @@ import { useReduxStateManagement } from "../Chatbot/hooks/useReduxManagement";
 
 // Redux Actions
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
-import { setUnReadCount } from "@/store/hello/helloSlice";
 import { setThreads } from "@/store/interface/interfaceSlice";
 
 // Utils and Types
-import { $ReduxCoreType } from "@/types/reduxCore";
 import { ParamsEnums } from "@/utils/enums";
-import { getLocalStorage } from "@/utils/utilities";
+import { useChatActions } from "../Chatbot/hooks/useChatActions";
+import { useColor } from "../Chatbot/hooks/useColor";
+import { useScreenSize } from "../Chatbot/hooks/useScreenSize";
 import { MessageContext } from "./InterfaceChatbot";
 
 const createRandomId = () => Math.random().toString(36).substring(2, 15);
 
 interface ChatbotDrawerProps {
-  setLoading: (loading: boolean) => void;
-  isToggledrawer: boolean;
-  setToggleDrawer: (isOpen: boolean) => void;
   preview?: boolean;
   chatSessionId: string
   tabSessionId: string
@@ -41,8 +37,6 @@ interface ChatbotDrawerProps {
 }
 
 const ChatbotDrawer = ({
-  setToggleDrawer,
-  isToggledrawer,
   preview = false,
   chatSessionId,
   tabSessionId,
@@ -51,24 +45,23 @@ const ChatbotDrawer = ({
   threadId
 }: ChatbotDrawerProps) => {
   const dispatch = useDispatch();
-  const theme = useTheme();
-  const isSmallScreen = useMediaQuery('(max-width:1023px)');
+  const { backgroundColor, textColor } = useColor();
 
+  console.log('chatbotdrawer')
   // Context hooks
-  const {
-    setNewMessage,
-    setOptions,
-    chatDispatch,
-    images,
-    setImages,
-    fetchChannels,
-    allMessages,
-    allMessagesData,
-    messageRef,
-    setLoading,
-  } = useContext(MessageContext);
+  const { messageRef } = useContext(MessageContext);
+  const { isSmallScreen } = useScreenSize();
 
-  const { currentChatId, currentTeamId } = useReduxStateManagement({ chatDispatch, chatSessionId, tabSessionId });
+  const { setNewMessage, setOptions, setImages, setLoading, setToggleDrawer } = useChatActions();
+
+  const { images, allMessages, allMessagesData, isToggledrawer } = useCustomSelector((state) => ({
+    images: state.Chat.images || [],
+    allMessages: state.Chat.messageIds || [],
+    allMessagesData: state.Chat.msgIdAndDataMap || {},
+    isToggledrawer: state.Chat.isToggledrawer,
+  }))
+
+  const { currentChatId, currentTeamId } = useReduxStateManagement({ chatSessionId, tabSessionId });
   const { callState } = useCallUI();
 
   // Consolidated Redux state selection
@@ -82,13 +75,13 @@ const ChatbotDrawer = ({
     hideCloseButton,
     voice_call_widget,
     show_msg91
-  } = useCustomSelector((state: $ReduxCoreType) => {
+  } = useCustomSelector((state) => {
     return {
       subThreadList: state.Interface?.[chatSessionId]?.interfaceContext?.[bridgeName]?.threadList?.[threadId] || [],
       teamsList: state.Hello?.[chatSessionId]?.widgetInfo?.teams || [],
       channelList: state.Hello?.[chatSessionId]?.channelListData?.channels || [],
-      isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
-      Name: JSON.parse(getLocalStorage("client") || '{}')?.name || state.Hello?.[chatSessionId]?.channelListData?.customer_name || '',
+      isHelloUser: state.draftData?.isHelloUser || false,
+      Name: state?.Hello?.[chatSessionId]?.clientInfo?.Name || state.Hello?.[chatSessionId]?.channelListData?.customer_name || '',
       tagline: state.Hello?.[chatSessionId]?.widgetInfo?.tagline || '',
       hideCloseButton: state.Interface?.[chatSessionId]?.hideCloseButton || false,
       voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false,
@@ -146,17 +139,12 @@ const ChatbotDrawer = ({
     }
   }
 
-  const handleChangeChannel = async (channelId: string, chatId: string, teamId: string, widget_unread_count: number) => {
+  const handleChangeChannel = async (channelId: string, chatId: string, teamId: string) => {
     // Update redux state
     dispatch(setDataInAppInfoReducer({ subThreadId: channelId, currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
     if (isSmallScreen) setToggleDrawer(false);
     if (images?.length > 0) setImages([]);
 
-    // Handle unread messages
-    if (widget_unread_count > 0) {
-      await deleteReadReceipt(channelId);
-      dispatch(setUnReadCount({ channelId: channelId, resetCount: true }));
-    }
     focusTextField();
     setLoading(false);
   };
@@ -227,11 +215,11 @@ const ChatbotDrawer = ({
                   key={`${channel?._id}-${index}`}
                   className={`conversation-card max-h-16 h-full overflow-hidden text-ellipsis p-3 ${channel?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center`}
                   style={{
-                    borderColor: channel?.id === currentChatId ? theme.palette.primary.main : ''
+                    borderColor: channel?.id === currentChatId ? backgroundColor : ''
                   }}
-                  onClick={() => handleChangeChannel(channel?.channel, channel?.id, channel?.team_id, channel?.widget_unread_count)}
+                  onClick={() => handleChangeChannel(channel?.channel, channel?.id, channel?.team_id)}
                 >
-                  <div className="w-9 h-9 flex items-center justify-center text-xs font-bold rounded-full mr-3" style={{ background: lighten(theme.palette.primary.main, 0.9), color: "#606060" }}>
+                  <div className="w-9 h-9 flex items-center justify-center text-xs font-bold rounded-full mr-3" style={{ background: lighten(backgroundColor, 0.8), color: "#606060" }}>
                     {(() => {
                       if (channel?.assigned_to?.name) {
                         const name = channel.assigned_to.name.toString() || '';
@@ -301,7 +289,7 @@ const ChatbotDrawer = ({
                   </div>
                   <div className="flex-shrink-0 flex items-center">
                     {channel?.widget_unread_count > 0 && (
-                      <div className="text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center mr-2" style={{ backgroundColor: theme.palette.primary.main }}>
+                      <div className="text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center mr-2" style={{ backgroundColor: backgroundColor, color: textColor }}>
                         {channel?.widget_unread_count}
                       </div>
                     )}
@@ -315,13 +303,13 @@ const ChatbotDrawer = ({
 
       {/* Teams Section */}
       <div className="teams-section">
-        <div className="teams-header mb-1  pb-2 flex items-center">
+        <div className="teams-header mb-1 pb-2 flex items-center">
           <h3 className="text-lg font-semibold">Talk to our experts</h3>
         </div>
         <div className="teams-list space-y-0">
           {teamsList.length === 0 ? (
             <div className="flex">
-              <button className="btn w-full" style={{ backgroundColor: theme.palette.primary.main, color: '#fff' }} onClick={handleSendMessageWithNoTeam}>Send us a message</button>
+              <button className="btn w-full" style={{ backgroundColor: backgroundColor, color: textColor }} onClick={handleSendMessageWithNoTeam}>Send us a message</button>
             </div>
           ) : (
             <div className="flex flex-col gap-1">
@@ -368,7 +356,7 @@ const ChatbotDrawer = ({
     currentTeamId,
     callState,
     voice_call_widget,
-    theme.palette.primary.main,
+    backgroundColor,
     handleChangeChannel,
     handleChangeTeam,
     handleSendMessageWithNoTeam,
