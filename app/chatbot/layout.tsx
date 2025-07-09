@@ -3,7 +3,6 @@ import { ThemeContext } from '@/components/AppWrapper';
 import { ChatbotContext } from '@/components/context';
 import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
-import { setHuman } from '@/store/hello/helloSlice';
 import { useSearchParams } from 'next/navigation';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -80,7 +79,7 @@ function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode,
 
     useEffect(() => {
         if (config) onConfigChange(config);
-    }, [config, onConfigChange]);
+    }, [config, onConfigChange]); 
 
     const toggleHideCloseButton = useCallback(() => {
         setChatbotConfig(prev => ({
@@ -88,12 +87,6 @@ function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode,
             hideCloseButton: !prev.hideCloseButton,
         }));
     }, []);
-
-    useEffect(() => {
-        if (isHelloUser) {
-            dispatch(setHuman({ isHelloUser: true }));
-        }
-    }, [isHelloUser, chatSessionId])
 
     // Create context value with useMemo to prevent unnecessary re-renders
     const contextValue = useMemo(() => ({

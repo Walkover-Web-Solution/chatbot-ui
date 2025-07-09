@@ -1,4 +1,4 @@
-import { useMediaQuery } from "@mui/material";
+import { useScreenSize } from "@/components/Chatbot/hooks/useScreenSize";
 import { Download, FileWarning } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
@@ -76,7 +76,7 @@ const ImageWithFallback = ({
   preview = false
 }: ImageWithFallbackProps) => {
   const [error, setError] = useState(false);
-  const isSmallScreen = useMediaQuery('(max-width:1023px)');
+  const { isSmallScreen } = useScreenSize();  
 
   // Memoized file type calculation
   const fileType = useMemo(() => getFileType(src), [src]);

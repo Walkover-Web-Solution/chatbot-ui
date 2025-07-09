@@ -348,7 +348,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
       teams: state.Hello?.[chatSessionId]?.widgetInfo?.teams || [],
       agentTeamName: getAgentTeamName(state, chatSessionId, currentChannelId),
       subThreadList: state.Interface?.[chatSessionId]?.interfaceContext?.[bridgeName]?.threadList?.[threadId] || [],
-      isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
+      isHelloUser: state.draftData?.isHelloUser || false,
       voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false
     })
   });

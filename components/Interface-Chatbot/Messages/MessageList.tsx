@@ -40,7 +40,7 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
   const [showScrollButton, setShowScrollButton] = useState(false);
 
   const { isHelloUser, assigned_type, greetingMessage } = useCustomSelector((state) => ({
-    isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser,
+    isHelloUser: state.draftData?.isHelloUser,
     assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find((channel: any) => channel?.channel === currentChannelId)?.assigned_type,
     greetingMessage: state.Hello?.[chatSessionId]?.greeting
   }));

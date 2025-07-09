@@ -1,6 +1,5 @@
 export interface $HelloReduxType {
   [chatSessionId: string]: {
-    isHelloUser: boolean;
     widgetInfo: any;
     anonymousClientId: any;
     socketJwt: { jwt: string };

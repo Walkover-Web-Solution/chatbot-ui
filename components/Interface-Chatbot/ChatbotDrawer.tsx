@@ -6,7 +6,6 @@ import { useContext, useEffect, useMemo } from "react";
 import { useDispatch } from "react-redux";
 
 // API and Services
-import { deleteReadReceipt } from "@/config/helloApi";
 import helloVoiceService from "../Chatbot/hooks/HelloVoiceService";
 
 // HOCs and Hooks
@@ -17,7 +16,6 @@ import { useReduxStateManagement } from "../Chatbot/hooks/useReduxManagement";
 
 // Redux Actions
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
-import { setUnReadCount } from "@/store/hello/helloSlice";
 import { setThreads } from "@/store/interface/interfaceSlice";
 
 // Utils and Types
@@ -25,6 +23,7 @@ import { ParamsEnums } from "@/utils/enums";
 import { getLocalStorage } from "@/utils/utilities";
 import { useChatActions } from "../Chatbot/hooks/useChatActions";
 import { useColor } from "../Chatbot/hooks/useColor";
+import { useScreenSize } from "../Chatbot/hooks/useScreenSize";
 import { MessageContext } from "./InterfaceChatbot";
 
 const createRandomId = () => Math.random().toString(36).substring(2, 15);
@@ -51,7 +50,8 @@ const ChatbotDrawer = ({
 
   console.log('chatbotdrawer')
   // Context hooks
-  const { messageRef, isSmallScreen } = useContext(MessageContext);
+  const { messageRef } = useContext(MessageContext);
+  const { isSmallScreen } = useScreenSize();
 
   const { setNewMessage, setOptions, setImages, setLoading, setToggleDrawer } = useChatActions();
 
@@ -81,7 +81,7 @@ const ChatbotDrawer = ({
       subThreadList: state.Interface?.[chatSessionId]?.interfaceContext?.[bridgeName]?.threadList?.[threadId] || [],
       teamsList: state.Hello?.[chatSessionId]?.widgetInfo?.teams || [],
       channelList: state.Hello?.[chatSessionId]?.channelListData?.channels || [],
-      isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
+      isHelloUser: state.draftData?.isHelloUser || false,
       Name: JSON.parse(getLocalStorage("client") || '{}')?.name || state.Hello?.[chatSessionId]?.channelListData?.customer_name || '',
       tagline: state.Hello?.[chatSessionId]?.widgetInfo?.tagline || '',
       hideCloseButton: state.Interface?.[chatSessionId]?.hideCloseButton || false,
@@ -140,17 +140,12 @@ const ChatbotDrawer = ({
     }
   }
 
-  const handleChangeChannel = async (channelId: string, chatId: string, teamId: string, widget_unread_count: number) => {
+  const handleChangeChannel = async (channelId: string, chatId: string, teamId: string) => {
     // Update redux state
     dispatch(setDataInAppInfoReducer({ subThreadId: channelId, currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
     if (isSmallScreen) setToggleDrawer(false);
     if (images?.length > 0) setImages([]);
-
-    // Handle unread messages
-    if (widget_unread_count > 0) {
-      await deleteReadReceipt(channelId);
-      dispatch(setUnReadCount({ channelId: channelId, resetCount: true }));
-    }
+    
     focusTextField();
     setLoading(false);
   };
@@ -223,7 +218,7 @@ const ChatbotDrawer = ({
                   style={{
                     borderColor: channel?.id === currentChatId ? backgroundColor : ''
                   }}
-                  onClick={() => handleChangeChannel(channel?.channel, channel?.id, channel?.team_id, channel?.widget_unread_count)}
+                  onClick={() => handleChangeChannel(channel?.channel, channel?.id, channel?.team_id)}
                 >
                   <div className="w-9 h-9 flex items-center justify-center text-xs font-bold rounded-full mr-3" style={{ background: lighten(backgroundColor, 0.8), color: "#606060" }}>
                     {(() => {
