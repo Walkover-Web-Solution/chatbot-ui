@@ -209,7 +209,7 @@ function RagComponent() {
                 }
 
                 const payloadFormData = new FormData();
-                Object.entries(payload)?.forEach(([key, value]) => {
+                Object.entries(payload || {})?.forEach(([key, value]) => {
                     if (value !== null) {
                         payloadFormData.append(key, String(value));
                     }
@@ -363,32 +363,32 @@ function RagComponent() {
             <div className={`flex justify-between items-center font-bold text-xl px-4 pt-4 w-full ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>
                 {editingKnowledgeBase ? "Edit Knowledge Base" : "Create Knowledge Base"}
             </div>
-            {!editingKnowledgeBase && 
-            <>
-            <div className="flex items-center justify-center flex-col mt-4 gap-4 font-bold text-xl w-full">
-                <h1 className="flex items-center gap-2"><DriveIcon height={24} width={24} /> <span>Connect Drive Documents</span></h1>
-            <button
-                className={`btn btn-sm gap-2 mb-2 self-center w-64 ${isIntegrationsOpen
-                        ? 'btn'
-                        : 'btn-primary'
-                    }`}
-                onClick={() => handleOpenViasocket(isIntegrationsOpen ? "Close" : "Open")}
-            >
-                {isIntegrationsOpen ? (
-                    <>
-                        <X className="w-4 h-4" />
-                        Close Drive Integration
-                    </>
-                ) : (
-                    <>
-                        <Settings className="w-4 h-4" />
-                        Open Drive Integration
-                    </>
-                )}
-            </button>
-            </div>
-            </>}
-            
+            {!editingKnowledgeBase &&
+                <>
+                    <div className="flex items-center justify-center flex-col mt-4 gap-4 font-bold text-xl w-full">
+                        <h1 className="flex items-center gap-2"><DriveIcon height={24} width={24} /> <span>Connect Drive Documents</span></h1>
+                        <button
+                            className={`btn btn-sm gap-2 mb-2 self-center w-64 ${isIntegrationsOpen
+                                ? 'btn'
+                                : 'btn-primary'
+                                }`}
+                            onClick={() => handleOpenViasocket(isIntegrationsOpen ? "Close" : "Open")}
+                        >
+                            {isIntegrationsOpen ? (
+                                <>
+                                    <X className="w-4 h-4" />
+                                    Close Drive Integration
+                                </>
+                            ) : (
+                                <>
+                                    <Settings className="w-4 h-4" />
+                                    Open Drive Integration
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </>}
+
             <div id="viasocketParentId" className="h-[90vh] w-[90%] mx-auto p-8 hidden pb-4"></div>
 
             <div className="flex items-center my-4 mt-4 ">

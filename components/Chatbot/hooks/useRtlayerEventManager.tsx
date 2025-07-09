@@ -1,4 +1,5 @@
 import { ChatbotContext } from '@/components/context';
+import { setHelloEventMessage, setLoading, setOptions, updateLastAssistantMessage } from '@/store/chat/chatSlice';
 import { setThreads } from '@/store/interface/interfaceSlice';
 import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
@@ -6,7 +7,7 @@ import { generateNewId } from '@/utils/utilities';
 import React, { useCallback, useContext, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import WebSocketClient from 'rtlayer-client';
-import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
+import { ChatState } from './chatTypes';
 
 // Create a separate hook to manage the WebSocket client instance
 function useWebSocketClient(isHelloUser: boolean) {
@@ -32,16 +33,17 @@ function useWebSocketClient(isHelloUser: boolean) {
   return client;
 }
 
-function useRtlayerEventManager({ chatDispatch, chatState, messageRef, timeoutIdRef, chatSessionId, tabSessionId }: { chatDispatch: React.Dispatch<ChatAction>, chatState: ChatState, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, chatSessionId: string, tabSessionId: string }) {
+function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: { timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, chatSessionId: string, tabSessionId: string }) {
   const { isHelloUser } = useContext(ChatbotContext)
-  const { reduxThreadId, reduxBridgeName } = useCustomSelector((state: $ReduxCoreType) => ({
+  const { reduxThreadId, reduxBridgeName, threadId, subThreadId } = useCustomSelector((state) => ({
     reduxThreadId: state.appInfo?.[tabSessionId]?.threadId,
     reduxBridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
+    threadId: state.appInfo?.[tabSessionId]?.threadId,
+    subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
   }))
   const dispatch = useDispatch()
   const client = useWebSocketClient(isHelloUser);
-  const { threadId, subThreadId } = chatState
-  const { userId } = useCustomSelector((state: $ReduxCoreType) => ({ userId: state.appInfo?.[tabSessionId]?.userId }))
+  const { userId } = useCustomSelector((state) => ({ userId: state.appInfo?.[tabSessionId]?.userId }))
 
   const handleMessageRTLayer = useCallback((message: string) => {
     // Parse the incoming message string into an object
@@ -57,39 +59,29 @@ function useRtlayerEventManager({ chatDispatch, chatState, messageRef, timeoutId
     switch (true) {
       // Case: Function call is present without a message
       case function_call && !responseMessage:
-        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Function Calling", Name: parsedMessage?.response?.Name || [], id: generateNewId() } });
+        dispatch(updateLastAssistantMessage({ role: "assistant", wait: true, content: "Function Calling", Name: parsedMessage?.response?.Name || [], id: generateNewId() }));
         break;
 
       // Case: Function call is present with a message
       case function_call && !!responseMessage:
-        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", wait: true, content: "Talking with AI", id: generateNewId() } });
+        dispatch(updateLastAssistantMessage({ role: "assistant", wait: true, content: responseMessage, Name: parsedMessage?.response?.Name || [], id: generateNewId() }));
         break;
 
       // Case: Error is present without response data
       case !data && !!parsedMessage?.error:
-        chatDispatch({ type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: { role: "assistant", content: `${parsedMessage?.error || error || "Error while talking to AI"}`, id: generateNewId() } });
-        chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: false });
+        dispatch(updateLastAssistantMessage({ role: "assistant", content: `${parsedMessage?.error || error || "Error while talking to AI"}`, id: generateNewId() }));
+        dispatch(setLoading(false));
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
         break;
 
       // Case: Reset role is present without mode
       case data?.role === "reset" && !data?.mode:
-        chatDispatch({
-          type: ChatActionTypes.SET_HELLO_EVENT_MESSAGE, payload: {
-            message: {
-              role: "reset",
-              mode: data?.mode,
-              content: "Resetting the chat",
-            }
-          }
-        })
+        dispatch(setHelloEventMessage({ message: { role: "reset", content: "Resetting the chat", mode: data?.mode } }));
         break;
 
       // Case: Suggestions are present
       case data?.suggestions !== undefined:
-        chatDispatch({
-          type: ChatActionTypes.SET_OPTIONS, payload: Array.isArray(data?.suggestions) ? data?.suggestions : []
-        });
+        dispatch(setOptions(Array.isArray(data?.suggestions) ? data?.suggestions : []));
         break;
 
       case !!data?.display_name:
@@ -102,13 +94,8 @@ function useRtlayerEventManager({ chatDispatch, chatState, messageRef, timeoutId
 
       // Case: Response data is present
       case !!data:
-        chatDispatch({
-          type: ChatActionTypes.UPDATE_LAST_ASSISTANT_MESSAGE, payload: {
-            role: parsedMessage.response?.data?.role || "assistant",
-            ...(parsedMessage.response.data || {}),
-          }
-        });
-        chatDispatch({ type: ChatActionTypes.SET_LOADING, payload: false });
+        dispatch(updateLastAssistantMessage({ role: parsedMessage?.response?.data?.role || "assistant", ...(parsedMessage.response.data || {}) }));
+        dispatch(setLoading(false));
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
         break;
 
@@ -135,7 +122,7 @@ function useRtlayerEventManager({ chatDispatch, chatState, messageRef, timeoutId
         clearTimeout(timeoutIdRef.current);
       }
     };
-  }, [chatSessionId, userId, threadId, subThreadId]);
+  }, [chatSessionId, userId, threadId, subThreadId, client]);
 
   return null
 }

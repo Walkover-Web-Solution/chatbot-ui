@@ -6,17 +6,18 @@ import { uploadImage } from "@/config/api";
 import { uploadAttachmentToHello } from "@/config/helloApi";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { useTypingStatus } from "@/hooks/socketEventEmitter";
-import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
+import { ParamsEnums } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import { TextField, useTheme } from "@mui/material";
 import debounce from "lodash.debounce";
 import { ChevronDown, Send, Upload, X } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
+import { useSendMessageToHello } from "../Chatbot/hooks/useHelloIntegration";
 import { MessageContext } from "./InterfaceChatbot";
 import ImageWithFallback from "./Messages/ImageWithFallback";
-import { ParamsEnums } from "@/utils/enums";
 
 interface ChatbotTextFieldProps {
   className?: string;
@@ -25,12 +26,12 @@ interface ChatbotTextFieldProps {
   subThreadId: string;
   currentTeamId: string
   currentChannelId: string
-  isVision:Record<string, any>
+  isVision: Record<string, any>
 }
 
 const MAX_IMAGES = 4;
 
-const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "" ,isVision:reduxIsVision={}}) => {
+const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "", isVision: reduxIsVision = {} }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const theme = useTheme();
@@ -38,8 +39,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const fileInputRef = useRef<HTMLInputElement>(null);
   const emitTypingStatus = useTypingStatus({ chatSessionId, tabSessionId });
 
-  const { isHelloUser, mode, inbox_id, show_send_button, assigned_type } = useCustomSelector((state: $ReduxCoreType) => ({
-    isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
+  const { isHelloUser, mode, inbox_id, show_send_button, assigned_type } = useCustomSelector((state) => ({
+    isHelloUser: state.draftData?.isHelloUser || false,
     mode: state.Hello?.[chatSessionId]?.mode || [],
     inbox_id: state.Hello?.[chatSessionId]?.widgetInfo?.inbox_id,
     show_send_button: typeof state.Hello?.[chatSessionId]?.helloConfig?.show_send_button === 'boolean' ? state.Hello?.[chatSessionId]?.helloConfig?.show_send_button : true,
@@ -48,17 +49,17 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     )?.assigned_type || '',
   }));
 
-  const {
-    sendMessage,
-    sendMessageToHello,
-    loading,
-    messageRef,
-    disabled,
-    options = [],
-    images = [],
-    setImages,
-    isTyping
-  } = useContext(MessageContext);
+  const { messageRef } = useContext(MessageContext);
+  const sendMessageToHello = useSendMessageToHello({ messageRef });
+
+  const { setImages } = useChatActions();
+  const sendMessage = useSendMessage({});
+
+  const { images = [], options = [], loading } = useCustomSelector((state) => ({
+    images: state.Chat.images || [],
+    loading: state.Chat.loading,
+    options: state.Chat.options || [],
+  }))
 
   const isVisionEnabled = useMemo(() =>
     (reduxIsVision?.vision || mode?.includes("vision")) || isHelloUser,
@@ -66,7 +67,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   );
 
   const buttonDisabled = useMemo(() =>
-    ((isHelloUser && (assigned_type && assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0),
+    ((isHelloUser && (assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0),
     [loading, isUploading, inputValue, images, assigned_type, isHelloUser]
   );
 
@@ -78,6 +79,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   };
 
   const handleSendMessage = useCallback((messageObj: { message?: string } = {}) => {
+    setInputValue('');
     if (isHelloUser) {
       sendMessageToHello?.();
       emitTypingStatus("not-typing");
@@ -307,7 +309,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
         </label>
       </>
     );
-  }, [isVisionEnabled, isUploading, handleImageUpload]);
+  }, [isVisionEnabled, isUploading, handleImageUpload, subThreadId]);
 
   return (
     <div className={`relative w-full rounded-lg shadow-sm ${className}`}>
@@ -327,7 +329,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             fullWidth
             onKeyDown={handleKeyDown}
             placeholder="Message AI Assistant..."
-            disabled={disabled}
             className="p-1 h-full min-h-[40px] max-h-[400px] bg-transparent focus:outline-none disabled:cursor-not-allowed"
             maxRows={6}
             sx={textFieldStyles}
@@ -360,4 +361,4 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   );
 };
 
-export default React.memo(addUrlDataHoc(ChatbotTextField, [ParamsEnums.subThreadId, ParamsEnums.currentTeamId, ParamsEnums.currentChannelId,ParamsEnums.isVision]));
+export default React.memo(addUrlDataHoc(ChatbotTextField, [ParamsEnums.subThreadId, ParamsEnums.currentTeamId, ParamsEnums.currentChannelId, ParamsEnums.isVision]));

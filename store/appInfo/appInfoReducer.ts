@@ -16,7 +16,7 @@ export const reducers = {
             }
         }
     },
-    resetAppInfoReducer(state: $AppInfoReduxType) {
+    resetAppInfoReducer() {
         return initialState;
     }
 };

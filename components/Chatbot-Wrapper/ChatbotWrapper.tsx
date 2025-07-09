@@ -2,23 +2,24 @@
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { useEmbeddingScriptEventHandler } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
 import { useLocalStorageEventHandler } from "@/hooks/CORE/eventHandlers/localStorage/localStorageEventsHandler";
-import { $ReduxCoreType } from "@/types/reduxCore";
-import { useCustomSelector } from "@/utils/deepCheckSelector";
-import React, { useEffect } from "react";
+import React, { createContext, useEffect } from "react";
 import Chatbot from "../Chatbot/Chatbot";
 
 interface ChatbotWrapperProps {
   tabSessionId: string;
+  chatSessionId: string;
+}
+interface ChatContextType {
+  chatSessionId: string;
+  tabSessionId: string;
 }
 
-function ChatbotWrapper({ tabSessionId }: ChatbotWrapperProps) {
-  
+export const ChatContext = createContext<ChatContextType | undefined>(undefined);
+
+function ChatbotWrapper({ tabSessionId, chatSessionId }: ChatbotWrapperProps) {
+
   useEmbeddingScriptEventHandler(tabSessionId);
   useLocalStorageEventHandler(tabSessionId);
-
-  const {  tempChatSessionId } = useCustomSelector((state: $ReduxCoreType) => ({
-    tempChatSessionId: state?.draftData.chatSessionId || ''
-  }));
 
   // Notify parent when interface is loaded
   useEffect(() => {
@@ -27,11 +28,15 @@ function ChatbotWrapper({ tabSessionId }: ChatbotWrapperProps) {
     }, 0);
   }, []);
 
-  if (!tempChatSessionId) {
+  if (!chatSessionId) {
     return null
   }
 
-  return <Chatbot />
+  return (
+    <ChatContext.Provider value={{ chatSessionId, tabSessionId }}>
+      <Chatbot />
+    </ChatContext.Provider>
+  )
 }
 
 export default React.memo(

@@ -1,8 +1,8 @@
 // HelloVoiceService.ts
-import WebRTC from "msg91-webrtc-call";
-import { EventEmitter } from "events";
-import { getLocalStorage } from "@/utils/utilities";
 import { errorToast } from "@/components/customToast";
+import { getLocalStorage } from "@/utils/utilities";
+import { EventEmitter } from "events";
+import WebRTC from "msg91-webrtc-call";
 
 class HelloVoiceService {
     private static instance: HelloVoiceService | null = null;

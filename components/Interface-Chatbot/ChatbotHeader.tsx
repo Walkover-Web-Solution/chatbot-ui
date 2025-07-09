@@ -1,5 +1,4 @@
 // MUI Icons
-import { useTheme } from "@mui/material";
 import {
   AlignLeft,
   ChevronDown,
@@ -27,14 +26,242 @@ import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 import { createRandomId, DEFAULT_AI_SERVICE_MODALS, ParamsEnums } from "@/utils/enums";
-import { isColorLight } from "@/utils/themeUtility";
 import helloVoiceService from "../Chatbot/hooks/HelloVoiceService";
 import { useCallUI } from "../Chatbot/hooks/useCallUI";
+import { useChatActions } from "../Chatbot/hooks/useChatActions";
 import { ChatbotContext } from "../context";
-import ChatbotDrawer from "./ChatbotDrawer";
-import { MessageContext } from "./InterfaceChatbot";
 import "./InterfaceChatbot.css";
 
+export function ChatbotHeaderPreview() {
+
+  return (
+    <div className="navbar bg-base-100 shadow-lg rounded-box">
+      <div className="flex-1">
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold">AI Assistant</h2>
+            </div>
+            <p className="text-sm opacity-75">
+              Do you have any questions? Ask us!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const SendEventOnComponentPress = ({ item, children }: { item: { type: string }, children: React.ReactNode }) => (
+  <button
+    className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+    onClick={() => emitEventToParent("HEADER_BUTTON_PRESS", item)}
+  >
+    {children}
+  </button>
+);
+
+const renderIconsByType = (item: { type: string }) => {
+  switch (item.type) {
+    case 'setting':
+      return (
+        <SendEventOnComponentPress item={item}>
+          <Settings />
+        </SendEventOnComponentPress>
+      );
+    case 'history':
+      return (
+        <SendEventOnComponentPress item={item}>
+          <History />
+        </SendEventOnComponentPress>
+      );
+    case 'verticalThreeDots':
+      return (
+        <SendEventOnComponentPress item={item}>
+          <EllipsisVertical />
+        </SendEventOnComponentPress>
+      );
+    case 'sectionDropdown':
+      const [dropdownIsOpen, setDropdownIsOpen] = useState(false);
+      const [selectedOption, setSelectedOption] = useState({ value: item?.defaultSelected || '', section: "" });
+
+      useEffect(() => {
+        if (selectedOption?.value) {
+          emitEventToParent("HEADER_BUTTON_PRESS", { ...item, selectedOption });
+        }
+      }, [selectedOption?.value]);
+
+      return (
+        <div className="relative inline-block text-left">
+          <div>
+            <button
+              type="button"
+              className="inline-flex items-center justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              id="menu-button"
+              aria-expanded={dropdownIsOpen}
+              aria-haspopup="true"
+              onClick={() => setDropdownIsOpen(!dropdownIsOpen)}
+            >
+              <span className={selectedOption?.value ? "font-bold" : ""}>{selectedOption?.value || "Select"}</span>
+              <ChevronDown className="w-4 h-4 ml-2" />
+            </button>
+          </div>
+
+          {dropdownIsOpen && (
+            <div
+              className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+              role="menu"
+              aria-orientation="vertical"
+              aria-labelledby="menu-button"
+              tabIndex={-1}
+            >
+              <div className="py-1" role="none">
+                {item?.options && Array.isArray(item?.options) && item?.options.map((item, sectionIndex) => (
+                  item?.section && (
+                    <div key={sectionIndex}>
+                      <h4 className="text-gray-900 font-semibold px-4 py-2">{item?.section}</h4>
+                      <div className="pl-4">
+                        {Array.isArray(item?.options) && item?.options.map((optionValue, optionIndex) => (
+                          <a
+                            key={optionIndex}
+                            href="#"
+                            className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100"
+                            role="menuitem"
+                            tabIndex={-1}
+                            id={`menu-item-${sectionIndex}-${optionIndex}`}
+                            onClick={() => {
+                              setSelectedOption({ value: optionValue, section: item?.section });
+                              setDropdownIsOpen(false);
+                            }}
+                          >
+                            {optionValue}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    default:
+      return null;
+  }
+}
+
+
+const AiServicesToSwitch = ({ chatSessionId }: { chatSessionId: string }) => {
+  const { currentSelectedModal, aiServiceAndModalOptions, defaultModal } = useCustomSelector((state: $ReduxCoreType) => {
+    const selectedAiServiceAndModal = state.Interface?.[chatSessionId]?.selectedAiServiceAndModal || {};
+    const modalConfig = state.Interface?.[chatSessionId]?.modalConfig || {};
+    const availableAiServicesToSwitch = state.Interface?.[chatSessionId]?.availableAiServicesToSwitch || [];
+    const { defaultSelected = {}, aiServices = [] } = modalConfig;
+
+    const filteredUserRequestedOptions = aiServices.filter((item: any) =>
+      availableAiServicesToSwitch.includes(item.service)
+    ).map((item: any) => ({
+      ...item,
+      modals: Array.from(new Set([
+        ...(Array.isArray(item.modals) ? item.modals : []),
+        ...(Array.isArray(DEFAULT_AI_SERVICE_MODALS[item.service]) ? DEFAULT_AI_SERVICE_MODALS[item.service] : [])
+      ]))
+    }));
+
+    const aiServiceAndModalOptions = filteredUserRequestedOptions.length > 0
+      ? filteredUserRequestedOptions
+      : availableAiServicesToSwitch.map((service) => ({
+        service,
+        modals: DEFAULT_AI_SERVICE_MODALS[service] || []
+      }));
+
+    const isValidSelection = (selection: SelectedAiServicesType) =>
+      selection.service && selection.modal && aiServiceAndModalOptions.some((item) =>
+        item.service === selection.service && item.modals.includes(selection.modal)
+      );
+
+    const currentSelectedModal = isValidSelection(selectedAiServiceAndModal)
+      ? selectedAiServiceAndModal
+      : { service: "", modal: "" };
+
+    const defaultModal = isValidSelection(defaultSelected)
+      ? defaultSelected : null
+
+    return { currentSelectedModal, aiServiceAndModalOptions, defaultModal };
+  });
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const shouldSetDefaultModal = defaultModal && (!currentSelectedModal?.modal || !currentSelectedModal?.service);
+    const shouldSetFirstAvailableOption = !defaultModal && (!currentSelectedModal?.modal || !currentSelectedModal?.service) && aiServiceAndModalOptions?.[0]?.service && aiServiceAndModalOptions?.[0]?.modals?.[0];
+
+    if (shouldSetDefaultModal) {
+      dispatch(setSelectedAIServiceAndModal(defaultModal));
+    } else if (shouldSetFirstAvailableOption) {
+      const firstOption = aiServiceAndModalOptions[0];
+      dispatch(setSelectedAIServiceAndModal({ service: firstOption.service, modal: firstOption.modals[0] }));
+    }
+  }, [defaultModal, currentSelectedModal, aiServiceAndModalOptions, chatSessionId]);
+
+  const handleSelectedModalChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const [service, modal] = event.target.value.split('|');
+    dispatch(setSelectedAIServiceAndModal({ service, modal }));
+  };
+
+  return (
+    <label className="form-control w-full max-w-fit">
+      <select
+        value={`${currentSelectedModal.service}|${currentSelectedModal.modal}`}
+        onChange={handleSelectedModalChange}
+        className="select select-sm w-full select-bordered"
+      >
+        <option disabled>Select an AI Service</option>
+        {Array.isArray(aiServiceAndModalOptions) && aiServiceAndModalOptions.map((item, sectionIndex) => (
+          <optgroup label={item.service} key={`group_${sectionIndex}`}>
+            {item.modals.map((modal, optionIndex) => (
+              <option key={`option_${sectionIndex}_${optionIndex}`} value={`${item.service}|${modal}`}>
+                {modal}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function BridgeSwitchDropdown({ currentSelectedBridgeSlug, bridges }: { currentSelectedBridgeSlug: string, bridges: { slugName: string, displayName: string, name: string, id: string }[] }) {
+  const dispatch = useDispatch()
+  let allBridges = bridges
+  if (!bridges?.some((bridge) => bridge.slugName === currentSelectedBridgeSlug)) {
+    allBridges.push({ slugName: currentSelectedBridgeSlug, displayName: currentSelectedBridgeSlug, id: "defaultBridge", name: currentSelectedBridgeSlug })
+  }
+
+  useEffect(() => {
+    if (currentSelectedBridgeSlug) {
+      emitEventToParent("BRIDGE_SWITCH", allBridges?.find(item => item?.slugName === currentSelectedBridgeSlug))
+    }
+  }, [currentSelectedBridgeSlug])
+
+  return <label className="form-control max-w-xs">
+    <select
+      value={currentSelectedBridgeSlug}
+      onChange={(e) => {
+        dispatch(setDataInAppInfoReducer({ bridgeName: e.target.value }))
+      }}
+      className="select select-sm select-bordered"
+    >
+      <option disabled>Available Bridges</option>
+      {Array.isArray(allBridges) && allBridges.map((item, sectionIndex) => (
+        <option key={item?.id} value={item?.slugName}>
+          {item?.displayName || item?.name}
+        </option>
+      ))}
+    </select>
+  </label>
+}
 
 function getAgentTeamName(state: $ReduxCoreType, chatSessionId: string, currentChannelId: string = "") {
   const agent_teams = state.Hello?.[chatSessionId]?.agent_teams || {};
@@ -63,17 +290,19 @@ interface ChatbotHeaderProps {
 }
 
 const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSessionId, currentTeamId = "", currentChannelId = "", threadId = "", bridgeName = "" }) => {
+  console.log('header')
   const dispatch = useDispatch();
-  const theme = useTheme();
   const {
     setOptions,
-    setLoading,
     setToggleDrawer,
-    isToggledrawer,
-    bridgeName: reduxBridgeName,
-    headerButtons,
-    messageIds
-  } = useContext(MessageContext);
+  } = useChatActions();
+
+  const { isToggledrawer, bridgeName: reduxBridgeName, headerButtons, messageIds } = useCustomSelector((state) => ({
+    isToggledrawer: state.Chat?.isToggledrawer,
+    bridgeName: state.Chat.bridgeName || [],
+    headerButtons: state.Chat?.headerButtons || [],
+    messageIds: state.Chat?.messageIds?.[state.Chat.subThreadId] || [],
+  }))
 
   const { chatbotConfig } = useContext<any>(ChatbotContext);
   const {
@@ -89,8 +318,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
   const [teamName, setTeamName] = useState(false);
 
   const shouldToggleScreenSize = `${width}${widthUnit}` !== '1200%';
-  const isLightBackground = theme.palette.mode === "light";
-  const textColor = isLightBackground ? "black" : "white";
   const { callState } = useCallUI();
 
   const {
@@ -121,7 +348,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
       teams: state.Hello?.[chatSessionId]?.widgetInfo?.teams || [],
       agentTeamName: getAgentTeamName(state, chatSessionId, currentChannelId),
       subThreadList: state.Interface?.[chatSessionId]?.interfaceContext?.[bridgeName]?.threadList?.[threadId] || [],
-      isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
+      isHelloUser: state.draftData?.isHelloUser || false,
       voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false
     })
   });
@@ -348,254 +575,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
           </div>
         </div>
       </div>
-
-      <ChatbotDrawer
-        setLoading={setLoading}
-        isToggledrawer={isToggledrawer}
-        setToggleDrawer={setToggleDrawer}
-        preview={preview}
-      />
     </div>
   );
 };
 
 export default React.memo(addUrlDataHoc(ChatbotHeader, [ParamsEnums.currentTeamId, ParamsEnums.currentChannelId, ParamsEnums.threadId, ParamsEnums.bridgeName]));
-interface ChatbotFeedbackFormProps {
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-export function ChatbotHeaderPreview() {
-  const theme = useTheme();
-  const isLightBackground = isColorLight(theme.palette.primary.main);
-  const textColor = isLightBackground ? "black" : "white";
-
-  return (
-    <div className="navbar bg-base-100 shadow-lg rounded-box">
-      <div className="flex-1">
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold">AI Assistant</h2>
-              <ResetChatOption textColor={textColor} preview />
-            </div>
-            <p className="text-sm opacity-75">
-              Do you have any questions? Ask us!
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const SendEventOnComponentPress = ({ item, children }: { item: { type: string }, children: React.ReactNode }) => (
-  <button
-    className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-    onClick={() => emitEventToParent("HEADER_BUTTON_PRESS", item)}
-  >
-    {children}
-  </button>
-);
-
-const renderIconsByType = (item: { type: string }) => {
-  switch (item.type) {
-    case 'setting':
-      return (
-        <SendEventOnComponentPress item={item}>
-          <Settings />
-        </SendEventOnComponentPress>
-      );
-    case 'history':
-      return (
-        <SendEventOnComponentPress item={item}>
-          <History />
-        </SendEventOnComponentPress>
-      );
-    case 'verticalThreeDots':
-      return (
-        <SendEventOnComponentPress item={item}>
-          <EllipsisVertical />
-        </SendEventOnComponentPress>
-      );
-    case 'sectionDropdown':
-      const [dropdownIsOpen, setDropdownIsOpen] = useState(false);
-      const [selectedOption, setSelectedOption] = useState({ value: item?.defaultSelected || '', section: "" });
-
-      useEffect(() => {
-        if (selectedOption?.value) {
-          emitEventToParent("HEADER_BUTTON_PRESS", { ...item, selectedOption });
-        }
-      }, [selectedOption?.value]);
-
-      return (
-        <div className="relative inline-block text-left">
-          <div>
-            <button
-              type="button"
-              className="inline-flex items-center justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              id="menu-button"
-              aria-expanded={dropdownIsOpen}
-              aria-haspopup="true"
-              onClick={() => setDropdownIsOpen(!dropdownIsOpen)}
-            >
-              <span className={selectedOption?.value ? "font-bold" : ""}>{selectedOption?.value || "Select"}</span>
-              <ChevronDown className="w-4 h-4 ml-2" />
-            </button>
-          </div>
-
-          {dropdownIsOpen && (
-            <div
-              className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
-              role="menu"
-              aria-orientation="vertical"
-              aria-labelledby="menu-button"
-              tabIndex={-1}
-            >
-              <div className="py-1" role="none">
-                {item?.options && Array.isArray(item?.options) && item?.options.map((item, sectionIndex) => (
-                  item?.section && (
-                    <div key={sectionIndex}>
-                      <h4 className="text-gray-900 font-semibold px-4 py-2">{item?.section}</h4>
-                      <div className="pl-4">
-                        {Array.isArray(item?.options) && item?.options.map((optionValue, optionIndex) => (
-                          <a
-                            key={optionIndex}
-                            href="#"
-                            className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100"
-                            role="menuitem"
-                            tabIndex={-1}
-                            id={`menu-item-${sectionIndex}-${optionIndex}`}
-                            onClick={() => {
-                              setSelectedOption({ value: optionValue, section: item?.section });
-                              setDropdownIsOpen(false);
-                            }}
-                          >
-                            {optionValue}
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    default:
-      return null;
-  }
-}
-
-
-const AiServicesToSwitch = ({ chatSessionId }: { chatSessionId: string }) => {
-  const { currentSelectedModal, aiServiceAndModalOptions, defaultModal } = useCustomSelector((state: $ReduxCoreType) => {
-    const selectedAiServiceAndModal = state.Interface?.[chatSessionId]?.selectedAiServiceAndModal || {};
-    const modalConfig = state.Interface?.[chatSessionId]?.modalConfig || {};
-    const availableAiServicesToSwitch = state.Interface?.[chatSessionId]?.availableAiServicesToSwitch || [];
-    const { defaultSelected = {}, aiServices = [] } = modalConfig;
-
-    const filteredUserRequestedOptions = aiServices.filter((item: any) =>
-      availableAiServicesToSwitch.includes(item.service)
-    ).map((item: any) => ({
-      ...item,
-      modals: Array.from(new Set([
-        ...(Array.isArray(item.modals) ? item.modals : []),
-        ...(Array.isArray(DEFAULT_AI_SERVICE_MODALS[item.service]) ? DEFAULT_AI_SERVICE_MODALS[item.service] : [])
-      ]))
-    }));
-
-    const aiServiceAndModalOptions = filteredUserRequestedOptions.length > 0
-      ? filteredUserRequestedOptions
-      : availableAiServicesToSwitch.map((service) => ({
-        service,
-        modals: DEFAULT_AI_SERVICE_MODALS[service] || []
-      }));
-
-    const isValidSelection = (selection: SelectedAiServicesType) =>
-      selection.service && selection.modal && aiServiceAndModalOptions.some((item) =>
-        item.service === selection.service && item.modals.includes(selection.modal)
-      );
-
-    const currentSelectedModal = isValidSelection(selectedAiServiceAndModal)
-      ? selectedAiServiceAndModal
-      : { service: "", modal: "" };
-
-    const defaultModal = isValidSelection(defaultSelected)
-      ? defaultSelected : null
-
-    return { currentSelectedModal, aiServiceAndModalOptions, defaultModal };
-  });
-
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    const shouldSetDefaultModal = defaultModal && (!currentSelectedModal?.modal || !currentSelectedModal?.service);
-    const shouldSetFirstAvailableOption = !defaultModal && (!currentSelectedModal?.modal || !currentSelectedModal?.service) && aiServiceAndModalOptions?.[0]?.service && aiServiceAndModalOptions?.[0]?.modals?.[0];
-
-    if (shouldSetDefaultModal) {
-      dispatch(setSelectedAIServiceAndModal(defaultModal));
-    } else if (shouldSetFirstAvailableOption) {
-      const firstOption = aiServiceAndModalOptions[0];
-      dispatch(setSelectedAIServiceAndModal({ service: firstOption.service, modal: firstOption.modals[0] }));
-    }
-  }, [defaultModal, currentSelectedModal, aiServiceAndModalOptions, chatSessionId]);
-
-  const handleSelectedModalChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const [service, modal] = event.target.value.split('|');
-    dispatch(setSelectedAIServiceAndModal({ service, modal }));
-  };
-
-  return (
-    <label className="form-control w-full max-w-fit">
-      <select
-        value={`${currentSelectedModal.service}|${currentSelectedModal.modal}`}
-        onChange={handleSelectedModalChange}
-        className="select select-sm w-full select-bordered"
-      >
-        <option disabled>Select an AI Service</option>
-        {Array.isArray(aiServiceAndModalOptions) && aiServiceAndModalOptions.map((item, sectionIndex) => (
-          <optgroup label={item.service} key={`group_${sectionIndex}`}>
-            {item.modals.map((modal, optionIndex) => (
-              <option key={`option_${sectionIndex}_${optionIndex}`} value={`${item.service}|${modal}`}>
-                {modal}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
-    </label>
-  );
-}
-
-function BridgeSwitchDropdown({ currentSelectedBridgeSlug, bridges }: { currentSelectedBridgeSlug: string, bridges: { slugName: string, displayName: string, name: string, id: string }[] }) {
-  const dispatch = useDispatch()
-  let allBridges = bridges
-  if (!bridges?.some((bridge) => bridge.slugName === currentSelectedBridgeSlug)) {
-    allBridges.push({ slugName: currentSelectedBridgeSlug, displayName: currentSelectedBridgeSlug, id: "defaultBridge", name: currentSelectedBridgeSlug })
-  }
-
-  useEffect(() => {
-    if (currentSelectedBridgeSlug) {
-      emitEventToParent("BRIDGE_SWITCH", allBridges?.find(item => item?.slugName === currentSelectedBridgeSlug))
-    }
-  }, [currentSelectedBridgeSlug])
-
-  return <label className="form-control max-w-xs">
-    <select
-      value={currentSelectedBridgeSlug}
-      onChange={(e) => {
-        dispatch(setDataInAppInfoReducer({ bridgeName: e.target.value }))
-      }}
-      className="select select-sm select-bordered"
-    >
-      <option disabled>Available Bridges</option>
-      {Array.isArray(allBridges) && allBridges.map((item, sectionIndex) => (
-        <option key={item?.id} value={item?.slugName}>
-          {item?.displayName || item?.name}
-        </option>
-      ))}
-    </select>
-  </label>
-}

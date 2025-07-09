@@ -1,5 +1,4 @@
 import useTabData from "@/components/Chatbot/hooks/useTabData";
-import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { useSearchParams } from "next/navigation";
 import { FC } from "react";
@@ -8,7 +7,7 @@ export function addUrlDataHoc(WrappedComponent: FC<any>, paramsToInject: string[
   return function AddUrlDataHoc(props: any) {
     const searchParams = useSearchParams();
     const data: { [key: string]: string | boolean | undefined } = {};
-    const { tabSessionId, chatSessionId } = useCustomSelector((state: $ReduxCoreType) => ({
+    const { tabSessionId, chatSessionId } = useCustomSelector((state) => ({
       tabSessionId: state.draftData.tabSessionId,
       chatSessionId: state.draftData.chatSessionId
     }));

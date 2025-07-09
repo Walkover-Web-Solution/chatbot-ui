@@ -42,8 +42,7 @@ class LocalStorageEventRegistry {
 }
 
 export const useLocalStorageEventHandler = (tabSessionId: string) => {
-
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const LocalStorageEventHandler: LocalStorageEventRegistryInstance = new LocalStorageEventRegistry(tabSessionId)
 
   useHelloLocalStorageEventHandlers(LocalStorageEventHandler)
@@ -56,7 +55,7 @@ export const useLocalStorageEventHandler = (tabSessionId: string) => {
   };
 
   const handleLocalStorageChange = (event: StorageEvent) => {
-    if(event.key === null){
+    if (event.key === null) {
       // LOCAL STORAGE FULL CLEAR THEN RESET THE REDUCERS AND RELOAD THE PARENT
       dispatch(resetDraftDataReducer())
       dispatch(resetAppInfoReducer())
@@ -65,13 +64,13 @@ export const useLocalStorageEventHandler = (tabSessionId: string) => {
   }
 
   useEffect(() => {
-
-    window.addEventListener("localstorage-updated", handleStorageUpdate);
-    window.addEventListener("storage", handleLocalStorageChange );
+    window.addEventListener("localstorage-updated", handleStorageUpdate as EventListener);
+    window.addEventListener("storage", handleLocalStorageChange);
 
     return () => {
-      window.removeEventListener("localstorage-updated", handleStorageUpdate);
-      window.removeEventListener("storage", handleLocalStorageChange );
+      window.removeEventListener("localstorage-updated", handleStorageUpdate as EventListener);
+      window.removeEventListener("storage", handleLocalStorageChange);
+
     };
   }, []);
 
