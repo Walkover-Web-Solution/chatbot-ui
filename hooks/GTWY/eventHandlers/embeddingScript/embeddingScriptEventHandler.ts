@@ -88,20 +88,32 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
     }
 
     // Extract and process interface data properties
-    const interfaceProperties = [
-      'allowModalSwitch', 'hideCloseButton', 'chatTitle',
-      'chatIcon', 'chatSubTitle', 'allowBridgeSwitch', 'hideFullScreenButton'
+    // Separate hideCloseButton and hideFullScreenButton from other interface properties
+    const standardInterfaceProperties = [
+      'allowModalSwitch', 'chatTitle',
+      'chatIcon', 'chatSubTitle', 'allowBridgeSwitch'
     ];
 
-    const interfaceDataToUpdate = interfaceProperties.reduce((acc, prop) => {
+    // Process standard interface properties
+    const interfaceDataToUpdate = standardInterfaceProperties.reduce((acc, prop) => {
       if (prop in receivedData) {
         acc[prop] = receivedData[prop];
       }
       return acc;
     }, {} as Record<string, any>);
 
-    if (Object.keys(interfaceDataToUpdate || {}).length > 0) {
+    // Dispatch standard interface properties if any exist
+    if (Object.keys(interfaceDataToUpdate).length > 0) {
       dispatch(setDataInInterfaceRedux(interfaceDataToUpdate));
+    }
+
+    // Handle hideCloseButton and hideFullScreenButton separately
+    if ('hideCloseButton' in receivedData) {
+      dispatch(setDataInAppInfoReducer({ hideCloseButton: receivedData.hideCloseButton }));
+    }
+
+    if ('hideFullScreenButton' in receivedData) {
+      dispatch(setDataInAppInfoReducer({ hideFullScreenButton: receivedData.hideFullScreenButton }));
     }
   }
 
