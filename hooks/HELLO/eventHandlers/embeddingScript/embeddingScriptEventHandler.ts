@@ -151,7 +151,6 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
 
     function handleChatbotVisibility(isChatbotOpen = false) {
         dispatch(setDataInAppInfoReducer({ isChatbotOpen }))
-        dispatch(setDataInDraftReducer({ isChatbotMinimized: false }))
     }
 
     function handleSetVariablesForBot(event: MessageEvent) {
