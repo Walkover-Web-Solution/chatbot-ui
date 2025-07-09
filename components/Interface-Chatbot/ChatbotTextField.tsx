@@ -16,7 +16,6 @@ import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
 import { useSendMessageToHello } from "../Chatbot/hooks/useHelloIntegration";
-import CallButton from "./CallButton";
 import { MessageContext } from "./InterfaceChatbot";
 import ImageWithFallback from "./Messages/ImageWithFallback";
 
@@ -336,30 +335,25 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             autoFocus
           />
 
-          <div className="flex justify-between items-center w-full mt-2">
-            {/* Left section: Upload and AI icon */}
+          <div className="flex flex-row justify-between gap-2 h-full self-end mr-2">
             <div className="flex items-center gap-2">
               {aiIconElement}
               {uploadButton}
             </div>
 
-            {/* Right section: Call + Send button side by side */}
-            <div className="flex items-center gap-2">
-              <CallButton />
-              {show_send_button && (
-                <button
-                  onClick={() => !buttonDisabled && handleSendMessage()}
-                  className="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:scale-105 transition-transform duration-200"
-                  disabled={buttonDisabled}
-                  style={{
-                    backgroundColor: buttonDisabled ? '#d1d5db' : theme.palette.primary.main
-                  }}
-                  aria-label="Send message"
-                >
-                  <Send className={`w-3 h-3 md:w-4 md:h-4 ${isLight ? 'text-black' : 'text-white'}`} />
-                </button>
-              )}
-            </div>
+            {show_send_button ? (
+              <button
+                onClick={() => !buttonDisabled && handleSendMessage()}
+                className="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:scale-105 transition-transform duration-200"
+                disabled={buttonDisabled}
+                style={{
+                  backgroundColor: buttonDisabled ? '#d1d5db' : theme.palette.primary.main
+                }}
+                aria-label="Send message"
+              >
+                <Send className={`w-3 h-3 md:w-4 md:h-4 ${isLight ? 'text-black' : 'text-white'}`} />
+              </button>
+            ) : null}
           </div>
         </div>
       </div>

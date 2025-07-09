@@ -76,7 +76,6 @@ const ChatbotDrawer = ({
     voice_call_widget,
     show_msg91
   } = useCustomSelector((state) => {
-    const show_close_button = state.Hello?.[chatSessionId]?.helloConfig?.show_close_button
     return {
       subThreadList: state.Interface?.[chatSessionId]?.interfaceContext?.[bridgeName]?.threadList?.[threadId] || [],
       teamsList: state.Hello?.[chatSessionId]?.widgetInfo?.teams || [],
@@ -84,7 +83,7 @@ const ChatbotDrawer = ({
       isHelloUser: state.draftData?.isHelloUser || false,
       Name: state?.Hello?.[chatSessionId]?.clientInfo?.Name || state.Hello?.[chatSessionId]?.channelListData?.customer_name || '',
       tagline: state.Hello?.[chatSessionId]?.widgetInfo?.tagline || '',
-      hideCloseButton: typeof show_close_button === 'boolean' ? !show_close_button : state.Interface?.[chatSessionId]?.hideCloseButton || false,
+      hideCloseButton: state.Interface?.[chatSessionId]?.hideCloseButton || false,
       voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false,
       show_msg91: state.Hello?.[chatSessionId]?.widgetInfo?.show_msg91 || false
     };
