@@ -47,7 +47,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
 
     const { currentChannelId, isHelloUser } = useReduxStateManagement({ chatSessionId, tabSessionId });
 
-    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotOpen, isChatbotMinimized, unReadCountInCurrentChannel } = useCustomSelector((state) => ({
+    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotOpen, unReadCountInCurrentChannel } = useCustomSelector((state) => ({
         companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
         botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
         reduxChatSessionId: state.draftData?.chatSessionId,
@@ -60,7 +60,6 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
         })(),
         isToggledrawer: state.Chat?.isToggledrawer,
         isChatbotOpen: state.appInfo?.[tabSessionId]?.isChatbotOpen,
-        isChatbotMinimized: state.draftData?.isChatbotMinimized,
         unReadCountInCurrentChannel: (() => {
             const channelListData = state.Hello?.[chatSessionId]?.channelListData;
             return channelListData?.channels?.find((channel) => channel?.channel === currentChannelId)?.widget_unread_count || 0;
@@ -100,8 +99,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                 (isSmallScreen ? !isToggledrawer : true) &&
                 isChatbotOpen &&
                 isHelloUser &&
-                isTabVisible &&
-                !isChatbotMinimized
+                isTabVisible
             ) {
                 deleteReadReceipt(currentChannelId)
                 dispatch(setUnReadCount({ channelId: currentChannelId, resetCount: true }));
@@ -114,7 +112,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
         return () => {
             debouncedReset.cancel();
         };
-    }, [currentChannelId, isToggledrawer, unReadCountInCurrentChannel, isChatbotOpen, isHelloUser, isTabVisible,isChatbotMinimized]);
+    }, [currentChannelId, isToggledrawer, unReadCountInCurrentChannel, isChatbotOpen, isHelloUser, isTabVisible]);
 
 
     const initializeHelloServices = async (widgetToken: string = '') => {
