@@ -15,7 +15,7 @@
                 buttonName: ''
             };
             this.urls = {
-                chatbotUrl: 'http://localhost:3001/chatbot',
+                chatbotUrl: 'https://chatbot.gtwy.ai/chatbot',
                 styleSheet: 'https://chatbot.gtwy.ai/chatbot-style.css',
                 login: 'https://db.gtwy.ai/chatbot/loginuser'
             };
