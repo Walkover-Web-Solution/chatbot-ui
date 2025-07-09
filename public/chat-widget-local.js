@@ -340,8 +340,7 @@
             iframe.style.width = '100%';
             iframe.style.height = '100%';
             iframe.style.border = 'none';
-            iframe.style.minHeight = '500px';
-            iframe.style.minWidth = '500px';
+
             iframe.style.background = 'transparent';
 
             modalContainer.appendChild(iframe);
