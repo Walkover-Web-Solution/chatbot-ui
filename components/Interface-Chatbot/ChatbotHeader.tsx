@@ -289,7 +289,7 @@ interface ChatbotHeaderProps {
   bridgeName: string
 }
 
-const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSessionId, currentTeamId = "", currentChannelId = "", threadId = "", bridgeName = "" }) => {
+const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSessionId, tabSessionId, currentTeamId = "", currentChannelId = "", threadId = "", bridgeName = "" }) => {
   console.log('header')
   const dispatch = useDispatch();
   const {
@@ -339,8 +339,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
     return ({
       isMobileSDK: state.Hello?.[chatSessionId]?.helloConfig?.isMobileSDK || false,
       allowModalSwitch: state.Interface?.[chatSessionId]?.allowModalSwitch || false,
-      hideCloseButton: typeof show_close_button === 'boolean' ? !show_close_button : state.Interface?.[chatSessionId]?.hideCloseButton || false,
-      hideFullScreenButton: state.Interface?.[chatSessionId]?.hideFullScreenButton || false,
+      hideCloseButton: typeof show_close_button === 'boolean' ? !show_close_button : state.appInfo?.[tabSessionId]?.hideCloseButton || false,
+      hideFullScreenButton: state.appInfo?.[tabSessionId]?.hideFullScreenButton || false,
       chatTitle: state.Interface?.[chatSessionId]?.chatTitle || "",
       chatSubTitle: state.Interface?.[chatSessionId]?.chatSubTitle || "",
       chatIcon: state.Interface?.[chatSessionId]?.chatIcon || "",
