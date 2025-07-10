@@ -42,17 +42,7 @@ export const reducers: ValidateSliceCaseReducers<
     if (chatSessionId) {
       state[chatSessionId] = {
         ...state[chatSessionId],
-        Channel: action.payload.Channel,
-        isHelloUser: true
-      };
-    }
-  },
-  setHuman(state, action: actionType<{ isHelloUser: boolean }>) {
-    const chatSessionId = action.urlData?.chatSessionId
-    if (chatSessionId) {
-      state[chatSessionId] = {
-        ...state[chatSessionId],
-        isHelloUser: action.payload?.isHelloUser ?? true
+        Channel: action.payload.Channel
       };
     }
   },

@@ -193,11 +193,21 @@
         }
 
         cleanupChatbot() {
+            // Remove elements by ID
             [this.elements.chatbotIframeContainer, this.elements.chatbotIconContainer, this.elements.chatbotStyle, 'CBParentScript']
                 .forEach(id => {
                     const element = document.getElementById(id);
                     if (element) element.remove();
                 });
+            if (this.state.urlMonitorAdded) {
+                // Remove urlMonitor.js script
+                const scripts = document.querySelectorAll('script');
+                scripts.forEach(script => {
+                    if (script.src && script.src.includes('urlMonitor.js')) {
+                        script.remove();
+                    }
+                });
+            }
         }
 
         setupMessageListeners() {
@@ -709,6 +719,10 @@
         sendInitialData() {
             if (this.helloProps) {
                 sendMessageToChatbot({ type: 'helloData', data: this.helloProps });
+                const iframeContainer = document.getElementById(this.elements.chatbotIframeContainer);
+                if (iframeContainer && iframeContainer.style?.display !== 'none') {
+                    sendMessageToChatbot({ type: 'CHATBOT_OPEN' });
+                }
             }
         }
 
@@ -920,7 +934,7 @@
 
     // Create chatWidget object with all widget control functions
     window.chatWidget = {
-        setVariablesForBot: (data) => sendMessageToChatbot({ type: "SET_VARIABLES_FOR_BOT", data }),
+        SendDataToBot: (data) => sendMessageToChatbot({ type: "SET_VARIABLES_FOR_BOT", data }),
         addCustomData: (data) => sendMessageToChatbot({ type: "UPDATE_USER_DATA_SEGMENTO", data }),
         modifyCustomData: (data) => sendMessageToChatbot({ type: "UPDATE_USER_DATA_SEGMENTO", data }),
         addUserEvent: (data) => sendMessageToChatbot({ type: "ADD_USER_EVENT_SEGMENTO", data }),

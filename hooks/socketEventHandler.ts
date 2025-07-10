@@ -2,12 +2,10 @@
 import { useReduxStateManagement } from '@/components/Chatbot/hooks/useReduxManagement';
 import { setHelloEventMessage, setTyping } from '@/store/chat/chatSlice';
 import { changeChannelAssigned, setUnReadCount } from '@/store/hello/helloSlice';
-import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { getLocalStorage, playMessageRecivedSound, setLocalStorage } from '@/utils/utilities';
 import { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import socketManager from './socketManager';
-
 // Define types for better type safety
 export interface HelloMessage {
     role: string;
@@ -20,32 +18,22 @@ export interface HelloMessage {
 /**
  * Hook for handling socket events
  * @param options - Options for socket events
- * @param options.messageRef - Reference to message element
  */
 export const useSocketEvents = ({
-    messageRef,
     fetchChannels,
     chatSessionId,
     tabSessionId,
     setLoading
 }: {
-    messageRef: React.RefObject<HTMLDivElement>,
     fetchChannels: () => void,
     setLoading: (data: boolean) => void
     chatSessionId: string;
     tabSessionId: string
 }) => {
     const dispatch = useDispatch();
-    const { currentChannelId, isSmallScreen } = useReduxStateManagement({ chatSessionId, tabSessionId });
-    const { isToggledrawer } = useCustomSelector((state) => ({
-        isToggledrawer: state.Chat.isToggledrawer
-    }))
+    const { currentChannelId } = useReduxStateManagement({ chatSessionId, tabSessionId });
     const addHelloMessage = (message: HelloMessage, subThreadId: string = '') => {
         dispatch(setHelloEventMessage({ message, subThreadId }));
-    }
-
-    function isSameChannel(channelId: string) {
-        return channelId === currentChannelId;
     }
     // Handler for new messages
     const handleNewMessage = useCallback((data: any) => {
@@ -59,14 +47,11 @@ export const useSocketEvents = ({
         // Handle unread count updates
         if (message?.new_event && (type === 'chat' || type === 'feedback') && !message?.chat_id) {
             const channelId = message?.channel;
-            const isCurrentChannel = isSameChannel(channelId);
-            const shouldIncreaseCount = isCurrentChannel ? (isSmallScreen && isToggledrawer) : true
-            if (shouldIncreaseCount) {
                 dispatch(setUnReadCount({
                     channelId,
                     resetCount: false
                 }));
-            }
+
         }
 
         switch (type) {

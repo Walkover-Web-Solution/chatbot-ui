@@ -11,8 +11,8 @@ const draftDataSlice = createSlice({
         tabSessionId: "" as string,
         widgetToken: "" as string,
         chatbotId: "" as string,
-        hello:{
-            variables:{} as Record<string,any>
+        hello: {
+            variables: {} as Record<string, any>
         }
     } as $DraftDataReducerType,
     reducers: {
@@ -38,9 +38,9 @@ const draftDataSlice = createSlice({
         setVariablesForHelloBot: (state, action: PayloadAction<$DraftDataReducerType>) => {
             return {
                 ...state,
-                hello:{
+                hello: {
                     ...state.hello,
-                    variables:{
+                    variables: {
                         ...(state.hello?.variables || {}),
                         ...(action.payload || {})
                     }

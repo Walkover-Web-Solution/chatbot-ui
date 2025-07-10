@@ -55,7 +55,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
             user_jwt_token,
             name,
             sdkConfig,
-            sessionVariables,
+            variables,
             ...restProps
         } = event.data.data;
 
@@ -63,8 +63,8 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
             handleThemeChange(sdkConfig?.customTheme)
         }
 
-        if(sessionVariables && isPlainObject(sessionVariables)){
-            dispatch(setVariablesForHelloBot(sessionVariables))
+        if(variables && isPlainObject(variables)){
+            dispatch(setVariablesForHelloBot(variables))
         }
 
         const fullWidgetToken = unique_id ? `${widgetToken}_${unique_id}` : `${widgetToken}`;
@@ -127,7 +127,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
 
         // 8. Persist new widget token and config
         setLocalStorage('WidgetId', widgetToken);
-        dispatch(setDataInDraftReducer({ chatSessionId: fullWidgetToken, widgetToken: fullWidgetToken }));
+        dispatch(setDataInDraftReducer({ chatSessionId: fullWidgetToken, widgetToken: fullWidgetToken , isHelloUser: true}));
         SetSessionStorage('helloConfig', JSON.stringify(event.data.data))
         dispatch(setHelloConfig(event.data.data));
         return;
@@ -138,8 +138,8 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
     }
 
     function handleSetVariablesForBot(event: MessageEvent) {
-        if(event.data?.data && isPlainObject(event.data?.data)){
-            dispatch(setVariablesForHelloBot(event.data?.data))
+        if(event.data?.data?.variables && isPlainObject(event.data?.data?.variables)){
+            dispatch(setVariablesForHelloBot(event.data?.data?.variables))
         }
     }
 

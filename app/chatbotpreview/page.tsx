@@ -1,14 +1,15 @@
 "use client";
 import { ThemeContext } from '@/components/AppWrapper';
-import { useMediaQuery, useTheme } from '@mui/material';
+import { useScreenSize } from '@/components/Chatbot/hooks/useScreenSize';
+import { useTheme } from '@mui/material';
+import { Bot, ChevronDown, Image, Menu, MessageSquare, Paperclip, Phone, Send, User, Video, X } from 'lucide-react';
 import { useContext, useEffect, useRef, useState } from 'react';
-import { Send, Menu, X, Image, Paperclip, Mic, Bot, User, ChevronDown, MessageSquare, Phone, Video } from 'lucide-react';
 export const runtime = "edge";
 
 function ChatbotPreview() {
     const theme = useTheme();
     const containerRef = useRef(null);
-    const isLargeScreen = useMediaQuery('(max-width: 1024px)')
+    const { isSmallScreen } = useScreenSize();
     const [isToggledrawer, setToggleDrawer] = useState<boolean>(false);
     const { handleThemeChange } = useContext(ThemeContext);
     const [messages, setMessages] = useState([
@@ -154,7 +155,7 @@ function ChatbotPreview() {
                 </div>
 
                 {/* Mobile drawer - only visible when toggled on small screens */}
-                {isLargeScreen && isToggledrawer && (
+                {isSmallScreen && isToggledrawer && (
                     <div className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setToggleDrawer(false)}>
                         <div className="bg-base-100 h-full w-64 overflow-y-auto" onClick={e => e.stopPropagation()}>
                             <div className="p-4">

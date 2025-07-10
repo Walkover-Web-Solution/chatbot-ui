@@ -17,4 +17,5 @@ export interface $DraftDataReducerType {
   hello:{
     variables:Record<string,any>
   }
+  isHelloUser?: boolean;
 }

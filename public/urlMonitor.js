@@ -8,7 +8,7 @@
     panel.style.position = 'fixed';
     panel.style.top = '0';
     panel.style.right = '-100%'; // hidden offscreen initially
-    panel.style.width = 'calc(min(1000px, 100%))';
+    panel.style.width = 'calc(min(768px, 100%))';
     panel.style.height = '100vh';
     panel.style.background = 'white';
     panel.style.borderRadius = '12px 0 0 12px';
@@ -120,7 +120,7 @@
             btnFullscreen.title = 'Exit fullscreen';
         } else {
             panel.style.transition = 'width 0.3s ease, height 0.3s ease, border-radius 0.3s ease';
-            panel.style.width = 'calc(min(1000px, 100%))';
+            panel.style.width = 'calc(min(768px, 100%))';
             panel.style.height = '100vh';
             panel.style.borderRadius = '12px 0 0 12px';
             isFullscreen = false;

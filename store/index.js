@@ -49,7 +49,8 @@ const crossTabSyncConfig = {
     const isPersistAction = [PERSIST, REHYDRATE, FLUSH, PAUSE, PURGE, REGISTER].includes(action.type);
     const actionTypeRoot = action.type.split('/')[0];
     const isAppOrDraftAction = actionTypeRoot === 'appInfo' || actionTypeRoot === "draftData" || actionTypeRoot === "Chat";
-    return !isPersistAction && !isAppOrDraftAction;
+    const isCountIncreaseAction = action.type === "Hello/setUnReadCount" && !action.payload?.resetCount;
+    return !isPersistAction && !isAppOrDraftAction && !isCountIncreaseAction;
   }
 };
 

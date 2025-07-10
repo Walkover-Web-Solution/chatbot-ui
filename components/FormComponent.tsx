@@ -9,11 +9,11 @@ import { BookText, Mail, Phone, Send, User } from "lucide-react";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useColor } from "./Chatbot/hooks/useColor";
+import { useScreenSize } from "./Chatbot/hooks/useScreenSize";
 
 interface FormComponentProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  isSmallScreen: boolean;
   chatSessionId: string
 }
 
@@ -31,7 +31,7 @@ interface FormErrors {
   countryCode: string;
 }
 
-function FormComponent({ isSmallScreen, chatSessionId }: FormComponentProps) {
+function FormComponent({ chatSessionId }: FormComponentProps) {
   const { textColor, backgroundColor } = useColor();
   const dispatch = useDispatch();
   const { showWidgetForm, open } = useCustomSelector((state) => ({
@@ -42,6 +42,7 @@ function FormComponent({ isSmallScreen, chatSessionId }: FormComponentProps) {
     dispatch(setOpenHelloForm(open));
   };
   console.log('form')
+  const { isSmallScreen } = useScreenSize();
   const userData = JSON.parse(getLocalStorage("client") || "{}");
   const [formData, setFormData] = useState<FormData>({
     name: userData?.name || "",
