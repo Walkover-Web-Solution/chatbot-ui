@@ -1,4 +1,7 @@
 (function () {
+    if (window.__urlMonitorInitialized__) return;
+    window.__urlMonitorInitialized__ = true;
+
     let trackedUrls = [];
     let ignoreNextOpen = false;  // Flag to skip interception once
 

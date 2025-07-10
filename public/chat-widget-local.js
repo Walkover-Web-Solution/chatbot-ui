@@ -199,15 +199,6 @@
                     const element = document.getElementById(id);
                     if (element) element.remove();
                 });
-            if (this.state.urlMonitorAdded) {
-                // Remove urlMonitor.js script
-                const scripts = document.querySelectorAll('script');
-                scripts.forEach(script => {
-                    if (script.src && script.src.includes('urlMonitor.js')) {
-                        script.remove();
-                    }
-                });
-            }
         }
 
         setupMessageListeners() {
