@@ -6,27 +6,32 @@ import React from 'react';
 import helloVoiceService from '../Chatbot/hooks/HelloVoiceService';
 import { useCallUI } from '../Chatbot/hooks/useCallUI';
 import { useColor } from '../Chatbot/hooks/useColor';
+import { ParamsEnums } from '@/utils/enums';
+import { getCallToken } from '@/config/helloApi';
 
 interface CallButtonProps {
-    chatSessionId: string
+    chatSessionId: string,
+    currentChannelId: string,
 }
 
-function CallButton({ chatSessionId }: CallButtonProps) {
+function CallButton({ chatSessionId, currentChannelId }: CallButtonProps) {
     const { isHelloUser, voice_call_widget } = useCustomSelector((state) => ({
-        isHelloUser: state.Hello?.[chatSessionId]?.isHelloUser || false,
-        voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false
+        isHelloUser: state.draftData?.isHelloUser || false,
+        voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false,
     }));
     const { backgroundColor } = useColor();
     const { callState } = useCallUI();
 
     // Handler for voice call
     const handleVoiceCall = () => {
-        helloVoiceService.initiateCall();
+        getCallToken(currentChannelId).then((response: { jwt_token: string }) => {
+            helloVoiceService.initiateCall(response?.jwt_token);
+        });
     };
 
     if (!isHelloUser || !voice_call_widget) return null;
 
-    const isCallDisabled = callState !== "idle";
+    const isCallDisabled = callState !== "idle" || !currentChannelId;
 
     return (
         <div
@@ -42,4 +47,4 @@ function CallButton({ chatSessionId }: CallButtonProps) {
     );
 }
 
-export default React.memo(addUrlDataHoc(CallButton, []));
+export default React.memo(addUrlDataHoc(CallButton, [ParamsEnums.currentChannelId]));
