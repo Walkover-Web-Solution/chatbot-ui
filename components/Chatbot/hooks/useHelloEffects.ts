@@ -5,7 +5,7 @@ import useNotificationSocketEventHandler from '@/hooks/notifications/notificatio
 import useSocket from '@/hooks/socket';
 import useSocketEvents from '@/hooks/socketEventHandler';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
-import { setAgentTeams, setGreeting, setHelloClientInfo, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
+import { setAgentTeams, setGreeting, setHelloClientInfo, setHelloKeysData, setJwtToken, setUnReadCount, setWidgetInfo } from '@/store/hello/helloSlice';
 import { GetSessionStorageData, SetSessionStorage } from '@/utils/ChatbotUtility';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
@@ -114,7 +114,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
         return () => {
             debouncedReset.cancel();
         };
-    }, [currentChannelId, isToggledrawer, unReadCountInCurrentChannel, isChatbotOpen, isHelloUser, isTabVisible,isChatbotMinimized]);
+    }, [currentChannelId, isToggledrawer, unReadCountInCurrentChannel, isChatbotOpen, isHelloUser, isTabVisible, isChatbotMinimized]);
 
 
     const initializeHelloServices = async (widgetToken: string = '') => {
