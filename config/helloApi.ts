@@ -252,7 +252,7 @@ export async function initializeHelloChat(): Promise<any> {
 }
 
 // Function to send message to Hello chat
-export async function sendMessageToHelloApi(message: string, attachment: Array<object> = [], channelDetail?: any, chat_id?: string,helloVariables: any ={}): Promise<any> {
+export async function sendMessageToHelloApi(message: string, attachment: Array<object> = [], channelDetail?: any, chat_id?: string, helloVariables: any = {}): Promise<any> {
   let messageType = 'text'
   // Determine message type based on attachment and message content
   if (attachment?.length > 0) {
@@ -344,18 +344,18 @@ export async function getClientToken(): Promise<any> {
 }
 
 // Get call token for WebRTC
-export async function getCallToken(): Promise<any> {
+export async function getCallToken(channelId?: string): Promise<any> {
   try {
     const isAnon = getLocalStorage("is_anon") == 'true';
     const response = await axios.get(
-      `${HELLO_HOST_URL}/web-rtc/get-call-token/?is_anon=${isAnon}`,
+      `${HELLO_HOST_URL}/web-rtc/get-call-token/?is_anon=${isAnon}${channelId ? `&channel=${channelId}` : ''}`,
       {
         headers: {
           authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
         },
       }
     );
-    if (response?.data?.data?.jwt_token) {
+    if (response?.data?.data?.jwt_token && !channelId) {
       setLocalStorage("HelloCallToken", response?.data?.data?.jwt_token);
     }
     return response?.data?.data;
