@@ -15,8 +15,8 @@ export interface $DraftDataReducerType {
   widgetToken?: string;
   chatbotId?: string;
   isHelloUser?: boolean;
-  hello:{
-    variables:Record<string,any>
+  hello: {
+    variables: Record<string, any>
   }
   isChatbotMinimized?: boolean;
 }

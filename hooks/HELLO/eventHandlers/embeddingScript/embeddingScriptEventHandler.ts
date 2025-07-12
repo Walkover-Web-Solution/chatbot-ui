@@ -1,17 +1,16 @@
-import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
-import { useDispatch } from "react-redux";
-import { useEffect } from "react";
-import { CBManger } from "@/hooks/coBrowser/CBManger";
-import { addDomainToHello, saveClientDetails } from "@/config/helloApi";
-import isPlainObject from "lodash.isplainobject";
-import { useContext } from "react";
 import { ThemeContext } from "@/components/AppWrapper";
-import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
-import { cleanObject, getLocalStorage, setLocalStorage } from "@/utils/utilities";
+import { addDomainToHello, saveClientDetails } from "@/config/helloApi";
+import { CBManger } from "@/hooks/coBrowser/CBManger";
+import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
+import { setDataInDraftReducer, setVariablesForHelloBot } from "@/store/draftData/draftDataSlice";
 import { setHelloClientInfo, setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
 import { setDataInInterfaceRedux } from "@/store/interface/interfaceSlice";
-import { setDataInDraftReducer, setVariablesForHelloBot } from "@/store/draftData/draftDataSlice";
+import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
+import { cleanObject, getLocalStorage, setLocalStorage } from "@/utils/utilities";
+import isPlainObject from "lodash.isplainobject";
+import { useContext, useEffect } from "react";
+import { useDispatch } from "react-redux";
 
 
 const helloToChatbotPropsMap: Record<string, string> = {
@@ -82,7 +81,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
             handleThemeChange(sdkConfig?.customTheme)
         }
 
-        if(variables && isPlainObject(variables)){
+        if (variables && isPlainObject(variables)) {
             dispatch(setVariablesForHelloBot(variables))
         }
 
@@ -139,7 +138,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
 
         // 8. Persist new widget token and config
         setLocalStorage('WidgetId', widgetToken);
-        dispatch(setDataInDraftReducer({ chatSessionId: fullWidgetToken, widgetToken: fullWidgetToken , isHelloUser: true}));
+        dispatch(setDataInDraftReducer({ chatSessionId: fullWidgetToken, widgetToken: fullWidgetToken, isHelloUser: true }));
         SetSessionStorage('helloConfig', JSON.stringify(event.data.data))
         dispatch(setHelloConfig(event.data.data));
 
@@ -155,7 +154,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
     }
 
     function handleSetVariablesForBot(event: MessageEvent) {
-        if(event.data?.data?.variables && isPlainObject(event.data?.data?.variables)){
+        if (event.data?.data?.variables && isPlainObject(event.data?.data?.variables)) {
             dispatch(setVariablesForHelloBot(event.data?.data?.variables))
         }
     }

@@ -26,8 +26,8 @@ import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { useChatEffects } from './hooks/useChatEffects';
 import { useColor } from './hooks/useColor';
 import { useHelloEffects } from './hooks/useHelloEffects';
-import { useScreenSize } from './hooks/useScreenSize';
 import { useReduxEffects } from './hooks/useReduxEffects';
+import { useScreenSize } from './hooks/useScreenSize';
 
 interface ChatbotProps {
   chatSessionId: string

@@ -76,7 +76,7 @@ const ImageWithFallback = ({
   preview = false
 }: ImageWithFallbackProps) => {
   const [error, setError] = useState(false);
-  const { isSmallScreen } = useScreenSize();  
+  const { isSmallScreen } = useScreenSize();
 
   // Memoized file type calculation
   const fileType = useMemo(() => getFileType(src), [src]);
