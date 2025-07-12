@@ -65,8 +65,11 @@ function RagComponent() {
                 setEmebedToken(token);
             }
         };
-        fetchToken();
-    }, []);
+        
+        if (configuration?.token) {
+            fetchToken(); 
+        }
+    }, [configuration?.token]);
 
     // Form refs for better form handling
     const formRef = React.useRef<HTMLFormElement>(null);
@@ -388,14 +391,13 @@ function RagComponent() {
                         </button>
                     </div>
                 </>}
+            {!editingKnowledgeBase && <div id="viasocketParentId" className="h-[90vh] w-[90%] mx-auto p-8 hidden pb-4"></div>}
 
-            <div id="viasocketParentId" className="h-[90vh] w-[90%] mx-auto p-8 hidden pb-4"></div>
-
-            <div className="flex items-center my-4 mt-4 ">
+           {!editingKnowledgeBase &&  <div className="flex items-center my-4 mt-4 ">
                 <div className="flex-grow h-px bg-base-300"></div>
                 <span className={`mx-4 text-sm text-base-content ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>OR</span>
                 <div className="flex-grow h-px bg-base-300"></div>
-            </div>
+            </div>}
             <form ref={formRef} onSubmit={handleSave} className="flex flex-col h-full">
                 <div className={`flex flex-col flex-grow overflow-auto p-4 gap-4 scrollbar-hide`}>
                     {/* Name Field */}
