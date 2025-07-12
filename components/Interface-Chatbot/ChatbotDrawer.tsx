@@ -84,7 +84,7 @@ const ChatbotDrawer = ({
       isHelloUser: state.draftData?.isHelloUser || false,
       Name: JSON.parse(getLocalStorage("client") || '{}')?.name || state.Hello?.[chatSessionId]?.channelListData?.customer_name || '',
       tagline: state.Hello?.[chatSessionId]?.widgetInfo?.tagline || '',
-      hideCloseButton: state.Interface?.[chatSessionId]?.hideCloseButton || false,
+      hideCloseButton: state.appInfo?.[tabSessionId]?.hideCloseButton || false,
       voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false,
       show_msg91: state.Hello?.[chatSessionId]?.widgetInfo?.show_msg91 || false
     };
@@ -145,7 +145,7 @@ const ChatbotDrawer = ({
     dispatch(setDataInAppInfoReducer({ subThreadId: channelId, currentChannelId: channelId, currentChatId: chatId, currentTeamId: teamId }));
     if (isSmallScreen) setToggleDrawer(false);
     if (images?.length > 0) setImages([]);
-    
+
     focusTextField();
     setLoading(false);
   };
