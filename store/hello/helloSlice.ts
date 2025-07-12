@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { initialState, reducers } from "./helloReducer.ts";
+import { initialState, reducers } from "./helloReducer";
 
 const interfaceSlice = createSlice({
   name: "Hello",

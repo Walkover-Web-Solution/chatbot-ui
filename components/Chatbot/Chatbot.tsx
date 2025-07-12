@@ -27,6 +27,7 @@ import { useChatEffects } from './hooks/useChatEffects';
 import { useColor } from './hooks/useColor';
 import { useHelloEffects } from './hooks/useHelloEffects';
 import { useScreenSize } from './hooks/useScreenSize';
+import { useReduxEffects } from './hooks/useReduxEffects';
 
 interface ChatbotProps {
   chatSessionId: string
@@ -84,7 +85,7 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
     return ({
       show_widget_form: typeof widgetInfo?.show_widget_form === 'boolean' ? widgetInfo?.show_widget_form : state.Hello?.[chatSessionId]?.showWidgetForm,
       is_anon: state.Hello?.[chatSessionId]?.is_anon == 'true',
-      greetingMessage: state.Hello?.[chatSessionId]?.greeting,
+      greetingMessage: state.Hello?.[chatSessionId]?.greeting as any,
       isToggledrawer: state.Chat.isToggledrawer,
       chatsLoading: state.Chat.chatsLoading,
       messageIds: state.Chat.messageIds,
@@ -96,6 +97,7 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
   // Custom hooks
   useChatEffects({ chatSessionId, tabSessionId, messageRef, timeoutIdRef });
   useHelloEffects({ chatSessionId, tabSessionId, messageRef });
+  useReduxEffects({ chatSessionId, tabSessionId });
   useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId });
 
   const { isHelloUser, currentChatId, isDefaultNavigateToChatScreen } = useReduxStateManagement({ chatSessionId, tabSessionId });

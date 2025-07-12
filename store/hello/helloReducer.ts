@@ -1,5 +1,5 @@
 import actionType from "@/types/utility.js";
-import { PayloadAction, SliceCaseReducers, ValidateSliceCaseReducers } from "@reduxjs/toolkit";
+import { SliceCaseReducers, ValidateSliceCaseReducers } from "@reduxjs/toolkit";
 import { $HelloReduxType, ChannelListData, HelloData } from "../../types/hello/HelloReduxType";
 
 export const initialState: $HelloReduxType = {};
