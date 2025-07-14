@@ -224,8 +224,8 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                 const formattedParams = {
                     ...scriptParams,
                     Name: scriptParams?.name || scriptParams?.Name || undefined,
-                    Phonenumber: scriptParams?.number || undefined,
-                    Email: scriptParams?.mail || scriptParams?.email || undefined,
+                    Phonenumber: scriptParams?.number || scriptParams?.Phonenumber || undefined,
+                    Email: scriptParams?.mail || scriptParams?.Email || undefined,
                 }
 
                 const keysToRemove = [
