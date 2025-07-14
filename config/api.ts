@@ -295,13 +295,13 @@ export const createScripts = async (data: any, type = "flow") => {
     }
 };
 
-export const getAllThreadsApi = async ({ threadId = "" }) => {
+export const getAllThreadsApi = async ({ threadId = "", bridgeName = "" }) => {
     if (!threadId) {
         // console.error("Invalid threadId provided");
         return null;
     }
     try {
-        const response = await axios.get(`${URL}/thread/${threadId}`);
+        const response = await axios.get(`${URL}/thread/${threadId}?slugName=${bridgeName}`);
         return response?.data;
     } catch (error: any) {
         console.warn(error);
