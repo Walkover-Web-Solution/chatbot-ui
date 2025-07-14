@@ -12,7 +12,7 @@ export interface $HelloReduxType {
     channelListData: ChannelListData;
     greeting?: object;
     showWidgetForm?: boolean | null;
-    is_anon?: boolean;
+    is_anon?: boolean | string;
     agent_teams?: { teams?: Record<string, string>, agents?: Record<string, string> };
   }
 }
