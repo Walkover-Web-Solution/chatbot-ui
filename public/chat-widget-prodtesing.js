@@ -285,7 +285,7 @@
                     this.updateBadgeCount(data?.badgeCount);
                     break;
                 case 'RELOAD_PARENT':
-                    // window.location.reload()
+                    window.location.reload()
                     break;
                 default:
                     break;

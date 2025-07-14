@@ -5,9 +5,9 @@ import { persistReducer } from "redux-persist";
 import { createNoopStorage, STORAGE_OPTIONS } from "@/utils/storageUtility";
 import appInfoReducer from "./appInfo/appInfoSlice";
 import chatReducer from "./chat/chatSlice";
+import draftDataReducer from "./draftData/draftDataSlice";
 import helloReducer from "./hello/helloSlice";
 import InterfaceReducer from "./interface/interfaceSlice";
-import draftDataReducer from "./draftData/draftDataSlice";
 
 const storage =
   typeof window !== "undefined"

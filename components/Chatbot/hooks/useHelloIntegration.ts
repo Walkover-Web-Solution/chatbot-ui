@@ -202,7 +202,7 @@ export const useOnSendHello = () => {
     tabSessionId: useHelloContext().tabSessionId
   });
 
-  const { assigned_type, showWidgetForm, images , helloVariables } = useCustomSelector((state) => ({
+  const { assigned_type, showWidgetForm, images, helloVariables } = useCustomSelector((state) => ({
     assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === currentChannelId
     )?.assigned_type,
@@ -251,7 +251,7 @@ export const useOnSendHello = () => {
 
       startTimeoutTimer();
 
-      const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId,helloVariables);
+      const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId, helloVariables);
       if (data && (!currentChatId || !currentChannelId)) {
         dispatch(setDataInAppInfoReducer({
           subThreadId: data?.['channel'],

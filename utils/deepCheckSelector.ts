@@ -1,7 +1,7 @@
 import { store } from "@/store";
 import { TypedUseSelectorHook, useSelector } from "react-redux";
 
-export default function isEqual(oldValue, newValue) {
+export default function isEqual(oldValue: any, newValue: any): any {
   if (oldValue === newValue) return true;
 
   if (
