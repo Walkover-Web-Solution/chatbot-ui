@@ -394,3 +394,12 @@ export const getEmebedToken = async () => {
         return e;
     }
 };
+
+export const refreshDoc = async (doc_id:string)=>{
+    try {
+        const response = await axios.patch(`${URL}/rag/docs/${doc_id}/refresh`)
+        return response?.data;
+    } catch (error) {
+     return error;   
+    }
+}

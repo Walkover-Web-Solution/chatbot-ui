@@ -1,5 +1,5 @@
 'use client';
-import { getEmebedToken } from "@/config/api";
+import { getEmebedToken, refreshDoc } from "@/config/api";
 import {
     createKnowledgeBaseEntry,
     deleteKnowBaseData,
@@ -10,6 +10,7 @@ import { KNOWLEDGE_BASE_CUSTOM_SECTION } from "@/utils/enums";
 import DriveIcon from "@/assests/DriveIcon";
 import { CircleX, Loader2, Settings, Upload, X } from "lucide-react";
 import * as React from "react";
+import WebSocketClient from 'rtlayer-client';
 
 interface KnowledgeBaseType {
     _id: string;
@@ -35,6 +36,8 @@ interface Configuration {
     chunkSize?: number;
     chunkOverlap?: number;
     hideConfig?: string;
+    org_id?:string;
+    user_id:string;
 }
 
 const VALID_FILE_TYPES = [
@@ -56,6 +59,7 @@ function RagComponent() {
     const [editingKnowledgeBase, setEditingKnowledgeBase] = React.useState<KnowledgeBaseType | null>(null);
     const [fileType, setFileType] = React.useState<"url" | "file">("url");
     const [emebedToken, setEmebedToken] = React.useState<string>("");
+    const [client, setClient] = React.useState(null)
 
 
     React.useEffect(() => {
@@ -124,6 +128,7 @@ function RagComponent() {
     // Message handler
     const handleMessage = React.useCallback((event: MessageEvent) => {
         const { type, data } = event.data || {};
+        const document = data?.document
         switch (type) {
             case "INITIAL_CONFIG":
                 setConfiguration(data);
@@ -137,7 +142,6 @@ function RagComponent() {
                 break;
 
             case "EDIT_DOCUMENT":
-                const document = data?.document;
                 if (document) {
                     setEditingKnowledgeBase(document);
                     populateFormForEdit(document);
@@ -149,6 +153,11 @@ function RagComponent() {
                     handleDeleteKnowledgeBase(data?.document?._id);
                 }
                 break;
+            case "REFRESH_DOCUMENT":
+                if(document)
+                {
+                   refreshDoc(document?._id)
+                }
         }
     }, [resetForm, populateFormForEdit, handleDeleteKnowledgeBase]);
 
@@ -159,11 +168,22 @@ function RagComponent() {
     }, [handleMessage]);
 
     React.useEffect(() => {
-        if (configuration?.token) {
-            SetSessionStorage("ragToken", configuration.token);
+        if (!configuration?.token) return;
 
-        }
-    }, [configuration?.token]);
+        SetSessionStorage("ragToken", configuration.token);
+        
+        const sessionData = {
+            'org_id': configuration.org_id,
+            'user_id': configuration.user_id
+        };
+
+        Object.entries(sessionData).forEach(([key, value]) => {
+            if (value) {
+                SetSessionStorage(key, value);
+            }
+        });
+    }, [configuration?.token, configuration?.org_id, configuration?.user_id]);
+
 
     React.useEffect(() => {
         setChunkingType(configuration?.chunkingType || "auto");
@@ -359,6 +379,35 @@ function RagComponent() {
             }
         });
     }, []);
+
+    const handleMessageRTLayer = React.useCallback((message: string) => {
+       console.log(message)
+      }, []);
+
+    React.useEffect(() => {
+        const newClient = new WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
+        setClient(newClient);
+
+        return () => {
+            if (newClient && typeof newClient.close === 'function') {
+                newClient.close();
+            }
+        };
+    }, []);
+
+    React.useEffect(() => {
+        const orgId = configuration?.org_id
+        const userId = configuration?.user_id
+        
+        if (!client || !orgId || !userId) return;
+        
+        const newChannelId = `${orgId}${userId}`.replace(/ /g, "_");
+        const listener = client.on(newChannelId, handleMessageRTLayer);
+
+        return () => {
+            // listener.remove();
+        };
+    }, [configuration?.org_id && configuration?.user_id]);
 
     return (
         <div className={`flex flex-col ${isDarkTheme ? 'bg-gray-900 text-white border border-gray-700' : 'bg-white text-gray-900 border border-gray-200'} transition-all duration-200 min-h-screen w-screen p-4`}>

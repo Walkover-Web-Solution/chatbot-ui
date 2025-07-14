@@ -8,10 +8,10 @@
             this.token = null;
             this.lastProcessedMessage = null; // Add this line
             this.urls = {
-                ragUrl: 'https://chatbot.gtwy.ai/rag',
-                login: 'https://db.gtwy.ai/user/embed/login',
-                docsApi: 'https://db.gtwy.ai/rag/docs',
-                cssURL: 'https://chatbot.gtwy.ai/rag.css'
+                ragUrl: 'http://localhost:3001/rag',
+                login: 'https://dev-db.gtwy.ai/user/embed/login',
+                docsApi: 'https://dev-db.gtwy.ai/rag/docs',
+                cssURL: 'http://localhost:3001/rag.css'
             };
             this.state = {
                 bodyLoaded: false,
@@ -54,6 +54,64 @@
             link.type = 'text/css';
             link.href = this.urls.cssURL; // Uses your existing CSS URL
             document.head.appendChild(link);
+        }
+
+        getDocumentStatusWithUI(document) {
+            // Determine status
+            let status = 'unknown';
+            if (!document) {
+                status = 'unknown';
+            } else if (document.status === 'error' || document.error) {
+                status = 'error';
+            } else if (document.status === 'chunked' || document.chunked) {
+                status = 'chunked';
+            } else if (document.status === 'loaded' || document.loading) {
+                status = 'loaded';
+            }
+
+            // Status styles configuration
+            const statusStyles = {
+                loaded: {
+                    color: '#10B981',
+                    icon: '✓',
+                    text: 'Processed'
+                },
+                chunked: {
+                    color: '#FBBF24',
+                    icon: '⏳',
+                    text: 'Processing'
+                },
+                error: {
+                    color: '#EF4444',
+                    icon: '⚠',
+                    text: 'Error'
+                },
+                unknown: {
+                    color: '#6B7280',
+                    icon: '?',
+                    text: 'Unknown'
+                }
+            };
+
+            const style = statusStyles[status] || statusStyles.unknown;
+
+            // Return the styled status indicator
+            return `
+                <div style="
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 2px;
+                    padding: 3px 5px;
+                    border-radius: 12px;
+                    background: ${style.color}20;
+                    color: ${style.color};
+                    font-size: 12px;
+                    font-weight: 200;
+                ">
+                    <span style="font-size: 10px;">${style.icon}</span>
+                    <span>${style.text}</span>
+                </div>
+            `;
         }
 
 
@@ -494,9 +552,22 @@
             const infoContainer = document.createElement('div');
             infoContainer.className = 'rag-document-info-container';
         
+            const nameContainer = document.createElement('div');
+            nameContainer.style.display = 'flex';
+            nameContainer.style.alignItems = 'center';
+            nameContainer.style.gap = '8px';
+
             const name = document.createElement('div');
             name.className = 'rag-document-name';
             name.textContent = doc.name || doc.title || 'Untitled Document';
+            nameContainer.appendChild(name);
+
+            if(doc?.metadata) {
+                const status = this.getDocumentStatusWithUI(doc?.metadata);
+                const statusContainer = document.createElement('div');
+                statusContainer.innerHTML = status;
+                nameContainer.appendChild(statusContainer);
+            }
         
             const details = document.createElement('div');
             details.className = 'rag-document-details';
@@ -527,7 +598,7 @@
                     details.appendChild(url);
                 }
             }
-            infoContainer.appendChild(name);
+            infoContainer.appendChild(nameContainer);
             infoContainer.appendChild(details);
             leftSection.appendChild(infoContainer);
         
@@ -562,6 +633,21 @@
             `;
             editBtn.addEventListener('click', () => {
                 this.openEditDocumentModal(doc);
+                ellipsisMenu.classList.remove('show');
+            });
+
+            // Refresh button
+            const refreshBtn = document.createElement('button');
+            refreshBtn.className = 'menu-item refresh-btn';
+            refreshBtn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6"/>
+                    <path d="M2 12c0-4.4 3.6-8 8-8 3.4 0 6.3 2.1 7.4 5M22 12c0 4.4-3.6 8-8 8-3.4 0-6.3-2.1-7.4-5"/>
+                </svg>
+                Refresh
+            `;
+            refreshBtn.addEventListener('click', () => {
+                this.refreshDoc(doc);
                 ellipsisMenu.classList.remove('show');
             });
             
@@ -604,6 +690,7 @@
             
             // Append elements
             ellipsisMenu.appendChild(editBtn);
+            ellipsisMenu.appendChild(refreshBtn);
             ellipsisMenu.appendChild(deleteBtn);
             ellipsisMenuContainer.appendChild(ellipsisBtn);
             ellipsisMenuContainer.appendChild(ellipsisMenu);
@@ -958,7 +1045,7 @@
         // Consolidated modal opening method
         openModal(config = {}) {
             const {
-                height = '80vh',
+                height = '90vh',
                 isEditMode = false,
                 document: doc = null,
                 backgroundColor = null
@@ -1091,7 +1178,7 @@
         // Updated openRag method
         openRag() {
             this.openModal({
-                height: '80vh',
+                height: '90vh',
                 isEditMode: false,
                 backgroundColor: 'white'
             });
@@ -1171,6 +1258,18 @@
                     this.showDocumentList();
                 }, 1000);
             }
+        }
+
+        refreshDoc(document){
+            this.sendMessageToIframe({
+                type: 'REFRESH_DOCUMENT',
+                data: { action: 'refresh', document: document }
+            });
+
+            // Refresh the document list after refresh
+            setTimeout(() => {
+                this.showDocumentList(); 
+            }, 5000);
         }
 
 
@@ -1490,6 +1589,8 @@
                 const data = await response.json();
                 //console.log(data)
                 this.token = data.data.token || data.accessToken;
+                this.org_id = data?.data?.org_id;
+                this.user_id = data?.data?.user_id
                 //console.log(this.token)
                 //console.log('User authenticated successfully');
             } catch (error) {
@@ -1515,6 +1616,8 @@
                     ...this.state.tempDataToSend,
                     token: this.token,
                     isEmbedded: this.state.isEmbeddedInParent,
+                    org_id: this.org_id,
+                    user_id: this.user_id,
                     timestamp: Date.now()
                 }
             };
