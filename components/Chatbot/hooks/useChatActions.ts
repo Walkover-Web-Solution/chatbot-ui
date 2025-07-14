@@ -29,7 +29,7 @@ export const useFetchAllThreads = () => {
     }));
 
     return useCallback(async () => {
-        const result = await getAllThreadsApi({ threadId });
+        const result = await getAllThreadsApi({ threadId, bridgeName});
         if (result?.success) {
             globalDispatch(
                 setThreads({ bridgeName, threadId, threadList: result?.threads })
