@@ -5,7 +5,7 @@ import useNotificationSocketEventHandler from '@/hooks/notifications/notificatio
 import useSocket from '@/hooks/socket';
 import useSocketEvents from '@/hooks/socketEventHandler';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
-import { setAgentTeams, setGreeting, setHelloClientInfo, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
+import { setAgentTeams, setGreeting, setHelloClientInfo, setHelloKeysData, setJwtToken, setUnReadCount, setWidgetInfo } from '@/store/hello/helloSlice';
 import { GetSessionStorageData, SetSessionStorage } from '@/utils/ChatbotUtility';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
@@ -47,7 +47,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
 
     const { currentChannelId, isHelloUser } = useReduxStateManagement({ chatSessionId, tabSessionId });
 
-    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotOpen, unReadCountInCurrentChannel } = useCustomSelector((state) => ({
+    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotOpen, isChatbotMinimized, unReadCountInCurrentChannel } = useCustomSelector((state) => ({
         companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
         botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
         reduxChatSessionId: state.draftData?.chatSessionId,
@@ -60,6 +60,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
         })(),
         isToggledrawer: state.Chat?.isToggledrawer,
         isChatbotOpen: state.appInfo?.[tabSessionId]?.isChatbotOpen,
+        isChatbotMinimized: state.draftData?.isChatbotMinimized,
         unReadCountInCurrentChannel: (() => {
             const channelListData = state.Hello?.[chatSessionId]?.channelListData;
             return channelListData?.channels?.find((channel) => channel?.channel === currentChannelId)?.widget_unread_count || 0;
@@ -99,7 +100,8 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                 (isSmallScreen ? !isToggledrawer : true) &&
                 isChatbotOpen &&
                 isHelloUser &&
-                isTabVisible
+                isTabVisible &&
+                !isChatbotMinimized
             ) {
                 deleteReadReceipt(currentChannelId)
                 dispatch(setUnReadCount({ channelId: currentChannelId, resetCount: true }));
@@ -112,7 +114,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
         return () => {
             debouncedReset.cancel();
         };
-    }, [currentChannelId, isToggledrawer, unReadCountInCurrentChannel, isChatbotOpen, isHelloUser, isTabVisible]);
+    }, [currentChannelId, isToggledrawer, unReadCountInCurrentChannel, isChatbotOpen, isHelloUser, isTabVisible, isChatbotMinimized]);
 
 
     const initializeHelloServices = async (widgetToken: string = '') => {
@@ -222,8 +224,8 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                 const formattedParams = {
                     ...scriptParams,
                     Name: scriptParams?.name || scriptParams?.Name || undefined,
-                    Phonenumber: scriptParams?.number || undefined,
-                    Email: scriptParams?.mail || scriptParams?.email || undefined,
+                    Phonenumber: scriptParams?.number || scriptParams?.Phonenumber || undefined,
+                    Email: scriptParams?.mail || scriptParams?.Email || undefined,
                 }
 
                 const keysToRemove = [

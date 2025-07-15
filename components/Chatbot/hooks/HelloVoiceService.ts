@@ -72,11 +72,13 @@ class HelloVoiceService {
         });
         // Set up event listeners for this call
         call.on("answered", (data: any) => {
+            console.log("call answered", data);
             this.callState = "connected";
             this.eventEmitter.emit("callStateChanged", { state: this.callState, data });
         });
 
         call.on("connected", (mediaStream: any) => {
+            console.log("call connected");
             this.callState = "connected";
             this.eventEmitter.emit("callStateChanged", {
                 state: this.callState,
@@ -85,6 +87,7 @@ class HelloVoiceService {
         });
 
         call.on("ended", (data: any) => {
+            console.log("call ended");
             this.resetCall();
         });
 
@@ -99,13 +102,12 @@ class HelloVoiceService {
         });
     }
 
-    public initiateCall(): void {
+    public initiateCall(channelCallToken?: string): void {
         if (!this.webrtc) {
             console.warn("WebRTC not initialized. Call initialize() first.");
             return;
         }
-
-        const callToken = getLocalStorage('HelloCallToken');
+        const callToken = channelCallToken || getLocalStorage('HelloCallToken');
         if (!callToken) {
             console.warn("No call token found in localStorage.");
             return;
