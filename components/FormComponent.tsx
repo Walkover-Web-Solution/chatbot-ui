@@ -129,7 +129,7 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
   if (!open && !showWidgetForm) return null;
   if (!open && showWidgetForm) return (
     <div
-      className={`bg-white p-2 px-4 cursor-pointer hover:shadow-md transition-all mx-auto rounded-br-md rounded-bl-md ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
+      className={`bg-white p-2 px-4 cursor-pointer z-[9999] hover:shadow-md transition-all mx-auto rounded-br-md rounded-bl-md ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
       onClick={() => setOpen(true)}
       style={{
         background: `linear-gradient(to right, ${backgroundColor}, ${backgroundColor}CC)`,

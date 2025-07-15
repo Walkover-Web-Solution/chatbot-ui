@@ -6,7 +6,7 @@ import {
   History,
   Maximize2,
   Minimize2,
-  Phone,
+  Minus,
   Settings,
   SquarePen,
   X
@@ -20,14 +20,13 @@ import { useDispatch } from "react-redux";
 // App imports
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
+import { setDataInDraftReducer } from "@/store/draftData/draftDataSlice";
 import { setSelectedAIServiceAndModal, setThreads } from "@/store/interface/interfaceSlice";
 import { SelectedAiServicesType } from "@/types/interface/InterfaceReduxType";
 import { $ReduxCoreType } from "@/types/reduxCore";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 import { createRandomId, DEFAULT_AI_SERVICE_MODALS, ParamsEnums } from "@/utils/enums";
-import helloVoiceService from "../Chatbot/hooks/HelloVoiceService";
-import { useCallUI } from "../Chatbot/hooks/useCallUI";
 import { useChatActions } from "../Chatbot/hooks/useChatActions";
 import { ChatbotContext } from "../context";
 import "./InterfaceChatbot.css";
@@ -297,11 +296,19 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
     setToggleDrawer,
   } = useChatActions();
 
-  const { isToggledrawer, bridgeName: reduxBridgeName, headerButtons, messageIds } = useCustomSelector((state) => ({
+  const { isToggledrawer, bridgeName: reduxBridgeName, headerButtons, messageIds, lastMessage, unReadCount, isChatbotMinimized } = useCustomSelector((state) => ({
     isToggledrawer: state.Chat?.isToggledrawer,
     bridgeName: state.Chat.bridgeName || [],
     headerButtons: state.Chat?.headerButtons || [],
     messageIds: state.Chat?.messageIds?.[state.Chat.subThreadId] || [],
+    lastMessage: (() => {
+      const lastMessageId = state.Chat?.messageIds?.[currentChannelId]?.[0]
+      return state.Chat?.msgIdAndDataMap?.[currentChannelId]?.[lastMessageId]
+    })(),
+    unReadCount: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
+      (channel: any) => channel?.channel === currentChannelId
+    )?.widget_unread_count || 0,
+    isChatbotMinimized: state.draftData?.isChatbotMinimized || false
   }))
 
   const { chatbotConfig } = useContext<any>(ChatbotContext);
@@ -318,7 +325,10 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
   const [teamName, setTeamName] = useState(false);
 
   const shouldToggleScreenSize = `${width}${widthUnit}` !== '1200%';
-  const { callState } = useCallUI();
+
+  const handleMinimizeChatbot = (value: boolean) => {
+    dispatch(setDataInDraftReducer({ isChatbotMinimized: value }));
+  }
 
   const {
     allowModalSwitch,
@@ -332,8 +342,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
     isHelloUser,
     teams,
     agentTeamName,
-    isMobileSDK,
-    voice_call_widget
+    isMobileSDK
   } = useCustomSelector((state: $ReduxCoreType) => {
     const show_close_button = state.Hello?.[chatSessionId]?.helloConfig?.show_close_button
     return ({
@@ -381,11 +390,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
       );
       setOptions([]);
     }
-  };
-
-  // Handler for voice call
-  const handleVoiceCall = () => {
-    helloVoiceService.initiateCall();
   };
 
   // Handle fullscreen toggle
@@ -448,12 +452,13 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
 
   // Memoized header title section
   const HeaderTitleSection = useMemo(() => {
-    const displayTitle = chatTitle || chatbotTitle || (isHelloUser ? (agentTeamName || teamName || "Conversation")?.toString().split(' ')?.[0] : "AI Assistant");
+    const displayTitle = isChatbotMinimized && lastMessage?.role === 'user' ? 'You' : chatTitle || chatbotTitle || (isHelloUser ? (agentTeamName || teamName || "Conversation")?.toString().split(" ")?.[0] : "AI Assistant");
     const displaySubtitle = chatSubTitle || chatbotSubtitle || "Do you have any questions? Ask us!";
 
-    return (
+    // Minimized version of the header
+    const MinimizedHeaderTitle = () => (
       <div className="flex flex-col items-center mx-auto">
-        <div className="flex items-center sm:gap-3 gap-1 justify-center">
+        <div className="flex items-center sm:gap-3 gap-1 justify-center relative">
           {chatIcon && (
             <Image
               alt="headerIcon"
@@ -463,18 +468,78 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
               className="rounded-full"
             />
           )}
-          <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis text-lg">
-            {displayTitle}
-          </h1>
+          <div className="flex items-center">
+            <div className="relative">
+              <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis text-sm">
+                {displayTitle}
+              </h1>
+              {unReadCount > 0 && (
+                <sup className="absolute -top-3 -right-3 text-[10px] min-w-[16px] h-[16px] px-1 bg-red-500 text-white font-bold rounded-full flex items-center justify-center shadow-md">
+                  {unReadCount}
+                </sup>
+              )}
+            </div>
+            {lastMessage && (
+              <div className="flex items-center gap-1 ml-2">
+                <p>:</p>
+                <div className="line-clamp-1 text-sm md:text-base" dangerouslySetInnerHTML={{
+                  __html: lastMessage?.message_type === 'pushNotification'
+                    ? "Custom Notification"
+                    : (lastMessage.messageJson?.text ||
+                      (lastMessage.messageJson?.attachment?.length > 0 ? "Attachment" :
+                        lastMessage.messageJson?.message_type ||
+                        "New conversation"))
+                }}></div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+
+    // Full-size version of the header
+    const FullSizeHeaderTitle = () => (
+      <div className="flex flex-col items-center mx-auto">
+        <div className="flex items-center sm:gap-3 gap-1 justify-center relative">
+          {chatIcon && (
+            <Image
+              alt="headerIcon"
+              width={24}
+              height={24}
+              src={chatIcon}
+              className="rounded-full"
+            />
+          )}
+          <div className="flex items-center">
+            <div className="relative">
+              <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis text-lg">
+                {displayTitle}
+              </h1>
+            </div>
+          </div>
         </div>
         {chatbotSubtitle && (
-          <p className="text-sm opacity-75 text-center whitespace-nowrap overflow-hidden overflow-ellipsis">
+          <p className="text-sm opacity-75 text-center whitespace-nowrap overflow-hidden overflow-ellipsis"> ̰
             {displaySubtitle}
           </p>
         )}
       </div>
     );
-  }, [chatIcon, chatTitle, chatbotTitle, isHelloUser, teamName, chatSubTitle, chatbotSubtitle, agentTeamName]);
+
+    return isChatbotMinimized ? <MinimizedHeaderTitle /> : <FullSizeHeaderTitle />;
+  }, [
+    chatIcon,
+    chatTitle,
+    chatbotTitle,
+    isHelloUser,
+    teamName,
+    chatSubTitle,
+    chatbotSubtitle,
+    agentTeamName,
+    isChatbotMinimized,
+    lastMessage,
+    unReadCount
+  ]);
 
   // Memoized fullscreen toggle button
   const ScreenSizeToggleButton = useMemo(() => {
@@ -515,29 +580,44 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
     );
   }, [hideCloseButton, handleCloseChatbot]);
 
-  // Memoized call button
-  const CallButton = useMemo(() => {
+
+
+  const MinimizeButton = useMemo(() => {
     if (!isHelloUser) return null;
-    if (!voice_call_widget) return null;
-
-    const isCallDisabled = callState !== "idle";
-
     return (
-      <div className="tooltip tooltip-bottom" data-tip="Call">
-        <div
-          className={`p-2 mx-1 rounded-full transition-colors ${isCallDisabled
-            ? "cursor-not-allowed opacity-50"
-            : "cursor-pointer hover:bg-gray-200"
-            }`}
-          onClick={() => { if (!isCallDisabled) handleVoiceCall() }}
-        >
-          <Phone size={22} color="#555555" />
-        </div>
+      <div
+        className="cursor-pointer p-2 py-2 rounded-full hover:bg-gray-200 transition-colors"
+        onClick={() => {
+
+          if (!isChatbotMinimized && fullScreen) {
+            toggleFullScreen(false)
+          }
+          handleMinimizeChatbot(!isChatbotMinimized)
+          if (!isChatbotMinimized) {
+            emitEventToParent('MINIMIZE_CHATBOT')
+          } else {
+            toggleFullScreen(false)
+          }
+        }}
+      >
+        {isChatbotMinimized ? <Maximize2 size={22} color="#555555" style={{ transform: 'rotate(90deg)' }} /> : <Minus size={22} color="#555555" />}
       </div>
     );
-  }, [isHelloUser, callState, handleVoiceCall, voice_call_widget]);
+  }, [isHelloUser, isChatbotMinimized, fullScreen, toggleFullScreen])
 
-  return (
+  return isChatbotMinimized ?
+    <div className="px-2 sm:py-4 py-3 w-full">
+      <div className="flex items-center w-full relative px-2">
+        {HeaderTitleSection}
+        <div className="flex justify-end items-center gap-1 flex-1 sm:absolute sm:right-0">
+          <div className="flex items-center">
+            {MinimizeButton}
+            {CloseButton}
+          </div>
+        </div>
+      </div>
+    </div>
+    :
     <div className="px-2 sm:py-4 py-3 w-full">
       <div className="flex items-center w-full relative">
         {/* Left side buttons */}
@@ -569,14 +649,12 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
           ))}
 
           <div className="flex items-center">
-            {CallButton}
             {ScreenSizeToggleButton}
-            {CloseButton}
+            {(isMobileSDK || !isHelloUser) ? CloseButton : MinimizeButton}
           </div>
         </div>
       </div>
     </div>
-  );
 };
 
 export default React.memo(addUrlDataHoc(ChatbotHeader, [ParamsEnums.currentTeamId, ParamsEnums.currentChannelId, ParamsEnums.threadId, ParamsEnums.bridgeName]));

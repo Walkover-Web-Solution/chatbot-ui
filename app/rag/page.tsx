@@ -65,9 +65,9 @@ function RagComponent() {
                 setEmebedToken(token);
             }
         };
-        
+
         if (configuration?.token) {
-            fetchToken(); 
+            fetchToken();
         }
     }, [configuration?.token]);
 
@@ -393,7 +393,7 @@ function RagComponent() {
                 </>}
             {!editingKnowledgeBase && <div id="viasocketParentId" className="h-[90vh] w-[90%] mx-auto p-8 hidden pb-4"></div>}
 
-           {!editingKnowledgeBase &&  <div className="flex items-center my-4 mt-4 ">
+            {!editingKnowledgeBase && <div className="flex items-center my-4 mt-4 ">
                 <div className="flex-grow h-px bg-base-300"></div>
                 <span className={`mx-4 text-sm text-base-content ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>OR</span>
                 <div className="flex-grow h-px bg-base-300"></div>
