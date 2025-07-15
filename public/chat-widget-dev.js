@@ -294,6 +294,7 @@
         }
 
         minimizeChatbot() {
+            if (window.innerWidth < 600) { this.closeChatbot(); return; };
             this.state.chatbotSize = 'MINIMIZED';
             const iframeContainer = document.getElementById(this.elements.chatbotIframeContainer);
             this.state.fullscreen = false;
