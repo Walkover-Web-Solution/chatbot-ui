@@ -371,9 +371,11 @@ export async function addDomainToHello({ domain, userEvent = {} }: { domain?: st
     const response = await axios.put(
       `${HELLO_HOST_URL}/add-domain/`,
       {
-        dom: domain,
+        dom: domain || undefined,
         user_data: {
           ...getUserData(),
+        },
+        event_data: {
           ...userEvent
         },
         is_anon: getLocalStorage("is_anon") == 'true'
