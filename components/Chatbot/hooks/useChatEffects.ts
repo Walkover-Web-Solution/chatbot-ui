@@ -10,13 +10,13 @@ export const useChatEffects = ({ chatSessionId, tabSessionId, messageRef, timeou
     const fetchAllThreads = useFetchAllThreads()
     const getIntialChatHistory = useGetInitialChatHistory()
     const sendMessage = useSendMessage({ messageRef, timeoutIdRef });
-    const { threadId, subThreadId, bridgeName, isHelloUser, firstThread, loading } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, isHelloUser, threadList, loading } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
         versionId: state.appInfo?.[tabSessionId]?.versionId || "null",
         isHelloUser: state.draftData?.isHelloUser || false,
-        firstThread: state.Interface?.[chatSessionId]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId]?.[0],
+        threadList: state.Interface?.[chatSessionId]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId],
         loading: state.Chat.loading || false,
     }))
 
@@ -31,7 +31,7 @@ export const useChatEffects = ({ chatSessionId, tabSessionId, messageRef, timeou
     }, [threadId, bridgeName, chatSessionId]);
 
     useEffect(() => {
-        if (!(firstThread?.newChat && firstThread?.subThread_id === subThreadId)) {
+        if (!(threadList?.[0]?.newChat && threadList?.[0]?.subThread_id === subThreadId)) {
             getIntialChatHistory();
         }
     }, [threadId, bridgeName, subThreadId]);

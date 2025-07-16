@@ -1,9 +1,10 @@
+import { reducers } from "@/store/interface/interfaceReducer";
+import { $InterfaceReduxType } from "@/types/interface/InterfaceReduxType";
 import { createSlice } from "@reduxjs/toolkit";
-import { initialState, reducers } from "@/store/interface/interfaceReducer";
 
 const interfaceSlice = createSlice({
   name: "Interface",
-  initialState:{},
+  initialState: {} as $InterfaceReduxType,
   reducers
 });
 
