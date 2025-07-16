@@ -375,9 +375,9 @@ export async function addDomainToHello({ domain, userEvent = {} }: { domain?: st
         user_data: {
           ...getUserData(),
         },
-        event_data: {
+        event_data: Object.keys(userEvent || {})?.length > 0 ? {
           ...userEvent
-        },
+        } : undefined,
         is_anon: getLocalStorage("is_anon") == 'true'
       },
       {
