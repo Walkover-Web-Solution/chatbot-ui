@@ -35,8 +35,7 @@ function useWebSocketClient(isHelloUser: boolean) {
 
 function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: { timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, chatSessionId: string, tabSessionId: string }) {
   const { isHelloUser } = useContext(ChatbotContext)
-  const { reduxThreadId, reduxBridgeName, threadId, subThreadId } = useCustomSelector((state) => ({
-    reduxThreadId: state.appInfo?.[tabSessionId]?.threadId,
+  const { reduxBridgeName, threadId, subThreadId } = useCustomSelector((state) => ({
     reduxBridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
     threadId: state.appInfo?.[tabSessionId]?.threadId,
     subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
@@ -103,7 +102,7 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
       default:
         console.warn("Some error occurred in the message", parsedMessage);
     }
-  }, []);
+  }, [reduxBridgeName]);
 
   useEffect(() => {
     if (!client) return;

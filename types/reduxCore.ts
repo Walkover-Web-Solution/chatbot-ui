@@ -18,4 +18,5 @@ export interface $DraftDataReducerType {
   hello: {
     variables: Record<string, any>
   }
+  isChatbotMinimized?: boolean;
 }

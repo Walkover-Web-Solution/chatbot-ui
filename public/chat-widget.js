@@ -117,7 +117,8 @@
                 interfaceLoaded: false,
                 delayElapsed: false,
                 domainTrackingStarted: false,
-                urlMonitorAdded: false
+                urlMonitorAdded: false,
+                chatbotSize: 'NORMAL'
             };
 
             this.initializeEventListeners();
@@ -193,6 +194,7 @@
         }
 
         cleanupChatbot() {
+            // Remove elements by ID
             [this.elements.chatbotIframeContainer, this.elements.chatbotIconContainer, this.elements.chatbotStyle, 'CBParentScript']
                 .forEach(id => {
                     const element = document.getElementById(id);
@@ -206,7 +208,6 @@
                 const trustedOrigins = [
                     'http://localhost:3001',
                     'http://localhost:3000',
-                    'https://blacksea.msg91.com',
                     window.location.origin
                 ];
 
@@ -219,6 +220,9 @@
         handleIncomingMessages(event) {
             const { type, data } = event.data || {};
             switch (type) {
+                case 'MINIMIZE_CHATBOT':
+                    this.minimizeChatbot()
+                    break;
                 case 'CLOSE_CHATBOT':
                     this.closeChatbot();
                     break;
@@ -288,6 +292,22 @@
             }
         }
 
+        minimizeChatbot() {
+            this.state.chatbotSize = 'MINIMIZED';
+            const iframeContainer = document.getElementById(this.elements.chatbotIframeContainer);
+            this.state.fullscreen = false;
+            if (iframeContainer) {
+                iframeContainer.style.transition = 'width 0.3s ease-in-out, height 0.3s ease-in-out';
+                iframeContainer.classList.remove('full-screen-without-border');
+                iframeContainer.style.height = 'min(60px, calc(100% - 40px))';
+                iframeContainer.style.width = '280';
+            }
+            const launcherContainer = document.getElementById(this.elements.chatbotIconContainer);
+            if (launcherContainer) {
+                launcherContainer.style.display = 'none';
+            }
+        }
+
         updateBadgeCount(data) {
             const badgeElement = document.getElementById(this.elements.unReadMsgCountBadge);
             if (badgeElement) {
@@ -321,8 +341,6 @@
             iframe.style.width = '100%';
             iframe.style.height = '100%';
             iframe.style.border = 'none';
-            iframe.style.minHeight = '500px';
-            iframe.style.minWidth = '500px';
             iframe.style.background = 'transparent';
 
             modalContainer.appendChild(iframe);
@@ -457,13 +475,15 @@
 
                 if (!this.helloProps?.isMobileSDK) {
                     const { width } = entries[0].contentRect;
-                    if (width < 600) {
-                        iframeParentContainer.style.height = '100%';
-                        iframeParentContainer.style.width = '100%';
-                        iframeParentContainer.classList.add('full-screen-interfaceEmbed')
-                    } else {
-                        this.applyConfig(this?.props?.config || {});
-                        iframeParentContainer.classList.remove('full-screen-interfaceEmbed');
+                    if (this.state.chatbotSize === 'NORMAL') {
+                        if (width < 600) {
+                            iframeParentContainer.style.height = '100%';
+                            iframeParentContainer.style.width = '100%';
+                            iframeParentContainer.classList.add('full-screen-interfaceEmbed')
+                        } else {
+                            this.applyConfig(this?.props?.config || {});
+                            iframeParentContainer.classList.remove('full-screen-interfaceEmbed');
+                        }
                     }
                 } else {
                     iframeParentContainer.style.height = '100%';
@@ -476,6 +496,9 @@
         }
 
         openChatbot() {
+            if (this.state?.chatbotSize !== 'NORMAL') {
+                this.toggleFullscreen(false);
+            }
             const interfaceEmbed = document.getElementById(this.elements.chatbotIconContainer);
             const iframeContainer = document.getElementById(this.elements.chatbotIframeContainer);
             const openMessage = { type: 'open', data: {} };
@@ -512,23 +535,24 @@
                 iframeContainer.style.transition = 'opacity 0.2s ease-in-out';
                 iframeContainer.style.opacity = 0;
 
-                setTimeout(() => {
-                    // Send message to parent window normally, but stringify for ReactNativeWebView
-                    if (window.parent) {
-                        window.parent.postMessage?.({ type: 'close', data: {} }, '*');
-                    }
+                // Send message to parent window normally, but stringify for ReactNativeWebView
+                if (window.parent) {
+                    window.parent.postMessage?.({ type: 'close', data: {} }, '*');
+                }
 
-                    iframeContainer.style.display = 'none';
-                    // document.body.style.overflow = 'auto';
+                iframeContainer.style.display = 'none';
+                // document.body.style.overflow = 'auto';
 
-                    const interfaceEmbed = document.getElementById(this.elements.chatbotIconContainer);
-                    if (interfaceEmbed) {
-                        interfaceEmbed.style.display =
-                            (this.props.hideIcon === true || this.props.hideIcon === 'true' || this.hideHelloIcon || helloChatbotManager.helloProps?.isMobileSDK)
-                                ? 'none'
-                                : 'unset';
-                    }
-                }, 100);
+                const interfaceEmbed = document.getElementById(this.elements.chatbotIconContainer);
+                if (interfaceEmbed) {
+                    interfaceEmbed.style.display =
+                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || this.hideHelloIcon || helloChatbotManager.helloProps?.isMobileSDK)
+                            ? 'none'
+                            : 'unset';
+                }
+                if (this.state?.chatbotSize !== 'NORMAL') {
+                    this.toggleFullscreen(false);
+                }
                 sendMessageToChatbot({ type: "CHATBOT_CLOSE" })
             }
         }
@@ -545,6 +569,7 @@
                     iframeContainer.style.height = '100%';
                     iframeContainer.classList.add('full-screen-without-border');
                 } else {
+                    this.state.chatbotSize = 'NORMAL';
                     iframeContainer.classList.remove('full-screen-without-border');
                     iframeContainer.style.height = `${this.props?.config?.height}${this.props?.config?.heightUnit || ''}` || '70vh';
                     iframeContainer.style.width = `${this.props?.config?.width}${this.props?.config?.widthUnit || ''}` || '40vw';
@@ -717,6 +742,9 @@
         }
 
         showIconIfReady() {
+            if (this.state.chatbotSize !== 'NORMAL') {
+                this.closeChatbot()
+            }
             if (this.state.interfaceLoaded && this.state.delayElapsed) {
                 if (!this.hideHelloIcon && !helloChatbotManager.helloProps?.isMobileSDK) {
                     const interfaceEmbed = document.getElementById(this.elements.chatbotIconContainer);
@@ -752,6 +780,10 @@
         }
 
         hideChatbotWithIcon() {
+            if (this.state?.chatbotSize !== 'NORMAL') {
+                this.toggleFullscreen(false)
+                this.state.chatbotSize = 'NORMAL';
+            }
             this.hideHelloIcon = true;
             const interfaceEmbed = document.getElementById(this.elements.chatbotIconContainer);
             const iframeContainer = document.getElementById(this.elements.chatbotIframeContainer);
@@ -760,6 +792,9 @@
         }
 
         showChatbotIcon() {
+            if (this.state?.chatbotSize !== 'NORMAL') {
+                return
+            }
             this.hideHelloIcon = false;
             const interfaceEmbed = document.getElementById(this.elements.chatbotIconContainer);
             if (interfaceEmbed) {
