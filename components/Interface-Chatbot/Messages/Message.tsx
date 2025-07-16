@@ -1,7 +1,6 @@
 'use client';
 /* eslint-disable */
 import { useColor } from "@/components/Chatbot/hooks/useColor";
-import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import React, { useMemo } from "react";
 import AssistantMessageCard from "./AssistantMessage";
 import DateGroup from "./DateGroup";

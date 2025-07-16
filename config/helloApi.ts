@@ -1,7 +1,7 @@
 import { errorToast } from "@/components/customToast";
-import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
-import axios from "@/utils/helloInterceptor";
 import { PAGE_SIZE } from "@/utils/enums";
+import axios from "@/utils/helloInterceptor";
+import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
 
 const urlParams = new URLSearchParams(window.location.search);
 const env = urlParams.get('env');

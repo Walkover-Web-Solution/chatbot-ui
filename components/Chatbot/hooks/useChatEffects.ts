@@ -60,7 +60,7 @@ export const useChatEffects = ({ chatSessionId, tabSessionId, messageRef, timeou
                 }
             }
         },
-        [loading]
+        [loading, sendMessage]
     );
 
     useEffect(() => {

@@ -19,13 +19,51 @@ import ReactMarkdown from "react-markdown";
 import "./Message.css";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
+function FeedBackButtons({ msgId }: { msgId: string }) {
+    const handleMessageFeedback = useMessageFeedback();
+    const { msgIdAndDataMap } = useCustomSelector((state) => ({
+        msgIdAndDataMap: state.Chat.msgIdAndDataMap?.[state.Chat?.subThreadId] || {},
+    }))
+    return <>
+        <button
+            className={`btn btn-ghost btn-xs tooltip ${msgIdAndDataMap?.[msgId]?.user_feedback === 1 ? "text-success" : ""
+                }`}
+            data-tip="Good response"
+            onClick={() =>
+                handleMessageFeedback({
+                    msgId: msgIdAndDataMap?.[msgId]?.message_id,
+                    reduxMsgId: msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
+                    feedback: 1,
+                })
+            }
+        >
+            <ThumbsUp className="w-4 h-4" />
+        </button>
+
+        <button
+            className={`btn btn-ghost btn-xs tooltip ${msgIdAndDataMap?.[msgId]?.user_feedback === 2 ? "text-error" : ""
+                }`}
+            data-tip="Bad response"
+            onClick={() =>
+                handleMessageFeedback({
+                    msgId: msgIdAndDataMap?.[msgId]?.message_id,
+                    reduxMsgId: msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
+                    feedback: 2
+                }
+                )
+            }
+        >
+            <ThumbsDown className="w-4 h-4" />
+        </button>
+    </>
+}
+
 const AssistantMessageCard = React.memo(
     ({
         message,
         backgroundColor,
         isError = false,
     }: any) => {
-        console.log('assistant message card')
         const [isCopied, setIsCopied] = React.useState(false);
         const handleCopy = () => {
             copy(message?.chatbot_message || message?.content);
@@ -42,14 +80,13 @@ const AssistantMessageCard = React.memo(
         return (
             <div className="flex flex-col">
                 <div className="flex items-end sm:max-w-[90%] max-w-[98%] animate-slide-left">
-                    <div className="flex flex-col items-center justify-end w-8 pb-3">
-                        <div className="sm:w-7 sm:h-7 w-6 h-6 rounded-full bg-primary/10 p-1 flex items-center justify-center">
+                    <div className="flex flex-col items-center justify-end w-8 pb-2">
+                        <div className="sm:w-8 sm:h-8 w-7 h-7 rounded-full p-1 flex items-center justify-center">
                             <Image
                                 src={AiIcon}
-                                width="28"
-                                height="28"
+                                width="33"
+                                height="33"
                                 alt="AI"
-                                style={{ color: "red" }}
                             />
                         </div>
                     </div>
@@ -194,45 +231,4 @@ const AssistantMessageCard = React.memo(
     }
 );
 
-
-function FeedBackButtons({ msgId }: { msgId: string }) {
-    const handleMessageFeedback = useMessageFeedback();
-    const { msgIdAndDataMap } = useCustomSelector((state) => ({
-        msgIdAndDataMap: state.Chat.msgIdAndDataMap?.[state.Chat?.subThreadId] || {},
-    }))
-    return <>
-        <button
-            className={`btn btn-ghost btn-xs tooltip ${msgIdAndDataMap?.[msgId]?.user_feedback === 1 ? "text-success" : ""
-                }`}
-            data-tip="Good response"
-            onClick={() =>
-                handleMessageFeedback({
-                    msgId: msgIdAndDataMap?.[msgId]?.message_id,
-                    reduxMsgId: msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
-                    feedback: 1,
-                })
-            }
-        >
-            <ThumbsUp className="w-4 h-4" />
-        </button>
-
-        <button
-            className={`btn btn-ghost btn-xs tooltip ${msgIdAndDataMap?.[msgId]?.user_feedback === 2 ? "text-error" : ""
-                }`}
-            data-tip="Bad response"
-            onClick={() =>
-                handleMessageFeedback({
-                    msgId: msgIdAndDataMap?.[msgId]?.message_id,
-                    reduxMsgId: msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
-                    feedback: 2
-                }
-                )
-            }
-        >
-            <ThumbsDown className="w-4 h-4" />
-        </button>
-    </>
-
-    return null
-}
 export default AssistantMessageCard
