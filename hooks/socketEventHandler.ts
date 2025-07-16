@@ -6,6 +6,7 @@ import { getLocalStorage, playMessageRecivedSound, setLocalStorage } from '@/uti
 import { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import socketManager from './socketManager';
+import { useTabVisibility } from '@/components/Chatbot/hooks/useTabVisibility';
 // Define types for better type safety
 export interface HelloMessage {
     role: string;
@@ -32,6 +33,7 @@ export const useSocketEvents = ({
 }) => {
     const dispatch = useDispatch();
     const { currentChannelId } = useReduxStateManagement({ chatSessionId, tabSessionId });
+    const { isTabVisible } = useTabVisibility();
     const addHelloMessage = (message: HelloMessage, subThreadId: string = '') => {
         dispatch(setHelloEventMessage({ message, subThreadId }));
     }
@@ -47,28 +49,33 @@ export const useSocketEvents = ({
         // Handle unread count updates
         if (message?.new_event && (type === 'chat' || type === 'feedback') && !message?.chat_id) {
             const channelId = message?.channel;
-                dispatch(setUnReadCount({
-                    channelId,
-                    resetCount: false
-                }));
+            dispatch(setUnReadCount({
+                channelId,
+                resetCount: false
+            }));
 
         }
 
         switch (type) {
             case 'chat': {
                 const { channel, chat_id, new_event } = message || {};
-                if (new_event && !chat_id) {
-                    setLoading(false);
+                if (new_event) {
+                    if (!chat_id) {
+                        setLoading(false);
 
-                    // Play notification sound when message is received
-                    playMessageRecivedSound();
+                        // Play notification sound when message is received
+                        playMessageRecivedSound();
 
-                    const messageId = response.timetoken || response.id;
-                    addHelloMessage({ ...message, id: messageId }, channel);
-                    dispatch(setTyping({
-                        subThreadId: channel,
-                        data: false
-                    }));
+                        const messageId = response.timetoken || response.id;
+                        addHelloMessage({ ...message, id: messageId }, channel);
+                        dispatch(setTyping({
+                            subThreadId: channel,
+                            data: false
+                        }));
+                    } else if (chat_id && !isTabVisible) {
+                        const messageId = response.timetoken || response.id;
+                        addHelloMessage({ ...message, id: messageId }, channel);
+                    }
                 }
                 break;
             }
@@ -113,7 +120,7 @@ export const useSocketEvents = ({
                 // Handle other types if needed
                 break;
         }
-    }, [currentChannelId, setLoading, addHelloMessage, fetchChannels]);
+    }, [currentChannelId, setLoading, addHelloMessage, fetchChannels, isTabVisible]);
 
     // Handler for typing events
     const handleTyping = useCallback((data: any) => {
