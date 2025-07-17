@@ -14,8 +14,9 @@ export interface $DraftDataReducerType {
   tabSessionId?: string
   widgetToken?: string;
   chatbotId?: string;
-  isHelloUser?: boolean;
   hello: {
     variables: Record<string, any>
   }
+  isHelloUser?: boolean;
+  isChatbotMinimized?: boolean;
 }
