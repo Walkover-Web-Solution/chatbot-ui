@@ -208,6 +208,7 @@
                 const trustedOrigins = [
                     'http://localhost:3001',
                     'http://localhost:3000',
+                    'https://blacksea.msg91.com',
                     window.location.origin
                 ];
 
