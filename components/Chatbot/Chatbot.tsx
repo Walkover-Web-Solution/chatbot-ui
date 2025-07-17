@@ -36,7 +36,7 @@ interface ChatbotProps {
 
 // Memoized components
 const EmptyChatView = React.memo(() => (
-  <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-100px] p-5">
+  <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-84px] p-5">
     <div className="flex flex-col items-center w-full">
       <Image
         src={ChatBotGif}
