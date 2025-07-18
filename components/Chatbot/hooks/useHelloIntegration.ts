@@ -4,7 +4,7 @@ import { getAllChannels, getHelloChatHistoryApi, sendMessageToHelloApi } from '@
 import socketManager from '@/hooks/socketManager';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
 import { setData, setHelloEventMessage, setImages, setInitialMessages, setOpenHelloForm, setPaginateMessages } from '@/store/chat/chatSlice';
-import { setChannelListData, setHelloKeysData } from '@/store/hello/helloSlice';
+import { setChannelListData, setHelloClientInfo, setHelloKeysData } from '@/store/hello/helloSlice';
 import { useAppDispatch } from '@/store/useTypedHooks';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { PAGE_SIZE } from '@/utils/enums';
@@ -143,9 +143,12 @@ export const useFetchChannels = () => {
     return getAllChannels()
       .then(data => {
         dispatch(setChannelListData(data));
-        if (data?.customer_name === null || data?.customer_number === null || data?.customer_mail === null) {
-          dispatch(setHelloKeysData({ showWidgetForm: true }));
+        if (data?.customer_name && data?.customer_mail && data?.customer_number) {
+          dispatch(setHelloKeysData({ showWidgetForm: false }))
+        } else {
+          dispatch(setHelloKeysData({ showWidgetForm: true }))
         }
+        dispatch(setHelloClientInfo({ clientInfo: { Name: data?.customer_name, Email: data?.customer_mail, Phonenumber: data?.customer_number } }));
         return data;
       })
       .catch(error => {

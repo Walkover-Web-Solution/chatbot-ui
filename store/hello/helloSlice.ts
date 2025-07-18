@@ -20,6 +20,7 @@ export const {
   changeChannelAssigned,
   setGreeting,
   setUnReadCount,
-  setAgentTeams
+  setAgentTeams,
+  setHelloClientInfo
 } = interfaceSlice.actions;
 export default interfaceSlice.reducer;
