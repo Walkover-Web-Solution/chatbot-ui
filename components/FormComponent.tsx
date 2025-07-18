@@ -107,7 +107,7 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
       setIsLoading(true);
       let clientData = {
         Name: formData?.name,
-        Phonenumber: formData?.number ? `${formData?.countryCode}${formData?.number}` : undefined,
+        Phonenumber: formData?.number ? `${formData?.countryCode}${formData?.number}` : '',
         Email: formData?.email
       }
 
@@ -205,7 +205,7 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                disabled={scriptParams?.mail ? true : false}
+                disabled={scriptParams?.mail || scriptParams?.Email ? true : false}
                 placeholder="Enter your email"
                 className={`input input-bordered w-full pl-10 ${errors.email ? "input-error" : ""}`}
               />
@@ -249,7 +249,7 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
                   name="number"
                   value={formData.number}
                   onChange={handleChange}
-                  disabled={scriptParams?.number ? true : false}
+                  disabled={scriptParams?.number || scriptParams?.Phonenumber ? true : false}
                   placeholder="Enter your phone number"
                   className={`input input-bordered w-full ${errors.number ? "input-error" : ""}`}
                 />

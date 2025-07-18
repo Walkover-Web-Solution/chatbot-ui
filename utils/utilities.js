@@ -221,7 +221,6 @@ export function splitNumber(value) {
   value = value?.trim();
 
   if (!value?.includes("+")) {
-    console.log("nhi hai")
     return { "code": "", "number": value };
   }
 
