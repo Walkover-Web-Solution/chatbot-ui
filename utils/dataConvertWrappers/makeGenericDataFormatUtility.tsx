@@ -6,10 +6,12 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
             return history
                 .map((chat: any) => {
                     let role;
-                    if (chat?.message?.chat_id) {
+                    if (chat?.message?.chat_id && chat?.message?.message_type !== 'voice_call') {
                         role = 'user'
                     } else if (chat?.message?.sender_id === 'workflow' || chat?.message?.sender_id === 'bot' || chat?.message?.is_auto_response) {
                         role = "Bot"
+                    } else if (chat?.message?.message_type === 'voice_call') {
+                        role = "voice_call"
                     } else {
                         role = "Human"
                     }
