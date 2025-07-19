@@ -233,23 +233,25 @@ export const useOnSendHello = () => {
         team_id: currentTeamId,
         new: true,
       } : undefined;
+      let attachments;
+      if (!voiceCall) {
+        // Show widget form only if in case of new chat and showWidgetForm is true
+        if (!currentChatId && showWidgetForm) {
+          globalDispatch(setOpenHelloForm(true));
+        }
 
-      // Show widget form only if in case of new chat and showWidgetForm is true
-      if (!currentChatId && showWidgetForm && !voiceCall) {
-        globalDispatch(setOpenHelloForm(true));
+        attachments = Array.isArray(images) && images?.length ? images : null;
+
+        if (attachments) {
+          globalDispatch(setImages([]));
+        }
+
+        if ((isBot || !assigned_type)) {
+          setLoading(true);
+        }
+
+        startTimeoutTimer();
       }
-
-      const attachments = Array.isArray(images) && images?.length ? images : null;
-
-      if (attachments) {
-        globalDispatch(setImages([]));
-      }
-
-      if (isBot || !assigned_type) {
-        setLoading(true);
-      }
-
-      startTimeoutTimer();
 
       const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId, helloVariables, voiceCall);
       if (data && (!currentChatId || !currentChannelId)) {
