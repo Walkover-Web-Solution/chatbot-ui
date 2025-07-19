@@ -1,13 +1,13 @@
 import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
+import { ParamsEnums } from '@/utils/enums';
 import { darken, lighten } from '@mui/material';
 import { Phone } from 'lucide-react';
 import React from 'react';
 import helloVoiceService from '../Chatbot/hooks/HelloVoiceService';
 import { useCallUI } from '../Chatbot/hooks/useCallUI';
 import { useColor } from '../Chatbot/hooks/useColor';
-import { ParamsEnums } from '@/utils/enums';
-import { getCallToken } from '@/config/helloApi';
+import { useOnSendHello } from '../Chatbot/hooks/useHelloIntegration';
 
 interface CallButtonProps {
     chatSessionId: string,
@@ -19,20 +19,25 @@ function CallButton({ chatSessionId, currentChannelId }: CallButtonProps) {
         isHelloUser: state.draftData?.isHelloUser || false,
         voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false,
     }));
+    const sendMessageToHello = useOnSendHello();
     const { backgroundColor } = useColor();
     const { callState } = useCallUI();
 
     // Handler for voice call
     const handleVoiceCall = () => {
-        getCallToken(currentChannelId).then((response: { jwt_token: string }) => {
-            helloVoiceService.initiateCall(response?.jwt_token);
-        });
+        if (true) {
+            sendMessageToHello('', '', true).then((data) => {
+                helloVoiceService.initiateCall(data?.['call_jwt_token'] || '')
+            });
+        }
+        // getCallToken(currentChannelId).then((response: { jwt_token: string }) => {
+        //     helloVoiceService.initiateCall(response?.jwt_token);
+        // });
     };
 
     if (!isHelloUser || !voice_call_widget) return null;
 
-    const isCallDisabled = callState !== "idle" || !currentChannelId;
-
+    const isCallDisabled = callState !== "idle";
     return (
         <div
             className={`rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:scale-105 transition-transform duration-200 cursor-pointer ${isCallDisabled

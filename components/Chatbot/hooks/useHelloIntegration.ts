@@ -213,8 +213,8 @@ export const useOnSendHello = () => {
 
   const isBot = assigned_type === 'bot';
 
-  return useCallback(async (message: string, newMessage: HelloMessage) => {
-    if (!message.trim() && (!images || images.length === 0)) return;
+  return useCallback(async (message?: string, newMessage?: HelloMessage | string, voiceCall?: boolean) => {
+    if (!voiceCall && (!message?.trim() && (!images || images.length === 0))) return;
 
     try {
       const channelDetail = !currentChatId ? {
@@ -235,7 +235,7 @@ export const useOnSendHello = () => {
       } : undefined;
 
       // Show widget form only if in case of new chat and showWidgetForm is true
-      if (!currentChatId && showWidgetForm) {
+      if (!currentChatId && showWidgetForm && !voiceCall) {
         globalDispatch(setOpenHelloForm(true));
       }
 
@@ -251,7 +251,7 @@ export const useOnSendHello = () => {
 
       startTimeoutTimer();
 
-      const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId, helloVariables);
+      const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId, helloVariables, voiceCall);
       if (data && (!currentChatId || !currentChannelId)) {
         dispatch(setDataInAppInfoReducer({
           subThreadId: data?.['channel'],
@@ -268,6 +268,7 @@ export const useOnSendHello = () => {
           }
         }
       }
+      return data;
     } catch (error) {
       if (isBot) {
         setLoading(false);

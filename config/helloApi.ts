@@ -252,8 +252,8 @@ export async function initializeHelloChat(): Promise<any> {
 }
 
 // Function to send message to Hello chat
-export async function sendMessageToHelloApi(message: string, attachment: Array<object> = [], channelDetail?: any, chat_id?: string, helloVariables: any = {}): Promise<any> {
-  let messageType = 'text'
+export async function sendMessageToHelloApi(message: string, attachment: Array<object> = [], channelDetail?: any, chat_id?: string, helloVariables: any = {}, voiceCall: boolean = false): Promise<any> {
+  let messageType = !voiceCall ? 'text' : 'voice_call'
   // Determine message type based on attachment and message content
   if (attachment?.length > 0) {
     if (message === '') {
