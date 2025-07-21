@@ -87,7 +87,7 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
     }
 
 
-    const { sender_id, from_name, content, type } = message || {};
+    const { sender_id, from_name, content, type, is_auto_response = false } = message || {};
     // Handle feedback type messages    
     if (type === 'feedback') {
         return [{
@@ -105,7 +105,7 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
 
     // Handle regular messages
     return [{
-        role: (sender_id === "bot" || sender_id === "workflow") ? "Bot" : sender_id === "user" ? "user" : "Human",
+        role: sender_id === "user" ? "user" : (sender_id === "bot" || sender_id === "workflow") ? "Bot" : sender_id ? "Human" : is_auto_response ? "Bot" : "user",
         from_name,
         content: content?.body?.text || content?.text,
         urls: content?.body?.attachment || content?.attachment,
