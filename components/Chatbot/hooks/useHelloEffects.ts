@@ -5,7 +5,7 @@ import useNotificationSocketEventHandler from '@/hooks/notifications/notificatio
 import useSocket from '@/hooks/socket';
 import useSocketEvents from '@/hooks/socketEventHandler';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
-import { setAgentTeams, setGreeting, setHelloClientInfo, setHelloKeysData, setJwtToken, setWidgetInfo } from '@/store/hello/helloSlice';
+import { setAgentTeams, setGreeting, setHelloClientInfo, setHelloKeysData, setJwtToken, setUnReadCount, setWidgetInfo } from '@/store/hello/helloSlice';
 import { GetSessionStorageData, SetSessionStorage } from '@/utils/ChatbotUtility';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
