@@ -87,8 +87,8 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
 
         const fullWidgetToken = unique_id ? `${widgetToken}_${unique_id}` : `${widgetToken}`;
         const prevWidgetId = GetSessionStorageData('widgetToken');
-        const prevUser = JSON.parse(getLocalStorage('userData') || '{}');
         SetSessionStorage('widgetToken', fullWidgetToken)
+        const prevUser = JSON.parse(getLocalStorage('userData') || '{}');
         const hasUserIdentity = Boolean(unique_id || mail || number);
 
         // Helper: reset Redux keys and sub-thread
