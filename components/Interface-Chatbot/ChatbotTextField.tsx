@@ -334,6 +334,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             maxRows={6}
             sx={textFieldStyles}
             autoFocus
+            inputMode="text"
+            type ="text"
           />
 
           <div className="flex justify-between items-center w-full mt-2">
