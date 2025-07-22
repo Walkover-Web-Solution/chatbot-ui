@@ -8,6 +8,12 @@ const env = urlParams.get('env');
 const HELLO_HOST_URL = env !== 'stage' ? process.env.NEXT_PUBLIC_MSG91_HOST_URL : 'https://stageapi.phone91.com';
 const PUSH_NOTIFICATION_URL = process.env.NEXT_PUBLIC_PUSH_NOTIFICATION_URL;
 
+export const getAuthorization = () => {
+  const clientId = getLocalStorage('k_clientId') || getLocalStorage('a_clientId');
+  const widgetId = getLocalStorage('WidgetId');
+  return `${widgetId}:${clientId}`;
+};
+
 export function getUserData() {
   const userData = JSON.parse(getLocalStorage('userData') || '{}');
   const filteredData = {};
@@ -50,7 +56,7 @@ export async function getJwtToken(): Promise<string | null> {
   try {
     const response = await axios.get(`${HELLO_HOST_URL}/jwt-token/?is_anon=${getLocalStorage("is_anon") == 'true'}`, {
       headers: {
-        authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
+        authorization: getAuthorization(),
       },
     });
     const token = response?.data?.data?.jwt_token;
@@ -122,7 +128,7 @@ export async function getAgentTeamApi(): Promise<any> {
       is_anon: getLocalStorage("is_anon") == 'true',
     }, {
       headers: {
-        authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
+        authorization: getAuthorization(),
       },
     });
     return response?.data || [];
@@ -191,7 +197,7 @@ export async function saveClientDetails(clientData = {}): Promise<any> {
 
     const response = await axios.put(`${HELLO_HOST_URL}/v2/client/${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`, payload, {
       headers: {
-        authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
+        authorization: getAuthorization(),
       },
     });
     return response?.data?.data;
@@ -216,7 +222,7 @@ export async function getHelloChatHistoryApi(channelId: string, skip: number = 0
       },
       {
         headers: {
-          authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
+          authorization: getAuthorization(),
           "content-type": "application/json",
         },
       }
@@ -282,7 +288,7 @@ export async function sendMessageToHelloApi(message: string, attachment: Array<o
       },
       {
         headers: {
-          authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
+          authorization: getAuthorization(),
           "content-type": "application/json",
         },
       }
@@ -309,7 +315,7 @@ export async function uploadAttachmentToHello(file: any, inboxId: string): Promi
       formData,
       {
         headers: {
-          'authorization': `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
+          'authorization': getAuthorization(),
           'content-type': 'multipart/form-data',
         }
       }
@@ -329,7 +335,7 @@ export async function getClientToken(): Promise<any> {
       `${HELLO_HOST_URL}/web-rtc/get-client-token/?is_anon=${isAnon}`,
       {
         headers: {
-          authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
+          authorization: getAuthorization(),
         },
       }
     );
@@ -351,7 +357,7 @@ export async function getCallToken(): Promise<any> {
       `${HELLO_HOST_URL}/web-rtc/get-call-token/?is_anon=${isAnon}`,
       {
         headers: {
-          authorization: `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
+          authorization: getAuthorization(),
         },
       }
     );
@@ -382,7 +388,7 @@ export async function addDomainToHello({ domain, userEvent = {} }: { domain?: st
       },
       {
         headers: {
-          'authorization': `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
+          'authorization': getAuthorization(),
           'content-type': 'application/json',
         }
       }
@@ -400,7 +406,7 @@ export async function deleteReadReceipt(channelId: string): Promise<any> {
       `${HELLO_HOST_URL}/read-receipt/${channelId}`,
       {
         headers: {
-          'authorization': `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
+          'authorization': getAuthorization(),
           'content-type': 'application/json'
         }
       }
@@ -434,7 +440,7 @@ export async function submitFeedback(params: {
       },
       {
         headers: {
-          'authorization': `${getLocalStorage('WidgetId')}:${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`,
+          'authorization': getAuthorization(),
           'content-type': 'application/json'
         }
       }
