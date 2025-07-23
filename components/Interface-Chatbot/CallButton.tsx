@@ -6,6 +6,7 @@ import React from 'react';
 import helloVoiceService from '../Chatbot/hooks/HelloVoiceService';
 import { useCallUI } from '../Chatbot/hooks/useCallUI';
 import { useColor } from '../Chatbot/hooks/useColor';
+import { getCallToken } from '@/config/helloApi';
 
 interface CallButtonProps {
     chatSessionId: string
@@ -21,7 +22,9 @@ function CallButton({ chatSessionId }: CallButtonProps) {
 
     // Handler for voice call
     const handleVoiceCall = () => {
-        helloVoiceService.initiateCall();
+        getCallToken().then(() => {
+            helloVoiceService.initiateCall();
+        })
     };
 
     if (!isHelloUser || !voice_call_widget) return null;
