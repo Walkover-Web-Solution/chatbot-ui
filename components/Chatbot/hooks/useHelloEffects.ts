@@ -207,9 +207,10 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                     helloVoiceService.initialize();
                 });
 
-                const callTokenPromise = getCallToken();
+                // const callTokenPromise = getCallToken();
 
-                await Promise.all([clientTokenPromise, callTokenPromise]);
+                // await Promise.all([clientTokenPromise, callTokenPromise]);
+                await Promise.all([clientTokenPromise]);
             }
 
             // Step 6: Fetch channels

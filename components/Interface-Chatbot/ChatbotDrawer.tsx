@@ -24,6 +24,7 @@ import { useChatActions } from "../Chatbot/hooks/useChatActions";
 import { useColor } from "../Chatbot/hooks/useColor";
 import { useScreenSize } from "../Chatbot/hooks/useScreenSize";
 import { MessageContext } from "./InterfaceChatbot";
+import { getCallToken } from "@/config/helloApi";
 
 const createRandomId = () => Math.random().toString(36).substring(2, 15);
 
@@ -164,7 +165,9 @@ const ChatbotDrawer = ({
   };
 
   const handleVoiceCall = () => {
-    helloVoiceService.initiateCall();
+    getCallToken().then(() => {
+      helloVoiceService.initiateCall();
+    })
     if (isSmallScreen) setToggleDrawer(false);
   };
 

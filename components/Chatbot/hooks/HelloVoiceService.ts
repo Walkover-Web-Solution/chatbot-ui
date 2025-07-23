@@ -39,21 +39,20 @@ class HelloVoiceService {
     private handleOutgoingCall = (call: any) => {
         if (call.type === "incoming-call") return;
 
-        const isBotCall = call.type === "bot-call";
         console.log('visibility changed', document.visibilityState)
-        if (this.currentCall && isBotCall) {
-            console.log('existing call ended, hanging call')
-            this.endCall();
-            this.resetCall();
-        }
+        // if (this.currentCall) {
+        //     console.log('existing call ended, hanging call')
+        //     this.endCall();
+        //     this.resetCall();
+        // }
 
-        if (document.visibilityState === "hidden" && isBotCall) {
+        if (document.visibilityState === "hidden") {
             console.log('Not in focus end call ending call')
-            call.on("answered", (data: any) => {
-                console.log('answered while hidden, hanging call')
-                call.hang();
-                this.resetCall();
-            });
+            // call.on("answered", (data: any) => {
+            //     console.log('answered while hidden, hanging call')
+            //     call.hang();
+            //     this.resetCall();
+            // });
             return;
         }
 
