@@ -697,7 +697,9 @@
                         if(message.status === 'delete' && !message.error){
                             this.showMessage(this.state.messageType.success, 'Document deleted successfully');
                         }
-                        this.showDocumentList();
+                        if ((this.props?.defaultOpen === true || this.props?.defaultOpen === "true") || (this.parentContainer && this.props.parentId)) {
+                            this.showDocumentList();
+                        } 
                     }
                     if(error){
                         this.showMessage(this.state.messageType.error, error);
@@ -958,7 +960,7 @@
         // Consolidated modal opening method
         openModal(config = {}) {
             const {
-                height = '80vh',
+                height = '90vh',
                 isEditMode = false,
                 document: doc = null,
                 backgroundColor = null
@@ -1091,7 +1093,7 @@
         // Updated openRag method
         openRag() {
             this.openModal({
-                height: '80vh',
+                height: '90vh',
                 isEditMode: false,
                 backgroundColor: 'white'
             });
