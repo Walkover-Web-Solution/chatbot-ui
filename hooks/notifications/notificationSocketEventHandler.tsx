@@ -46,7 +46,7 @@ export const useNotificationSocketEventHandler = ({ chatSessionId }: { chatSessi
         })
     }
 
-    const handleNewMessage = useCallback((data: any) => {
+    const handleNewMessage = useCallback((data: any, acknowledgement: any) => {
         const { response } = data;
         const { message } = response || {};
         const { type, message_type } = message || {};
@@ -56,6 +56,9 @@ export const useNotificationSocketEventHandler = ({ chatSessionId }: { chatSessi
                     emitEventToParent('PUSH_NOTIFICATION', message)
                 } else if (message_type === 'Message') {
                     addHelloMessage(message)
+                }
+                if (acknowledgement && typeof acknowledgement === 'function') {
+                    acknowledgement(message)
                 }
             default:
                 // Handle other types if needed
