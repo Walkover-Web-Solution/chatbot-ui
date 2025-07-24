@@ -1,7 +1,6 @@
 // useNotificationSocketEventHandler.ts
 import { setHelloEventMessage } from '@/store/chat/chatSlice';
 import { useAppDispatch } from '@/store/useTypedHooks';
-import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 import { generateNewId } from '@/utils/utilities';
@@ -57,6 +56,7 @@ export const useNotificationSocketEventHandler = ({ chatSessionId }: { chatSessi
                 } else if (message_type === 'Message') {
                     addHelloMessage(message)
                 }
+                // sending acknowledgement to server that push-notification is received
                 if (acknowledgement && typeof acknowledgement === 'function') {
                     acknowledgement(message)
                 }
