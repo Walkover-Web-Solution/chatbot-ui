@@ -5,13 +5,12 @@ export const SetSessionStorage = (key: string, value: string) => {
 };
 
 export const GetSessionStorageData = (key: string): string | null => {
+  if (typeof window === 'undefined') return null; // SSR guard
+
   try {
     return sessionStorage.getItem(key);
   } catch (error) {
-    console.error(
-      `Error retrieving session storage data for key "${key}":`,
-      error
-    );
+    console.error(`Error retrieving session storage data for key "${key}":`, { error });
     return null;
   }
 };
