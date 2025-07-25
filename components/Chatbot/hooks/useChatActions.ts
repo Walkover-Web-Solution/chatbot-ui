@@ -168,8 +168,14 @@ export const useSendMessage = ({
     return useCallback(async ({ message = '', customVariables = {}, customThreadId = '', customBridgeSlug = '', apiCall = true }: SendMessagePayloadType) => {
         globalDispatch(setNewMessage(true));
         const textMessage = message || (messageRef?.current as HTMLInputElement)?.value;
-        const imageUrls = Array.isArray(images) && images?.length ? images : [];
+        const files = images
+            ?.filter((url) => url.split(".").pop()?.toLowerCase() === "pdf")
+            .map((url) => url);
+        const imageUrls = images
+            ?.filter((url) => url.split(".").pop()?.toLowerCase() !== "pdf")
+            .map((url) => url);
 
+        
         if (!textMessage && imageUrls.length === 0) return;
         if (messageRef.current) {
             messageRef.current.value = "";
@@ -183,12 +189,13 @@ export const useSendMessage = ({
             images: [],
         }));
 
-        globalDispatch(setHelloEventMessage({ message: { role: "user", content: textMessage, urls: imageUrls } }));
+        globalDispatch(setHelloEventMessage({ message: { role: "user", content: textMessage, urls: images } }));
         globalDispatch(setHelloEventMessage({ message: { role: "assistant", content: "Talking with AI", wait: true } }));
 
         const payload = {
             message: textMessage,
             images: imageUrls,
+            files,
             userId,
             interfaceContextData: { ...variables, ...customVariables } || {},
             threadId: customThreadId || threadId,

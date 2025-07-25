@@ -9,7 +9,6 @@ import { useDispatch } from "react-redux";
 interface InterfaceData {
   threadId?: string | null;
   bridgeName?: string | null;
-  vision?: any;
   helloId?: string | null;
   versionId?: string | null;
   headerButtons?: Array<any>;
@@ -23,6 +22,8 @@ interface InterfaceData {
   hideCloseButton?: boolean;
   variables?: Record<string, any>;
   [key: string]: any; // Allow for other properties
+  isModelChange?: string;
+  isServiceChange?: string;
 }
 
 const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
@@ -66,10 +67,15 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
       dispatch(addDefaultContext({ variables: { ...receivedData.variables } }));
     }
 
-    // Process vision config
-    if (receivedData.vision) {
-      dispatch(setDataInAppInfoReducer({ isVision: receivedData.vision }))
+    // Process gtwy model change
+    if(receivedData.isModelChange){
+      dispatch(setDataInAppInfoReducer({ isModelChange: receivedData.isModelChange }))
     }
+
+    // Process gtwy service change
+    if(receivedData.isServiceChange){
+      dispatch(setDataInAppInfoReducer({ isServiceChange: receivedData.isServiceChange }))
+    } 
 
     // Process UI-related data
     if (Array.isArray(receivedData.headerButtons)) {
