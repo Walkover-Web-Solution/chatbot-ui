@@ -11,7 +11,7 @@ import { ParamsEnums } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import { TextField, useTheme } from "@mui/material";
 import debounce from "lodash.debounce";
-import { ChevronDown, Send, Upload, X } from "lucide-react";
+import { ChevronDown, Send, Paperclip, X } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
@@ -294,16 +294,15 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           ref={fileInputRef}
         />
         <label htmlFor="upload-image" className="cursor-pointer">
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-gray-300 bg-white shadow-sm hover:bg-gray-100 transition-all duration-200 group">
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white shadow-sm hover:bg-gray-100 transition-all duration-200 group">
             {isUploading ? (
               <div className="flex items-center gap-1.5">
                 <div className="w-3.5 h-3.5 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
                 <span className="text-[10px] font-medium text-gray-600">Uploading...</span>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5">
-                <Upload className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform duration-200" />
-                <span className="text-[10px] font-medium text-gray-700">Upload Files</span>
+              <div className="flex items-center gap-1.5 cursor-pointer p-3 rounded-full hover:bg-gray-200 transition-colors group">
+                <Paperclip className="w-3.5 h-3.5 text-black group-hover:scale-110 transition-transform duration-200" />
               </div>
             )}
           </div>
