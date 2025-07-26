@@ -250,7 +250,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
 
   const textFieldStyles = useMemo(() => ({
     '& .MuiOutlinedInput-root': {
-      padding: '8px',
+      padding: '4px 8px',
     },
     '& .MuiOutlinedInput-notchedOutline': {
       border: 'none',
@@ -330,13 +330,13 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             fullWidth
             onKeyDown={handleKeyDown}
             placeholder="Message AI Assistant..."
-            className="p-1 h-full min-h-[40px] max-h-[400px] bg-transparent focus:outline-none disabled:cursor-not-allowed"
+            className="p-1 h-full min-h-[5px] max-h-[400px] bg-transparent focus:outline-none disabled:cursor-not-allowed"
             maxRows={6}
             sx={textFieldStyles}
             autoFocus
           />
 
-          <div className="flex justify-between items-center w-full mt-2">
+          <div className="flex justify-between items-center w-full">
             {/* Left section: Upload and AI icon */}
             <div className="flex items-center gap-2">
               {aiIconElement}
