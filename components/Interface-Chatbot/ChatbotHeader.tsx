@@ -606,7 +606,10 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
   }, [isHelloUser, isChatbotMinimized, fullScreen, toggleFullScreen])
 
   return isChatbotMinimized ?
-    <div className="px-2 sm:py-4 py-3 w-full">
+    <div className="px-2 sm:py-4 py-3 w-full cursor-pointer" onClick={() => {
+      handleMinimizeChatbot(false);
+      toggleFullScreen(false);
+    }}>
       <div className="flex items-center w-full relative px-2">
         {HeaderTitleSection}
         <div className="flex justify-end items-center gap-1 flex-1 sm:absolute sm:right-0">
