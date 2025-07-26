@@ -1,5 +1,6 @@
 'use client';
 
+import { EmojiButton } from '@joeattardi/emoji-button';
 import { AiIcon } from "@/assests/assestsIndex";
 import { errorToast } from "@/components/customToast";
 import { uploadImage } from "@/config/api";
@@ -11,7 +12,7 @@ import { ParamsEnums } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import { TextField, useTheme } from "@mui/material";
 import debounce from "lodash.debounce";
-import { ChevronDown, Paperclip, Send, X } from "lucide-react";
+import { ChevronDown, Paperclip, Send, X ,Smile} from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
@@ -33,6 +34,9 @@ interface ChatbotTextFieldProps {
 const MAX_IMAGES = 4;
 
 const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "", isVision: reduxIsVision = {} }) => {
+  const emojiBtnRef = useRef<HTMLButtonElement>(null);
+  const pickerRef = useRef<EmojiButton | null>(null);
+
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const theme = useTheme();
@@ -95,6 +99,38 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     }
   }, [messageRef]);
 
+  const toggleEmojiPicker = () => {
+    if (pickerRef.current && emojiBtnRef.current) {
+      pickerRef.current.togglePicker(emojiBtnRef.current);
+    }
+  };
+  
+  useEffect(() => {
+    const emojiPicker = new EmojiButton({
+      position: 'top-start',
+      theme: 'light',
+      zIndex: 9999,
+    });
+  
+    emojiPicker.on('emoji', (selection) => {
+      if (messageRef.current) {
+        const input = messageRef.current;
+        const cursorPos = input.selectionStart ?? 0;
+        const currentValue = input.value;
+  
+        input.value =
+          currentValue.slice(0, cursorPos) +
+          selection.emoji +
+          currentValue.slice(cursorPos);
+  
+        input.focus();
+        setInputValue(input.value);
+      }
+    });
+  
+    pickerRef.current = emojiPicker;
+  }, [messageRef]);
+  
   useEffect(() => {
     window.addEventListener("message", handleMessage);
     return () => {
@@ -301,7 +337,20 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                 <span className="text-[10px] font-medium text-gray-600">Uploading...</span>
               </div>
             ) : (
-              <Paperclip className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600" />
+              <div className="flex items-center gap-1.5">
+                <button
+                  ref={emojiBtnRef}
+                  onClick={toggleEmojiPicker}
+                  className="text-xl px-2 hover:bg-gray-100 rounded-full"
+                  title="Insert emoji"
+                  type="button"
+                >
+                 <Smile className="w-5 h-5 text-gray-600" />
+                </button>
+                <div className="flex items-center gap-1.5 cursor-pointer p-3 rounded-full hover:bg-gray-200 transition-colors group">
+                  <Paperclip className="w-3.5 h-3.5 text-black group-hover:scale-110 transition-transform duration-200" />
+                </div>
+              </div>
             )}
           </div>
         </label>
