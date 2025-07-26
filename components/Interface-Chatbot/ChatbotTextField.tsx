@@ -11,7 +11,7 @@ import { ParamsEnums } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import { TextField, useTheme } from "@mui/material";
 import debounce from "lodash.debounce";
-import { ChevronDown, Send, Upload, X } from "lucide-react";
+import { ChevronDown, Paperclip, Send, X } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
@@ -250,7 +250,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
 
   const textFieldStyles = useMemo(() => ({
     '& .MuiOutlinedInput-root': {
-      padding: '8px',
+      padding: '4px 8px',
     },
     '& .MuiOutlinedInput-notchedOutline': {
       border: 'none',
@@ -294,17 +294,14 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           ref={fileInputRef}
         />
         <label htmlFor="upload-image" className="cursor-pointer">
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-gray-300 bg-white shadow-sm hover:bg-gray-100 transition-all duration-200 group">
+          <div className="flex px-2 py-1.5 group">
             {isUploading ? (
               <div className="flex items-center gap-1.5">
-                <div className="w-3.5 h-3.5 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
                 <span className="text-[10px] font-medium text-gray-600">Uploading...</span>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5">
-                <Upload className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform duration-200" />
-                <span className="text-[10px] font-medium text-gray-700">Upload Files</span>
-              </div>
+              <Paperclip className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600" />
             )}
           </div>
         </label>
@@ -313,7 +310,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }, [isVisionEnabled, isUploading, handleImageUpload, subThreadId]);
 
   return (
-    <div className={`relative w-full rounded-lg shadow-sm ${className}`}>
+    <div className={`relative w-full shadow-sm ${className}`}>
       {optionButtons}
       {imagePreviewsSection}
 
@@ -330,13 +327,15 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             fullWidth
             onKeyDown={handleKeyDown}
             placeholder="Message AI Assistant..."
-            className="p-1 h-full min-h-[40px] max-h-[400px] bg-transparent focus:outline-none disabled:cursor-not-allowed"
+            className="h-full min-h-[10px] max-h-[400px] bg-transparent focus:outline-none disabled:cursor-not-allowed"
             maxRows={6}
             sx={textFieldStyles}
             autoFocus
+            inputMode="text"
+            type="text"
           />
 
-          <div className="flex justify-between items-center w-full mt-2">
+          <div className="flex justify-between items-center w-full">
             {/* Left section: Upload and AI icon */}
             <div className="flex items-center gap-2">
               {aiIconElement}

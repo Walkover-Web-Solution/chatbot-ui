@@ -10,7 +10,7 @@ export const generateTheme = (colorHex) => {
         main: colorHex,
       },
       background: {
-        default: "#f5f5f5", // Light grey
+        default: "#f8f8f8", // Light grey
         paper: "#ffffff", // White
       },
       text: {
