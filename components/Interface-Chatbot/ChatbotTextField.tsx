@@ -62,7 +62,10 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }))
 
   const buttonDisabled = useMemo(() =>
-    ((isHelloUser && (assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0),
+    ((isHelloUser && (assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) ||
+    isUploading ||
+    (!inputValue.trim() && images.length === 0) ||
+    (images.some((imageUrl) => imageUrl.toLowerCase().includes('.pdf')) && !inputValue.trim()),
     [loading, isUploading, inputValue, images, assigned_type, isHelloUser]
   );
 
