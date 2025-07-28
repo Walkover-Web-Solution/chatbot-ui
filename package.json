@@ -21,6 +21,7 @@
     "axios": "^1.7.9",
     "copy-to-clipboard": "^3.3.3",
     "dayjs": "^1.11.13",
+    "emoji-picker-react": "^4.13.2",
     "linkify-html": "^4.2.0",
     "lodash.debounce": "^4.0.8",
     "lodash.isplainobject": "^4.0.6",
