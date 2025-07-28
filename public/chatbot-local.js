@@ -140,7 +140,7 @@
             window.addEventListener('message', (event) => {
                 // Only process messages from trusted origins
                 const trustedOrigins = [
-                    'http://localhost:3001',
+                    'http://localhost:3000',
                     window.location.origin
                 ];
 
