@@ -15,10 +15,10 @@
                 buttonName: ''
             };
             this.urls = {
-                chatbotUrl: 'http://localhost:3001/chatbot',
-                styleSheet: 'http://localhost:3001/chatbot-style.css',
-                login: 'http://localhost:7072/chatbot/loginuser'
-                // login: 'https://db.gtwy.ai/chatbot/loginuser'
+                chatbotUrl: 'http://localhost:3000/chatbot',
+                styleSheet: 'http://localhost:3000/chatbot-style.css',
+                // login: 'http://localhost:7072/chatbot/loginuser'
+                login: 'https://db.gtwy.ai/chatbot/loginuser'
             };
             this.icons = {
                 white: this.makeImageUrl('b1357e23-2fc6-4dc3-855a-7a213b1fa100'),
