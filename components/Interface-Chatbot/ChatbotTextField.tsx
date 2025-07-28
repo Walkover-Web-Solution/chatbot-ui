@@ -1,5 +1,5 @@
 'use client';
-
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { AiIcon } from "@/assests/assestsIndex";
 import { errorToast } from "@/components/customToast";
 import { uploadImage } from "@/config/api";
@@ -11,7 +11,7 @@ import { ParamsEnums } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import { TextField, useTheme } from "@mui/material";
 import debounce from "lodash.debounce";
-import { ChevronDown, Paperclip, Send, X } from "lucide-react";
+import { ChevronDown, Paperclip, Send, X ,Smile } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
@@ -33,6 +33,8 @@ interface ChatbotTextFieldProps {
 const MAX_IMAGES = 4;
 
 const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "", isVision: reduxIsVision = {} }) => {
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const theme = useTheme();
@@ -71,6 +73,34 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     ((isHelloUser && (assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0),
     [loading, isUploading, inputValue, images, assigned_type, isHelloUser]
   );
+
+  const handleEmojiClick = useCallback((emojiData: EmojiClickData) => {
+    const emoji = emojiData.emoji;
+    const newValue = inputValue + emoji;
+    setInputValue(newValue);
+    if (messageRef.current) {
+      messageRef.current.value = newValue;
+    }
+    // Close the emoji picker after an emoji is clicked
+    setShowEmojiPicker(false); 
+    focusTextField();
+  }, [inputValue, messageRef]);
+
+  // Effect for handling clicks outside the emoji picker
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // If the emoji picker is open and the click is outside its ref and not on the emoji button itself
+      if (showEmojiPicker && emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node) && !(event.target as HTMLElement).closest('[aria-label="Emoji Picker"]')) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showEmojiPicker]);
+  
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey && !buttonDisabled) {
@@ -294,7 +324,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           ref={fileInputRef}
         />
         <label htmlFor="upload-image" className="cursor-pointer">
-          <div className="flex px-2 py-1.5 group">
+          <div className="flex px-1 py-1.5 group">
             {isUploading ? (
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
@@ -337,7 +367,23 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
 
           <div className="flex justify-between items-center w-full">
             {/* Left section: Upload and AI icon */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
+            <button
+              onClick={() => setShowEmojiPicker(prev => !prev)}
+              className="p-1 rounded hover:bg-gray-100 transition-colors"
+              aria-label="Emoji Picker"
+            >
+              <Smile className="w-5 h-5 text-gray-600" />
+            </button>
+
+            {showEmojiPicker && (
+              <div className="absolute bottom-10 z-50"
+              ref={emojiPickerRef}
+              onClick={(e) => e.stopPropagation()}>
+                <EmojiPicker onEmojiClick={handleEmojiClick} lazyLoadEmojis={true}/>
+              </div>
+            )}
+
               {aiIconElement}
               {uploadButton}
             </div>
