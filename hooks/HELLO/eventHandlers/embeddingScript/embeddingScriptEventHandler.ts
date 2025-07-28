@@ -77,58 +77,48 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
             ...restProps
         } = event.data.data;
 
-        if (sdkConfig?.customTheme) {
-            handleThemeChange(sdkConfig?.customTheme)
-        }
-
-        if (variables && isPlainObject(variables)) {
-            dispatch(setVariablesForHelloBot(variables))
-        }
-
-        const fullWidgetToken = unique_id ? `${widgetToken}_${unique_id}` : `${widgetToken}`;
+        const fullWidgetToken = unique_id ? `${widgetToken}_${unique_id}` : widgetToken;
         const prevWidgetId = GetSessionStorageData('widgetToken');
-        SetSessionStorage('widgetToken', fullWidgetToken)
-        const prevUser = JSON.parse(getLocalStorage('userData') || '{}');
-        const hasUserIdentity = Boolean(unique_id || mail || number);
 
-        // Helper: reset Redux keys and sub-thread
+        // Save current widget token
+        SetSessionStorage('widgetToken', fullWidgetToken);
+
+        const hasUserIdentity = Boolean(unique_id || mail || number);
+        if (hasUserIdentity) {
+            setLocalStorage('is_anon', 'false');
+        }
+
+        // Apply theme if present
+        if (sdkConfig?.customTheme) {
+            handleThemeChange(sdkConfig.customTheme);
+        }
+
+        // Store variables in redux
+        if (variables && isPlainObject(variables)) {
+            dispatch(setVariablesForHelloBot(variables));
+        }
+
+        // Reset redux keys
         const resetKeys = () => {
             dispatch(setDataInAppInfoReducer({ subThreadId: '', currentChannelId: '', currentChatId: '', currentTeamId: '' }));
         };
 
-        // 1. Widget token changed
-        if (unique_id ? `${widgetToken}_${unique_id}` !== prevWidgetId : widgetToken !== prevWidgetId) {
+        // Reset if widget token changed
+        if (fullWidgetToken !== prevWidgetId) {
             resetKeys();
         }
 
-        // 2. User identity changed
-        if (unique_id !== prevUser.unique_id) {
-            setLocalStorage('userData', '{}');
-            resetKeys();
-        }
+        // Store userData in localStorage
+        setLocalStorage('userData', JSON.stringify({
+            unique_id,
+            mail,
+            number,
+            user_jwt_token: hasUserIdentity ? user_jwt_token : undefined,
+            name,
+        }));
 
-
-
-        // 3. Update stored userData
-        setLocalStorage('userData', JSON.stringify({ unique_id, mail, number, user_jwt_token: hasUserIdentity ? user_jwt_token : undefined, name }));
-
-        // 4. Anonymous cleanup when no identity
-        if (!hasUserIdentity && getLocalStorage('k_clientId')) {
-            resetKeys();
-            setLocalStorage('k_clientId', '');
-        }
-
-        // 5. Determine anonymity status
-        const isAnon = hasUserIdentity ? 'false' : getLocalStorage('is_anon') === 'false' ? 'false' : 'true';
-
-        if (getLocalStorage('is_anon') != isAnon) {
-            resetKeys();
-        }
-
-        setLocalStorage('is_anon', isAnon);
-
-        // 7. Map additional interface props
-        Object.entries(restProps || {})?.forEach(([key, value]) => {
+        // Map extra interface props
+        Object.entries(restProps || {}).forEach(([key, value]) => {
             const mappedKey = helloToChatbotPropsMap[key];
             if (!mappedKey) return;
 
@@ -136,17 +126,22 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
             dispatch(setDataInInterfaceRedux({ [mappedKey]: finalValue }));
         });
 
-        // 8. Persist new widget token and config
+        // Persist widget token and redux draft data
         setLocalStorage('WidgetId', widgetToken);
-        dispatch(setDataInDraftReducer({ chatSessionId: fullWidgetToken, widgetToken: fullWidgetToken, isHelloUser: true }));
-        SetSessionStorage('helloConfig', JSON.stringify(event.data.data))
+        dispatch(setDataInDraftReducer({
+            chatSessionId: fullWidgetToken,
+            widgetToken: fullWidgetToken,
+            isHelloUser: true,
+        }));
+
+        SetSessionStorage('helloConfig', JSON.stringify(event.data.data));
         dispatch(setHelloConfig(event.data.data));
 
+        // Hide form if user data available
         if (mail && number && name) {
             dispatch(setHelloKeysData({ showWidgetForm: false }));
         }
-        return;
-    }
+    };
 
     function handleChatbotVisibility(isChatbotOpen = false) {
         dispatch(setDataInAppInfoReducer({ isChatbotOpen }))
