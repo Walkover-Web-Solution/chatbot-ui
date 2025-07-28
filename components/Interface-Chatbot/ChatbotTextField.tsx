@@ -169,7 +169,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     if (messageRef.current) {
       messageRef.current.value = value;
     }
-    setInputValue(value.trim());
+    setInputValue(value);
 
     if (isHelloUser) {
       if (value.trim()) {
