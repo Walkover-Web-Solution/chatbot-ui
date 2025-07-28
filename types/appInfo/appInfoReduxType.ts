@@ -12,6 +12,8 @@ export interface $AppInfoReduxType {
         currentTeamId: string,
         isChatbotOpen: boolean,
         hideFullScreenButton: boolean,
-        hideCloseButton: boolean
+        hideCloseButton: boolean,
+        serviceChanged: string, //name of the service
+        modelChanged: string, //name of the model
     }
 }

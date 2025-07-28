@@ -10,7 +10,7 @@ export const useChatEffects = ({ chatSessionId, tabSessionId, messageRef, timeou
     const fetchAllThreads = useFetchAllThreads()
     const getIntialChatHistory = useGetInitialChatHistory()
     const sendMessage = useSendMessage({ messageRef, timeoutIdRef });
-    const { threadId, subThreadId, bridgeName, isHelloUser, threadList, loading } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, isHelloUser, threadList, versionId, loading, serviceChanged, modelChanged } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
@@ -18,13 +18,14 @@ export const useChatEffects = ({ chatSessionId, tabSessionId, messageRef, timeou
         isHelloUser: state.draftData?.isHelloUser || false,
         threadList: state.Interface?.[chatSessionId]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId],
         loading: state.Chat.loading || false,
+        serviceChanged: state.appInfo?.[tabSessionId]?.serviceChanged || false,
+        modelChanged: state.appInfo?.[tabSessionId]?.modelChanged || false,
     }))
-
     useEffect(() => {
         if (bridgeName) {
-            globalDispatch(getHelloDetailsStart({ slugName: bridgeName }));
+            globalDispatch(getHelloDetailsStart({ slugName: bridgeName, versionId }));
         }
-    }, [bridgeName, chatSessionId])
+    }, [bridgeName, chatSessionId,serviceChanged, modelChanged, versionId])
 
     useEffect(() => {
         threadId && bridgeName && fetchAllThreads()
