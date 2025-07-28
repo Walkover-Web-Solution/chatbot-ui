@@ -274,7 +274,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }, [isHelloUser]);
 
   const uploadButton = useMemo(() => {
-    if (!mode?.includes("vision") || !mode?.includes("files") || (isHelloUser && !subThreadId)) return null;
+    if (!mode?.includes("vision") && !mode?.includes("files") || (isHelloUser && !subThreadId)) return null;
 
     return (
       <>
