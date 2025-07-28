@@ -27,12 +27,11 @@ interface ChatbotTextFieldProps {
   subThreadId: string;
   currentTeamId: string
   currentChannelId: string
-  isVision: Record<string, any>
 }
 
 const MAX_IMAGES = 4;
 
-const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "", isVision: reduxIsVision = {} }) => {
+const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "" }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const theme = useTheme();
@@ -61,11 +60,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     loading: state.Chat.loading,
     options: state.Chat.options || [],
   }))
-
-  const isVisionEnabled = useMemo(() =>
-    (reduxIsVision?.vision || mode?.includes("vision")) || isHelloUser,
-    [reduxIsVision, mode, isHelloUser]
-  );
 
   const buttonDisabled = useMemo(() =>
     ((isHelloUser && (assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0),
@@ -280,7 +274,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }, [isHelloUser]);
 
   const uploadButton = useMemo(() => {
-    if (!isVisionEnabled || (isHelloUser && !subThreadId)) return null;
+    if (!mode?.includes("vision") && !mode?.includes("files") || (isHelloUser && !subThreadId)) return null;
 
     return (
       <>
@@ -310,7 +304,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
         </label>
       </>
     );
-  }, [isVisionEnabled, isUploading, handleImageUpload, subThreadId]);
+  }, [mode, isUploading, handleImageUpload, subThreadId]);
 
   return (
     <div className={`relative w-full rounded-lg shadow-sm ${className}`}>
@@ -367,4 +361,4 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   );
 };
 
-export default React.memo(addUrlDataHoc(ChatbotTextField, [ParamsEnums.subThreadId, ParamsEnums.currentTeamId, ParamsEnums.currentChannelId, ParamsEnums.isVision]));
+export default React.memo(addUrlDataHoc(ChatbotTextField, [ParamsEnums.subThreadId, ParamsEnums.currentTeamId, ParamsEnums.currentChannelId]));
