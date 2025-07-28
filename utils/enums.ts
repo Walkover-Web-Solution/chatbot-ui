@@ -15,7 +15,7 @@ const ParamsEnums = {
   currentChannelId: "currentChannelId",
   currentChatId: "currentChatId",
   currentTeamId: "currentTeamId",
-  isVision: "isVision",
+
 };
 
 export const KNOWLEDGE_BASE_SECTION_TYPES = [
