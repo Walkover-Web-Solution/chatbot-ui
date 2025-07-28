@@ -22,8 +22,8 @@ interface InterfaceData {
   hideCloseButton?: boolean;
   variables?: Record<string, any>;
   [key: string]: any; // Allow for other properties
-  isModelChange?: string;
-  isServiceChange?: string;
+  modelChanged?: string;
+  serviceChanged?: string;
 }
 
 const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
@@ -68,13 +68,13 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
     }
 
     // Process gtwy model change
-    if(receivedData.isModelChange){
-      dispatch(setDataInAppInfoReducer({ isModelChange: receivedData.isModelChange }))
+    if(receivedData.modelChanged){
+      dispatch(setDataInAppInfoReducer({ modelChanged: receivedData.modelChanged }))
     }
 
     // Process gtwy service change
-    if(receivedData.isServiceChange){
-      dispatch(setDataInAppInfoReducer({ isServiceChange: receivedData.isServiceChange }))
+    if(receivedData.serviceChanged){
+      dispatch(setDataInAppInfoReducer({ serviceChanged: receivedData.serviceChanged }))
     } 
 
     // Process UI-related data
