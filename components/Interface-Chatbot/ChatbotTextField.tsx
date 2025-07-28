@@ -1,5 +1,5 @@
 'use client';
-
+import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { AiIcon } from "@/assests/assestsIndex";
 import { errorToast } from "@/components/customToast";
 import { uploadImage } from "@/config/api";
@@ -11,7 +11,7 @@ import { ParamsEnums } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import { TextField, useTheme } from "@mui/material";
 import debounce from "lodash.debounce";
-import { ChevronDown, Paperclip, Send, X } from "lucide-react";
+import { ChevronDown, Paperclip, Send, X ,Smile} from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
@@ -33,6 +33,9 @@ interface ChatbotTextFieldProps {
 const MAX_IMAGES = 4;
 
 const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "", isVision: reduxIsVision = {} }) => {
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [emojiPickerClosing, setEmojiPickerClosing] = useState(false);
+  const emojiDropdownRef = useRef<HTMLDivElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const theme = useTheme();
@@ -77,6 +80,17 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
       event.preventDefault();
       handleSendMessage();
     }
+  };
+
+  const handleEmojiClick = (emojiData: EmojiClickData) => {
+    const newInputValue = inputValue + emojiData.emoji;
+    setInputValue(newInputValue);
+    if (messageRef.current) {
+      messageRef.current.value = newInputValue;
+      // Focus back on the text field after emoji insertion
+      messageRef.current.focus();
+    }
+    // setShowEmojiPicker(false); // Close picker after selection
   };
 
   const handleSendMessage = useCallback((messageObj: { message?: string } = {}) => {
@@ -340,6 +354,31 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             <div className="flex items-center gap-2">
               {aiIconElement}
               {uploadButton}
+              {/* Emoji Picker Integration */}
+              <div className="dropdown dropdown-top " ref={emojiDropdownRef}>
+                <div tabIndex={0} role="button" className="flex px-2 py-1.5 group" onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!emojiPickerClosing) {
+                    setShowEmojiPicker(!showEmojiPicker);
+                  }
+                  // setShowEmojiPicker(!showEmojiPicker);
+                }}>
+                  <Smile className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600" />
+                </div>
+                {showEmojiPicker && (
+                   <div tabIndex={0} className="dropdown-content z-[99] bg-white shadow-lg rounded-lg mb-2"onClick={(e) => {
+                    e.stopPropagation(); // Prevent clicks inside picker from closing it
+                  }}>
+                     <EmojiPicker onEmojiClick={(emojiData) => {
+                       handleEmojiClick(emojiData);
+                       setShowEmojiPicker(false);
+                       setEmojiPickerClosing(true);
+                       setTimeout(() => setEmojiPickerClosing(false), 200);
+                     }} lazyLoadEmojis={true} width={300} height={400} />
+                   </div>
+                )}
+              </div>
             </div>
 
             {/* Right section: Call + Send button side by side */}
