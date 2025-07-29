@@ -298,7 +298,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           ref={fileInputRef}
         />
         <label htmlFor="upload-image" className="cursor-pointer">
-          <div className="flex px-2 py-1.5 w-8 h-8 items-center">
+          <div className="flex p-1.5 w-8 h-8 items-center">
             {isUploading ? (
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
@@ -315,19 +315,22 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
 
   const handleEmojiSelect = (data: { emoji: string }) => {
     if (messageRef?.current) {
-      const currentValue = messageRef.current.value || '';
-      const newValue = currentValue + data?.emoji || '';
-      messageRef.current.value = newValue;
-      setInputValue(newValue);
-
-      // Trigger onChange event to sync with any other handlers
-      const event = new Event('input', { bubbles: true });
-      messageRef.current.dispatchEvent(event);
+    const currentValue = messageRef.current.value || '';
+    const start = messageRef.current.selectionStart || 0;
+    const end = messageRef.current.selectionEnd || 0;
+    const newValue = currentValue.substring(0, start) + (data?.emoji || '') + currentValue.substring(end);
+    messageRef.current.value = newValue;
+    setInputValue(newValue);
+    // Set the cursor position right after the inserted emoji
+    messageRef.current.setSelectionRange(start + (data?.emoji || '').length, start + (data?.emoji || '').length);
+    // Trigger onChange event to sync with any other handlers
+    const event = new Event('input', { bubbles: true });
+    messageRef.current.dispatchEvent(event);
     }
     setShowEmojiPicker(false);
     // Focus back on the input field
     setTimeout(() => {
-      focusTextField();
+    focusTextField();
     }, 50);
   }
 
