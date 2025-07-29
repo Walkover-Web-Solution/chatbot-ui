@@ -125,6 +125,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             let a_clientId = getLocalStorage('a_clientId');
             let k_clientId = getLocalStorage('k_clientId');
             let enable_call = false
+            let channels = [];
             let is_domain_enable = false
             let { mail, number, unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
 
@@ -135,7 +136,8 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                 a_clientId = getLocalStorage(`a_clientId`);
             } else {
                 // it gives the Hello Client Id for the registered user
-                await fetchChannels();
+                const response = await fetchChannels();
+                channels = response?.channels || [];
                 k_clientId = getLocalStorage(`k_clientId`);
             }
 
@@ -192,6 +194,9 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             if (widgetData && greetingCompanyId && greetingBotId && (getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`)) && (botType === 'lex' || botType === 'chatgpt')) {
                 await getGreetingQuestions(greetingCompanyId, greetingBotId, botType).then((data) => {
                     dispatch(setGreeting({ ...data?.greeting }));
+                    if (data?.greeting?.text && channels?.length === 0) {
+                        emitEventToParent('SHOW_STARTER_QUESTION', { message: data?.greeting?.text, options: data?.greeting?.options })
+                    }
                 });
             }
 
