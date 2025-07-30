@@ -6,6 +6,17 @@ function DateGroup({ prevTime, messageTime, backgroundColor, textColor }: { prev
     const messageTimeRange = dayjs(messageTime);
     const prevTimeRange = dayjs(prevTime);
 
+    // Don't show if no previous time AND message is from today
+    if (prevTime === null && messageTimeRange.isSame(dayjs(), 'day')) {
+        return null;
+    }
+    // Check if both times are on the same date
+    const isSameDate = messageTimeRange.format('YYYY-MM-DD') === prevTimeRange.format('YYYY-MM-DD');
+
+    // Only show timestamp if messages are from different dates
+    if (isSameDate) {
+        return null;
+    }
 
     // Check if both times are on the same date and within 24 hours of each other
     const shouldShowTimestamp = !prevTime ||
