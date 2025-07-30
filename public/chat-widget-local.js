@@ -226,6 +226,9 @@
                 case 'CLOSE_CHATBOT':
                     this.closeChatbot();
                     break;
+                case 'OPEN_CHATBOT':
+                    this.openChatbot();
+                    break;
                 case 'ENTER_FULL_SCREEN_CHATBOT':
                     this.toggleFullscreen(true);
                     break;
@@ -784,8 +787,8 @@
 
         hideChatbotWithIcon() {
             if (this.state?.chatbotSize !== 'NORMAL') {
-              this.toggleFullscreen(false)
-              this.state.chatbotSize = 'NORMAL';
+                this.toggleFullscreen(false)
+                this.state.chatbotSize = 'NORMAL';
             }
             this.hideHelloIcon = true;
             const interfaceEmbed = document.getElementById(this.elements.chatbotIconContainer);

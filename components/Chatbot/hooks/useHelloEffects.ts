@@ -207,6 +207,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                 const clientTokenPromise = getClientToken().then(() => {
                     helloVoiceService.initialize();
                     if (callToken) {
+                        emitEventToParent('OPEN_CHATBOT')
                         helloVoiceService.rejoinCall(callToken)
                     }
                 });
