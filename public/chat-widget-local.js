@@ -714,7 +714,8 @@
 
                         optionElement.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            sendMessageToChatbot({ type: 'askAi', data: option });
+                            // Send the new event for starter question option click
+                            sendMessageToChatbot({ type: 'STARTER_QUESTION_OPTION_CLICKED', data: { option: option } });
                             helloChatbotManager.openChatbot();
                             helloChatbotManager.hideStarterQuestion();
                         });

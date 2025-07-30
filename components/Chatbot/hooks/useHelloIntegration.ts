@@ -325,8 +325,9 @@ export const useSendMessageToHello = ({
       } else if (messageRef.current instanceof HTMLDivElement) {
         textMessage = messageRef.current.textContent || message || '';
       }
+    } else {
+      textMessage = message || '';
     }
-
     if (!textMessage.trim() && (!images || images?.length === 0)) return false;
 
     const messageId = generateNewId();
