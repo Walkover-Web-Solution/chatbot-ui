@@ -47,7 +47,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
 
     const { currentChannelId, isHelloUser } = useReduxStateManagement({ chatSessionId, tabSessionId });
 
-    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotOpen, unReadCountInCurrentChannel } = useCustomSelector((state) => ({
+    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotOpen, callToken, unReadCountInCurrentChannel } = useCustomSelector((state) => ({
         companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
         botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
         reduxChatSessionId: state.draftData?.chatSessionId,
@@ -60,6 +60,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
         })(),
         isToggledrawer: state.Chat?.isToggledrawer,
         isChatbotOpen: state.appInfo?.[tabSessionId]?.isChatbotOpen,
+        callToken: state.appInfo?.[tabSessionId]?.callToken || '',
         unReadCountInCurrentChannel: (() => {
             const channelListData = state.Hello?.[chatSessionId]?.channelListData;
             return channelListData?.channels?.find((channel) => channel?.channel === currentChannelId)?.widget_unread_count || 0;
@@ -205,6 +206,9 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             if ((getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`)) && widgetToken && enable_call) {
                 const clientTokenPromise = getClientToken().then(() => {
                     helloVoiceService.initialize();
+                    if (callToken) {
+                        helloVoiceService.rejoinCall(callToken)
+                    }
                 });
 
                 // const callTokenPromise = getCallToken();
