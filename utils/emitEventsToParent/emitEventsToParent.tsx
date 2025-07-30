@@ -13,6 +13,7 @@ export type ParentEventType =
   | 'SET_BADGE_COUNT'
   | 'RELOAD_PARENT'
   | 'MINIMIZE_CHATBOT'
+  | 'OPEN_CHATBOT'
 /**
  * Emits an event to the parent window using postMessage
  * @param type - The type of event to emit
