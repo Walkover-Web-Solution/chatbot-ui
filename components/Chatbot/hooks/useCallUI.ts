@@ -1,16 +1,20 @@
 // useCallUI.ts
-import { useState, useEffect } from 'react';
+import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
+import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import helloVoiceService from './HelloVoiceService';
 
 export const useCallUI = () => {
-  const [callState, setCallState] = useState<"idle" | "ringing" | "connected" | "ended">("idle");
+  const [callState, setCallState] = useState<"idle" | "ringing" | "connected" | "ended" | "rejoined">("idle");
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [mediaStream, setMediaStream] = useState<any>(null);
+  const [rejoinSummary, setRejoinSummary] = useState<any>(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     // Initialize service if not already done
     // if (!helloVoiceService.isInitialized()) {
-      // helloVoiceService.initialize();
+    // helloVoiceService.initialize();
     // }
 
     // Set initial state
@@ -22,6 +26,14 @@ export const useCallUI = () => {
       setCallState(state);
       if (mediaStream) {
         setMediaStream(mediaStream);
+      }
+      if (state === 'connected' && data?.id) {
+        dispatch(setDataInAppInfoReducer({ callToken: data?.id }))
+      } else if (state === 'idle') {
+        dispatch(setDataInAppInfoReducer({ callToken: '' }))
+        setRejoinSummary(null)
+      } else if (state === 'rejoined') {
+        setRejoinSummary(data?.summary)
       }
     };
 
@@ -62,6 +74,7 @@ export const useCallUI = () => {
     makeCall,
     answerCall,
     endCall,
-    toggleMute
+    toggleMute,
+    rejoinSummary
   };
 };

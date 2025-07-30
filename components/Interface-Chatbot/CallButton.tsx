@@ -1,3 +1,4 @@
+import { getCallToken } from '@/config/helloApi';
 import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { darken, lighten } from '@mui/material';
@@ -6,7 +7,6 @@ import React from 'react';
 import helloVoiceService from '../Chatbot/hooks/HelloVoiceService';
 import { useCallUI } from '../Chatbot/hooks/useCallUI';
 import { useColor } from '../Chatbot/hooks/useColor';
-import { getCallToken } from '@/config/helloApi';
 
 interface CallButtonProps {
     chatSessionId: string
@@ -15,7 +15,7 @@ interface CallButtonProps {
 function CallButton({ chatSessionId }: CallButtonProps) {
     const { isHelloUser, voice_call_widget } = useCustomSelector((state) => ({
         isHelloUser: state.draftData?.isHelloUser || false,
-        voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false
+        voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false,
     }));
     const { backgroundColor } = useColor();
     const { callState } = useCallUI();
