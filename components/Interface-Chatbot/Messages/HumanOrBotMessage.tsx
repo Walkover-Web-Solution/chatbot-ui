@@ -242,21 +242,22 @@ const HumanOrBotMessageCard = React.memo(({ message, isBot = false }: MessageCar
     );
 
     return (
-        <div className="w-full mb-3 animate-fade-in animate-slide-left">
+        <div className="w-full pb-4 animate-fade-in animate-slide-left">
             <div className="flex items-start gap-2 max-w-[90%]">
-                <Avatar message={message} isBot={isBot} />
+                {/* <Avatar message={message} isBot={isBot} /> */}
 
                 <div className="w-fit whitespace-pre-wrap break-words">
                     <div className="text-base-content p-1 whitespace-pre-wrap w-full break-words">
-                        {message?.from_name && (
-                            <div className="text-sm font-medium mb-1">{message.from_name}</div>
-                        )}
-
                         <MessageContent message={message} />
+                        <div className="flex items-end gap-2 text-gray-500 pt-1">
+                            {message?.from_name && (
+                                <div className="text-xs font-medium">{message.from_name}</div>
+                            )}
 
-                        {formattedTime && (
-                            <p className="text-xs text-gray-500">{formattedTime}</p>
-                        )}
+                            {formattedTime && (
+                                <p className="text-xs">{formattedTime}</p>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
