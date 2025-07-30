@@ -51,7 +51,7 @@ const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatS
                         </p>
                     </div>
                 </div>}
-                {message?.time && <p className="text-xs text-gray-500">{formatTime(message?.time, 'shortTime')}</p>}
+                {message?.time && <p className="text-xs text-gray-500 pt-1">{formatTime(message?.time, 'shortTime')}</p>}
             </div>
         </div>
     );
