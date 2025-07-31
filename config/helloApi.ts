@@ -28,7 +28,7 @@ export function getUserData() {
 
 // Function to get is_anon value
 export function getIsAnonValue(): boolean {
-  return getLocalStorage("k_clientId") ? false : getLocalStorage("a_clientId") ? true : getLocalStorage("is_anon") == 'true';
+  return getLocalStorage("k_clientId") ? false : getLocalStorage("a_clientId") ? true : false;
 }
 
 // Register anonymous user
@@ -58,7 +58,8 @@ export async function registerAnonymousUser(): Promise<any> {
 // Get JWT token for socket subscription
 export async function getJwtToken(): Promise<string | null> {
   try {
-    const response = await axios.get(`${HELLO_HOST_URL}/jwt-token/?is_anon=${getIsAnonValue()}`, {
+    // const response = await axios.get(`${HELLO_HOST_URL}/jwt-token/?is_anon=${getIsAnonValue()}`, {
+    const response = await axios.get(`${HELLO_HOST_URL}/jwt-token/`, {
       headers: {
         authorization: getAuthorization(),
       },
@@ -103,8 +104,8 @@ export async function getAllChannels(): Promise<any> {
         number,
         unique_id,
         user_data: getUserData(),
-        is_anon: isAnon,
-        ...(isAnon ? { anonymous_client_uuid: aClientId, uuid: aClientId } : {})
+        // is_anon: isAnon,
+        // ...(isAnon ? { anonymous_client_uuid: aClientId, uuid: aClientId } : {})
       },
       {
         headers: {
@@ -147,7 +148,7 @@ export async function getAgentTeamApi(): Promise<any> {
   try {
     const response = await axios.post(`${HELLO_HOST_URL}/agent-team/`, {
       user_data: getUserData(),
-      is_anon: getIsAnonValue(),
+      // is_anon: getIsAnonValue(),
     }, {
       headers: {
         authorization: getAuthorization(),
@@ -163,7 +164,7 @@ export async function getAgentTeamApi(): Promise<any> {
 // Get greeting/starter questions
 export async function getGreetingQuestions(companyId: string, botId: string, botType: 'lex' | 'chatgpt'): Promise<any> {
   try {
-    const isAnonymousUser = getIsAnonValue();
+    // const isAnonymousUser = getIsAnonValue();
     const widgetId = getLocalStorage('WidgetId');
     const clientId = getLocalStorage('k_clientId') || getLocalStorage('a_clientId');
     const authorization = clientId ? `${widgetId}:${clientId}` : widgetId;
@@ -174,7 +175,7 @@ export async function getGreetingQuestions(companyId: string, botId: string, bot
         {
           company_id: companyId,
           bot_id: botId,
-          is_anon: isAnonymousUser
+          // is_anon: isAnonymousUser
         },
         {
           headers: {
@@ -192,7 +193,7 @@ export async function getGreetingQuestions(companyId: string, botId: string, bot
           params: {
             company_id: companyId,
             bot_id: botId,
-            is_anon: isAnonymousUser
+            // is_anon: isAnonymousUser
           },
           headers: {
             authorization: authorization,
@@ -213,7 +214,7 @@ export async function saveClientDetails(clientData = {}): Promise<any> {
   try {
     const payload = {
       user_data: getUserData(),
-      is_anon: getIsAnonValue(),
+      // is_anon: getIsAnonValue(),
       ...clientData
     }
 
@@ -240,7 +241,7 @@ export async function getHelloChatHistoryApi(channelId: string, skip: number = 0
         page_size: PAGE_SIZE.hello,
         start_from: skip + 1 || 1,
         user_data: getUserData(),
-        is_anon: getIsAnonValue(),
+        // is_anon: getIsAnonValue(),
       },
       {
         headers: {
@@ -263,7 +264,7 @@ export async function initializeHelloChat(): Promise<any> {
       `${HELLO_HOST_URL}/widget-info/`,
       {
         "user_data": getUserData(),
-        "is_anon": getIsAnonValue()
+        // "is_anon": getIsAnonValue()
       },
       {
         headers: {
@@ -305,8 +306,8 @@ export async function sendMessageToHelloApi(message: string, attachment: Array<o
         chat_id: chat_id ? chat_id : null,
         session_id: null,
         user_data: getUserData(),
-        is_anon: getIsAnonValue(),
-        sessionVariables: helloVariables
+        sessionVariables: helloVariables,
+        // is_anon: getIsAnonValue(),
       },
       {
         headers: {
@@ -352,9 +353,10 @@ export async function uploadAttachmentToHello(file: any, inboxId: string): Promi
 // Get client token for WebRTC
 export async function getClientToken(): Promise<any> {
   try {
-    const isAnon = getIsAnonValue();
+    // const isAnon = getIsAnonValue();
+    // `${HELLO_HOST_URL}/web-rtc/get-client-token/?is_anon=${isAnon}`,
     const response = await axios.get(
-      `${HELLO_HOST_URL}/web-rtc/get-client-token/?is_anon=${isAnon}`,
+      `${HELLO_HOST_URL}/web-rtc/get-client-token/`,
       {
         headers: {
           authorization: getAuthorization(),
@@ -374,9 +376,10 @@ export async function getClientToken(): Promise<any> {
 // Get call token for WebRTC
 export async function getCallToken(channelId?: string): Promise<any> {
   try {
-    const isAnon = getIsAnonValue();
+    // const isAnon = getIsAnonValue();
+    // `${HELLO_HOST_URL}/web-rtc/get-call-token/?is_anon=${isAnon}${channelId ? `&channel=${channelId}` : ''}`,
     const response = await axios.get(
-      `${HELLO_HOST_URL}/web-rtc/get-call-token/?is_anon=${isAnon}${channelId ? `&channel=${channelId}` : ''}`,
+      `${HELLO_HOST_URL}/web-rtc/get-call-token/?${channelId ? `channel=${channelId}` : ''}`,
       {
         headers: {
           authorization: getAuthorization(),
@@ -406,7 +409,7 @@ export async function addDomainToHello({ domain, userEvent = {} }: { domain?: st
         event_data: Object.keys(userEvent || {})?.length > 0 ? {
           ...userEvent
         } : undefined,
-        is_anon: getIsAnonValue()
+        // is_anon: getIsAnonValue()
       },
       {
         headers: {
@@ -457,7 +460,7 @@ export async function submitFeedback(params: {
         type: "post-feedback",
         id: params.id,
         user_data: getUserData(),
-        is_anon: getIsAnonValue()
+        // is_anon: getIsAnonValue()
       },
       {
         headers: {
