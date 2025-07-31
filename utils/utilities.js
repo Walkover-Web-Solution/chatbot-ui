@@ -2,6 +2,8 @@ import dayjs from "dayjs";
 import linkifyHtml from "linkify-html";
 import { customAlphabet } from "nanoid";
 import { GetSessionStorageData } from "./ChatbotUtility";
+import relativeTime from 'dayjs/plugin/relativeTime'
+dayjs.extend(relativeTime);
 
 export const generateNewId = (length = 8) => {
   const nanoid = customAlphabet(
@@ -178,7 +180,7 @@ export const formatTime = (value, format) => {
       return dayjs(timeToken).format('DD MMM, YYYY');
     }
     case 'shortTime': {
-      return dayjs(timeToken).format('hh:mm a');
+      return dayjs(timeToken).format('hh:mm A');
     }
     case 'timeAgo': {
       return dayjs(timeToken).fromNow();
