@@ -3,10 +3,10 @@ import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 import { ALLOWED_EVENTS_TO_SUBSCRIBE } from '@/utils/enums';
-import { formatTime } from '@/utils/utilities';
 import React from 'react';
 import ImageWithFallback from './ImageWithFallback';
 import "./Message.css";
+import MessageTime from './MessageTime';
 
 const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatSessionId }: any) => {
     console.log('user message card')
@@ -51,7 +51,7 @@ const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatS
                         </p>
                     </div>
                 </div>}
-                {message?.time && <p className="text-xs text-gray-500">{formatTime(message?.time, 'shortTime')}</p>}
+                <MessageTime message={message} />
             </div>
         </div>
     );

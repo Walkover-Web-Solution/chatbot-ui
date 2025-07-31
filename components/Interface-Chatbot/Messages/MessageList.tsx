@@ -160,7 +160,7 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
       id="scrollableDiv"
       ref={scrollableDivRef}
       onScroll={handleScroll}
-      className="w-full h-full flex-1 overflow-auto p-3 sm:p-4"
+      className="w-full h-full flex-1 overflow-auto px-3 sm:p-4"
       style={{
         display: 'flex',
         flexDirection: 'column-reverse',

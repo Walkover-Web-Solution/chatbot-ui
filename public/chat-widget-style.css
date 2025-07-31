@@ -108,16 +108,11 @@
   /* bottom: 90px; */
   /* right: 10px; */
   z-index: 999999;
+  width: fit-content;
   max-width: 280px;
   opacity: 1;
-  transform: translateY(10px);
-  transition: all 0.3s ease-in-out;
-  pointer-events: none;
-}
-
-.hello-starter-question-show {
-  opacity: 1;
   transform: translateY(0);
+  transition: all 0.3s ease-in-out;
   pointer-events: auto;
 }
 
@@ -131,23 +126,23 @@
   margin-bottom: 8px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  text-align: right;
+  width: fit-content;
+  justify-content: flex-end;
   gap: 8px;
+  margin-left: auto;
 }
 
 .hello-starter-question-text {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: Arial;
   font-size: 14px;
   line-height: 1.4;
-  color: #2d3748;
+  color: black;
   cursor: pointer;
-  flex: 1;
   margin: 0;
   padding: 0;
-}
-
-.hello-starter-question-text:hover {
-  color: #1a202c;
+  width: fit-content;
+  letter-spacing: normal;
 }
 
 .hello-starter-question-close {
@@ -155,7 +150,7 @@
   border: none;
   font-size: 18px;
   line-height: 1;
-  color: #718096;
+  color: black;
   cursor: pointer;
   padding: 0;
   margin: 0;
@@ -169,42 +164,28 @@
   flex-shrink: 0;
 }
 
-.hello-starter-question-close:hover {
-  background-color: #f7fafc;
-  color: #2d3748;
+.hello-starter-question-option {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #ffffff;
+  width: fit-content;
+  cursor: pointer;
+  font-size: 14px;
+  color: black;
 }
 
-.hello-starter-question-tail {
-  position: absolute;
-  bottom: -7px;
-  right: 20px;
-  width: 0;
-  height: 0;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 8px solid #ffffff;
-}
-
-.hello-starter-question-tail::before {
-  content: '';
-  position: absolute;
-  bottom: 1px;
-  left: -8px;
-  width: 0;
-  height: 0;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 8px solid #e1e5e9;
+.hello-starter-question-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+  margin-top: 10px;
 }
 
 /* Position adjustments for left alignment */
 .left_all_child .hello-starter-question {
   left: 10px;
-  right: auto;
-}
-
-.left_all_child .hello-starter-question-tail {
-  left: 20px;
   right: auto;
 }
 
