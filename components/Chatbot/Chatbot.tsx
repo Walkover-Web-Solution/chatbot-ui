@@ -80,11 +80,10 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
   const dispatch = useAppDispatch();
 
   // State management
-  const { show_widget_form, is_anon, greetingMessage, isToggledrawer, chatsLoading, messageIds, subThreadId, helloMsgIds } = useCustomSelector((state) => {
+  const { show_widget_form, greetingMessage, isToggledrawer, chatsLoading, messageIds, subThreadId, helloMsgIds } = useCustomSelector((state) => {
     const widgetInfo = state.Hello?.[chatSessionId]?.widgetInfo
     return ({
       show_widget_form: typeof widgetInfo?.show_widget_form === 'boolean' ? widgetInfo?.show_widget_form : state.Hello?.[chatSessionId]?.showWidgetForm,
-      is_anon: state.Hello?.[chatSessionId]?.is_anon == 'true',
       greetingMessage: state.Hello?.[chatSessionId]?.greeting as any,
       isToggledrawer: state.Chat.isToggledrawer,
       chatsLoading: state.Chat.chatsLoading,
@@ -164,7 +163,7 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
           )}
 
           {/* Form and UI components */}
-          {isHelloUser && show_widget_form && !is_anon && (
+          {isHelloUser && show_widget_form && (
             <FormComponent />
           )}
           <CallUI />
