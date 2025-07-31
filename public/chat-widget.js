@@ -226,6 +226,9 @@
                 case 'CLOSE_CHATBOT':
                     this.closeChatbot();
                     break;
+                case 'OPEN_CHATBOT':
+                    this.openChatbot();
+                    break;
                 case 'ENTER_FULL_SCREEN_CHATBOT':
                     this.toggleFullscreen(true);
                     break;

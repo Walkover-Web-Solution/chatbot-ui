@@ -227,6 +227,9 @@
                 case 'CLOSE_CHATBOT':
                     this.closeChatbot();
                     break;
+                case 'OPEN_CHATBOT':
+                    this.openChatbot();
+                    break;
                 case 'ENTER_FULL_SCREEN_CHATBOT':
                     this.toggleFullscreen(true);
                     break;
@@ -639,8 +642,7 @@
                 if (!child.classList.contains('hello-starter-question') &&
                     !child.classList.contains('hello-starter-question-bubble') &&
                     !child.classList.contains('hello-starter-question-text') &&
-                    !child.classList.contains('hello-starter-question-close') &&
-                    !child.classList.contains('hello-starter-question-tail')) {
+                    !child.classList.contains('hello-starter-question-close')) {
                     child.addEventListener('click', () => helloChatbotManager.openChatbot());
                 }
             });
@@ -680,31 +682,12 @@
                 if (options && options.length > 0) {
                     const optionsContainer = document.createElement('div');
                     optionsContainer.className = 'hello-starter-question-options';
-                    optionsContainer.style.display = 'flex';
-                    optionsContainer.style.flexDirection = 'column';
-                    optionsContainer.style.gap = '8px';
-                    optionsContainer.style.marginTop = '10px';
 
                     options.forEach((option, index) => {
-                        const optionWrapper = document.createElement('div');
-                        optionWrapper.className = 'hello-starter-question-option-wrapper';
-
                         const optionElement = document.createElement('button'); // use <button> for semantics and accessibility
                         optionElement.className = 'hello-starter-question-option';
                         optionElement.setAttribute('data-option-index', index);
                         optionElement.textContent = option;
-
-                        // Minimal inline styling
-                        optionElement.style.padding = '8px 12px';
-                        optionElement.style.border = '1px solid #ccc';
-                        optionElement.style.borderRadius = '4px';
-                        optionElement.style.background = '#ffffff';
-                        optionElement.style.width = '100%';
-                        optionElement.style.cursor = 'pointer';
-                        optionElement.style.fontSize = '14px';
-                        optionElement.style.color = 'black';
-                        optionElement.style.transition = 'opacity 0.3s ease';
-                        optionElement.style.opacity = '0'; // start hidden
 
                         // Reveal one-by-one with delay
                         setTimeout(() => {
@@ -719,27 +702,16 @@
                             helloChatbotManager.hideStarterQuestion();
                         });
 
-                        optionWrapper.appendChild(optionElement);
-                        optionsContainer.appendChild(optionWrapper);
+                        optionsContainer.appendChild(optionElement);
                     });
 
                     starterQuestionContainer.appendChild(optionsContainer);
                 }
-
-
-                // Add tail/pointer to the bubble
-                const starterQuestionTail = document.createElement('div');
-                starterQuestionTail.className = 'hello-starter-question-tail';
-                starterQuestionContainer.appendChild(starterQuestionTail);
-
                 // Append to chat bot icon
                 chatBotIcon.prepend(starterQuestionContainer);
 
                 // Add event listeners for starter question text
                 starterQuestionText.addEventListener('click', () => {
-                    // Send the starter question text to the chatbot and open it
-                    const questionText = starterQuestionText.textContent;
-                    sendMessageToChatbot({ type: 'askAi', data: questionText });
                     helloChatbotManager.openChatbot();
                     helloChatbotManager.hideStarterQuestion();
                 });
@@ -929,8 +901,6 @@
             const starterQuestionContainer = document.getElementById(this.elements.starterQuestionContainer);
             if (starterQuestionContainer) {
                 starterQuestionContainer.style.display = 'block';
-                // Add animation class for smooth appearance
-                starterQuestionContainer.classList.add('hello-starter-question-show');
             }
         }
 
@@ -938,7 +908,6 @@
             const starterQuestionContainer = document.getElementById(this.elements.starterQuestionContainer);
             if (starterQuestionContainer) {
                 starterQuestionContainer.style.display = 'none';
-                starterQuestionContainer.classList.remove('hello-starter-question-show');
             }
         }
 

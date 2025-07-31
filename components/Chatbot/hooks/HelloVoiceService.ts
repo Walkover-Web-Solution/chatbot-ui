@@ -73,13 +73,13 @@ class HelloVoiceService {
         });
         // Set up event listeners for this call
         call.on("answered", (data: any) => {
-            console.log("call answered", data);
+            console.log('call answered', data);
             this.callState = "connected";
             this.eventEmitter.emit("callStateChanged", { state: this.callState, data });
         });
 
         call.on("connected", (mediaStream: any) => {
-            console.log("call connected");
+            console.log('call connected');
             this.callState = "connected";
             this.eventEmitter.emit("callStateChanged", {
                 state: this.callState,
@@ -88,18 +88,27 @@ class HelloVoiceService {
         });
 
         call.on("ended", (data: any) => {
-            console.log("call ended");
+            console.log('call ended', data);
             this.resetCall();
         });
 
         call.on("mute", ({ uid }: { uid: string }) => {
+            console.log('call mute', uid);
             this.isMuted = true;
             this.eventEmitter.emit("muteStatusChanged", { muted: true, uid });
         });
 
         call.on("unmute", ({ uid }: { uid: string }) => {
+            console.log('call unmute', uid);
             this.isMuted = false;
             this.eventEmitter.emit("muteStatusChanged", { muted: false, uid });
+        });
+
+        call.on("rejoined", (data: any) => {
+            console.log('call rejoin', data)
+            const summary = data?.summary;
+            this.callState = "rejoined";
+            this.eventEmitter.emit("callStateChanged", { state: this.callState, data });
         });
     }
 
@@ -117,6 +126,20 @@ class HelloVoiceService {
         this.webrtc.call(callToken);
         this.callState = "ringing";
         this.eventEmitter.emit("callStateChanged", { state: this.callState });
+    }
+
+    public rejoinCall(callId: string): void {
+        if (!this.webrtc) {
+            console.warn("WebRTC not initialized. Call initialize() first.");
+            return;
+        }
+        this.callState = "ringing";
+        this.eventEmitter.emit("callStateChanged", { state: this.callState });
+
+        this.webrtc.rejoinCall(callId).catch((error: any) => {
+            console.log('rejoin call error', error)
+            this.resetCall();
+        });
     }
 
     public answerCall(): void {
