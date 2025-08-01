@@ -13,6 +13,7 @@ import { useCallback, useContext, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
+import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 
 interface HelloMessage {
   role: string;
@@ -261,7 +262,10 @@ export const useOnSendHello = () => {
           currentChannelId: data?.['channel']
         }));
         addHelloMessage(newMessage, data?.['channel']);
-        fetchChannels();
+        const response = await fetchChannels();
+        if (response?.channels?.length === 1 && response?.channels?.[0]?.id !== null) {
+          emitEventToParent('HIDE_STARTER_QUESTION')
+        }
         if (data?.['presence_channel'] && data?.['channel']) {
           try {
             await socketManager.subscribe([data?.['presence_channel'], data?.['channel']]);
@@ -328,8 +332,9 @@ export const useSendMessageToHello = ({
       } else if (messageRef.current instanceof HTMLDivElement) {
         textMessage = messageRef.current.textContent || message || '';
       }
+    } else {
+      textMessage = message || '';
     }
-
     if (!textMessage.trim() && (!images || images?.length === 0)) return false;
 
     const messageId = generateNewId();
