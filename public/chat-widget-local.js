@@ -95,9 +95,9 @@
             this.helloLaunchWidget = null;
             this.config = {
                 type: 'popup',
-                height: 'min(804px, calc(100% - 40px))',
+                height: 'min(724px, calc(100% - 40px))',
                 heightUnit: '',
-                width: '480',
+                width: '440',
                 widthUnit: 'px',
                 buttonName: ''
             };

@@ -514,14 +514,14 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
           )}
           <div className="flex items-center">
             <div className="relative">
-              <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis text-lg">
+              <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis text-base">
                 {displayTitle}
               </h1>
             </div>
           </div>
         </div>
         {chatbotSubtitle && (
-          <p className="text-sm opacity-75 text-center whitespace-nowrap overflow-hidden overflow-ellipsis"> ̰
+          <p className="text-sm opacity-75 text-center whitespace-nowrap overflow-hidden overflow-ellipsis">
             {displaySubtitle}
           </p>
         )}
