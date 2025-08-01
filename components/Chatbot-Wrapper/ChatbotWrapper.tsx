@@ -16,11 +16,19 @@ interface ChatContextType {
 
 export const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
-function ChatbotWrapper({ tabSessionId, chatSessionId }: ChatbotWrapperProps) {
-
+// Create a separate component for the hooks that need context
+function ChatbotWithHooks({ tabSessionId, chatSessionId }: { tabSessionId: string, chatSessionId: string }) {
   useEmbeddingScriptEventHandler(tabSessionId);
   useLocalStorageEventHandler(tabSessionId);
 
+  if (!chatSessionId) {
+    return null
+  }
+
+  return <Chatbot />;
+}
+
+function ChatbotWrapper({ tabSessionId, chatSessionId }: ChatbotWrapperProps) {
   // Notify parent when interface is loaded
   useEffect(() => {
     setTimeout(() => {
@@ -28,13 +36,9 @@ function ChatbotWrapper({ tabSessionId, chatSessionId }: ChatbotWrapperProps) {
     }, 0);
   }, []);
 
-  if (!chatSessionId) {
-    return null
-  }
-
   return (
     <ChatContext.Provider value={{ chatSessionId, tabSessionId }}>
-      <Chatbot />
+      <ChatbotWithHooks tabSessionId={tabSessionId} chatSessionId={chatSessionId} />
     </ChatContext.Provider>
   )
 }
