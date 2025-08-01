@@ -29,6 +29,11 @@ import { useHelloEffects } from './hooks/useHelloEffects';
 import { useReduxEffects } from './hooks/useReduxEffects';
 import { useScreenSize } from './hooks/useScreenSize';
 
+/**
+ * A component that displays a chatbot interface.
+ * It includes a header, drawer, and message list.
+ */
+
 interface ChatbotProps {
   chatSessionId: string
   tabSessionId: string

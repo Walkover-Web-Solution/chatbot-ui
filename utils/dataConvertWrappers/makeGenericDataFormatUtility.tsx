@@ -1,5 +1,11 @@
 import { generateNewId } from "../utilities";
 
+/**
+ * Converts chat history to generic format.
+ * @param history - The chat history to convert.
+ * @param isHello - Whether the chat history is from Hello.
+ * @returns The converted chat history.
+ */
 function convertChatHistoryToGenericFormat(history: any, isHello: boolean = false) {
     switch (isHello) {
         case true:
@@ -41,7 +47,8 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                         urls: chat?.message?.content?.attachment,
                         message_type: chat?.message?.message_type,
                         messageJson: chat?.message?.content,
-                        time: chat?.timetoken
+                        time: chat?.timetoken,
+                        is_auto_response: chat?.message?.is_auto_response
                     };
                 })
 
@@ -72,6 +79,12 @@ function createSendMessageHelloPayload(message: string) {
     };
 }
 
+/**
+ * Converts an event message to generic format.
+ * @param message - The event message to convert.
+ * @param isHello - Whether the event message is from Hello.
+ * @returns The converted event message.
+ */
 function convertEventMessageToGenericFormat(message: any, isHello: boolean = false) {
     if (!isHello) {
         return [{
@@ -101,7 +114,8 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
             dynamic_values: message?.dynamic_values,
             chat_id: message?.chat_id,
             channel: message?.channel,
-            time: message?.timetoken || null
+            time: message?.timetoken || null,
+            is_auto_response
         }];
     }
 
@@ -114,7 +128,8 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
         id: message?.timetoken || message?.id,
         message_type: message?.message_type,
         messageJson: message?.content,
-        time: message?.timetoken || null
+        time: message?.timetoken || null,
+        is_auto_response
     }];
 }
 

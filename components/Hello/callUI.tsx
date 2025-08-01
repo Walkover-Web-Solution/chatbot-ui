@@ -34,7 +34,7 @@ const CallUI: React.FC = () => {
             case 'ringing':
                 return (
                     <div className="flex flex-row items-center w-full justify-between px-3">
-                        <h3 className="text-md">Calling...</h3>
+                        <h3 className="text-base">Calling...</h3>
                         <div className="flex items-center">
                             <div className="call-animation">
                                 <div className="ripple"></div>
@@ -56,7 +56,7 @@ const CallUI: React.FC = () => {
             case 'rejoined':
                 return (
                     <div className="flex flex-row items-center justify-between px-3 w-full">
-                        <h3 className="text-md">Ongoing Call</h3>
+                        <h3 className="text-base">Ongoing Call</h3>
                         <div className="flex items-center">
                             <CallTimer answeredAt={rejoinSummary?.answeredAt} />
                         </div>
