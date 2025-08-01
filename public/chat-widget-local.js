@@ -291,6 +291,9 @@
                 case 'SHOW_STARTER_QUESTION':
                     this.createAndShowStarterQuestion(data?.message, data?.options);
                     break;
+                case 'HIDE_STARTER_QUESTION':
+                    this.hideStarterQuestion();
+                    break;
                 case 'RELOAD_PARENT':
                     // window.location.reload()
                     break;

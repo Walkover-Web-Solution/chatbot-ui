@@ -15,6 +15,7 @@ export type ParentEventType =
   | 'MINIMIZE_CHATBOT'
   | 'OPEN_CHATBOT'
   | 'SHOW_STARTER_QUESTION'
+  | 'HIDE_STARTER_QUESTION'
 /**
  * Emits an event to the parent window using postMessage
  * @param type - The type of event to emit
