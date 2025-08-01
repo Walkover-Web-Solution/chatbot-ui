@@ -652,7 +652,7 @@
             });
         }
 
-        createAndShowStarterQuestion(questionText = 'How can I help you today?', options = []) {
+        createAndShowStarterQuestion(questionText, options = []) {
             // Check if starter question already exists
             let starterQuestionContainer = document.getElementById(this.elements.starterQuestionContainer);
 
@@ -670,16 +670,25 @@
                 const starterQuestionBubble = document.createElement('div');
                 starterQuestionBubble.className = 'hello-starter-question-bubble';
 
-                const starterQuestionText = document.createElement('span');
-                starterQuestionText.className = 'hello-starter-question-text';
-                starterQuestionText.textContent = questionText;
+                // Only create question text div if questionText is valid (not null, undefined, or empty)
+                if (questionText && questionText.trim() !== '') {
+                    const starterQuestionText = document.createElement('span');
+                    starterQuestionText.className = 'hello-starter-question-text';
+                    starterQuestionText.textContent = questionText;
+                    starterQuestionBubble.appendChild(starterQuestionText);
+
+                    // Add event listeners for starter question text
+                    starterQuestionText.addEventListener('click', () => {
+                        helloChatbotManager.openChatbot();
+                        helloChatbotManager.hideStarterQuestion();
+                    }); 
+                }
 
                 const starterQuestionClose = document.createElement('button');
                 starterQuestionClose.className = 'hello-starter-question-close';
                 starterQuestionClose.innerHTML = '×';
                 starterQuestionClose.setAttribute('aria-label', 'Close starter question');
 
-                starterQuestionBubble.appendChild(starterQuestionText);
                 starterQuestionBubble.appendChild(starterQuestionClose);
                 starterQuestionContainer.appendChild(starterQuestionBubble);
 
@@ -713,12 +722,6 @@
                 }
                 // Append to chat bot icon
                 chatBotIcon.prepend(starterQuestionContainer);
-
-                // Add event listeners for starter question text
-                starterQuestionText.addEventListener('click', () => {
-                    helloChatbotManager.openChatbot();
-                    helloChatbotManager.hideStarterQuestion();
-                });
 
                 starterQuestionClose.addEventListener('click', (e) => {
                     e.stopPropagation();
