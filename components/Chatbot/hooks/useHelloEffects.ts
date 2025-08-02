@@ -197,7 +197,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             if (widgetData && greetingCompanyId && greetingBotId && (getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`)) && (botType === 'lex' || botType === 'chatgpt')) {
                 await getGreetingQuestions(greetingCompanyId, greetingBotId, botType).then((data) => {
                     dispatch(setGreeting({ ...data?.greeting }));
-                    if (data?.greeting?.text && (channels?.length === 0 || (channels?.length === 1 && channels?.[0]?.id === null))) {
+                    if (((data?.greeting?.text && data?.greeting?.text.trim() !== '') || (data?.greeting?.options && data?.greeting?.options?.length > 0)) && (channels?.length === 0 || (channels?.length === 1 && channels?.[0]?.id === null))) {
                         emitEventToParent('SHOW_STARTER_QUESTION', { message: data?.greeting?.text, options: data?.greeting?.options })
                     }
                 });
