@@ -129,7 +129,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             let k_clientId = getLocalStorage('k_clientId');
             let enable_call = false
             let channels = [];
-            let is_domain_enable = false
+            // let is_domain_enable = false
             let { mail, number, unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
 
             let needsAnonymousRegistration = !a_clientId && !k_clientId && !unique_id && widgetToken && isHelloUser && !mail && !number;
@@ -162,7 +162,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                     window.parent.postMessage({ type: 'launch_widget', data: widgetData?.launch_widget }, '*');
                     botType = widgetData?.bot_type;
                     enable_call = widgetData?.voice_call_widget;
-                    is_domain_enable = widgetData?.is_domain_enable
+                    // is_domain_enable = widgetData?.is_domain_enable
                     dispatch(setWidgetInfo(widgetData));
                     const helloConfigFromSession = (JSON.parse(GetSessionStorageData('helloConfig') || `{}`))
                     const customTheme = helloConfigFromSession?.sdkConfig?.customTheme || ''
@@ -260,7 +260,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                 }
             }
 
-            if (is_domain_enable) {
+            if (true) {
                 emitEventToParent("ENABLE_DOMAIN_TRACKING")
             }
 
