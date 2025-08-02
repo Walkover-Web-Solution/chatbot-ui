@@ -134,7 +134,7 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
                 {messageJson?.action?.sections?.map((section: any, sectionIndex: number) => (
                   <div key={sectionIndex} className='mb-2'>
                     {section?.title && (
-                      <div className="pt-2 px-1 font-semibold text-md mb-1">
+                      <div className="pt-2 px-1 font-semibold text-base mb-1">
                         {section?.title}
                       </div>
                     )}
@@ -176,7 +176,7 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
   };
 
   return (
-    <div className="interactive-message border border-gray-200 rounded-lg p-3" style={{ backgroundColor: '#f0f0f0' }}>
+    <div className="interactive-message">
       {renderInteractiveContent()}
     </div>
   );
