@@ -113,7 +113,7 @@ const AssistantMessageCard = React.memo(
                                     <AlertCircle className="w-4 h-4" />
                                     <p>Timeout reached. Please try again later.</p>
                                 </div>
-                            ) : message.image_urls ? (
+                            ) : message.image_urls?.length > 0 ? (
                                 message?.image_urls?.map((image: any) => (
                                     <div className="space-y-2" key={image}>
                                         <ImageWithFallback
