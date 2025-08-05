@@ -1,4 +1,5 @@
 import { ThemeContext } from "@/components/AppWrapper";
+import { useSendMessageToHello } from "@/components/Chatbot/hooks/useHelloIntegration";
 import { addDomainToHello, saveClientDetails } from "@/config/helloApi";
 import { CBManger } from "@/hooks/coBrowser/CBManger";
 import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
@@ -7,7 +8,7 @@ import { setDataInDraftReducer, setVariablesForHelloBot } from "@/store/draftDat
 import { setHelloClientInfo, setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
 import { setDataInInterfaceRedux } from "@/store/interface/interfaceSlice";
 import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
-import { cleanObject, getLocalStorage, setLocalStorage } from "@/utils/utilities";
+import { cleanObject, removeFromLocalStorage, setLocalStorage } from "@/utils/utilities";
 import isPlainObject from "lodash.isplainobject";
 import { useContext, useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -19,7 +20,7 @@ const helloToChatbotPropsMap: Record<string, string> = {
 }
 
 const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
-
+    const sendMessageToHello = useSendMessageToHello({});
     const dispatch = useDispatch()
     const { handleThemeChange } = useContext(ThemeContext)
 
@@ -77,58 +78,49 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
             ...restProps
         } = event.data.data;
 
-        if (sdkConfig?.customTheme) {
-            handleThemeChange(sdkConfig?.customTheme)
-        }
-
-        if (variables && isPlainObject(variables)) {
-            dispatch(setVariablesForHelloBot(variables))
-        }
-
-        const fullWidgetToken = unique_id ? `${widgetToken}_${unique_id}` : `${widgetToken}`;
+        const fullWidgetToken = unique_id ? `${widgetToken}_${unique_id}` : widgetToken;
         const prevWidgetId = GetSessionStorageData('widgetToken');
-        const prevUser = JSON.parse(getLocalStorage('userData') || '{}');
-        SetSessionStorage('widgetToken', fullWidgetToken)
-        const hasUserIdentity = Boolean(unique_id || mail || number);
 
-        // Helper: reset Redux keys and sub-thread
+        // Save current widget token
+        SetSessionStorage('widgetToken', fullWidgetToken);
+
+        const hasUserIdentity = Boolean(unique_id || mail || number);
+        removeFromLocalStorage('is_anon');
+        // if (hasUserIdentity) {
+        //     setLocalStorage('is_anon', 'false');
+        // }
+
+        // Apply theme if present
+        if (sdkConfig?.customTheme) {
+            handleThemeChange(sdkConfig.customTheme);
+        }
+
+        // Store variables in redux
+        if (variables && isPlainObject(variables)) {
+            dispatch(setVariablesForHelloBot(variables));
+        }
+
+        // Reset redux keys
         const resetKeys = () => {
             dispatch(setDataInAppInfoReducer({ subThreadId: '', currentChannelId: '', currentChatId: '', currentTeamId: '' }));
         };
 
-        // 1. Widget token changed
-        if (unique_id ? `${widgetToken}_${unique_id}` !== prevWidgetId : widgetToken !== prevWidgetId) {
+        // Reset if widget token changed
+        if (fullWidgetToken !== prevWidgetId) {
             resetKeys();
         }
 
-        // 2. User identity changed
-        if (unique_id !== prevUser.unique_id) {
-            setLocalStorage('userData', '{}');
-            resetKeys();
-        }
+        // Store userData in localStorage
+        setLocalStorage('userData', JSON.stringify({
+            unique_id,
+            mail,
+            number,
+            user_jwt_token: hasUserIdentity ? user_jwt_token : undefined,
+            name,
+        }));
 
-
-
-        // 3. Update stored userData
-        setLocalStorage('userData', JSON.stringify({ unique_id, mail, number, user_jwt_token: hasUserIdentity ? user_jwt_token : undefined, name }));
-
-        // 4. Anonymous cleanup when no identity
-        if (!hasUserIdentity && getLocalStorage('k_clientId')) {
-            resetKeys();
-            setLocalStorage('k_clientId', '');
-        }
-
-        // 5. Determine anonymity status
-        const isAnon = hasUserIdentity ? 'false' : getLocalStorage('is_anon') === 'false' ? 'false' : 'true';
-
-        if (getLocalStorage('is_anon') != isAnon) {
-            resetKeys();
-        }
-
-        setLocalStorage('is_anon', isAnon);
-
-        // 7. Map additional interface props
-        Object.entries(restProps || {})?.forEach(([key, value]) => {
+        // Map extra interface props
+        Object.entries(restProps || {}).forEach(([key, value]) => {
             const mappedKey = helloToChatbotPropsMap[key];
             if (!mappedKey) return;
 
@@ -136,16 +128,39 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
             dispatch(setDataInInterfaceRedux({ [mappedKey]: finalValue }));
         });
 
-        // 8. Persist new widget token and config
+        // Persist widget token and redux draft data
         setLocalStorage('WidgetId', widgetToken);
-        dispatch(setDataInDraftReducer({ chatSessionId: fullWidgetToken, widgetToken: fullWidgetToken, isHelloUser: true }));
-        SetSessionStorage('helloConfig', JSON.stringify(event.data.data))
+        dispatch(setDataInDraftReducer({
+            chatSessionId: fullWidgetToken,
+            widgetToken: fullWidgetToken,
+            isHelloUser: true,
+        }));
+
+        SetSessionStorage('helloConfig', JSON.stringify(event.data.data));
         dispatch(setHelloConfig(event.data.data));
 
+        // Hide form if user data available
         if (mail && number && name) {
             dispatch(setHelloKeysData({ showWidgetForm: false }));
         }
-        return;
+    };
+
+    function handleChatbotVisibility(isChatbotOpen = false) {
+        dispatch(setDataInAppInfoReducer({ isChatbotOpen }))
+        dispatch(setDataInDraftReducer({ isChatbotMinimized: false }))
+    }
+
+    function handleSetVariablesForBot(event: MessageEvent) {
+        if (event.data?.data?.variables && isPlainObject(event.data?.data?.variables)) {
+            dispatch(setVariablesForHelloBot(event.data?.data?.variables))
+        }
+    }
+
+    function handleStarterQuestionOptionClicked(event: MessageEvent) {
+        const optionText = event?.data?.data?.option;
+        if (optionText) {
+            sendMessageToHello(optionText);
+        }
     }
 
     function handleChatbotVisibility(isChatbotOpen = false) {
@@ -176,6 +191,8 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         eventHandler.addEventHandler('CHATBOT_OPEN', () => handleChatbotVisibility(true))
 
         eventHandler.addEventHandler('CHATBOT_CLOSE', () => handleChatbotVisibility(false))
+
+        eventHandler.addEventHandler('STARTER_QUESTION_OPTION_CLICKED', handleStarterQuestionOptionClicked)
 
     }, [])
 

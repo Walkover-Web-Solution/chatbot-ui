@@ -173,7 +173,7 @@ const ImageWithFallback = ({
             </audio>
           </div>
         );
-      
+
       case "pdf":
         return (
           <Image

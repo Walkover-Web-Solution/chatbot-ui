@@ -3,13 +3,18 @@ import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 import { ALLOWED_EVENTS_TO_SUBSCRIBE } from '@/utils/enums';
-import { formatTime } from '@/utils/utilities';
-import React from 'react';
+import React, { useState } from 'react';
 import ImageWithFallback from './ImageWithFallback';
 import "./Message.css";
+import MessageTime from './MessageTime';
+
+/**
+ * A component that displays a user message card.
+ * It includes an image with fallback, message content, and sender time.
+ */
 
 const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatSessionId }: any) => {
-    console.log('user message card')
+    const [showSenderTime, setShowSenderTime] = useState(false);
     const { sendEventToParentOnMessageClick } = useCustomSelector((state) => ({
         sendEventToParentOnMessageClick: state.Interface?.[chatSessionId]?.eventsSubscribedByParent?.includes(ALLOWED_EVENTS_TO_SUBSCRIBE.MESSAGE_CLICK) || false
     }))
@@ -20,7 +25,7 @@ const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatS
         }
     }
     return (
-        <div className="flex flex-col gap-2.5 items-end w-full mb-2.5 animate-slide-left mt-1" onClick={handleMessageClick}>
+        <div className="flex flex-col gap-2.5 items-end w-full pb-3 animate-slide-left" onClick={handleMessageClick}>
             {Array.isArray(message?.urls) && message.urls.length > 0 && (
                 <div className="flex flex-row-reverse flex-wrap gap-2.5 w-full">
                     {message.urls.map((url: any, index: number) => {
@@ -37,7 +42,7 @@ const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatS
                 </div>
             )}
 
-            <div className="flex flex-col items-end w-full">
+            <div className="flex flex-col items-end w-full" onClick={() => setShowSenderTime(!showSenderTime)}>
                 {message?.content && <div
                     className="p-2.5 min-w-[40px] sm:max-w-[80%] max-w-[90%] rounded-[10px_10px_1px_10px] break-words"
                     style={{
@@ -50,8 +55,11 @@ const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatS
                             {message?.content}
                         </p>
                     </div>
-                </div>}
-                {message?.time && <p className="text-xs text-gray-500">{formatTime(message?.time, 'shortTime')}</p>}
+                </div>
+                }
+                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showSenderTime ? 'opacity-100 max-h-6' : 'opacity-0 max-h-0'}`}>
+                    <MessageTime message={message} />
+                </div>
             </div>
         </div>
     );

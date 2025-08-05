@@ -32,7 +32,7 @@
                     buttonHover: '#556dd9',
                     border: '#ccc'
                 },
-                messageType:{
+                messageType: {
                     success: 'success-message',
                     error: 'error-message',
                     warning: 'warning-message'
@@ -47,7 +47,7 @@
             if (document.getElementById('rag-embed-styles')) {
                 return;
             }
-        
+
             const link = document.createElement('link');
             link.id = 'rag-embed-styles';
             link.rel = 'stylesheet';
@@ -62,17 +62,17 @@
             const parentId = this.props.parentId || this.state.tempDataToSend?.parentId || '';
             const parentContainer = parentId ? document.getElementById(parentId) : null;
             const isEmbedded = parentContainer && this.state.isEmbeddedInParent;
-        
+
             // Determine theme - default to light if not specified
             const theme = this.props.theme || this.state.tempDataToSend?.theme || 'light';
-        
+
             // Helper function to check if parent has height constraints
             const hasParentHeightConstraints = () => {
                 if (!parentContainer) return false;
-        
+
                 const computedStyle = window.getComputedStyle(parentContainer);
                 const inlineStyle = parentContainer.style;
-        
+
                 // Check for explicit height (not auto or empty)
                 const hasExplicitHeight = (inlineStyle.height &&
                     inlineStyle.height !== '' &&
@@ -81,7 +81,7 @@
                         computedStyle.height !== 'auto' &&
                         computedStyle.height !== '0px' &&
                         !computedStyle.height.includes('auto'));
-        
+
                 // Check for max-height constraints
                 const hasMaxHeight = (inlineStyle.maxHeight &&
                     inlineStyle.maxHeight !== '' &&
@@ -90,19 +90,19 @@
                     (computedStyle.maxHeight &&
                         computedStyle.maxHeight !== 'none' &&
                         computedStyle.maxHeight !== 'auto');
-        
+
                 // Also check if parent has any CSS that would constrain height
                 const hasFlexConstraints = computedStyle.display === 'flex' &&
                     (computedStyle.alignItems === 'stretch' || computedStyle.height !== 'auto');
-        
+
                 return hasExplicitHeight || hasMaxHeight || hasFlexConstraints;
             };
-        
+
             const parentHasHeightConstraints = hasParentHeightConstraints();
             // Helper function to make parent and ancestors grow with content
             const ensureParentCanGrow = () => {
                 if (!parentContainer) return [];
-        
+
                 // Store original styles of ONLY the immediate parent
                 const computedStyle = window.getComputedStyle(parentContainer);
                 const originalStyles = {
@@ -114,24 +114,24 @@
                     flex: parentContainer.style.flex,
                     display: parentContainer.style.display
                 };
-        
+
                 // ONLY modify the immediate parent - NO LOOP, NO TRAVERSAL
                 parentContainer.style.height = 'auto';
                 parentContainer.style.minHeight = '';
                 parentContainer.style.maxHeight = 'none';
                 parentContainer.style.overflow = 'visible';
-        
+
                 // Ensure proper display
                 if (!parentContainer.style.display || parentContainer.style.display === 'none') {
                     parentContainer.style.display = 'block';
                 }
-        
+
                 // Handle flex containers properly
                 if (computedStyle.display === 'flex' || computedStyle.display === 'inline-flex') {
                     parentContainer.style.alignItems = 'flex-start';
                     parentContainer.style.flexDirection = computedStyle.flexDirection || 'column';
                 }
-        
+
                 // Set up a mutation observer to catch WHO is modifying the grandparent
                 const grandparent = parentContainer.parentElement;
                 if (grandparent) {
@@ -142,63 +142,63 @@
                             }
                         });
                     });
-        
+
                     observer.observe(grandparent, {
                         attributes: true,
                         attributeFilter: ['style']
                     });
-        
+
                     // Clean up observer after 5 seconds
                     setTimeout(() => observer.disconnect(), 5000);
                 }
-        
+
                 return [originalStyles];
             };
-        
+
             let listModal;
-        
+
             if (isEmbedded) {
                 // Handle parent container with explicit logging
                 if (parentContainer) {
                     if (!parentHasHeightConstraints) {
                         // Store original styles for potential restoration
                         this.originalParentStyles = ensureParentCanGrow();
-        
+
                         // Ensure parent is properly configured for growth
                         parentContainer.style.display = parentContainer.style.display || 'block';
                         parentContainer.style.position = parentContainer.style.position || 'relative';
-        
+
                     } else {
                         // Has height constraints - FORCE container to respect them
                         parentContainer.style.overflow = 'hidden';
-        
+
                         // Ensure box-sizing is border-box
                         if (!parentContainer.style.boxSizing) {
                             parentContainer.style.boxSizing = 'border-box';
                         }
-        
+
                         // Preserve existing height constraints
                         const computedStyle = window.getComputedStyle(parentContainer);
                         const currentHeight = parentContainer.style.height || computedStyle.height;
                         const currentMaxHeight = parentContainer.style.maxHeight || computedStyle.maxHeight;
-        
+
                         if (currentHeight && currentHeight !== 'auto' && currentHeight !== '') {
                             parentContainer.style.height = currentHeight;
                         }
-        
+
                         if (currentMaxHeight && currentMaxHeight !== 'none' && currentMaxHeight !== 'auto' && currentMaxHeight !== '') {
                             parentContainer.style.maxHeight = currentMaxHeight;
                         }
                     }
                 }
-        
+
                 // Create embedded div
                 listModal = document.createElement('div');
                 listModal.id = 'rag-document-list-modal';
-                
+
                 // Add CSS classes
                 listModal.className = `modal-embedded rag-theme-${theme} ${parentHasHeightConstraints ? 'with-height-constraints' : 'no-height-constraints'}`;
-        
+
                 // Add resize observer for no height constraints mode
                 if (!parentHasHeightConstraints && window.ResizeObserver) {
                     const resizeObserver = new ResizeObserver(() => {
@@ -206,13 +206,13 @@
                         if (parentContainer) {
                             const event = new Event('resize');
                             parentContainer.dispatchEvent(event);
-        
+
                             // Trigger layout recalculation
                             parentContainer.style.height = 'auto';
                             void parentContainer.offsetHeight; // Force reflow
                         }
                     });
-        
+
                     resizeObserver.observe(listModal);
                     listModal._resizeObserver = resizeObserver;
                 }
@@ -222,24 +222,24 @@
                 listModal.id = 'rag-document-list-modal';
                 listModal.className = `modal-popup rag-theme-${theme}`;
             }
-        
+
             // Create list container
             const listContainer = document.createElement('div');
             listContainer.className = `rag-list-container ${isEmbedded ? 'embedded' : 'modal'} ${parentHasHeightConstraints && isEmbedded ? 'with-height-constraints' : 'no-height-constraints'}`;
-        
+
             // Header
             const header = document.createElement('div');
             header.className = 'rag-modal-header';
-        
+
             const title = document.createElement('h2');
             title.textContent = 'Knowledge Base Management';
             title.className = 'rag-modal-title';
             header.appendChild(title);
-        
+
             // Header actions container
             const headerRight = document.createElement('div');
             headerRight.className = 'rag-header-actions';
-        
+
             // Refresh button
             const refreshBtn = document.createElement('button');
             refreshBtn.innerHTML = '⟳';
@@ -247,7 +247,7 @@
             refreshBtn.title = 'Refresh Document List';
             refreshBtn.addEventListener('click', () => this.showDocumentList());
             headerRight.appendChild(refreshBtn);
-        
+
             // Close button (only for non-embedded mode)
             if (!parentContainer) {
                 const closeBtn = document.createElement('button');
@@ -256,19 +256,19 @@
                 closeBtn.addEventListener('click', () => this.closeDocumentList());
                 headerRight.appendChild(closeBtn);
             }
-            
+
             header.appendChild(headerRight);
-        
+
             // Add Document Button
             const addBtn = document.createElement('button');
             addBtn.textContent = '+ Add New Document';
             addBtn.className = 'rag-add-btn';
             addBtn.addEventListener('click', () => this.openRag());
-        
+
             // Documents List Container
             const documentsContainer = document.createElement('div');
             documentsContainer.id = 'rag-documents-container';
-            
+
             // Set container scroll behavior based on constraints
             if (isEmbedded && parentHasHeightConstraints) {
                 documentsContainer.className = 'scrollable';
@@ -276,7 +276,7 @@
                 documentsContainer.className = 'scrollable';
             } else {
                 documentsContainer.className = 'natural-growth';
-                
+
                 // Add mutation observer to trigger parent resize when content changes
                 if (window.MutationObserver) {
                     const mutationObserver = new MutationObserver(() => {
@@ -285,31 +285,31 @@
                             if (parentContainer) {
                                 parentContainer.style.height = 'auto';
                                 void parentContainer.offsetHeight; // Force reflow
-        
+
                                 // Also trigger any parent resize observers
                                 const event = new Event('resize');
                                 parentContainer.dispatchEvent(event);
                             }
                         }, 0);
                     });
-        
+
                     mutationObserver.observe(documentsContainer, {
                         childList: true,
                         subtree: true,
                         attributes: true,
                         attributeFilter: ['style']
                     });
-        
+
                     documentsContainer._mutationObserver = mutationObserver;
                 }
             }
-        
+
             // Assemble the modal
             listContainer.appendChild(header);
             listContainer.appendChild(addBtn);
             listContainer.appendChild(documentsContainer);
             listModal.appendChild(listContainer);
-        
+
             // Close modal when clicking on overlay (only for modal mode)
             if (!isEmbedded) {
                 listModal.addEventListener('click', (e) => {
@@ -318,12 +318,12 @@
                     }
                 });
             }
-        
+
             // Add show/hide methods
             listModal.showModal = function () {
                 if (isEmbedded) {
                     listModal.classList.add('rag-modal-visible');
-                    
+
                     // Force parent layout recalculation after showing
                     if (!parentHasHeightConstraints && parentContainer) {
                         setTimeout(() => {
@@ -335,10 +335,10 @@
                     listModal.classList.add('rag-modal-popup-visible');
                 }
             };
-        
+
             listModal.hideModal = function () {
                 listModal.classList.remove('rag-modal-visible', 'rag-modal-popup-visible');
-                
+
                 // Clean up observers after transition
                 setTimeout(() => {
                     if (listModal._resizeObserver) {
@@ -349,7 +349,7 @@
                     }
                 }, 300);
             };
-        
+
             return listModal;
         }
 
@@ -479,41 +479,41 @@
         createDocumentItem(doc) {
             const item = document.createElement('div');
             item.className = 'rag-document-item';
-        
+
             // Left section with icon and info
             const leftSection = document.createElement('div');
             leftSection.className = 'rag-document-left-section';
-        
+
             // Get file format from document source
             const fileFormat = doc.source?.fileFormat || doc.fileFormat || 'doc';
-        
+
             // Create and add icon
             const icon = this.getFileIcon(fileFormat);
             leftSection.appendChild(icon);
-        
+
             const infoContainer = document.createElement('div');
             infoContainer.className = 'rag-document-info-container';
-        
+
             const name = document.createElement('div');
             name.className = 'rag-document-name';
             name.textContent = doc.name || doc.title || 'Untitled Document';
-        
+
             const details = document.createElement('div');
             details.className = 'rag-document-details';
-        
+
             const createdDate = doc.created_at ? new Date(doc.created_at).toLocaleDateString() : 'Unknown date';
             const dateInfo = document.createElement('div');
             dateInfo.className = 'rag-document-date-info';
             dateInfo.textContent = `Created: ${createdDate}`;
             dateInfo.style.gridRow = '1';
             dateInfo.style.gridColumn = '1';
-        
+
             // Add source type if available
             if (doc.source?.type) {
                 const sourceInfo = document.createElement('div');
                 sourceInfo.textContent = `Source: ${doc.source.type}`;
                 details.appendChild(sourceInfo);
-        
+
                 if (doc.source?.data?.url) {
                     const url = document.createElement('div');
                     url.className = 'rag-document-url';
@@ -530,11 +530,11 @@
             infoContainer.appendChild(name);
             infoContainer.appendChild(details);
             leftSection.appendChild(infoContainer);
-        
+
             // Create ellipsis menu container
             const ellipsisMenuContainer = document.createElement('div');
             ellipsisMenuContainer.className = 'ellipsis-menu-container';
-            
+
             // Create ellipsis button
             const ellipsisBtn = document.createElement('button');
             ellipsisBtn.className = 'ellipsis-btn';
@@ -545,11 +545,11 @@
                     <circle cx="12" cy="19" r="2"/>
                 </svg>
             `;
-            
+
             // Create menu dropdown
             const ellipsisMenu = document.createElement('div');
             ellipsisMenu.className = 'ellipsis-menu';
-            
+
             // Edit button
             const editBtn = document.createElement('button');
             editBtn.className = 'menu-item edit-btn';
@@ -564,7 +564,7 @@
                 this.openEditDocumentModal(doc);
                 ellipsisMenu.classList.remove('show');
             });
-            
+
             // Delete button
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'menu-item delete-btn';
@@ -581,7 +581,7 @@
                 this.confirmDeleteDocument(doc);
                 ellipsisMenu.classList.remove('show');
             });
-            
+
             // Toggle menu functionality
             ellipsisBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -594,51 +594,51 @@
                 // Toggle current menu
                 ellipsisMenu.classList.toggle('show');
             });
-            
+
             // Close menu when clicking outside
             document.addEventListener('click', (e) => {
                 if (!ellipsisMenuContainer.contains(e.target)) {
                     ellipsisMenu.classList.remove('show');
                 }
             });
-            
+
             // Append elements
             ellipsisMenu.appendChild(editBtn);
             ellipsisMenu.appendChild(deleteBtn);
             ellipsisMenuContainer.appendChild(ellipsisBtn);
             ellipsisMenuContainer.appendChild(ellipsisMenu);
-            
+
             // Add date info and ellipsis menu to buttons container
             const buttonsContainer = document.createElement('div');
             buttonsContainer.className = 'rag-document-buttons';
-            
+
             const buttonContainer = document.createElement('div');
             buttonContainer.className = 'rag-document-button-container';
             buttonContainer.appendChild(dateInfo);
             buttonContainer.appendChild(ellipsisMenuContainer);
             buttonsContainer.appendChild(buttonContainer);
-        
+
             item.appendChild(leftSection);
             item.appendChild(buttonsContainer);
-        
+
             return item;
         }
 
 
 
-        
+
         createModalOverlay() {
             const overlay = document.createElement('div');
             overlay.id = 'rag-modal-overlay';
             overlay.className = 'rag-modal-overlay';
-        
+
             // Close modal when clicking on overlay
             overlay.addEventListener('click', (e) => {
                 if (e.target === overlay) {
                     this.closeRag();
                 }
             });
-        
+
             return overlay;
         }
 
@@ -688,20 +688,20 @@
                 if (message.type === 'rag' || message.type === 'iframe-message-rag') {
                     if (['create', 'update', 'delete'].includes(message.status)) {
                         // Refresh document list on document update or create
-                        if(message.status === 'create' && !message.error){
+                        if (message.status === 'create' && !message.error) {
                             this.showMessage(this.state.messageType.success, 'Document created successfully');
                         }
-                        if(message.status === 'update' && !message.error){
+                        if (message.status === 'update' && !message.error) {
                             this.showMessage(this.state.messageType.success, 'Document updated successfully');
                         }
-                        if(message.status === 'delete' && !message.error){
+                        if (message.status === 'delete' && !message.error) {
                             this.showMessage(this.state.messageType.success, 'Document deleted successfully');
                         }
                         if ((this.props?.defaultOpen === true || this.props?.defaultOpen === "true") || (this.parentContainer && this.props.parentId)) {
                             this.showDocumentList();
-                        }  
+                        }
                     }
-                    if(error){
+                    if (error) {
                         this.showMessage(this.state.messageType.error, error);
                     }
                 } else {
@@ -757,7 +757,7 @@
             this.cleanupRag();
         }
 
-       cleanupRag() {
+        cleanupRag() {
             // Remove modal overlay
             if (this.modalOverlay) {
                 this.modalOverlay.remove();
@@ -838,10 +838,10 @@
         applyConfig() {
             const iframeContainer = document.getElementById('rag-iframe-parent-container');
             if (!iframeContainer) return;
-            
+
             // Remove any existing modal classes
             iframeContainer.classList.remove('rag-iframe-modal');
-            
+
             // Apply modal popup configuration using CSS class
             iframeContainer.classList.add('rag-iframe-modal');
         }
@@ -893,7 +893,7 @@
                 }
             } catch (error) {
                 console.error('Error showing document list:', error);
-                this.showMessage(this.messageHandler.error , 'Failed to load documents');
+                this.showMessage(this.messageHandler.error, 'Failed to load documents');
             }
         }
 
@@ -1287,9 +1287,9 @@
             const errorDiv = document.createElement('div');
             errorDiv.className = type;
             errorDiv.textContent = message;
-            
+
             document.body.appendChild(errorDiv);
-            
+
             setTimeout(() => {
                 if (errorDiv.parentNode) {
                     errorDiv.classList.add('fade-out');

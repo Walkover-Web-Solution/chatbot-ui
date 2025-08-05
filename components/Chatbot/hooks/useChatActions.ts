@@ -29,7 +29,7 @@ export const useFetchAllThreads = () => {
     }));
 
     return useCallback(async () => {
-        const result = await getAllThreadsApi({ threadId, bridgeName});
+        const result = await getAllThreadsApi({ threadId, bridgeName });
         if (result?.success) {
             globalDispatch(
                 setThreads({ bridgeName, threadId, threadList: result?.threads })
@@ -175,7 +175,7 @@ export const useSendMessage = ({
             ?.filter((url) => url.split(".").pop()?.toLowerCase() !== "pdf")
             .map((url) => url);
 
-        
+
         if (!textMessage && imageUrls.length === 0) return;
         if (messageRef.current) {
             messageRef.current.value = "";
@@ -201,7 +201,7 @@ export const useSendMessage = ({
             threadId: customThreadId || threadId,
             subThreadId: subThreadId,
             slugName: customBridgeSlug || bridgeName,
-            thread_flag: ((threadList?.length === 1 && threadList?.[0]?.thread_id === threadList?.[0]?.sub_thread_id &&  threadList?.[0]?.display_name === threadList?.[0]?.thread_id)|| (threadList?.[0]?.newChat && threadList?.[0]?.sub_thread_id === subThreadId)) ? true : false,
+            thread_flag: ((threadList?.length === 1 && threadList?.[0]?.thread_id === threadList?.[0]?.sub_thread_id && threadList?.[0]?.display_name === threadList?.[0]?.thread_id) || (threadList?.[0]?.newChat && threadList?.[0]?.sub_thread_id === subThreadId)) ? true : false,
             chatBotId: chatSessionId,
             version_id: versionId === "null" ? null : versionId,
             ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {

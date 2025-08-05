@@ -76,13 +76,11 @@
 
 #hello-chatbot-icon-image {
   background-color: none !important;
-  position: fixed;
-  bottom: 1%;
-  right: 10px;
   object-fit: contain;
   height: 60px !important;
   width: 60px !important;
   padding: 5px !important;
+  float: right;
   cursor: pointer;
   z-index: 999999999 !important;
 }
@@ -96,6 +94,111 @@
   object-fit: contain;
   cursor: pointer;
   z-index: 9999 !important;
+  height: auto;
+  width: auto;
+  /* position: relative; */
+  position: fixed;
+  bottom: 1%;
+  right: 10px;
+}
+
+/* Starter Question Styles */
+.hello-starter-question {
+  /* position: absolute; */
+  /* bottom: 90px; */
+  /* right: 10px; */
+  z-index: 999999;
+  width: fit-content;
+  max-width: 280px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.3s ease-in-out;
+  pointer-events: auto;
+}
+
+.hello-starter-question-bubble {
+  background: #ffffff;
+  border: 1px solid #e1e5e9;
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  text-align: right;
+  width: fit-content;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.hello-starter-question-text {
+  font-family: Arial;
+  font-size: 14px;
+  line-height: 1.4;
+  color: black;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+  width: fit-content;
+  letter-spacing: normal;
+}
+
+.hello-starter-question-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  color: black;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.hello-starter-question-option {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #ffffff;
+  width: fit-content;
+  cursor: pointer;
+  font-size: 14px;
+  color: black;
+}
+
+.hello-starter-question-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+  margin-top: 10px;
+}
+
+/* Position adjustments for left alignment */
+.left_all_child .hello-starter-question {
+  left: 10px;
+  right: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .hello-starter-question {
+    max-width: calc(100vw - 40px);
+    right: 20px;
+  }
+
+  .left_all_child .hello-starter-question {
+    left: 20px;
+  }
 }
 
 /* left slider */

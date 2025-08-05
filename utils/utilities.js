@@ -2,6 +2,34 @@ import dayjs from "dayjs";
 import linkifyHtml from "linkify-html";
 import { customAlphabet } from "nanoid";
 import { GetSessionStorageData } from "./ChatbotUtility";
+import relativeTime from 'dayjs/plugin/relativeTime'
+import updateLocale from 'dayjs/plugin/updateLocale'
+dayjs.extend(relativeTime);
+dayjs.extend(updateLocale)
+
+/**
+ * Updates the locale for the dayjs instance.
+ * @param {string} locale - The locale to update.
+ */
+dayjs.updateLocale('en', {
+  relativeTime: {
+    future: (str) => (str === 'Just now' ? str : `in ${str}`),
+    past: (str) => (str === 'Just now' ? str : `${str} ago`),
+    s: 'Just now',
+    m: "1m",
+    mm: "%dm",
+    h: "1h",
+    hh: "%dh",
+    d: "1d",
+    dd: "%dd",
+    w: "1w",
+    ww: "%dw",
+    M: "1mo",
+    MM: "%dmo",
+    y: "1y",
+    yy: "%dy"
+  }
+});
 
 export const generateNewId = (length = 8) => {
   const nanoid = customAlphabet(
@@ -90,7 +118,7 @@ export const setLocalStorage = (key, value = '') => {
     updatedKey = `${widgetToken}_${key}`
   }
   localStorage.setItem(updatedKey, value);
-  if (key === 'WidgetId' || key === 'k_clientId' || key === 'a_clientId' || key === 'is_anon') {
+  if (key === 'WidgetId' || key === 'k_clientId' || key === 'a_clientId') {
     if (key === 'k_clientId') window.parent.postMessage({ type: 'setDataInLocal', data: { key: 'hello-widget-uuid', payload: value } }, '*');
     if (key === 'a_clientId') window.parent.postMessage({ type: 'setDataInLocal', data: { key: 'hello-widget-anonymoud-uuid', payload: value } }, '*');
 
@@ -100,6 +128,11 @@ export const setLocalStorage = (key, value = '') => {
   }
 }
 
+/**
+ * Gets the value of a local storage item.
+ * @param {string} key - The key of the local storage item to get.
+ * @returns {string|null} The value of the local storage item, or null if the key does not exist.
+ */
 export const getLocalStorage = (key) => {
   let updatedKey = key
   const widgetToken = GetSessionStorageData('widgetToken')
@@ -107,6 +140,15 @@ export const getLocalStorage = (key) => {
     updatedKey = `${widgetToken}_${key}`
   }
   return key ? localStorage.getItem(updatedKey) : null;
+}
+
+export const removeFromLocalStorage = (key) => {
+  let updatedKey = key
+  const widgetToken = GetSessionStorageData('widgetToken')
+  if (widgetToken) {
+    updatedKey = `${widgetToken}_${key}`
+  }
+  localStorage.removeItem(updatedKey);
 }
 
 
@@ -178,7 +220,7 @@ export const formatTime = (value, format) => {
       return dayjs(timeToken).format('DD MMM, YYYY');
     }
     case 'shortTime': {
-      return dayjs(timeToken).format('hh:mm a');
+      return dayjs(timeToken).format('hh:mm A');
     }
     case 'timeAgo': {
       return dayjs(timeToken).fromNow();
@@ -221,7 +263,6 @@ export function splitNumber(value) {
   value = value?.trim();
 
   if (!value?.includes("+")) {
-    console.log("nhi hai")
     return { "code": "", "number": value };
   }
 

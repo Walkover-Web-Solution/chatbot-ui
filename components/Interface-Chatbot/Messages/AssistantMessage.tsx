@@ -16,8 +16,8 @@ import dynamic from 'next/dynamic';
 import Image from "next/image";
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import "./Message.css";
 import ImageWithFallback from "./ImageWithFallback";
+import "./Message.css";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 function FeedBackButtons({ msgId }: { msgId: string }) {
@@ -27,7 +27,7 @@ function FeedBackButtons({ msgId }: { msgId: string }) {
     }))
     return <>
         <button
-            className={`btn btn-ghost btn-xs tooltip ${msgIdAndDataMap?.[msgId]?.user_feedback === 1 ? "text-success" : ""
+            className={`btn btn-ghost btn-xs tooltip tooltip-bottom ${msgIdAndDataMap?.[msgId]?.user_feedback === 1 ? "text-success" : ""
                 }`}
             data-tip="Good response"
             onClick={() =>
@@ -42,7 +42,7 @@ function FeedBackButtons({ msgId }: { msgId: string }) {
         </button>
 
         <button
-            className={`btn btn-ghost btn-xs tooltip ${msgIdAndDataMap?.[msgId]?.user_feedback === 2 ? "text-error" : ""
+            className={`btn btn-ghost btn-xs tooltip tooltip-bottom ${msgIdAndDataMap?.[msgId]?.user_feedback === 2 ? "text-error" : ""
                 }`}
             data-tip="Bad response"
             onClick={() =>
@@ -78,158 +78,166 @@ const AssistantMessageCard = React.memo(
             "--primary-main": lighten(backgroundColor, 0.4),
         };
 
-        return (
-            <div className="flex flex-col">
-                <div className="flex items-end sm:max-w-[90%] max-w-[98%] animate-slide-left">
-                    <div className="flex flex-col items-center justify-end w-8 pb-2">
-                        <div className="sm:w-8 sm:h-8 w-7 h-7 rounded-full p-1 flex items-center justify-center">
-                            <Image
-                                src={AiIcon}
-                                width="33"
-                                height="33"
-                                alt="AI"
-                            />
-                        </div>
-                    </div>
+        const toolsData = Object.keys(message?.tools_data || {});
 
-                    {message?.wait ? (
-                        <div className="w-full">
-                            <div className="flex flex-wrap gap-2 items-center">
-                                {message?.Name && Array.isArray(message?.Name) && message.Name.map((name: string, index: number) => (
-                                    <p key={index} className="text-sm font-medium">{name}</p>
-                                ))}
-                                <p className="text-sm">{message?.content}</p>
-                            </div>
-                            <div className="loading-indicator" style={themePalette}>
-                                <div className="loading-bar"></div>
-                                <div className="loading-bar"></div>
-                                <div className="loading-bar"></div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="min-w-[150px] w-full rounded-lg p-3">
-                            {message?.timeOut ? (
-                                <div className="flex items-center gap-2 text-error">
-                                    <AlertCircle className="w-4 h-4" />
-                                    <p>Timeout reached. Please try again later.</p>
+        return (
+            <div className="flex w-full pb-1">
+                {/* <div className="flex flex-col items-center w-8 pb-2">
+                    <div className="sm:w-8 sm:h-8 w-7 h-7 rounded-full px-1">
+                        <Image
+                            src={AiIcon}
+                            width="33"
+                            height="33"
+                            alt="AI"
+                        />
+                    </div>
+                </div> */}
+                <div className="flex flex-col max-w-[90%] animate-slide-left w-full ">
+                    <div className="p-2.5">
+
+                        {message?.wait ? (
+                            <div className="w-full">
+                                <div className="flex flex-wrap gap-2 items-center">
+                                    {message?.Name && Array.isArray(message?.Name) && message.Name.map((name: string, index: number) => (
+                                        <p key={index} className="text-sm font-medium">{name}</p>
+                                    ))}
+                                    <p className="text-sm">{message?.content}</p>
                                 </div>
-                            ) : message.image_urls?.length > 0 ? (
-                                message?.image_urls?.map((image: any) => (
-                                    <div className="space-y-2" key={image}>
-                                        <ImageWithFallback
-                                            src={image?.image_url || image?.permanent_url}
-                                            alt="Loading image, please wait..."
-                                            width={400}
-                                            height={400}
-                                            loading="lazy"
-                                            className="w-full max-h-[400px] min-h-[100px] rounded-lg object-cover"
-                                        />
-                                        <a
-                                            href={image?.image_url || image?.permanent_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="btn btn-ghost btn-sm w-full text-primary flex items-center justify-center"
-                                        >
-                                            <Maximize2 className="w-4 h-4 mr-2" />
-                                            View Full Image
-                                        </a>
+                                <div className="loading-indicator" style={themePalette}>
+                                    <div className="loading-bar"></div>
+                                    <div className="loading-bar"></div>
+                                    <div className="loading-bar"></div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="min-w-[150px] w-full rounded-lg">
+                                {message?.timeOut ? (
+                                    <div className="flex items-center gap-2 text-error">
+                                        <AlertCircle className="w-4 h-4" />
+                                        <p>Timeout reached. Please try again later.</p>
                                     </div>
-                                ))
-                            ) : (
-                                <div className="prose dark:prose-invert break-words">
-                                    {Object.keys(message?.tools_data || {})?.length > 0 && (
-                                        <Box className="flex items-center gap-2 mb-2">
-                                            <CircleCheckBig color="green" size={20} />
-                                            <p className="text-base text-green-900">
-                                                {Object.keys(message?.tools_data || {}).length} Functions executed
-                                            </p>
-                                        </Box>
-                                    )}
-                                    {(() => {
-                                        const parsedContent = isJSONString(
-                                            isError
-                                                ? message?.error
-                                                : message?.chatbot_message || message?.content
-                                        )
-                                            ? JSON.parse(
+                                ) : message.image_urls?.length > 0 ? (
+                                    message?.image_urls?.map((image: any) => (
+                                        <div className="space-y-2" key={image}>
+                                            <ImageWithFallback
+                                                src={image?.image_url || image?.permanent_url}
+                                                alt="Loading image, please wait..."
+                                                width={400}
+                                                height={400}
+                                                loading="lazy"
+                                                className="w-full max-h-[400px] min-h-[100px] rounded-lg object-cover"
+                                            />
+                                            <a
+                                                href={image?.image_url || image?.permanent_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="btn btn-ghost btn-sm w-full text-primary flex items-center justify-center"
+                                            >
+                                                <Maximize2 className="w-4 h-4 mr-2" />
+                                                View Full Image
+                                            </a>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="prose dark:prose-invert break-words">
+                                        {toolsData?.length > 0 &&
+                                            (
+                                                <Box className="flex items-center gap-2 mb-2">
+                                                    <CircleCheckBig color="green" size={18} className="font-bold" strokeWidth={3} />
+                                                    <p className="text-green-800 font-semibold">
+                                                        {toolsData?.length}  {toolsData?.length === 1 ? "Function" : "Functions"} executed
+                                                    </p>
+                                                </Box>
+                                            )
+                                        }
+                                        {(() => {
+                                            const parsedContent = isJSONString(
                                                 isError
-                                                    ? message.error
+                                                    ? message?.error
                                                     : message?.chatbot_message || message?.content
                                             )
-                                            : null;
+                                                ? JSON.parse(
+                                                    isError
+                                                        ? message.error
+                                                        : message?.chatbot_message || message?.content
+                                                )
+                                                : null;
 
-                                        if (
-                                            parsedContent &&
-                                            (parsedContent.hasOwnProperty("isMarkdown") ||
-                                                parsedContent.hasOwnProperty("response") ||
-                                                parsedContent.hasOwnProperty("components"))
-                                        ) {
-                                            return parsedContent.isMarkdown ||
-                                                parsedContent?.response ? (
-                                                <>
-                                                    <ReactMarkdown
-                                                        {...(!supportsLookbehind() ? {} : { remarkPlugins: [remarkGfm] })}
-                                                        components={{
-                                                            code: Code,
-                                                            a: Anchor,
-                                                        }}
-                                                    >
-                                                        {parsedContent?.markdown ||
-                                                            JSON.stringify(parsedContent?.response)}
-                                                    </ReactMarkdown>
-                                                </>
-                                            ) : (
-                                                <InterfaceGrid
-                                                    inpreview={false}
-                                                    ingrid={false}
-                                                    gridId={parsedContent?.responseId || "default"}
-                                                    loadInterface={false}
-                                                    componentJson={parsedContent}
-                                                    msgId={message?.createdAt}
-                                                />
+                                            if (
+                                                parsedContent &&
+                                                (parsedContent.hasOwnProperty("isMarkdown") ||
+                                                    parsedContent.hasOwnProperty("response") ||
+                                                    parsedContent.hasOwnProperty("components"))
+                                            ) {
+                                                return parsedContent.isMarkdown ||
+                                                    parsedContent?.response ? (
+                                                    <>
+                                                        <ReactMarkdown
+                                                            {...(!supportsLookbehind() ? {} : { remarkPlugins: [remarkGfm] })}
+                                                            components={{
+                                                                code: Code,
+                                                                a: Anchor,
+                                                            }}
+                                                        >
+                                                            {parsedContent?.markdown ||
+                                                                JSON.stringify(parsedContent?.response)}
+                                                        </ReactMarkdown>
+                                                    </>
+                                                ) : (
+                                                    <InterfaceGrid
+                                                        inpreview={false}
+                                                        ingrid={false}
+                                                        gridId={parsedContent?.responseId || "default"}
+                                                        loadInterface={false}
+                                                        componentJson={parsedContent}
+                                                        msgId={message?.createdAt}
+                                                    />
+                                                );
+                                            }
+                                            return (
+                                                <ReactMarkdown
+                                                    {...(!supportsLookbehind() ? {} : { remarkPlugins: [remarkGfm] })}
+                                                    components={{
+                                                        code: Code,
+                                                        a: Anchor,
+                                                    }}
+                                                >
+                                                    {!isError
+                                                        ? message?.chatbot_message || message?.content
+                                                        : message.error}
+                                                </ReactMarkdown>
                                             );
-                                        }
-                                        return (
-                                            <ReactMarkdown
-                                                {...(!supportsLookbehind() ? {} : { remarkPlugins: [remarkGfm] })}
-                                                components={{
-                                                    code: Code,
-                                                    a: Anchor,
-                                                }}
-                                            >
-                                                {!isError
-                                                    ? message?.chatbot_message || message?.content
-                                                    : message.error}
-                                            </ReactMarkdown>
-                                        );
-                                    })()}
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-
-                <div className="flex items-center gap-2 ml-10">
-                    {!message?.wait && !message?.timeOut && !message?.error && (
-                        <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                            <button
-                                className="btn btn-ghost btn-xs tooltip"
-                                data-tip={isCopied ? "Copied!" : "Copy"}
-                                onClick={handleCopy}
-                            >
-                                {isCopied ? (
-                                    <Check className="w-4 h-4 text-success" />
-                                ) : (
-                                    <Copy className="w-4 h-4" />
+                                        })()}
+                                    </div>
                                 )}
-                            </button>
+                            </div>
+                        )}
+                    </div>
 
-                            {message?.message_id && (
-                                <FeedBackButtons msgId={message?.Id || message?.id} />
-                            )}
-                        </div>
-                    )}
+
+                    <div className="flex items-center gap-2">
+                        {!message?.wait && !message?.timeOut && !message?.error && (
+                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                                <button
+                                    className="btn btn-ghost btn-xs tooltip tooltip-right"
+                                    data-tip={isCopied ? "Copied!" : "Copy"}
+                                    onClick={handleCopy}
+                                >
+                                    {isCopied ? (
+                                        <Check className="w-4 h-4 text-success" />
+                                    ) : (
+                                        <Copy className="w-4 h-4" />
+                                    )}
+                                </button>
+
+                                {message?.message_id && (
+                                    <FeedBackButtons msgId={message?.Id || message?.id} />
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
+
             </div>
         );
     }

@@ -18,10 +18,28 @@
   overflow-x: hidden !important;
 }
 
+@media (min-width: 768px) {
+  body {
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+  }
+}
+
+@media (max-width: 767px) {
+  body {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+  }
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !important;
+  font-style: normal !important;
+  font-stretch: normal !important;
+  font-variant: normal !important;
+  font-weight: normal !important;
 }
 
 @layer components {
@@ -35,6 +53,7 @@ body {
     opacity: 0;
     transform: translateX(20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -44,4 +63,9 @@ body {
 html:has(.drawer-toggle:checked) {
   overflow-y: hidden;
   scrollbar-gutter: auto;
+}
+
+.message-card-backround {
+  @apply border border-gray-200 rounded-lg p-3;
+  background-color: #f0f0f0;
 }

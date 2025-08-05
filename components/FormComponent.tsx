@@ -12,12 +12,15 @@ import { useDispatch } from "react-redux";
 import { useColor } from "./Chatbot/hooks/useColor";
 import { useScreenSize } from "./Chatbot/hooks/useScreenSize";
 
+/**
+ * A component that displays a form for the user to enter their details.
+ * It includes fields for name, email, and phone number, and a submit button.
+ */
 interface FormComponentProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   chatSessionId: string
 }
-
 interface FormData {
   name: string;
   email: string;
@@ -107,7 +110,7 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
       setIsLoading(true);
       let clientData = {
         Name: formData?.name,
-        Phonenumber: formData?.number ? `${formData?.countryCode}${formData?.number}` : undefined,
+        Phonenumber: formData?.number ? `${formData?.countryCode}${formData?.number}` : '',
         Email: formData?.email
       }
 
@@ -141,28 +144,28 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
           <BookText className="h-7 w-7 mr-1" />
         </div>
         <div className="ml-2">
-          <span className="font-medium block">Enter your details</span>
-          <p className="text-xs opacity-80">Click here to provide your information</p>
+          <span className="font-medium block text-base">Enter your details</span>
+          <p className="text-xs opacity-90">Click here to provide your information</p>
         </div>
       </div>
     </div>
   );
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[9999]">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 relative">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] overflow-y-auto flex items-start justify-center py-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 relative my-auto">
         {/* Card header */}
-        <div className="bg-primary text-white p-6 rounded-t-lg" style={{
+        <div className="bg-primary text-white p-5 rounded-t-lg" style={{
           background: `linear-gradient(to right, ${backgroundColor}, ${backgroundColor}CC)`,
           color: textColor
         }}>
-          <h2 className="text-xl font-bold">Enter your details</h2>
+          <h2 className="text-lg font-bold">Enter your details</h2>
           <p className="text-sm opacity-90 mt-1">
             Please provide your information below
           </p>
         </div>
 
         {/* Form content */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 gap-2 flex flex-col">
           {/* Name field */}
           <div className="form-control w-full">
             <label className="label">
@@ -205,7 +208,7 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                disabled={scriptParams?.mail ? true : false}
+                disabled={scriptParams?.mail || scriptParams?.Email ? true : false}
                 placeholder="Enter your email"
                 className={`input input-bordered w-full pl-10 ${errors.email ? "input-error" : ""}`}
               />
@@ -249,7 +252,7 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
                   name="number"
                   value={formData.number}
                   onChange={handleChange}
-                  disabled={scriptParams?.number ? true : false}
+                  disabled={scriptParams?.number || scriptParams?.Phonenumber ? true : false}
                   placeholder="Enter your phone number"
                   className={`input input-bordered w-full ${errors.number ? "input-error" : ""}`}
                 />
@@ -263,7 +266,7 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
           </div>
 
           {/* Submit button */}
-          <div className="mt-6 flex gap-3">
+          <div className="flex gap-3 mt-2">
             <button
               type="button"
               className="btn btn-outline flex-1"
