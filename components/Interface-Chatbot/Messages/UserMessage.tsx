@@ -57,8 +57,8 @@ const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatS
                     </div>
                 </div>
                 }
-                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showSenderTime ? 'opacity-100 max-h-6' : 'opacity-0 max-h-0'}`}>
-                    <MessageTime message={message} />
+                <div className={`transition-all duration-300 ease-in-out ${showSenderTime ? 'opacity-100 max-h-12' : 'opacity-0 max-h-0'}`}>
+                    <MessageTime message={message} tooltipPosition="tooltip-left" />
                 </div>
             </div>
         </div>
