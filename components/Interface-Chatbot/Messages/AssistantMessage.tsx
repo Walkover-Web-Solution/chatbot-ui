@@ -17,6 +17,7 @@ import Image from "next/image";
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import "./Message.css";
+import ImageWithFallback from "./ImageWithFallback";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 function FeedBackButtons({ msgId }: { msgId: string }) {
@@ -112,25 +113,28 @@ const AssistantMessageCard = React.memo(
                                     <AlertCircle className="w-4 h-4" />
                                     <p>Timeout reached. Please try again later.</p>
                                 </div>
-                            ) : message.image_url ? (
-                                <div className="space-y-2">
-                                    <Image
-                                        src={message.image_url}
-                                        alt="Message Image"
-                                        width={400}
-                                        height={400}
-                                        className="w-full max-h-[400px] min-h-[100px] rounded-lg object-cover"
-                                    />
-                                    <a
-                                        href={message.image_url}
-                                        target="_blank"
-                                        rel="noopener"
-                                        className="btn btn-ghost btn-sm w-full text-primary"
-                                    >
-                                        <Maximize2 className="w-4 h-4 mr-2" />
-                                        View Full Image
-                                    </a>
-                                </div>
+                            ) : message.image_urls?.length > 0 ? (
+                                message?.image_urls?.map((image: any) => (
+                                    <div className="space-y-2" key={image}>
+                                        <ImageWithFallback
+                                            src={image?.image_url || image?.permanent_url}
+                                            alt="Loading image, please wait..."
+                                            width={400}
+                                            height={400}
+                                            loading="lazy"
+                                            className="w-full max-h-[400px] min-h-[100px] rounded-lg object-cover"
+                                        />
+                                        <a
+                                            href={image?.image_url || image?.permanent_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="btn btn-ghost btn-sm w-full text-primary flex items-center justify-center"
+                                        >
+                                            <Maximize2 className="w-4 h-4 mr-2" />
+                                            View Full Image
+                                        </a>
+                                    </div>
+                                ))
                             ) : (
                                 <div className="prose dark:prose-invert break-words">
                                     {Object.keys(message?.tools_data || {})?.length > 0 && (
