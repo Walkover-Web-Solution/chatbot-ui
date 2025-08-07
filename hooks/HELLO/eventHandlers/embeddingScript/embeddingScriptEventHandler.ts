@@ -1,4 +1,5 @@
 import { ThemeContext } from "@/components/AppWrapper";
+import { useSendMessageToHello } from "@/components/Chatbot/hooks/useHelloIntegration";
 import { addDomainToHello, saveClientDetails } from "@/config/helloApi";
 import { CBManger } from "@/hooks/coBrowser/CBManger";
 import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
@@ -7,7 +8,7 @@ import { setDataInDraftReducer, setVariablesForHelloBot } from "@/store/draftDat
 import { setHelloClientInfo, setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
 import { setDataInInterfaceRedux } from "@/store/interface/interfaceSlice";
 import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
-import { cleanObject, getLocalStorage, setLocalStorage } from "@/utils/utilities";
+import { cleanObject, setLocalStorage } from "@/utils/utilities";
 import isPlainObject from "lodash.isplainobject";
 import { useContext, useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -19,7 +20,7 @@ const helloToChatbotPropsMap: Record<string, string> = {
 }
 
 const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
-
+    const sendMessageToHello = useSendMessageToHello({});
     const dispatch = useDispatch()
     const { handleThemeChange } = useContext(ThemeContext)
 
@@ -155,6 +156,13 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         }
     }
 
+    function handleStarterQuestionOptionClicked(event: MessageEvent) {
+        const optionText = event?.data?.data?.option;
+        if (optionText) {
+            sendMessageToHello(optionText);
+        }
+    }
+
     useEffect(() => {
 
         eventHandler.addEventHandler('parent-route-changed', handleParentRouteChanged)
@@ -172,6 +180,8 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         eventHandler.addEventHandler('CHATBOT_OPEN', () => handleChatbotVisibility(true))
 
         eventHandler.addEventHandler('CHATBOT_CLOSE', () => handleChatbotVisibility(false))
+
+        eventHandler.addEventHandler('STARTER_QUESTION_OPTION_CLICKED', handleStarterQuestionOptionClicked)
 
     }, [])
 

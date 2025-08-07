@@ -87,6 +87,7 @@
                 chatbotIframeComponent: `${this.prefix}chatbot-iframe-component`,
                 chatbotStyle: `${this.prefix}chatbot-style`,
                 unReadMsgCountBadge: `${this.prefix}unread-msg-count-badge`,
+                starterQuestionContainer: `${this.prefix}starter-question-container`,
             }
             this.props = {};
             this.helloProps = null;
@@ -195,7 +196,7 @@
 
         cleanupChatbot() {
             // Remove elements by ID
-            [this.elements.chatbotIframeContainer, this.elements.chatbotIconContainer, this.elements.chatbotStyle, 'CBParentScript']
+            [this.elements.chatbotIframeContainer, this.elements.chatbotIconContainer, this.elements.chatbotStyle, this.elements.starterQuestionContainer, 'CBParentScript']
                 .forEach(id => {
                     const element = document.getElementById(id);
                     if (element) element.remove();
@@ -287,6 +288,12 @@
                     break;
                 case 'SET_BADGE_COUNT':
                     this.updateBadgeCount(data?.badgeCount);
+                    break;
+                case 'SHOW_STARTER_QUESTION':
+                    this.createAndShowStarterQuestion(data?.message, data?.options);
+                    break;
+                case 'HIDE_STARTER_QUESTION':
+                    this.hideStarterQuestion();
                     break;
                 case 'RELOAD_PARENT':
                     // window.location.reload()
@@ -640,6 +647,86 @@
             });
         }
 
+        createAndShowStarterQuestion(questionText, options = []) {
+            // Check if starter question already exists
+            let starterQuestionContainer = document.getElementById(this.elements.starterQuestionContainer);
+
+            if (!starterQuestionContainer) {
+                // Get the chat bot icon container
+                const chatBotIcon = document.getElementById(this.elements.chatbotIconContainer);
+                if (!chatBotIcon) return;
+
+                // Create starter question container
+                starterQuestionContainer = document.createElement('div');
+                starterQuestionContainer.id = this.elements.starterQuestionContainer;
+                starterQuestionContainer.className = 'hello-starter-question';
+
+                // Add starter question content
+                const starterQuestionBubble = document.createElement('div');
+                starterQuestionBubble.className = 'hello-starter-question-bubble';
+
+                // Only create question text div if questionText is valid (not null, undefined, or empty)
+                if (questionText && questionText.trim() !== '') {
+                    const starterQuestionText = document.createElement('span');
+                    starterQuestionText.className = 'hello-starter-question-text';
+                    starterQuestionText.textContent = questionText;
+                    starterQuestionBubble.appendChild(starterQuestionText);
+
+                    // Add event listeners for starter question text
+                    starterQuestionText.addEventListener('click', () => {
+                        helloChatbotManager.openChatbot();
+                        helloChatbotManager.hideStarterQuestion();
+                    });
+                }
+
+                const starterQuestionClose = document.createElement('button');
+                starterQuestionClose.className = 'hello-starter-question-close';
+                starterQuestionClose.innerHTML = '×';
+                starterQuestionClose.setAttribute('aria-label', 'Close starter question');
+
+                starterQuestionBubble.appendChild(starterQuestionClose);
+                starterQuestionContainer.appendChild(starterQuestionBubble);
+
+                if (options && options.length > 0) {
+                    const optionsContainer = document.createElement('div');
+                    optionsContainer.className = 'hello-starter-question-options';
+
+                    options.forEach((option, index) => {
+                        const optionElement = document.createElement('button'); // use <button> for semantics and accessibility
+                        optionElement.className = 'hello-starter-question-option';
+                        optionElement.setAttribute('data-option-index', index);
+                        optionElement.textContent = option;
+
+                        // Reveal one-by-one with delay
+                        setTimeout(() => {
+                            optionElement.style.opacity = '1';
+                        }, index * 150); // 150ms delay per option
+
+                        optionElement.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            // Send the new event for starter question option click
+                            sendMessageToChatbot({ type: 'STARTER_QUESTION_OPTION_CLICKED', data: { option: option } });
+                            helloChatbotManager.openChatbot();
+                            helloChatbotManager.hideStarterQuestion();
+                        });
+
+                        optionsContainer.appendChild(optionElement);
+                    });
+
+                    starterQuestionContainer.appendChild(optionsContainer);
+                }
+                // Append to chat bot icon
+                chatBotIcon.prepend(starterQuestionContainer);
+
+                starterQuestionClose.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    helloChatbotManager.hideStarterQuestion();
+                });
+            }
+
+            // Show the starter question
+            this.showStarterQuestion();
+        }
 
         async loadChatbotEmbed() {
             try {
@@ -809,6 +896,28 @@
             }
         }
 
+
+        showStarterQuestion() {
+            const starterQuestionContainer = document.getElementById(this.elements.starterQuestionContainer);
+            if (starterQuestionContainer) {
+                starterQuestionContainer.style.display = 'block';
+            }
+        }
+
+        hideStarterQuestion() {
+            const starterQuestionContainer = document.getElementById(this.elements.starterQuestionContainer);
+            if (starterQuestionContainer) {
+                starterQuestionContainer.style.display = 'none';
+            }
+        }
+
+        updateStarterQuestionText(text) {
+            const starterQuestionText = document.querySelector('.hello-starter-question-text');
+            if (starterQuestionText && text) {
+                starterQuestionText.textContent = text;
+            }
+        }
+
         processDataProperties = (data, iframeComponent) => {
             // Create a props object for all UI-related properties
             const propsToUpdate = {};
@@ -820,6 +929,20 @@
             if (data.fullScreen === true || data.fullScreen === 'true' ||
                 data.fullScreen === false || data.fullScreen === 'false') {
                 propsToUpdate.fullScreen = data.fullScreen;
+            }
+
+            // Handle starter question configuration
+            if ('starter_question' in data) {
+                if (data.starter_question === true || data.starter_question === 'true') {
+                    const questionText = data.starter_question_text || 'How can I help you today?';
+                    helloChatbotManager.createAndShowStarterQuestion(questionText);
+                } else {
+                    helloChatbotManager.hideStarterQuestion();
+                }
+            }
+
+            if ('starter_question_text' in data && data.starter_question_text) {
+                helloChatbotManager.updateStarterQuestionText(data.starter_question_text);
             }
 
             // Update props in a single call if we have any
