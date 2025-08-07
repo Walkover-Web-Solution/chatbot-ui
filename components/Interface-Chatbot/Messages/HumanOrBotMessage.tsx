@@ -10,9 +10,15 @@ import RenderHelloInteractiveMessage from "../../Hello/RenderHelloInteractiveMes
 import "./Message.css";
 import MessageTime from "./MessageTime";
 
+/**
+ * A component that displays a human or bot message card.
+ * It includes an avatar, message content, and sender time.
+ */
+
 interface MessageCardProps {
     message: any;
     isBot?: boolean;
+    isLastMessage?: boolean;
 }
 
 interface ShadowDomProps {
@@ -235,32 +241,29 @@ const MessageContent = React.memo(({ message }: { message: any }) => {
 
 MessageContent.displayName = 'MessageContent';
 
-const HumanOrBotMessageCard = React.memo(({ message, isBot = false }: MessageCardProps) => {
+const HumanOrBotMessageCard = React.memo(({ message, isBot = false, isLastMessage = false }: MessageCardProps) => {
+    const [showSenderTime, setShowSenderTime] = useState(isLastMessage);
     return (
-        <div className="w-full pb-4 animate-fade-in animate-slide-left">
+        <div className="w-full pb-3 animate-fade-in animate-slide-left">
             <div className="flex items-start gap-2 max-w-[90%]">
                 {/* <Avatar message={message} isBot={isBot} /> */}
-                <div className="w-fit whitespace-pre-wrap break-words">
-                    <div className="text-base-content p-1 whitespace-pre-wrap w-full break-words">
+                <div className="w-fit whitespace-pre-wrap break-words" onClick={() => setShowSenderTime(!showSenderTime)}>
+                    <div className="p-1 whitespace-pre-wrap w-full break-words message-card-backround">
                         <MessageContent message={message} />
-                        <div className="flex items-end gap-2 text-gray-500 pt-1">
-                            {message?.from_name && (
-                                <div className="text-xs font-medium">{message.from_name}</div>
+                    </div>
+                    <div className={`transition-all duration-300 ease-in-out ${showSenderTime ? 'opacity-100 max-h-12' : 'opacity-0 max-h-0'}`}>
+                        <div className="flex items-center gap-1 text-gray-500 pl-1 pt-0.5">
+                            {message?.from_name && !message?.is_auto_response && (
+                                <div className="text-xs">{message.from_name} •</div>
                             )}
-                            {/* {isBot && !message?.from_name && (
-                                <div className="text-xs font-medium">Bot</div>
-                            )} */}
-                            <MessageTime message={message} />
+                            {message?.is_auto_response && (
+                                <div className="text-xs">Bot •</div>
+                            )}
+                            <MessageTime message={message} tooltipPosition="tooltip-right" />
                         </div>
                     </div>
                 </div>
             </div>
-
-            {message?.is_reset && (
-                <div className="divider my-3">
-                    <div className="badge badge-warning badge-sm">Chat history cleared</div>
-                </div>
-            )}
         </div>
     );
 });

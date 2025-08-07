@@ -204,12 +204,12 @@ const ChatbotDrawer = ({
   ), [subThreadList, subThreadId, handleChangeSubThread]);
 
   const TeamsList = useMemo(() => (
-    <div className="teams-container p-2 relative gap-6 flex flex-col">
+    <div className="teams-container pb-2 relative gap-6 flex flex-col">
       {/* Conversations Section */}
       {(channelList || []).length > 0 && channelList.some((thread: any) => thread?.id) && (
         <div className="conversations-section border-b">
-          <div className="conversations-header mb-1 pb-2">
-            <h3 className="text-md font-semibold">Continue Conversations</h3>
+          <div className="conversations-header pb-2">
+            <h3 className="text-base font-semibold">Continue Conversations</h3>
           </div>
           <div className="conversations-list space-y-2">
             {channelList
@@ -243,11 +243,8 @@ const ChatbotDrawer = ({
                     })()}
                   </div>
                   <div className="conversation-info flex-1 min-w-0 pr-1">
-                    {/* <div className="conversation-name text-xs text-gray-400 break-words mb-1">
-                      Conversation
-                    </div> */}
                     {channel?.channel && allMessages && allMessagesData && (
-                      <div className="last-message text-sm text-black font-medium truncate flex flex-row items-center gap-1 text-ellipsis overflow-hidden">
+                      <div className="last-message text-sm font-medium truncate flex flex-row items-center gap-1 text-ellipsis overflow-hidden">
                         {(() => {
                           const channelMessages = allMessages[channel?.channel];
                           if (channelMessages && channelMessages?.length > 0) {
@@ -307,8 +304,8 @@ const ChatbotDrawer = ({
 
       {/* Teams Section */}
       <div className="teams-section">
-        <div className="teams-header mb-1 pb-2 flex items-center">
-          <h3 className="text-lg font-semibold">Talk to our experts</h3>
+        <div className="teams-header pb-2 flex items-center">
+          <h3 className="text-base font-semibold">Talk to our experts</h3>
         </div>
         <div className="teams-list space-y-0">
           {teamsList.length === 0 ? (
@@ -341,7 +338,7 @@ const ChatbotDrawer = ({
         </div>
       </div>
 
-      {voice_call_widget && <div className="marketing-banner mt-4 p-3 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg">
+      {voice_call_widget && <div className="marketing-banner p-3 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg">
         <p className="text-sm font-medium">Need specialized help?</p>
         <p className="text-xs">Our teams are ready to assist you with any questions</p>
         <button

@@ -3,7 +3,33 @@ import linkifyHtml from "linkify-html";
 import { customAlphabet } from "nanoid";
 import { GetSessionStorageData } from "./ChatbotUtility";
 import relativeTime from 'dayjs/plugin/relativeTime'
+import updateLocale from 'dayjs/plugin/updateLocale'
 dayjs.extend(relativeTime);
+dayjs.extend(updateLocale)
+
+/**
+ * Updates the locale for the dayjs instance.
+ * @param {string} locale - The locale to update.
+ */
+dayjs.updateLocale('en', {
+  relativeTime: {
+    future: (str) => (str === 'Just now' ? str : `in ${str}`),
+    past: (str) => (str === 'Just now' ? str : `${str} ago`),
+    s: 'Just now',
+    m: "1m",
+    mm: "%dm",
+    h: "1h",
+    hh: "%dh",
+    d: "1d",
+    dd: "%dd",
+    w: "1w",
+    ww: "%dw",
+    M: "1mo",
+    MM: "%dmo",
+    y: "1y",
+    yy: "%dy"
+  }
+});
 
 export const generateNewId = (length = 8) => {
   const nanoid = customAlphabet(
@@ -102,6 +128,11 @@ export const setLocalStorage = (key, value = '') => {
   }
 }
 
+/**
+ * Gets the value of a local storage item.
+ * @param {string} key - The key of the local storage item to get.
+ * @returns {string|null} The value of the local storage item, or null if the key does not exist.
+ */
 export const getLocalStorage = (key) => {
   let updatedKey = key
   const widgetToken = GetSessionStorageData('widgetToken')

@@ -9,10 +9,16 @@ import "./Message.css";
 import ToolsCallMessage from "./ToolsCallMessage";
 import UserMessageCard from "./UserMessage";
 
+/**
+ * A component that displays a message.
+ * It includes a message card, date group, and tools call message.
+ */
+
 interface MessageProps {
   message: any;
   addMessage?: any;
   prevTime?: string | number | null;
+  isLastMessage?: boolean;
 }
 
 const ROLE_USER = "user";
@@ -21,10 +27,12 @@ const ROLE_HUMAN = "Human";
 const ROLE_BOT = "Bot";
 const ROLE_TOOLS_CALL = "tools_call";
 
-function Message({ message, addMessage, prevTime }: MessageProps) {
+function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps) {
   const { backgroundColor, textColor } = useColor();
 
-  // Memoize role-based rendering to prevent unnecessary re-computations
+  /**
+   * Memoize role-based rendering to prevent unnecessary re-computations
+   */
   const messageContent = useMemo(() => {
     const role = message?.role;
 
@@ -58,10 +66,10 @@ function Message({ message, addMessage, prevTime }: MessageProps) {
         );
 
       case ROLE_HUMAN:
-        return <HumanOrBotMessageCard message={message} />;
+        return <HumanOrBotMessageCard message={message} isLastMessage={isLastMessage} />;
 
       case ROLE_BOT:
-        return <HumanOrBotMessageCard message={message} isBot={true} />;
+        return <HumanOrBotMessageCard message={message} isBot={true} isLastMessage={isLastMessage} />;
 
       case ROLE_TOOLS_CALL:
         return <ToolsCallMessage message={message} />;
