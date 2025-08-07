@@ -853,17 +853,17 @@
         }
 
         addUrlMonitor(data) {
-            if (data.urlsToOpenInIFrame.length > 0) {
+            if (data.previewLinks?.length > 0) {
                 if (this.state.urlMonitorAdded === false) {
                     const urlTrackerScript = document.createElement('script');
                     urlTrackerScript.src = this.urls.urlMonitor;
                     urlTrackerScript.onload = () => {
                         this.state.urlMonitorAdded = true;
-                        window.chatWidget.initUrlTracker({ urls: data.urlsToOpenInIFrame });
+                        window.chatWidget.initUrlTracker({ urls: data.previewLinks });
                     };
                     document.head.appendChild(urlTrackerScript);
                 } else {
-                    window.chatWidget.initUrlTracker({ urls: data.urlsToOpenInIFrame });
+                    window.chatWidget.initUrlTracker({ urls: data.previewLinks });
                 }
             }
         }
@@ -946,7 +946,7 @@
     // Initialize the widget function
     window.initChatWidget = (data, delay = 0) => {
         if (block_chatbot) return;
-        if (data.urlsToOpenInIFrame) {
+        if (data.previewLinks) {
             helloChatbotManager.addUrlMonitor(data);
         }
         if (data) {

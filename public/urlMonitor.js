@@ -259,23 +259,47 @@
                 try {
                     // Handle full URLs (like https://nextjs.org/)
                     if (prefix.match(/^https?:\/\//)) {
-                        // For full URLs, check if the URL starts with the prefix
-                        return fullUrl === prefix || fullUrl.startsWith(prefix);
+                        const matches = fullUrl === prefix || fullUrl.startsWith(prefix);
+                        return matches;
+                    }
+
+                    if (prefix.includes('*')) {
+                        // Handle wildcard patterns like '/faq/*'
+                        if (prefix.startsWith('/')) {
+                            // This is a path-based pattern, should only match same domain
+                            const cleanPattern = prefix.replace(/\*/g, '');
+
+                            // If nothing remains after removing *, skip this pattern
+                            if (!cleanPattern.trim()) return false;
+
+                            // Only match if it's the same domain and path starts with the pattern
+                            const matches = parsedUrl.origin === window.location.origin && path.startsWith(cleanPattern);
+                            return matches;
+                        } else {
+                            // For non-path patterns, use the old logic
+                            const cleanPattern = prefix.replace(/\*/g, '');
+                            if (!cleanPattern.trim()) return false;
+                            const matches = fullUrl.includes(cleanPattern);
+                            return matches;
+                        }
                     }
 
                     const prefixUrl = new URL(prefix, window.location.origin);
 
                     if (prefixUrl.origin === parsedUrl.origin) {
                         // Match exact path or deeper sub-paths only
-                        return path === prefixUrl.pathname || path.startsWith(prefixUrl.pathname + '/');
+                        const matches = path === prefixUrl.pathname || path.startsWith(prefixUrl.pathname + '/');
+                        return matches;
                     }
-                } catch {
+                } catch (e) {
                     // prefix is relative path or something else
                     if (prefix.startsWith('/')) {
-                        return path === prefix || path.startsWith(prefix + '/');
+                        const matches = path === prefix || path.startsWith(prefix + '/');
+                        return matches;
                     }
                     // fallback for anything else (e.g. full URLs without trailing slash)
-                    return fullUrl === prefix || fullUrl.startsWith(prefix);
+                    const matches = fullUrl === prefix || fullUrl.startsWith(prefix);
+                    return matches;
                 }
                 return false;
             });
