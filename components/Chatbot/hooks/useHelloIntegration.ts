@@ -7,6 +7,7 @@ import { setData, setHelloEventMessage, setImages, setInitialMessages, setOpenHe
 import { setChannelListData, setHelloClientInfo, setHelloKeysData } from '@/store/hello/helloSlice';
 import { useAppDispatch } from '@/store/useTypedHooks';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
+import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 import { PAGE_SIZE } from '@/utils/enums';
 import { generateNewId } from '@/utils/utilities';
 import { useCallback, useContext, useRef } from 'react';
@@ -213,8 +214,8 @@ export const useOnSendHello = () => {
 
   const isBot = assigned_type === 'bot';
 
-  return useCallback(async (message: string, newMessage: HelloMessage) => {
-    if (!message.trim() && (!images || images.length === 0)) return;
+  return useCallback(async (message?: string, newMessage?: HelloMessage | string, voiceCall?: boolean) => {
+    if (!voiceCall && (!message?.trim() && (!images || images.length === 0))) return;
 
     try {
       const channelDetail = !currentChatId ? {
@@ -233,25 +234,27 @@ export const useOnSendHello = () => {
         team_id: currentTeamId,
         new: true,
       } : undefined;
+      let attachments;
+      if (!voiceCall) {
+        // Show widget form only if in case of new chat and showWidgetForm is true
+        if (!currentChatId && showWidgetForm) {
+          globalDispatch(setOpenHelloForm(true));
+        }
 
-      // Show widget form only if in case of new chat and showWidgetForm is true
-      if (!currentChatId && showWidgetForm) {
-        globalDispatch(setOpenHelloForm(true));
+        attachments = Array.isArray(images) && images?.length ? images : null;
+
+        if (attachments) {
+          globalDispatch(setImages([]));
+        }
+
+        if ((isBot || !assigned_type)) {
+          setLoading(true);
+        }
+
+        startTimeoutTimer();
       }
 
-      const attachments = Array.isArray(images) && images?.length ? images : null;
-
-      if (attachments) {
-        globalDispatch(setImages([]));
-      }
-
-      if (isBot || !assigned_type) {
-        setLoading(true);
-      }
-
-      startTimeoutTimer();
-
-      const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId, helloVariables);
+      const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId, helloVariables, voiceCall);
       if (data && (!currentChatId || !currentChannelId)) {
         dispatch(setDataInAppInfoReducer({
           subThreadId: data?.['channel'],
@@ -259,7 +262,10 @@ export const useOnSendHello = () => {
           currentChannelId: data?.['channel']
         }));
         addHelloMessage(newMessage, data?.['channel']);
-        fetchChannels();
+        const response = await fetchChannels();
+        if (response?.channels?.length === 1 && response?.channels?.[0]?.id !== null) {
+          emitEventToParent('HIDE_STARTER_QUESTION')
+        }
         if (data?.['presence_channel'] && data?.['channel']) {
           try {
             await socketManager.subscribe([data?.['presence_channel'], data?.['channel']]);
@@ -268,6 +274,7 @@ export const useOnSendHello = () => {
           }
         }
       }
+      return data;
     } catch (error) {
       if (isBot) {
         setLoading(false);
@@ -325,8 +332,9 @@ export const useSendMessageToHello = ({
       } else if (messageRef.current instanceof HTMLDivElement) {
         textMessage = messageRef.current.textContent || message || '';
       }
+    } else {
+      textMessage = message || '';
     }
-
     if (!textMessage.trim() && (!images || images?.length === 0)) return false;
 
     const messageId = generateNewId();

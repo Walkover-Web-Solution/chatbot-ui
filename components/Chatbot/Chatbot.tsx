@@ -29,6 +29,11 @@ import { useHelloEffects } from './hooks/useHelloEffects';
 import { useReduxEffects } from './hooks/useReduxEffects';
 import { useScreenSize } from './hooks/useScreenSize';
 
+/**
+ * A component that displays a chatbot interface.
+ * It includes a header, drawer, and message list.
+ */
+
 interface ChatbotProps {
   chatSessionId: string
   tabSessionId: string
@@ -36,7 +41,7 @@ interface ChatbotProps {
 
 // Memoized components
 const EmptyChatView = React.memo(() => (
-  <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-100px] p-5">
+  <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-84px] p-5">
     <div className="flex flex-col items-center w-full">
       <Image
         src={ChatBotGif}
@@ -62,7 +67,7 @@ const ActiveChatView = React.memo(() => (
     <div className="flex-1 overflow-y-auto max-w-5xl mx-auto w-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
       <MessageList />
     </div>
-    <div className="max-w-5xl mx-auto px-4 pb-3 w-full">
+    <div className="max-w-5xl mx-auto p-3 pb-3 w-full">
       <ChatbotTextField />
     </div>
   </div>
@@ -80,11 +85,10 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
   const dispatch = useAppDispatch();
 
   // State management
-  const { show_widget_form, is_anon, greetingMessage, isToggledrawer, chatsLoading, messageIds, subThreadId, helloMsgIds } = useCustomSelector((state) => {
+  const { show_widget_form, greetingMessage, isToggledrawer, chatsLoading, messageIds, subThreadId, helloMsgIds } = useCustomSelector((state) => {
     const widgetInfo = state.Hello?.[chatSessionId]?.widgetInfo
     return ({
       show_widget_form: typeof widgetInfo?.show_widget_form === 'boolean' ? widgetInfo?.show_widget_form : state.Hello?.[chatSessionId]?.showWidgetForm,
-      is_anon: state.Hello?.[chatSessionId]?.is_anon == 'true',
       greetingMessage: state.Hello?.[chatSessionId]?.greeting as any,
       isToggledrawer: state.Chat.isToggledrawer,
       chatsLoading: state.Chat.chatsLoading,
@@ -164,7 +168,7 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
           )}
 
           {/* Form and UI components */}
-          {isHelloUser && show_widget_form && !is_anon && (
+          {isHelloUser && show_widget_form && (
             <FormComponent />
           )}
           <CallUI />

@@ -47,7 +47,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
 
     const { currentChannelId, isHelloUser } = useReduxStateManagement({ chatSessionId, tabSessionId });
 
-    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotOpen, isChatbotMinimized, unReadCountInCurrentChannel } = useCustomSelector((state) => ({
+    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotOpen, isChatbotMinimized, unReadCountInCurrentChannel, callToken } = useCustomSelector((state) => ({
         companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
         botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
         reduxChatSessionId: state.draftData?.chatSessionId,
@@ -64,7 +64,8 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
         unReadCountInCurrentChannel: (() => {
             const channelListData = state.Hello?.[chatSessionId]?.channelListData;
             return channelListData?.channels?.find((channel) => channel?.channel === currentChannelId)?.widget_unread_count || 0;
-        })()
+        })(),
+        callToken: state.appInfo?.[tabSessionId]?.callToken || '',
     }));
 
     const dispatch = useDispatch();
@@ -127,7 +128,8 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             let a_clientId = getLocalStorage('a_clientId');
             let k_clientId = getLocalStorage('k_clientId');
             let enable_call = false
-            let is_domain_enable = false
+            let channels = [];
+            // let is_domain_enable = false
             let { mail, number, unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
 
             let needsAnonymousRegistration = !a_clientId && !k_clientId && !unique_id && widgetToken && isHelloUser && !mail && !number;
@@ -137,7 +139,8 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                 a_clientId = getLocalStorage(`a_clientId`);
             } else {
                 // it gives the Hello Client Id for the registered user
-                await fetchChannels();
+                const response = await fetchChannels();
+                channels = response?.channels || [];
                 k_clientId = getLocalStorage(`k_clientId`);
             }
 
@@ -159,7 +162,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                     window.parent.postMessage({ type: 'launch_widget', data: widgetData?.launch_widget }, '*');
                     botType = widgetData?.bot_type;
                     enable_call = widgetData?.voice_call_widget;
-                    is_domain_enable = widgetData?.is_domain_enable
+                    // is_domain_enable = widgetData?.is_domain_enable
                     dispatch(setWidgetInfo(widgetData));
                     const helloConfigFromSession = (JSON.parse(GetSessionStorageData('helloConfig') || `{}`))
                     const customTheme = helloConfigFromSession?.sdkConfig?.customTheme || ''
@@ -194,6 +197,9 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             if (widgetData && greetingCompanyId && greetingBotId && (getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`)) && (botType === 'lex' || botType === 'chatgpt')) {
                 await getGreetingQuestions(greetingCompanyId, greetingBotId, botType).then((data) => {
                     dispatch(setGreeting({ ...data?.greeting }));
+                    if (((data?.greeting?.text && data?.greeting?.text.trim() !== '') || (data?.greeting?.options && data?.greeting?.options?.length > 0)) && (channels?.length === 0 || (channels?.length === 1 && channels?.[0]?.id === null))) {
+                        emitEventToParent('SHOW_STARTER_QUESTION', { message: data?.greeting?.text, options: data?.greeting?.options })
+                    }
                 });
             }
 
@@ -207,6 +213,10 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             if ((getLocalStorage(`a_clientId`) || getLocalStorage(`k_clientId`)) && widgetToken && enable_call) {
                 const clientTokenPromise = getClientToken().then(() => {
                     helloVoiceService.initialize();
+                    if (callToken) {
+                        emitEventToParent('OPEN_CHATBOT')
+                        helloVoiceService.rejoinCall(callToken)
+                    }
                 });
 
                 const callTokenPromise = getCallToken();
@@ -229,7 +239,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                 }
 
                 const keysToRemove = [
-                    'widgetToken', 'unique_id', 'user_jwt_token', 'sdkConfig', 'hide_launcher', 'show_widget_form', 'show_close_button', 'launch_widget', 'show_send_button', 'unique_id', 'primary_color', 'bot_id', 'name', 'number', 'mail', 'bot_type', 'isMobileSDK', 'pushConfig', 'variables'
+                    'widgetToken', 'unique_id', 'user_jwt_token', 'sdkConfig', 'hide_launcher', 'show_widget_form', 'show_close_button', 'launch_widget', 'show_send_button', 'unique_id', 'primary_color', 'bot_id', 'name', 'number', 'mail', 'bot_type', 'isMobileSDK', 'pushConfig', 'variables', 'urlsToOpenInIFrame'
                 ]
 
                 keysToRemove.map(key => {
@@ -250,7 +260,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                 }
             }
 
-            if (is_domain_enable) {
+            if (true) {
                 emitEventToParent("ENABLE_DOMAIN_TRACKING")
             }
 

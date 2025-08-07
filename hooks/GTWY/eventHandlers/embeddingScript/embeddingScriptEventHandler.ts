@@ -68,14 +68,14 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
     }
 
     // Process gtwy model change
-    if(receivedData.modelChanged){
+    if (receivedData.modelChanged) {
       dispatch(setDataInAppInfoReducer({ modelChanged: receivedData.modelChanged }))
     }
 
     // Process gtwy service change
-    if(receivedData.serviceChanged){
+    if (receivedData.serviceChanged) {
       dispatch(setDataInAppInfoReducer({ serviceChanged: receivedData.serviceChanged }))
-    } 
+    }
 
     // Process UI-related data
     if (Array.isArray(receivedData.headerButtons)) {

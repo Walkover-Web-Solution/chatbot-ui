@@ -697,7 +697,9 @@
                         if(message.status === 'delete' && !message.error){
                             this.showMessage(this.state.messageType.success, 'Document deleted successfully');
                         }
-                        this.showDocumentList();
+                       if ((this.props?.defaultOpen === true || this.props?.defaultOpen === "true") || (this.parentContainer && this.props.parentId)) {
+                           this.showDocumentList();
+                       } 
                     }
                     if(error){
                         this.showMessage(this.state.messageType.error, error);

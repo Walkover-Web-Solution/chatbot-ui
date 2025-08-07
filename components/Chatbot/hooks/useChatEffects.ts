@@ -14,7 +14,7 @@ export const useChatEffects = ({ chatSessionId, tabSessionId, messageRef, timeou
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
-        versionId: state.appInfo?.[tabSessionId]?.versionId || "null",
+        versionId: state.appInfo?.[tabSessionId]?.versionId || null,
         isHelloUser: state.draftData?.isHelloUser || false,
         threadList: state.Interface?.[chatSessionId]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId],
         loading: state.Chat.loading || false,
@@ -25,7 +25,7 @@ export const useChatEffects = ({ chatSessionId, tabSessionId, messageRef, timeou
         if (bridgeName) {
             globalDispatch(getHelloDetailsStart({ slugName: bridgeName, versionId }));
         }
-    }, [bridgeName, chatSessionId,serviceChanged, modelChanged, versionId])
+    }, [bridgeName, chatSessionId, serviceChanged, modelChanged, versionId])
 
     useEffect(() => {
         threadId && bridgeName && fetchAllThreads()
