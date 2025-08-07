@@ -25,7 +25,7 @@ export const useChatEffects = ({ chatSessionId, tabSessionId, messageRef, timeou
         if (bridgeName) {
             globalDispatch(getHelloDetailsStart({ slugName: bridgeName, versionId }));
         }
-    }, [bridgeName, chatSessionId,serviceChanged, modelChanged, versionId])
+    }, [bridgeName, chatSessionId, serviceChanged, modelChanged, versionId])
 
     useEffect(() => {
         threadId && bridgeName && fetchAllThreads()

@@ -1,5 +1,4 @@
 'use client';
-
 import { AiIcon } from "@/assests/assestsIndex";
 import { errorToast } from "@/components/customToast";
 import { uploadImage } from "@/config/api";
@@ -11,12 +10,13 @@ import { ParamsEnums } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import { TextField, useTheme } from "@mui/material";
 import debounce from "lodash.debounce";
-import { ChevronDown, Send, Upload, X } from "lucide-react";
+import { ChevronDown, Paperclip, Send, Smile, X } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
 import { useSendMessageToHello } from "../Chatbot/hooks/useHelloIntegration";
 import CallButton from "./CallButton";
+import EmojiSelector from "./EmojiSelector";
 import { MessageContext } from "./InterfaceChatbot";
 import ImageWithFallback from "./Messages/ImageWithFallback";
 
@@ -34,6 +34,7 @@ const MAX_IMAGES = 4;
 const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "" }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const theme = useTheme();
   const isLight = isColorLight(theme.palette.primary.main);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -148,7 +149,9 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }, [images, setImages]);
 
   const focusTextField = useCallback(() => {
-    messageRef?.current?.focus();
+    setTimeout(() => {
+      messageRef?.current?.focus();
+    }, 0);
   }, [messageRef]);
 
   const scrollOptions = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
@@ -247,7 +250,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
 
   const textFieldStyles = useMemo(() => ({
     '& .MuiOutlinedInput-root': {
-      padding: '8px',
+      padding: '4px 8px',
     },
     '& .MuiOutlinedInput-notchedOutline': {
       border: 'none',
@@ -264,11 +267,11 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     if (isHelloUser) return null;
 
     return (
-      <div className="relative w-7 h-7 z-[2]">
+      <div className="relative w-6 h-6 z-[2] ml-1">
         <Image
           src={AiIcon}
-          width={28}
-          height={28}
+          // width={28}
+          // height={28}
           alt="AI"
           className={`absolute transition-opacity duration-200 filter drop-shadow-pink`}
         />
@@ -291,17 +294,14 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           ref={fileInputRef}
         />
         <label htmlFor="upload-image" className="cursor-pointer">
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-gray-300 bg-white shadow-sm hover:bg-gray-100 transition-all duration-200 group">
+          <div className="flex px-2 py-1.5 w-8 h-8 items-center group">
             {isUploading ? (
               <div className="flex items-center gap-1.5">
-                <div className="w-3.5 h-3.5 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
                 <span className="text-[10px] font-medium text-gray-600">Uploading...</span>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5">
-                <Upload className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform duration-200" />
-                <span className="text-[10px] font-medium text-gray-700">Upload Files</span>
-              </div>
+              <Paperclip className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600" />
             )}
           </div>
         </label>
@@ -309,12 +309,38 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     );
   }, [mode, isUploading, handleImageUpload, subThreadId]);
 
+  const handleEmojiSelect = (data: { emoji: string }) => {
+    if (messageRef?.current) {
+      const currentValue = messageRef.current.value || '';
+      const start = messageRef.current?.selectionStart || 0;
+      const end = messageRef.current?.selectionEnd || 0;
+      const newValue = currentValue?.substring(0, start) + (data?.emoji || '') + currentValue?.substring(end);
+      messageRef.current.value = newValue;
+      setInputValue(newValue);
+      // Set the cursor position right after the inserted emoji
+      messageRef.current?.setSelectionRange(start + (data?.emoji || '')?.length, start + (data?.emoji || '')?.length);
+      // Trigger onChange event to sync with any other handlers
+      const event = new Event('input', { bubbles: true });
+      messageRef.current?.dispatchEvent(event);
+    }
+    setShowEmojiPicker(false);
+    // Focus back on the input field
+    setTimeout(() => {
+      focusTextField();
+    }, 50);
+  }
+
   return (
-    <div className={`relative w-full rounded-lg shadow-sm ${className}`}>
+    <div className={`relative w-full shadow-sm ${className}`}>
       {optionButtons}
       {imagePreviewsSection}
 
-      <div className="w-full h-full cursor-text" onClick={focusTextField}>
+      <div className="w-full h-full cursor-text relative" onClick={focusTextField}>
+        <EmojiSelector
+          isVisible={showEmojiPicker}
+          onEmojiSelect={handleEmojiSelect}
+          onClose={() => { setShowEmojiPicker(false); focusTextField(); }}
+        />
         <div
           className="relative flex-col h-full items-center justify-between gap-2 p-2 bg-white rounded-xl border border-gray-300 focus-within:outline focus-within:outline-2 focus-within:outline-offset-0"
           style={{ outlineColor: theme.palette.primary.main }}
@@ -327,16 +353,25 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             fullWidth
             onKeyDown={handleKeyDown}
             placeholder="Message AI Assistant..."
-            className="p-1 h-full min-h-[40px] max-h-[400px] bg-transparent focus:outline-none disabled:cursor-not-allowed"
+            className="h-full min-h-[10px] max-h-[400px] bg-transparent focus:outline-none disabled:cursor-not-allowed"
             maxRows={6}
             sx={textFieldStyles}
             autoFocus
+            inputMode="text"
+            type="text"
           />
 
-          <div className="flex justify-between items-center w-full mt-2">
-            {/* Left section: Upload and AI icon */}
-            <div className="flex items-center gap-2">
+          <div className="flex justify-between items-center w-full">
+            {/* Left section: Upload, Emoji and AI icon */}
+            <div className="flex items-center">
               {aiIconElement}
+              <div
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); setShowEmojiPicker(!showEmojiPicker) }}
+                className="group flex items-center justify-center w-8 h-8 cursor-pointer"
+                aria-label="Add emoji"
+              >
+                <Smile className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600" />
+              </div>
               {uploadButton}
             </div>
 
@@ -360,7 +395,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

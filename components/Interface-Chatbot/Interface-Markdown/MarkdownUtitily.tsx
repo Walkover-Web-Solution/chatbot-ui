@@ -4,7 +4,7 @@ import DoneIcon from "@mui/icons-material/Done";
 import { Typography } from "@mui/material";
 import copy from "copy-to-clipboard";
 import React, { useState } from "react";
-import { CodeBlock } from "./CodeBlock.tsx";
+import { CodeBlock } from "./CodeBlock";
 
 export const Code = ({
   inline,
@@ -27,7 +27,7 @@ export const Code = ({
   };
   const match = /language-(\w+)/.exec(className || "");
   return !inline && match ? (
-    <div className="my-1">
+    <div className="py-4">
       <div
         className="flex justify-between items-center cursor-pointer py-2 px-3"
         style={{
@@ -37,10 +37,10 @@ export const Code = ({
           borderBottom: "1px solid #d1d5db"
         }}
       >
-        <Typography 
-          variant="caption" 
-          sx={{ 
-            fontWeight: 500, 
+        <Typography
+          variant="caption"
+          sx={{
+            fontWeight: 500,
             color: "#4b5563",
             textTransform: "uppercase",
             letterSpacing: "0.05em",

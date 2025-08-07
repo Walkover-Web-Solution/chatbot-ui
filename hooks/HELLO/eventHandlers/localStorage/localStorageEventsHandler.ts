@@ -15,7 +15,7 @@ const useHelloLocalStorageEventHandlers = (eventHandler: LocalStorageEventRegist
 
     useEffect(() => {
 
-        ['k_clientId', 'a_clientId', 'is_anon'].forEach((key) => {
+        ['k_clientId', 'a_clientId'].forEach((key) => {
             eventHandler.addEventHandler(key, syncDataInRedux)
         })
         

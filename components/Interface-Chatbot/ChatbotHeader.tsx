@@ -405,7 +405,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
   };
 
   // Close chatbot handler
-  const handleCloseChatbot = () => {
+  const handleCloseChatbot = (e: any) => {
+    e.stopPropagation();
     if (!window?.parent) return;
     window.parent.postMessage({ type: "CLOSE_CHATBOT" }, "*");
   };
@@ -512,14 +513,14 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
           )}
           <div className="flex items-center">
             <div className="relative">
-              <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis text-lg">
+              <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis text-base">
                 {displayTitle}
               </h1>
             </div>
           </div>
         </div>
         {chatbotSubtitle && (
-          <p className="text-sm opacity-75 text-center whitespace-nowrap overflow-hidden overflow-ellipsis"> ̰
+          <p className="text-sm opacity-75 text-center whitespace-nowrap overflow-hidden overflow-ellipsis">
             {displaySubtitle}
           </p>
         )}
@@ -580,25 +581,24 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
     );
   }, [hideCloseButton, handleCloseChatbot]);
 
-
+  const handleToggleMinimize = () => {
+    if (!isChatbotMinimized && fullScreen) {
+      toggleFullScreen(false)
+    }
+    handleMinimizeChatbot(!isChatbotMinimized)
+    if (!isChatbotMinimized) {
+      emitEventToParent('MINIMIZE_CHATBOT')
+    } else {
+      toggleFullScreen(false)
+    }
+  }
 
   const MinimizeButton = useMemo(() => {
     if (!isHelloUser) return null;
     return (
       <div
         className="cursor-pointer p-2 py-2 rounded-full hover:bg-gray-200 transition-colors"
-        onClick={() => {
-
-          if (!isChatbotMinimized && fullScreen) {
-            toggleFullScreen(false)
-          }
-          handleMinimizeChatbot(!isChatbotMinimized)
-          if (!isChatbotMinimized) {
-            emitEventToParent('MINIMIZE_CHATBOT')
-          } else {
-            toggleFullScreen(false)
-          }
-        }}
+        onClick={handleToggleMinimize}
       >
         {isChatbotMinimized ? <Maximize2 size={22} color="#555555" style={{ transform: 'rotate(90deg)' }} /> : <Minus size={22} color="#555555" />}
       </div>
@@ -606,7 +606,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
   }, [isHelloUser, isChatbotMinimized, fullScreen, toggleFullScreen])
 
   return isChatbotMinimized ?
-    <div className="px-2 sm:py-4 py-3 w-full">
+    <div className="px-2 sm:py-4 py-3 w-full cursor-pointer" onClick={handleToggleMinimize}>
       <div className="flex items-center w-full relative px-2">
         {HeaderTitleSection}
         <div className="flex justify-end items-center gap-1 flex-1 sm:absolute sm:right-0">

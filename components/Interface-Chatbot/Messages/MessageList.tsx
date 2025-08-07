@@ -21,6 +21,11 @@ import Message from "./Message";
 // Constants
 const SCROLL_BUFFER = -500;
 
+/**
+ * A component that displays a list of messages.
+ * It includes an infinite scroll component to load more messages as needed.
+ */
+
 function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: string, currentChannelId: string }) {
   console.log('message list')
   const getMoreHelloChats = useGetMoreHelloChats();
@@ -135,15 +140,26 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
   }, [loading, assigned_type, isHelloUser, themePalette]);
 
   const renderedMessages = useMemo(() => {
+    let lastHumanOrBotIndex = -1;
+
     return messageIds.map((msgId, index) => {
+      const message = msgIdAndDataMap[msgId];
+
+      // Find the first HumanOrBot message (most recent in reversed list)
+      if (lastHumanOrBotIndex === -1 && (message?.role === 'Human' || message?.role === 'Bot')) {
+        lastHumanOrBotIndex = index;
+      }
+
       const prevTime = messageIds[index + 1] && msgIdAndDataMap[messageIds[index + 1]]
         ? msgIdAndDataMap[messageIds[index + 1]]?.time || null
         : null;
+
       return (
         <Message
           key={`${msgId}`}
-          message={msgIdAndDataMap[msgId]}
+          message={message}
           prevTime={prevTime}
+          isLastMessage={index === lastHumanOrBotIndex}
         />
       );
     });
@@ -160,7 +176,7 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
       id="scrollableDiv"
       ref={scrollableDivRef}
       onScroll={handleScroll}
-      className="w-full h-full flex-1 overflow-auto p-3 sm:p-4"
+      className="w-full h-full flex-1 overflow-auto px-3 sm:p-4"
       style={{
         display: 'flex',
         flexDirection: 'column-reverse',

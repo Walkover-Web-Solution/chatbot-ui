@@ -1,17 +1,24 @@
 /* eslint-disable */
 import { UserAssistant } from "@/assests/assestsIndex";
 import RenderHelloVedioCallMessage from "@/components/Hello/RenderHelloVedioCallMessage";
-import { formatTime, linkify } from "@/utils/utilities";
+import { linkify } from "@/utils/utilities";
 import Image from "next/image";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import RenderHelloAttachmentMessage from "../../Hello/RenderHelloAttachmentMessage";
 import RenderHelloFeedbackMessage from "../../Hello/RenderHelloFeedbackMessage";
 import RenderHelloInteractiveMessage from "../../Hello/RenderHelloInteractiveMessage";
 import "./Message.css";
+import MessageTime from "./MessageTime";
+
+/**
+ * A component that displays a human or bot message card.
+ * It includes an avatar, message content, and sender time.
+ */
 
 interface MessageCardProps {
     message: any;
     isBot?: boolean;
+    isLastMessage?: boolean;
 }
 
 interface ShadowDomProps {
@@ -234,38 +241,29 @@ const MessageContent = React.memo(({ message }: { message: any }) => {
 
 MessageContent.displayName = 'MessageContent';
 
-const HumanOrBotMessageCard = React.memo(({ message, isBot = false }: MessageCardProps) => {
-    // Memoized formatted time to prevent unnecessary recalculations
-    const formattedTime = useMemo(() =>
-        message?.time ? formatTime(message.time, 'shortTime') : null,
-        [message?.time]
-    );
-
+const HumanOrBotMessageCard = React.memo(({ message, isBot = false, isLastMessage = false }: MessageCardProps) => {
+    const [showSenderTime, setShowSenderTime] = useState(isLastMessage);
     return (
-        <div className="w-full mb-3 animate-fade-in animate-slide-left">
+        <div className="w-full pb-3 animate-fade-in animate-slide-left">
             <div className="flex items-start gap-2 max-w-[90%]">
-                <Avatar message={message} isBot={isBot} />
-
-                <div className="w-fit whitespace-pre-wrap break-words">
-                    <div className="text-base-content p-1 whitespace-pre-wrap w-full break-words">
-                        {message?.from_name && (
-                            <div className="text-sm font-medium mb-1">{message.from_name}</div>
-                        )}
-
+                {/* <Avatar message={message} isBot={isBot} /> */}
+                <div className="w-fit whitespace-pre-wrap break-words" onClick={() => setShowSenderTime(!showSenderTime)}>
+                    <div className="p-1 whitespace-pre-wrap w-full break-words message-card-backround">
                         <MessageContent message={message} />
-
-                        {formattedTime && (
-                            <p className="text-xs text-gray-500">{formattedTime}</p>
-                        )}
+                    </div>
+                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showSenderTime ? 'opacity-100 max-h-6' : 'opacity-0 max-h-0'}`}>
+                        <div className="flex items-center gap-1 text-gray-500 pl-1 pt-0.5">
+                            {message?.from_name && !message?.is_auto_response && (
+                                <div className="text-xs">{message.from_name} •</div>
+                            )}
+                            {message?.is_auto_response && (
+                                <div className="text-xs">Bot •</div>
+                            )}
+                            <MessageTime message={message} />
+                        </div>
                     </div>
                 </div>
             </div>
-
-            {message?.is_reset && (
-                <div className="divider my-3">
-                    <div className="badge badge-warning badge-sm">Chat history cleared</div>
-                </div>
-            )}
         </div>
     );
 });
