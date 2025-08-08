@@ -211,6 +211,18 @@ const ImageWithFallback = ({
           />
         );
 
+      case "pdf":
+        return (
+          <Image
+            src={PdfLogo}
+            alt={alt}
+            width={100}
+            height={100}
+            onClick={handleClick}
+            style={style}
+          />
+        );
+
       default:
         return (
           <img

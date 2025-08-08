@@ -157,12 +157,6 @@
             badgeElement.textContent = ''; // Will be populated dynamically
             imgElement.appendChild(badgeElement);
 
-            const badgeElement = document.createElement('span');
-            badgeElement.id = this.elements.unReadMsgCountBadge;
-            badgeElement.className = 'hello-badge-count';
-            badgeElement.textContent = ''; // Will be populated dynamically
-            imgElement.appendChild(badgeElement);
-
             return { chatBotIcon, imgElement, textElement };
         }
 
