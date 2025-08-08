@@ -490,16 +490,16 @@
                         if (width < 600) {
                             iframeParentContainer.style.height = '100%';
                             iframeParentContainer.style.width = '100%';
-                            iframeParentContainer.classList.add('full-screen-interfaceEmbed')
+                            iframeParentContainer.classList.add('hello-full-screen-interfaceEmbed')
                         } else {
                             this.applyConfig(this?.props?.config || {});
-                            iframeParentContainer.classList.remove('full-screen-interfaceEmbed');
+                            iframeParentContainer.classList.remove('hello-full-screen-interfaceEmbed');
                         }
                     }
                 } else {
                     iframeParentContainer.style.height = '100%';
                     iframeParentContainer.style.width = '100%';
-                    iframeParentContainer.classList.add('full-screen-interfaceEmbed')
+                    iframeParentContainer.classList.add('hello-full-screen-interfaceEmbed')
                 }
             });
 
@@ -812,9 +812,9 @@
             if (newprops.iconColor) {
                 document.getElementById("hello-popup-interfaceEmbed").src = newprops.iconColor === 'dark' ? AI_WHITE_ICON : AI_BLACK_ICON
             } if (newprops.fullScreen === true || newprops.fullScreen === 'true') {
-                document.getElementById(this.elements.chatbotIframeContainer)?.classList.add('full-screen-interfaceEmbed')
+                document.getElementById(this.elements.chatbotIframeContainer)?.classList.add('hello-full-screen-interfaceEmbed')
             } if (newprops.fullScreen === false || newprops.fullScreen === 'false') {
-                document.getElementById(this.elements.chatbotIframeContainer)?.classList.remove('full-screen-interfaceEmbed')
+                document.getElementById(this.elements.chatbotIframeContainer)?.classList.remove('hello-full-screen-interfaceEmbed')
             } if ('hideIcon' in newprops && document.getElementById(this.elements.chatbotIconContainer)) {
                 document.getElementById(this.elements.chatbotIconContainer).style.display = (newprops.hideIcon === true || newprops.hideIcon === 'true') ? 'none' : 'unset';
             } if ('hideCloseButton' in newprops && document.getElementById('hello-close-button-interfaceEmbed')) {
@@ -972,17 +972,17 @@
         }
 
         addUrlMonitor(data) {
-            if (data.urlsToOpenInIFrame.length > 0) {
+            if (data.previewLinks?.length > 0) {
                 if (this.state.urlMonitorAdded === false) {
                     const urlTrackerScript = document.createElement('script');
                     urlTrackerScript.src = this.urls.urlMonitor;
                     urlTrackerScript.onload = () => {
                         this.state.urlMonitorAdded = true;
-                        window.chatWidget.initUrlTracker({ urls: data.urlsToOpenInIFrame });
+                        window.chatWidget.initUrlTracker({ urls: data.previewLinks });
                     };
                     document.head.appendChild(urlTrackerScript);
                 } else {
-                    window.chatWidget.initUrlTracker({ urls: data.urlsToOpenInIFrame });
+                    window.chatWidget.initUrlTracker({ urls: data.previewLinks });
                 }
             }
         }
@@ -990,7 +990,7 @@
 
     const helloChatbotManager = new HelloChatbotEmbedManager();
 
-    window.SendDataToChatbot = function (dataToSend) {
+    window.SendDataToBot = function (dataToSend) {
         const iframeComponent = document.getElementById(helloChatbotManager.elements.chatbotIframeComponent);
 
         // Parse string data if needed
@@ -1065,7 +1065,7 @@
     // Initialize the widget function
     window.initChatWidget = (data, delay = 0) => {
         if (block_chatbot) return;
-        if (data.urlsToOpenInIFrame) {
+        if (data.previewLinks) {
             helloChatbotManager.addUrlMonitor(data);
         }
         if (data) {

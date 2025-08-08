@@ -440,7 +440,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
     if (!showCreateThreadButton || isToggledrawer) return null;
 
     return (
-      <div className="tooltip tooltip-right" data-tip="Create new thread">
+      <div className="tooltip tooltip-right" data-tip="New Chat">
         <button
           className="p-2 hover:bg-gray-200 rounded-full transition-colors"
           onClick={handleCreateNewSubThread}

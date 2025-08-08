@@ -62,13 +62,14 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     options: state.Chat.options || [],
   }))
 
-  const buttonDisabled = useMemo(() =>
-    ((isHelloUser && (assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) ||
-    isUploading ||
-    (!inputValue.trim() && images.length === 0) ||
-    (images.some((imageUrl) => imageUrl.toLowerCase().includes('.pdf')) && !inputValue.trim()),
-    [loading, isUploading, inputValue, images, assigned_type, isHelloUser]
-  );
+  const buttonDisabled = useMemo(() => {
+    if (isHelloUser) {
+      return ((isHelloUser && (assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0)
+    } else {
+      return loading || isUploading || (!inputValue.trim() && images.length === 0) ||
+        (images.some((imageUrl) => imageUrl?.toLowerCase()?.includes('.pdf')) && !inputValue.trim());
+    }
+  }, [loading, isUploading, inputValue, images, assigned_type, isHelloUser]);
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey && !buttonDisabled) {
@@ -280,7 +281,11 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }, [isHelloUser]);
 
   const uploadButton = useMemo(() => {
-    if (!mode?.includes("vision") && !mode?.includes("files") || (isHelloUser && !subThreadId)) return null;
+    if (isHelloUser) {
+      if (!subThreadId) return null;
+    } else {
+      if (!mode?.includes("vision") && !mode?.includes("files")) return null;
+    }
 
     return (
       <>
