@@ -259,7 +259,8 @@
                 try {
                     // Handle full URLs (like https://nextjs.org/)
                     if (prefix.match(/^https?:\/\//)) {
-                        const matches = fullUrl === prefix || fullUrl.startsWith(prefix);
+                        const cleanPattern = prefix.replace(/\*/g, '');
+                        const matches = fullUrl === prefix || fullUrl.startsWith(cleanPattern);
                         return matches;
                     }
 
