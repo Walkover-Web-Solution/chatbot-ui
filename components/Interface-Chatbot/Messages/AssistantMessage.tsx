@@ -1,5 +1,4 @@
 /* eslint-disable */
-import { AiIcon } from "@/assests/assestsIndex";
 import { useMessageFeedback } from "@/components/Chatbot/hooks/useChatActions";
 import InterfaceGrid from "@/components/Grid/Grid";
 import { Anchor, Code } from "@/components/Interface-Chatbot/Interface-Markdown/MarkdownUtitily";
@@ -13,7 +12,6 @@ import {
 import copy from "copy-to-clipboard";
 import { AlertCircle, Check, CircleCheckBig, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
 import dynamic from 'next/dynamic';
-import Image from "next/image";
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import ImageWithFallback from "./ImageWithFallback";

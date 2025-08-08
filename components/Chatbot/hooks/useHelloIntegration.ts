@@ -7,13 +7,13 @@ import { setData, setHelloEventMessage, setImages, setInitialMessages, setOpenHe
 import { setChannelListData, setHelloClientInfo, setHelloKeysData } from '@/store/hello/helloSlice';
 import { useAppDispatch } from '@/store/useTypedHooks';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
-import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 import { PAGE_SIZE } from '@/utils/enums';
 import { generateNewId } from '@/utils/utilities';
 import { useCallback, useContext, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
+import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 
 interface HelloMessage {
   role: string;
