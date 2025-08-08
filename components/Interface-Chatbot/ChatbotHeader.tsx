@@ -405,7 +405,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
   };
 
   // Close chatbot handler
-  const handleCloseChatbot = (e) => {
+  const handleCloseChatbot = (e: any) => {
     e.stopPropagation();
     if (!window?.parent) return;
     window.parent.postMessage({ type: "CLOSE_CHATBOT" }, "*");

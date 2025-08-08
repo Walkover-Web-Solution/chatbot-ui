@@ -29,7 +29,7 @@ export const useFetchAllThreads = () => {
     }));
 
     return useCallback(async () => {
-        const result = await getAllThreadsApi({ threadId });
+        const result = await getAllThreadsApi({ threadId, bridgeName });
         if (result?.success) {
             globalDispatch(
                 setThreads({ bridgeName, threadId, threadList: result?.threads })
@@ -143,7 +143,7 @@ export const useSendMessage = ({
     const messageRef = propMessageRef ?? context.messageRef;
     const timeoutIdRef = propTimeoutIdRef ?? context.timeoutIdRef;
     const { tabSessionId, chatSessionId } = useChatContext();
-    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, firstThread, versionId } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
@@ -151,7 +151,7 @@ export const useSendMessage = ({
         variables: state.Interface?.[chatSessionId]?.interfaceContext?.[state?.appInfo?.[tabSessionId]?.bridgeName]?.variables,
         selectedAiServiceAndModal: state.Interface?.[chatSessionId]?.selectedAiServiceAndModal || null,
         userId: state.appInfo?.[tabSessionId]?.userId || null,
-        firstThread: state.Interface?.[chatSessionId]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId]?.[0]
+        threadList: state.Interface?.[chatSessionId]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId]
     }));
 
     const { images } = useCustomSelector((state) => ({
@@ -168,7 +168,13 @@ export const useSendMessage = ({
     return useCallback(async ({ message = '', customVariables = {}, customThreadId = '', customBridgeSlug = '', apiCall = true }: SendMessagePayloadType) => {
         globalDispatch(setNewMessage(true));
         const textMessage = message || (messageRef?.current as HTMLInputElement)?.value;
-        const imageUrls = Array.isArray(images) && images?.length ? images : [];
+        const files = images
+            ?.filter((url) => url.split(".").pop()?.toLowerCase() === "pdf")
+            .map((url) => url);
+        const imageUrls = images
+            ?.filter((url) => url.split(".").pop()?.toLowerCase() !== "pdf")
+            .map((url) => url);
+
 
         if (!textMessage && imageUrls.length === 0) return;
         if (messageRef.current) {
@@ -183,18 +189,19 @@ export const useSendMessage = ({
             images: [],
         }));
 
-        globalDispatch(setHelloEventMessage({ message: { role: "user", content: textMessage, urls: imageUrls } }));
+        globalDispatch(setHelloEventMessage({ message: { role: "user", content: textMessage, urls: images } }));
         globalDispatch(setHelloEventMessage({ message: { role: "assistant", content: "Talking with AI", wait: true } }));
 
         const payload = {
             message: textMessage,
             images: imageUrls,
+            files,
             userId,
             interfaceContextData: { ...variables, ...customVariables } || {},
             threadId: customThreadId || threadId,
             subThreadId: subThreadId,
             slugName: customBridgeSlug || bridgeName,
-            thread_flag: (firstThread?.newChat && firstThread?.sub_thread_id === subThreadId) ? true : false,
+            thread_flag: ((threadList?.length === 1 && threadList?.[0]?.thread_id === threadList?.[0]?.sub_thread_id && threadList?.[0]?.display_name === threadList?.[0]?.thread_id) || (threadList?.[0]?.newChat && threadList?.[0]?.sub_thread_id === subThreadId)) ? true : false,
             chatBotId: chatSessionId,
             version_id: versionId === "null" ? null : versionId,
             ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {
@@ -210,7 +217,7 @@ export const useSendMessage = ({
         }
     }, [
         threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal,
-        userId, firstThread, versionId, images, messageRef, globalDispatch,
+        userId, threadList, versionId, images, messageRef, globalDispatch,
         startTimeoutTimer, chatSessionId
     ]);
 };

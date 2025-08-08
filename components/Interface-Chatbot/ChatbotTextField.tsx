@@ -1,5 +1,4 @@
 'use client';
-
 import { AiIcon } from "@/assests/assestsIndex";
 import { errorToast } from "@/components/customToast";
 import { uploadImage } from "@/config/api";
@@ -28,12 +27,11 @@ interface ChatbotTextFieldProps {
   subThreadId: string;
   currentTeamId: string
   currentChannelId: string
-  isVision: Record<string, any>
 }
 
 const MAX_IMAGES = 4;
 
-const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "", isVision: reduxIsVision = {} }) => {
+const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "" }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -64,15 +62,14 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     options: state.Chat.options || [],
   }))
 
-  const isVisionEnabled = useMemo(() =>
-    (reduxIsVision?.vision || mode?.includes("vision")) || isHelloUser,
-    [reduxIsVision, mode, isHelloUser]
-  );
-
-  const buttonDisabled = useMemo(() =>
-    ((isHelloUser && (assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0),
-    [loading, isUploading, inputValue, images, assigned_type, isHelloUser]
-  );
+  const buttonDisabled = useMemo(() => {
+    if (isHelloUser) {
+      return ((isHelloUser && (assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0)
+    } else {
+      return loading || isUploading || (!inputValue.trim() && images.length === 0) ||
+        (images.some((imageUrl) => imageUrl?.toLowerCase()?.includes('.pdf')) && !inputValue.trim());
+    }
+  }, [loading, isUploading, inputValue, images, assigned_type, isHelloUser]);
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey && !buttonDisabled) {
@@ -271,7 +268,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     if (isHelloUser) return null;
 
     return (
-      <div className="relative w-6 h-6 z-[2]">
+      <div className="relative w-6 h-6 z-[2] ml-1">
         <Image
           src={AiIcon}
           // width={28}
@@ -284,7 +281,11 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }, [isHelloUser]);
 
   const uploadButton = useMemo(() => {
-    if (!isVisionEnabled || (isHelloUser && !subThreadId)) return null;
+    if (isHelloUser) {
+      if (!subThreadId) return null;
+    } else {
+      if (!mode?.includes("vision") && !mode?.includes("files")) return null;
+    }
 
     return (
       <>
@@ -311,7 +312,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
         </label>
       </>
     );
-  }, [isVisionEnabled, isUploading, handleImageUpload, subThreadId]);
+  }, [mode, isUploading, handleImageUpload, subThreadId]);
 
   const handleEmojiSelect = (data: { emoji: string }) => {
     if (messageRef?.current) {
@@ -399,8 +400,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
-export default React.memo(addUrlDataHoc(ChatbotTextField, [ParamsEnums.subThreadId, ParamsEnums.currentTeamId, ParamsEnums.currentChannelId, ParamsEnums.isVision]));
+export default React.memo(addUrlDataHoc(ChatbotTextField, [ParamsEnums.subThreadId, ParamsEnums.currentTeamId, ParamsEnums.currentChannelId]));

@@ -1,5 +1,7 @@
+import { PdfLogo } from "@/assests/assestsIndex";
 import { useScreenSize } from "@/components/Chatbot/hooks/useScreenSize";
 import { Download, FileWarning } from "lucide-react";
+import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
 
 type ImageWithFallbackProps = {
@@ -171,6 +173,18 @@ const ImageWithFallback = ({
               <source src={src} type={audioType} />
             </audio>
           </div>
+        );
+
+      case "pdf":
+        return (
+          <Image
+            src={PdfLogo}
+            alt={alt}
+            width={100}
+            height={100}
+            onClick={handleClick}
+            style={style}
+          />
         );
 
       default:

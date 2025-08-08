@@ -56,7 +56,6 @@ class HelloVoiceService {
             });
             return;
         }
-
         // Only persist the call if this tab is currently active
         this.currentCall = call;
         this.callState = "ringing";

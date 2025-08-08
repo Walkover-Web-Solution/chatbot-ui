@@ -270,7 +270,7 @@
             if (document?.body) this.loadContent();
         }
 
-        loadContent() {
+        async loadContent() {
             if (this.state.bodyLoaded) return;
 
             const { chatBotIcon, imgElement, textElement } = this.createChatbotIcon();
@@ -280,7 +280,7 @@
             this.extractScriptProps();
             this.attachIconEvents(chatBotIcon);
             this.createIframeContainer();
-            this.loadChatbotEmbed();
+            await this.loadChatbotEmbed();
             this.updateProps(this.state.tempDataToSend || {});
 
             this.state.bodyLoaded = true;

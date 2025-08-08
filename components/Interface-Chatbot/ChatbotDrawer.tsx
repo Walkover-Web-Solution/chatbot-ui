@@ -346,7 +346,7 @@ const ChatbotDrawer = ({
           Call Us
         </button>
       </div>}
-    </div>
+    </div >
   ), [
     channelList,
     teamsList,

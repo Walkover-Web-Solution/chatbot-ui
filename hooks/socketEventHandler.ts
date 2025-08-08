@@ -1,12 +1,12 @@
 // useSocketEvents.ts
 import { useReduxStateManagement } from '@/components/Chatbot/hooks/useReduxManagement';
+import { useTabVisibility } from '@/components/Chatbot/hooks/useTabVisibility';
 import { setHelloEventMessage, setTyping } from '@/store/chat/chatSlice';
 import { changeChannelAssigned, setUnReadCount } from '@/store/hello/helloSlice';
 import { getLocalStorage, playMessageRecivedSound, setLocalStorage } from '@/utils/utilities';
 import { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import socketManager from './socketManager';
-import { useTabVisibility } from '@/components/Chatbot/hooks/useTabVisibility';
 // Define types for better type safety
 export interface HelloMessage {
     role: string;

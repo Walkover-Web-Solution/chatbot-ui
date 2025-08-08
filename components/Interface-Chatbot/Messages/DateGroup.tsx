@@ -1,6 +1,5 @@
 import { formatTime } from '@/utils/utilities';
 import dayjs from 'dayjs';
-import React from 'react'
 
 /**
  * A component that groups messages by date, displaying a timestamp

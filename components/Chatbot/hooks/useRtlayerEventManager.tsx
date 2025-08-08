@@ -1,13 +1,11 @@
 import { ChatbotContext } from '@/components/context';
 import { setHelloEventMessage, setLoading, setOptions, updateLastAssistantMessage } from '@/store/chat/chatSlice';
 import { setThreads } from '@/store/interface/interfaceSlice';
-import { $ReduxCoreType } from '@/types/reduxCore';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { generateNewId } from '@/utils/utilities';
 import React, { useCallback, useContext, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import WebSocketClient from 'rtlayer-client';
-import { ChatState } from './chatTypes';
 
 // Create a separate hook to manage the WebSocket client instance
 function useWebSocketClient(isHelloUser: boolean) {
@@ -35,8 +33,7 @@ function useWebSocketClient(isHelloUser: boolean) {
 
 function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: { timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, chatSessionId: string, tabSessionId: string }) {
   const { isHelloUser } = useContext(ChatbotContext)
-  const { reduxThreadId, reduxBridgeName, threadId, subThreadId } = useCustomSelector((state) => ({
-    reduxThreadId: state.appInfo?.[tabSessionId]?.threadId,
+  const { reduxBridgeName, threadId, subThreadId } = useCustomSelector((state) => ({
     reduxBridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
     threadId: state.appInfo?.[tabSessionId]?.threadId,
     subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
@@ -103,7 +100,7 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
       default:
         console.warn("Some error occurred in the message", parsedMessage);
     }
-  }, []);
+  }, [reduxBridgeName]);
 
   useEffect(() => {
     if (!client) return;
