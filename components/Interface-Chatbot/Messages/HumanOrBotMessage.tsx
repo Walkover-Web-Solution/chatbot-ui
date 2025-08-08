@@ -251,7 +251,7 @@ const HumanOrBotMessageCard = React.memo(({ message, isBot = false, isLastMessag
                     <div className="p-1 whitespace-pre-wrap w-full break-words message-card-backround">
                         <MessageContent message={message} />
                     </div>
-                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showSenderTime ? 'opacity-100 max-h-6' : 'opacity-0 max-h-0'}`}>
+                    <div className={`transition-all duration-300 ease-in-out ${showSenderTime ? 'opacity-100 max-h-12' : 'opacity-0 max-h-0'}`}>
                         <div className="flex items-center gap-1 text-gray-500 pl-1 pt-0.5">
                             {message?.from_name && !message?.is_auto_response && (
                                 <div className="text-xs">{message.from_name} •</div>
@@ -259,7 +259,7 @@ const HumanOrBotMessageCard = React.memo(({ message, isBot = false, isLastMessag
                             {message?.is_auto_response && (
                                 <div className="text-xs">Bot •</div>
                             )}
-                            <MessageTime message={message} />
+                            <MessageTime message={message} tooltipPosition="tooltip-right" />
                         </div>
                     </div>
                 </div>

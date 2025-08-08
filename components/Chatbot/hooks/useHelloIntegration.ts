@@ -14,6 +14,7 @@ import { useCallback, useContext, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
+import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 
 interface HelloMessage {
   role: string;

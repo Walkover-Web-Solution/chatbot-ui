@@ -63,10 +63,11 @@ const ErrorDisplay = () => (
 const DownloadButton = ({ onClick }: { onClick: () => void }) => (
   <button
     onClick={onClick}
-    className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md"
-    title="Download"
+    className="absolute top-2 right-2 px-2 pt-1 ml-2 bg-gray-200 shadow-md rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-200"
   >
-    <Download size={16} className="text-gray-800" />
+    <div className="tooltip tooltip-left" data-tip="Download">
+      <Download size={18} />
+    </div>
   </button>
 );
 
@@ -174,6 +175,18 @@ const ImageWithFallback = ({
           </div>
         );
       
+      case "pdf":
+        return (
+          <Image
+            src={PdfLogo}
+            alt={alt}
+            width={100}
+            height={100}
+            onClick={handleClick}
+            style={style}
+          />
+        );
+
       case "pdf":
         return (
           <Image

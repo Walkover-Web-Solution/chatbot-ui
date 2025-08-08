@@ -25,9 +25,9 @@ const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatS
         }
     }
     return (
-        <div className="flex flex-col gap-2.5 items-end w-full pb-3 animate-slide-left" onClick={handleMessageClick}>
+        <div className="flex flex-col items-end w-full pb-3 animate-slide-left" onClick={handleMessageClick}>
             {Array.isArray(message?.urls) && message.urls.length > 0 && (
-                <div className="flex flex-row-reverse flex-wrap gap-2.5 w-full">
+                <div className="flex flex-row-reverse flex-wrap gap-2.5 w-full" onClick={() => setShowSenderTime(!showSenderTime)}>
                     {message.urls.map((url: any, index: number) => {
                         const imageUrl = typeof url === 'object' ? url?.path : url;
 
@@ -36,6 +36,12 @@ const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatS
                                 key={index}
                                 src={imageUrl}
                                 alt={`Image ${index + 1}`}
+                                style={{
+                                    backgroundColor: backgroundColor,
+                                    color: textColor,
+                                    padding: "6px",
+                                    borderRadius: "10px",
+                                }}
                             />
                         );
                     })}
@@ -49,6 +55,7 @@ const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatS
                         backgroundColor: backgroundColor,
                         color: textColor
                     }}
+                    onClick={() => setShowSenderTime(!showSenderTime)}
                 >
                     <div className="card-body p-0">
                         <p className="whitespace-pre-wrap text-sm md:text-base">
@@ -57,8 +64,8 @@ const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatS
                     </div>
                 </div>
                 }
-                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showSenderTime ? 'opacity-100 max-h-6' : 'opacity-0 max-h-0'}`}>
-                    <MessageTime message={message} />
+                <div className={`transition-all duration-300 ease-in-out ${showSenderTime ? 'opacity-100 max-h-12' : 'opacity-0 max-h-0'}`}>
+                    <MessageTime message={message} tooltipPosition="tooltip-left" />
                 </div>
             </div>
         </div>

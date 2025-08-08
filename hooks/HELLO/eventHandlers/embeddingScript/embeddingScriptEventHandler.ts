@@ -163,17 +163,6 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         }
     }
 
-    function handleChatbotVisibility(isChatbotOpen = false) {
-        dispatch(setDataInAppInfoReducer({ isChatbotOpen }))
-        dispatch(setDataInDraftReducer({ isChatbotMinimized: false }))
-    }
-
-    function handleSetVariablesForBot(event: MessageEvent) {
-        if (event.data?.data?.variables && isPlainObject(event.data?.data?.variables)) {
-            dispatch(setVariablesForHelloBot(event.data?.data?.variables))
-        }
-    }
-
     useEffect(() => {
 
         eventHandler.addEventHandler('parent-route-changed', handleParentRouteChanged)
