@@ -991,7 +991,7 @@
 
     const helloChatbotManager = new HelloChatbotEmbedManager();
 
-    window.SendDataToChatbot = function (dataToSend) {
+    window.SendDataToBot = function (dataToSend) {
         const iframeComponent = document.getElementById(helloChatbotManager.elements.chatbotIframeComponent);
 
         // Parse string data if needed
