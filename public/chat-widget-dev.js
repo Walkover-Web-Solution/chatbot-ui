@@ -1065,6 +1065,7 @@
 
     // Initialize the widget function
     window.initChatWidget = (data, delay = 0) => {
+        console.log('initChatWidget through scritp', data)
         if (block_chatbot) return;
         if (data.previewLinks) {
             helloChatbotManager.addUrlMonitor(data);
