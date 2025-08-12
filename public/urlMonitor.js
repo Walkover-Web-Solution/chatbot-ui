@@ -254,56 +254,73 @@
             const parsedUrl = new URL(url, window.location.origin);
             const fullUrl = parsedUrl.href;
             const path = parsedUrl.pathname;
+            const currentPath = window.location.pathname;
 
-            return trackedUrls.some(prefix => {
+            // Helper function to check if a URL matches a pattern
+            function matchesPattern(testPath, testFullUrl, prefix) {
                 try {
                     // Handle full URLs (like https://nextjs.org/)
                     if (prefix.match(/^https?:\/\//)) {
                         const cleanPattern = prefix.replace(/\*/g, '');
-                        const matches = fullUrl === prefix || fullUrl.startsWith(cleanPattern);
-                        return matches;
+                        return testFullUrl === prefix || testFullUrl.startsWith(cleanPattern);
                     }
 
                     if (prefix.includes('*')) {
-                        // Handle wildcard patterns like '/faq/*'
                         if (prefix.startsWith('/')) {
-                            // This is a path-based pattern, should only match same domain
+                            // Path-based wildcard pattern like '/faq/*'
                             const cleanPattern = prefix.replace(/\*/g, '');
-
-                            // If nothing remains after removing *, skip this pattern
                             if (!cleanPattern.trim()) return false;
-
-                            // Only match if it's the same domain and path starts with the pattern
-                            const matches = parsedUrl.origin === window.location.origin && path.startsWith(cleanPattern);
-                            return matches;
+                            // Only match if it's the same domain and handle both exact match and sub-paths
+                            const targetUrl = new URL(testFullUrl);
+                            if (targetUrl.origin !== window.location.origin) return false;
+                            return testPath === cleanPattern.replace(/\/$/, '') || testPath.startsWith(cleanPattern);
                         } else {
-                            // For non-path patterns, use the old logic
+                            // Non-path wildcard pattern
                             const cleanPattern = prefix.replace(/\*/g, '');
                             if (!cleanPattern.trim()) return false;
-                            const matches = fullUrl.includes(cleanPattern);
-                            return matches;
+                            return testFullUrl.includes(cleanPattern);
                         }
                     }
 
+                    // Exact pattern matching
                     const prefixUrl = new URL(prefix, window.location.origin);
-
                     if (prefixUrl.origin === parsedUrl.origin) {
-                        // Match exact path or deeper sub-paths only
-                        const matches = path === prefixUrl.pathname || path.startsWith(prefixUrl.pathname + '/');
-                        return matches;
+                        return testPath === prefixUrl.pathname || testPath.startsWith(prefixUrl.pathname + '/');
                     }
                 } catch (e) {
-                    // prefix is relative path or something else
+                    // Fallback for relative paths or malformed URLs
                     if (prefix.startsWith('/')) {
-                        const matches = path === prefix || path.startsWith(prefix + '/');
-                        return matches;
+                        return testPath === prefix || testPath.startsWith(prefix + '/');
                     }
-                    // fallback for anything else (e.g. full URLs without trailing slash)
-                    const matches = fullUrl === prefix || fullUrl.startsWith(prefix);
-                    return matches;
+                    return testFullUrl === prefix || testFullUrl.startsWith(prefix);
                 }
                 return false;
-            });
+            }
+
+            // Cache pattern match results to avoid redundant checking
+            const patternResults = trackedUrls.map(prefix => ({
+                prefix,
+                currentMatches: matchesPattern(currentPath, window.location.href, prefix),
+                targetMatches: matchesPattern(path, fullUrl, prefix)
+            }));
+
+            // Check if current page matches any pattern
+            const currentPageMatchesPattern = patternResults.some(result => result.currentMatches);
+            // If current page matches a pattern, check if target also matches the same pattern
+            if (currentPageMatchesPattern) {
+                const targetMatchesSamePattern = patternResults.some(result =>
+                    result.currentMatches && result.targetMatches
+                );
+
+                // If both match the same pattern, allow normal navigation
+                if (targetMatchesSamePattern) {
+                    return false;
+                }
+            }
+
+            // Check if target URL matches any pattern (using cached results)
+            return patternResults.some(result => result.targetMatches);
+
         } catch {
             return false;
         }
