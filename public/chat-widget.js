@@ -1058,14 +1058,6 @@
         }
     }
 
-    window.reloadChats = () => {
-        sendMessageToChatbot({ type: 'refresh', reload: true });
-    };
-
-    window.askAi = (data) => {
-        sendMessageToChatbot({ type: 'askAi', data: data || "" });
-    };
-
     // Initialize the widget function
     window.initChatWidget = (data, delay = 0) => {
         if (block_chatbot) return;
