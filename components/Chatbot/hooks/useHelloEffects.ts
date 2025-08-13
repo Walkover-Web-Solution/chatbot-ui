@@ -138,6 +138,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             } else {
                 // it gives the Hello Client Id for the registered user
                 const response = await fetchChannels();
+                localStorage.setItem(`${widgetToken}_k_clientId`, response?.uuid);
                 channels = response?.channels || [];
                 k_clientId = getLocalStorage(`k_clientId`);
             }
