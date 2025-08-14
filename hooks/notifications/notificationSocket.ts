@@ -15,6 +15,7 @@ const useNotificationSocket = ({ chatSessionId }: { chatSessionId: string }) => 
 
   useEffect(() => {
     if (!jwtToken || !company_id || (!getLocalStorage('a_clientId') && !getLocalStorage('k_clientId')) || (isMobileSDK ? !pushConfig : false)) return;
+    console.log(jwtToken, 'jwtToken', company_id, 'company_id', getLocalStorage('a_clientId'), 'a_clientId', getLocalStorage('k_clientId'), 'k_clientId', isMobileSDK, 'isMobileSDK', pushConfig, 'pushConfig')
 
     socketManager.connect(jwtToken);
     const uuid = getLocalStorage('k_clientId') ? getLocalStorage('k_clientId') : getLocalStorage('a_clientId')
@@ -25,6 +26,7 @@ const useNotificationSocket = ({ chatSessionId }: { chatSessionId: string }) => 
           console.error("Failed to subscribe to channels:", error);
         });
       if (isMobileSDK && pushConfig) {
+        console.log('callling subscribeForFCMPushNotification')
         subscribeForFCMPushNotification({ ...pushConfig, user_channel: socketChannel }, jwtToken)
           .catch(error => {
             console.log("Failed to subscribe to channels FOR FCM:", error);
