@@ -1,7 +1,6 @@
 import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { addDefaultContext, setDataInInterfaceRedux, setEventsSubsribedByParent, setHeaderActionButtons, setModalConfig } from "@/store/interface/interfaceSlice";
-import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -27,23 +26,15 @@ interface InterfaceData {
 }
 
 const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
-
-  const dispatch = useDispatch()
-  const tabSessionId = eventHandler.getTabSessionId()
-  const { currentThreadId } = useCustomSelector((state) => ({
-    currentThreadId: state.appInfo?.[tabSessionId]?.threadId
-  }));
-
+  const dispatch = useDispatch();
+  
   const handleInterfaceData = (event: MessageEvent) => {
-
+    
     const receivedData: InterfaceData = event.data.data;
     if (Object.keys(receivedData || {}).length === 0) return;
     // Process thread-related data
     if (receivedData.threadId) {
       dispatch(setDataInAppInfoReducer({ threadId: receivedData.threadId }))
-      if (receivedData?.threadId !== currentThreadId) {
-        dispatch(setDataInAppInfoReducer({ subThreadId: '' }))
-      }
     }
 
     if (receivedData.helloId) {
