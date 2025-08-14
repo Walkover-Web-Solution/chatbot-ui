@@ -66,7 +66,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
     }
 
     const handleHelloData = (event: MessageEvent) => {
-        const {
+        let {
             widgetToken,
             unique_id,
             mail,
@@ -78,6 +78,9 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
             ...restProps
         } = event.data.data;
 
+        if (!unique_id) {
+            unique_id = localStorage.getItem(`${widgetToken}_unique_id`);
+        }
         const fullWidgetToken = unique_id ? `${widgetToken}_${unique_id}` : widgetToken;
         const prevWidgetId = GetSessionStorageData('widgetToken');
 

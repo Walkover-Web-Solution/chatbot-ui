@@ -123,12 +123,17 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
         }
 
         try {
+
             let a_clientId = getLocalStorage('a_clientId');
             let k_clientId = getLocalStorage('k_clientId');
             let enable_call = false
             let channels = [];
             let is_domain_enable = false
             let { mail, number, unique_id } = JSON.parse(getLocalStorage('userData') || '{}');
+
+            if (unique_id) {
+                localStorage.setItem(`${widgetToken}_unique_id`, unique_id);
+            }
 
             let needsAnonymousRegistration = !a_clientId && !k_clientId && !unique_id && widgetToken && isHelloUser && !mail && !number;
 
