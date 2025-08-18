@@ -8,7 +8,7 @@ import { setDataInDraftReducer, setVariablesForHelloBot } from "@/store/draftDat
 import { setHelloClientInfo, setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
 import { setDataInInterfaceRedux } from "@/store/interface/interfaceSlice";
 import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
-import { cleanObject, setLocalStorage } from "@/utils/utilities";
+import { cleanObject, removeFromLocalStorage, setLocalStorage } from "@/utils/utilities";
 import isPlainObject from "lodash.isplainobject";
 import { useContext, useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -85,9 +85,10 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         SetSessionStorage('widgetToken', fullWidgetToken);
 
         const hasUserIdentity = Boolean(unique_id || mail || number);
-        if (hasUserIdentity) {
-            setLocalStorage('is_anon', 'false');
-        }
+        removeFromLocalStorage('is_anon');
+        // if (hasUserIdentity) {
+        //     setLocalStorage('is_anon', 'false');
+        // }
 
         // Apply theme if present
         if (sdkConfig?.customTheme) {

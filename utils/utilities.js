@@ -118,7 +118,7 @@ export const setLocalStorage = (key, value = '') => {
     updatedKey = `${widgetToken}_${key}`
   }
   localStorage.setItem(updatedKey, value);
-  if (key === 'WidgetId' || key === 'k_clientId' || key === 'a_clientId' || key === 'is_anon') {
+  if (key === 'WidgetId' || key === 'k_clientId' || key === 'a_clientId') {
     if (key === 'k_clientId') window.parent.postMessage({ type: 'setDataInLocal', data: { key: 'hello-widget-uuid', payload: value } }, '*');
     if (key === 'a_clientId') window.parent.postMessage({ type: 'setDataInLocal', data: { key: 'hello-widget-anonymoud-uuid', payload: value } }, '*');
 
@@ -140,6 +140,15 @@ export const getLocalStorage = (key) => {
     updatedKey = `${widgetToken}_${key}`
   }
   return key ? localStorage.getItem(updatedKey) : null;
+}
+
+export const removeFromLocalStorage = (key) => {
+  let updatedKey = key
+  const widgetToken = GetSessionStorageData('widgetToken')
+  if (widgetToken) {
+    updatedKey = `${widgetToken}_${key}`
+  }
+  localStorage.removeItem(updatedKey);
 }
 
 
