@@ -250,8 +250,12 @@
                             this.hideHelloIcon = true;
                             this.hideChatbotWithIcon();
                         } else {
-                            this.hideHelloIcon = false;
-                            this.showChatbotIcon();
+                            // Don't show icon if both parentId and launch_widget are true
+                            const shouldKeepHidden = this.helloLaunchWidget;
+                            if (!shouldKeepHidden) {
+                                this.hideHelloIcon = false;
+                                this.showChatbotIcon();
+                            }
                         }
                     }
                     break;
@@ -624,8 +628,17 @@
 
             this.parentContainer.appendChild(iframe);
 
-            const parentId = this.props.parentId || '';
+            const parentId = this.helloProps?.parentId || '';
             this.changeContainer(parentId, this.parentContainer);
+        }
+
+        recreateIframeContainer() {
+            if (this.parentContainer) {
+                this.parentContainer.remove();
+            }
+            this.createIframeContainer();
+            this.loadChatbotEmbed();
+            this.state.bodyLoaded = true;
         }
 
         changeContainer(parentId, parentContainer = this.parentContainer) {
@@ -633,6 +646,19 @@
             if (container) {
                 container.style.position = 'relative';
                 parentContainer.style.position = 'absolute';
+
+                // Reset positioning to fill entire parent container
+                parentContainer.style.top = '0';
+                parentContainer.style.left = '0';
+                parentContainer.style.bottom = 'auto';
+                parentContainer.style.right = 'auto';
+                parentContainer.style.margin = '0';
+                parentContainer.style.padding = '0';
+                parentContainer.style.borderRadius = '0';
+                // Set full size when moving to parent container
+                parentContainer.style.height = '100%';
+                parentContainer.style.width = '100%';
+
                 container.appendChild(parentContainer);
             } else {
                 document.body.appendChild(parentContainer);
@@ -790,8 +816,12 @@
                     this.className = config.type;
                 }
             }
-
-            if (this.className === 'all_available_space') {
+            // Check if parentId is provided - if yes, use full dimensions
+            if (this.helloProps?.parentId) {
+                iframeParentContainer.style.height = '100%';
+                iframeParentContainer.style.width = '100%';
+            }
+            else if (this.className === 'all_available_space') {
                 iframeParentContainer.style.height = '100%';
                 iframeParentContainer.style.width = '100%';
                 iframeParentContainer.style.display = 'block';
@@ -992,7 +1022,7 @@
 
     const helloChatbotManager = new HelloChatbotEmbedManager();
 
-    window.SendDataToBot = function (dataToSend) {
+    function SendDataToBot(dataToSend) {
         const iframeComponent = document.getElementById(helloChatbotManager.elements.chatbotIframeComponent);
 
         // Parse string data if needed
@@ -1070,6 +1100,10 @@
             if ('launch_widget' in data) {
                 helloChatbotManager.helloLaunchWidget = data.launch_widget || false;
             }
+            // Only recreate iframe container if parentId is provided
+            if (data.parentId) {
+                helloChatbotManager.recreateIframeContainer();
+            }
         }
         setTimeout(() => {
             helloChatbotManager.state.delayElapsed = true;
@@ -1079,7 +1113,15 @@
 
     // Create chatWidget object with all widget control functions
     window.chatWidget = {
-        SendDataToBot: (data) => sendMessageToChatbot({ type: "SET_VARIABLES_FOR_BOT", data }),
+        SendDataToBot: (data) => {
+            // Check if data has variables - send to iframe
+            if (data && 'variables' in data) {
+                sendMessageToChatbot({ type: "SET_VARIABLES_FOR_BOT", data });
+            } else {
+                // Handle parentId and other local operations
+                SendDataToBot(data);
+            }
+        },
         addCustomData: (data) => sendMessageToChatbot({ type: "UPDATE_USER_DATA_SEGMENTO", data }),
         modifyCustomData: (data) => sendMessageToChatbot({ type: "UPDATE_USER_DATA_SEGMENTO", data }),
         addUserEvent: (data) => sendMessageToChatbot({ type: "ADD_USER_EVENT_SEGMENTO", data }),
