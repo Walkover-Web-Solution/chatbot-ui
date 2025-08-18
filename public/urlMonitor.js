@@ -27,38 +27,35 @@
     toolbar.style.flex = '0 0 40px';
     toolbar.style.display = 'flex';
     toolbar.style.alignItems = 'center';
-    toolbar.style.justifyContent = 'flex-end';
-    toolbar.style.padding = '0 8px';
+    toolbar.style.justifyContent = 'space-between';      //for left alignment of close button and rest at right
+    toolbar.style.padding = '0 14px';
     toolbar.style.borderBottom = '1px solid #ddd';
-    toolbar.style.gap = '14px';
+    toolbar.style.gap = '8px';
 
     // Buttons
     const btnClose = document.createElement('button');
-    btnClose.textContent = '×';
-    btnClose.title = 'Close';
-    btnClose.style.fontSize = '24px';
+    btnClose.innerHTML = '<span>×</span><span>Close</span>';
+    btnClose.style.fontSize = '14px';
     btnClose.style.border = 'none';
     btnClose.style.background = 'none';
     btnClose.style.cursor = 'pointer';
     btnClose.style.color = 'red';
-
-    const btnFullscreen = document.createElement('button');
-    btnFullscreen.textContent = '⛶';
-    btnFullscreen.title = 'Fullscreen';
-    btnFullscreen.style.fontSize = '18px';
-    btnFullscreen.style.border = 'none';
-    btnFullscreen.style.background = 'none';
-    btnFullscreen.style.cursor = 'pointer';
-    btnFullscreen.style.color = "black";
+    btnClose.style.lineHeight = '1';  // Add consistent line-height
+    btnClose.style.display = 'flex';  // Make it flex
+    btnClose.style.alignItems = 'center';
+    btnClose.style.gap = '6px';
 
     const btnRedirect = document.createElement('button');
-    btnRedirect.textContent = '↗';
-    btnRedirect.title = 'Open in new tab';
-    btnRedirect.style.fontSize = '18px';
+    btnRedirect.innerHTML = '<span>↗</span><span>New tab</span>';
+    btnRedirect.style.fontSize = '14px';
     btnRedirect.style.border = 'none';
     btnRedirect.style.background = 'none';
     btnRedirect.style.cursor = 'pointer';
     btnRedirect.style.color = 'black';
+    btnRedirect.style.lineHeight = '1';  // Add consistent line-height
+    btnRedirect.style.display = 'flex';  // Make it flex
+    btnRedirect.style.alignItems = 'center';
+    btnRedirect.style.gap = '6px';
 
     const loader = document.createElement('div');
     loader.style.position = 'absolute';
@@ -70,9 +67,8 @@
     loader.textContent = 'Loading...';
     loader.style.display = 'none';
 
-    toolbar.appendChild(btnRedirect);
-    toolbar.appendChild(btnFullscreen);
-    toolbar.appendChild(btnClose);
+    toolbar.appendChild(btnClose);  // Close goes to left
+    toolbar.appendChild(btnRedirect);  // new tab goes to right
 
     // Iframe
     const iframe = document.createElement('iframe');
@@ -90,8 +86,6 @@
     });
     document.body.appendChild(panel);
 
-    let isFullscreen = false;
-
     function handleEscKey(event) {
         if (event.key === 'Escape') closePanel();
     }
@@ -107,33 +101,9 @@
         iframe.src = 'about:blank';
         panel.style.right = '-100%';
         document.removeEventListener('keydown', handleEscKey);
-        if (isFullscreen) toggleFullscreen();
-    }
-
-    function toggleFullscreen() {
-        if (!isFullscreen) {
-            panel.style.transition = 'width 0.3s ease, height 0.3s ease, top 0.3s ease, right 0.3s ease, border-radius 0.3s ease';
-            panel.style.width = '100vw';
-            panel.style.height = '100vh';
-            panel.style.top = '0';
-            panel.style.right = '0';
-            panel.style.borderRadius = '0';
-            isFullscreen = true;
-            btnFullscreen.textContent = '🗗'; // change icon to indicate exit fullscreen
-            btnFullscreen.title = 'Exit fullscreen';
-        } else {
-            panel.style.transition = 'width 0.3s ease, height 0.3s ease, border-radius 0.3s ease';
-            panel.style.width = 'calc(min(768px, 100%))';
-            panel.style.height = '100vh';
-            panel.style.borderRadius = '12px 0 0 12px';
-            isFullscreen = false;
-            btnFullscreen.textContent = '⛶';
-            btnFullscreen.title = 'Fullscreen';
-        }
     }
 
     btnClose.onclick = closePanel;
-    btnFullscreen.onclick = toggleFullscreen;
     btnRedirect.onclick = () => {
         if (iframe.src && iframe.src !== 'about:blank') {
             ignoreNextOpen = true;   // set flag to skip interception once
@@ -250,60 +220,96 @@
 
     function shouldPrevent(url) {
         if (!url || trackedUrls.length === 0) return false;
+
         try {
             const parsedUrl = new URL(url, window.location.origin);
-            const fullUrl = parsedUrl.href;
-            const path = parsedUrl.pathname;
+            const targetPath = parsedUrl.pathname;
+            const targetFullUrl = parsedUrl.href;
+            const currentPath = window.location.pathname;
+            const currentUrl = window.location.href;
 
-            return trackedUrls.some(prefix => {
+            let targetMatches = false;
+            let currentMatches = false;
+
+            // Single loop to check both target URL and current route
+            for (const prefix of trackedUrls) {
                 try {
                     // Handle full URLs (like https://nextjs.org/)
                     if (prefix.match(/^https?:\/\//)) {
                         const cleanPattern = prefix.replace(/\*/g, '');
-                        const matches = fullUrl === prefix || fullUrl.startsWith(cleanPattern);
-                        return matches;
-                    }
-
-                    if (prefix.includes('*')) {
-                        // Handle wildcard patterns like '/faq/*'
-                        if (prefix.startsWith('/')) {
-                            // This is a path-based pattern, should only match same domain
-                            const cleanPattern = prefix.replace(/\*/g, '');
-
-                            // If nothing remains after removing *, skip this pattern
-                            if (!cleanPattern.trim()) return false;
-
-                            // Only match if it's the same domain and path starts with the pattern
-                            const matches = parsedUrl.origin === window.location.origin && path.startsWith(cleanPattern);
-                            return matches;
-                        } else {
-                            // For non-path patterns, use the old logic
-                            const cleanPattern = prefix.replace(/\*/g, '');
-                            if (!cleanPattern.trim()) return false;
-                            const matches = fullUrl.includes(cleanPattern);
-                            return matches;
+                        if (!targetMatches) {
+                            targetMatches = targetFullUrl === prefix || targetFullUrl.startsWith(cleanPattern);
+                        }
+                        if (!currentMatches) {
+                            currentMatches = currentUrl === prefix || currentUrl.startsWith(cleanPattern);
                         }
                     }
+                    else if (prefix.includes('*')) {
+                        // Handle wildcard patterns like '/faq/*'
+                        if (prefix.startsWith('/')) {
+                            const cleanPattern = prefix.replace(/\*/g, '');
+                            if (!cleanPattern.trim()) continue;
 
-                    const prefixUrl = new URL(prefix, window.location.origin);
+                            // Check target URL
+                            if (!targetMatches) {
+                                targetMatches = parsedUrl.origin === window.location.origin && targetPath.startsWith(cleanPattern);
+                            }
 
-                    if (prefixUrl.origin === parsedUrl.origin) {
-                        // Match exact path or deeper sub-paths only
-                        const matches = path === prefixUrl.pathname || path.startsWith(prefixUrl.pathname + '/');
-                        return matches;
+                            // Check current route (with base pattern matching)
+                            if (!currentMatches) {
+                                const basePattern = cleanPattern.endsWith('/') ? cleanPattern.slice(0, -1) : cleanPattern;
+                                currentMatches = currentPath === basePattern || currentPath.startsWith(basePattern + '/');
+                            }
+                        } else {
+                            const cleanPattern = prefix.replace(/\*/g, '');
+                            if (!cleanPattern.trim()) continue;
+
+                            if (!targetMatches) {
+                                targetMatches = targetFullUrl.includes(cleanPattern);
+                            }
+                            if (!currentMatches) {
+                                currentMatches = currentUrl.includes(cleanPattern);
+                            }
+                        }
+                    }
+                    else {
+                        // Handle exact URLs and paths
+                        const prefixUrl = new URL(prefix, window.location.origin);
+                        if (prefixUrl.origin === parsedUrl.origin) {
+                            if (!targetMatches) {
+                                targetMatches = targetPath === prefixUrl.pathname || targetPath.startsWith(prefixUrl.pathname + '/');
+                            }
+                            if (!currentMatches) {
+                                currentMatches = currentPath === prefixUrl.pathname || currentPath.startsWith(prefixUrl.pathname + '/');
+                            }
+                        }
                     }
                 } catch (e) {
-                    // prefix is relative path or something else
+                    // Handle relative paths and fallbacks
                     if (prefix.startsWith('/')) {
-                        const matches = path === prefix || path.startsWith(prefix + '/');
-                        return matches;
+                        if (!targetMatches) {
+                            targetMatches = targetPath === prefix || targetPath.startsWith(prefix + '/');
+                        }
+                        if (!currentMatches) {
+                            currentMatches = currentPath === prefix || currentPath.startsWith(prefix + '/');
+                        }
+                    } else {
+                        if (!targetMatches) {
+                            targetMatches = targetFullUrl === prefix || targetFullUrl.startsWith(prefix);
+                        }
+                        if (!currentMatches) {
+                            currentMatches = currentPath === prefix || currentPath.startsWith(prefix);
+                        }
                     }
-                    // fallback for anything else (e.g. full URLs without trailing slash)
-                    const matches = fullUrl === prefix || fullUrl.startsWith(prefix);
-                    return matches;
                 }
-                return false;
-            });
+
+                // Early exit if both conditions are determined
+                if (targetMatches && currentMatches) break;
+            }
+
+            // If target URL is tracked but current route is also tracked, don't prevent
+            return targetMatches && !currentMatches;
+
         } catch {
             return false;
         }
