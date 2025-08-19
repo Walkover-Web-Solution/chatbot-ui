@@ -228,20 +228,24 @@
             const currentPath = window.location.pathname;
             const currentUrl = window.location.href;
 
-            let targetMatches = false;
-            let currentMatches = false;
+            let targetMatchingPrefix = null;
+            let currentMatchingPrefix = null;
 
-            // Single loop to check both target URL and current route
+            // Find which prefix matches each URL
             for (const prefix of trackedUrls) {
                 try {
                     // Handle full URLs (like https://nextjs.org/)
                     if (prefix.match(/^https?:\/\//)) {
                         const cleanPattern = prefix.replace(/\*/g, '');
-                        if (!targetMatches) {
-                            targetMatches = targetFullUrl === prefix || targetFullUrl.startsWith(cleanPattern);
+                        if (!targetMatchingPrefix) {
+                            if (targetFullUrl === prefix || targetFullUrl.startsWith(cleanPattern)) {
+                                targetMatchingPrefix = prefix;
+                            }
                         }
-                        if (!currentMatches) {
-                            currentMatches = currentUrl === prefix || currentUrl.startsWith(cleanPattern);
+                        if (!currentMatchingPrefix) {
+                            if (currentUrl === prefix || currentUrl.startsWith(cleanPattern)) {
+                                currentMatchingPrefix = prefix;
+                            }
                         }
                     }
                     else if (prefix.includes('*')) {
@@ -251,24 +255,32 @@
                             if (!cleanPattern.trim()) continue;
 
                             // Check target URL
-                            if (!targetMatches) {
-                                targetMatches = parsedUrl.origin === window.location.origin && targetPath.startsWith(cleanPattern);
+                            if (!targetMatchingPrefix) {
+                                if (parsedUrl.origin === window.location.origin && targetPath.startsWith(cleanPattern)) {
+                                    targetMatchingPrefix = prefix;
+                                }
                             }
 
                             // Check current route (with base pattern matching)
-                            if (!currentMatches) {
+                            if (!currentMatchingPrefix) {
                                 const basePattern = cleanPattern.endsWith('/') ? cleanPattern.slice(0, -1) : cleanPattern;
-                                currentMatches = currentPath === basePattern || currentPath.startsWith(basePattern + '/');
+                                if (currentPath === basePattern || currentPath.startsWith(basePattern + '/')) {
+                                    currentMatchingPrefix = prefix;
+                                }
                             }
                         } else {
                             const cleanPattern = prefix.replace(/\*/g, '');
                             if (!cleanPattern.trim()) continue;
 
-                            if (!targetMatches) {
-                                targetMatches = targetFullUrl.includes(cleanPattern);
+                            if (!targetMatchingPrefix) {
+                                if (targetFullUrl.includes(cleanPattern)) {
+                                    targetMatchingPrefix = prefix;
+                                }
                             }
-                            if (!currentMatches) {
-                                currentMatches = currentUrl.includes(cleanPattern);
+                            if (!currentMatchingPrefix) {
+                                if (currentUrl.includes(cleanPattern)) {
+                                    currentMatchingPrefix = prefix;
+                                }
                             }
                         }
                     }
@@ -276,40 +288,54 @@
                         // Handle exact URLs and paths
                         const prefixUrl = new URL(prefix, window.location.origin);
                         if (prefixUrl.origin === parsedUrl.origin) {
-                            if (!targetMatches) {
-                                targetMatches = targetPath === prefixUrl.pathname || targetPath.startsWith(prefixUrl.pathname + '/');
+                            if (!targetMatchingPrefix) {
+                                if (targetPath === prefixUrl.pathname || targetPath.startsWith(prefixUrl.pathname + '/')) {
+                                    targetMatchingPrefix = prefix;
+                                }
                             }
-                            if (!currentMatches) {
-                                currentMatches = currentPath === prefixUrl.pathname || currentPath.startsWith(prefixUrl.pathname + '/');
+                            if (!currentMatchingPrefix) {
+                                if (currentPath === prefixUrl.pathname || currentPath.startsWith(prefixUrl.pathname + '/')) {
+                                    currentMatchingPrefix = prefix;
+                                }
                             }
                         }
                     }
                 } catch (e) {
                     // Handle relative paths and fallbacks
                     if (prefix.startsWith('/')) {
-                        if (!targetMatches) {
-                            targetMatches = targetPath === prefix || targetPath.startsWith(prefix + '/');
+                        if (!targetMatchingPrefix) {
+                            if (targetPath === prefix || targetPath.startsWith(prefix + '/')) {
+                                targetMatchingPrefix = prefix;
+                            }
                         }
-                        if (!currentMatches) {
-                            currentMatches = currentPath === prefix || currentPath.startsWith(prefix + '/');
+                        if (!currentMatchingPrefix) {
+                            if (currentPath === prefix || currentPath.startsWith(prefix + '/')) {
+                                currentMatchingPrefix = prefix;
+                            }
                         }
                     } else {
-                        if (!targetMatches) {
-                            targetMatches = targetFullUrl === prefix || targetFullUrl.startsWith(prefix);
+                        if (!targetMatchingPrefix) {
+                            if (targetFullUrl === prefix || targetFullUrl.startsWith(prefix)) {
+                                targetMatchingPrefix = prefix;
+                            }
                         }
-                        if (!currentMatches) {
-                            currentMatches = currentPath === prefix || currentPath.startsWith(prefix);
+                        if (!currentMatchingPrefix) {
+                            if (currentPath === prefix || currentPath.startsWith(prefix)) {
+                                currentMatchingPrefix = prefix;
+                            }
                         }
                     }
                 }
-
-                // Early exit if both conditions are determined
-                if (targetMatches && currentMatches) break;
+                // Early exit if both prefixes are found
+                if (targetMatchingPrefix && currentMatchingPrefix) {
+                    break;
+                }
             }
-
-            // If target URL is tracked but current route is also tracked, don't prevent
-            return targetMatches && !currentMatches;
-
+            const targetMatches = !!targetMatchingPrefix;
+            const currentMatches = !!currentMatchingPrefix;
+            const samePrefix = targetMatchingPrefix === currentMatchingPrefix;
+            // Prevent only if target is tracked but matches different prefix than current
+            return targetMatches && (!currentMatches || !samePrefix);
         } catch {
             return false;
         }
