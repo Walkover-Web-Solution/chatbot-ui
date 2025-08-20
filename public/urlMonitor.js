@@ -228,88 +228,87 @@
             const currentPath = window.location.pathname;
             const currentUrl = window.location.href;
 
-            let targetMatches = false;
-            let currentMatches = false;
+            // Don't intercept if we're already inside an iframe
+            if (window.self !== window.top) {
+                return false;
+            }
 
-            // Single loop to check both target URL and current route
+            // Check if target URL matches any tracked pattern
             for (const prefix of trackedUrls) {
+                let targetMatches = false;
+                let currentInSameSection = false;
+
                 try {
-                    // Handle full URLs (like https://nextjs.org/)
+                    // Handle full URLs (like https://nextjs.org/*)
                     if (prefix.match(/^https?:\/\//)) {
                         const cleanPattern = prefix.replace(/\*/g, '');
-                        if (!targetMatches) {
-                            targetMatches = targetFullUrl === prefix || targetFullUrl.startsWith(cleanPattern);
-                        }
-                        if (!currentMatches) {
-                            currentMatches = currentUrl === prefix || currentUrl.startsWith(cleanPattern);
+                        targetMatches = targetFullUrl === prefix || targetFullUrl.startsWith(cleanPattern);
+
+                        if (targetMatches) {
+                            // Check if current URL is in same section
+                            currentInSameSection = currentUrl === prefix || currentUrl.startsWith(cleanPattern);
                         }
                     }
+                    // Handle wildcard patterns like '/faq/*'
                     else if (prefix.includes('*')) {
-                        // Handle wildcard patterns like '/faq/*'
                         if (prefix.startsWith('/')) {
                             const cleanPattern = prefix.replace(/\*/g, '');
                             if (!cleanPattern.trim()) continue;
 
-                            // Check target URL
-                            if (!targetMatches) {
-                                targetMatches = parsedUrl.origin === window.location.origin && targetPath.startsWith(cleanPattern);
-                            }
+                            // Check if target matches
+                            targetMatches = parsedUrl.origin === window.location.origin && targetPath.startsWith(cleanPattern);
 
-                            // Check current route (with base pattern matching)
-                            if (!currentMatches) {
-                                const basePattern = cleanPattern.endsWith('/') ? cleanPattern.slice(0, -1) : cleanPattern;
-                                currentMatches = currentPath === basePattern || currentPath.startsWith(basePattern + '/');
+                            if (targetMatches) {
+                                // Check if current path is in same section
+                                // For /faq/*, both /faq and /faq/ should be considered in the same section
+                                const sectionPath = cleanPattern.endsWith('/') ? cleanPattern.slice(0, -1) : cleanPattern;
+                                currentInSameSection = currentPath === sectionPath ||
+                                    currentPath === sectionPath + '/' ||
+                                    currentPath.startsWith(sectionPath + '/');
                             }
                         } else {
                             const cleanPattern = prefix.replace(/\*/g, '');
                             if (!cleanPattern.trim()) continue;
 
-                            if (!targetMatches) {
-                                targetMatches = targetFullUrl.includes(cleanPattern);
-                            }
-                            if (!currentMatches) {
-                                currentMatches = currentUrl.includes(cleanPattern);
+                            targetMatches = targetFullUrl.includes(cleanPattern);
+                            if (targetMatches) {
+                                currentInSameSection = currentUrl.includes(cleanPattern);
                             }
                         }
                     }
+                    // Handle exact URLs and paths
                     else {
-                        // Handle exact URLs and paths
                         const prefixUrl = new URL(prefix, window.location.origin);
                         if (prefixUrl.origin === parsedUrl.origin) {
-                            if (!targetMatches) {
-                                targetMatches = targetPath === prefixUrl.pathname || targetPath.startsWith(prefixUrl.pathname + '/');
-                            }
-                            if (!currentMatches) {
-                                currentMatches = currentPath === prefixUrl.pathname || currentPath.startsWith(prefixUrl.pathname + '/');
+                            targetMatches = targetPath === prefixUrl.pathname;
+                            if (targetMatches) {
+                                currentInSameSection = currentPath === prefixUrl.pathname;
                             }
                         }
                     }
                 } catch (e) {
                     // Handle relative paths and fallbacks
                     if (prefix.startsWith('/')) {
-                        if (!targetMatches) {
-                            targetMatches = targetPath === prefix || targetPath.startsWith(prefix + '/');
-                        }
-                        if (!currentMatches) {
-                            currentMatches = currentPath === prefix || currentPath.startsWith(prefix + '/');
+                        targetMatches = targetPath === prefix || targetPath.startsWith(prefix + '/');
+                        if (targetMatches) {
+                            currentInSameSection = currentPath === prefix || currentPath.startsWith(prefix + '/');
                         }
                     } else {
-                        if (!targetMatches) {
-                            targetMatches = targetFullUrl === prefix || targetFullUrl.startsWith(prefix);
-                        }
-                        if (!currentMatches) {
-                            currentMatches = currentPath === prefix || currentPath.startsWith(prefix);
+                        targetMatches = targetFullUrl === prefix || targetFullUrl.startsWith(prefix);
+                        if (targetMatches) {
+                            currentInSameSection = currentUrl === prefix || currentUrl.startsWith(prefix);
                         }
                     }
                 }
 
-                // Early exit if both conditions are determined
-                if (targetMatches && currentMatches) break;
+                // If target matches a tracked pattern
+                if (targetMatches) {
+                    // Only prevent if current route is NOT in the same section
+                    return !currentInSameSection;
+                }
             }
 
-            // If target URL is tracked but current route is also tracked, don't prevent
-            return targetMatches && !currentMatches;
-
+            return false; // No tracked pattern matched
         } catch {
             return false;
         }
