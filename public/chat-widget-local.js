@@ -251,7 +251,7 @@
                             this.hideChatbotWithIcon();
                         } else {
                             // Don't show icon if both parentId and launch_widget are true
-                            const shouldKeepHidden = this.helloLaunchWidget;
+                            const shouldKeepHidden = this.helloLaunchWidget || this.helloProps?.launch_widget;
                             if (!shouldKeepHidden) {
                                 this.hideHelloIcon = false;
                                 this.showChatbotIcon();
@@ -563,7 +563,7 @@
                 const interfaceEmbed = document.getElementById(this.elements.chatbotIconContainer);
                 if (interfaceEmbed) {
                     interfaceEmbed.style.display =
-                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || this.hideHelloIcon || helloChatbotManager.helloProps?.isMobileSDK)
+                        (this.props.hide_launcher === true || this.props.hide_launcher === 'true' || this.hideHelloIcon || this.helloProps?.hide_launcher === true || this.helloProps?.hide_launcher === 'true' || helloChatbotManager.helloProps?.isMobileSDK)
                             ? 'none'
                             : 'unset';
                 }
@@ -836,7 +836,7 @@
         }
 
         updateProps(newProps) {
-            this.props = { ...this.props, ...newProps };
+            this.helloProps = { ...this.helloProps, ...newProps };
             this.setPropValues(newProps);
         }
 
@@ -847,10 +847,22 @@
                 document.getElementById(this.elements.chatbotIframeContainer)?.classList.add('hello-full-screen-interfaceEmbed')
             } if (newprops.fullScreen === false || newprops.fullScreen === 'false') {
                 document.getElementById(this.elements.chatbotIframeContainer)?.classList.remove('hello-full-screen-interfaceEmbed')
-            } if ('hideIcon' in newprops && document.getElementById(this.elements.chatbotIconContainer)) {
-                document.getElementById(this.elements.chatbotIconContainer).style.display = (newprops.hideIcon === true || newprops.hideIcon === 'true') ? 'none' : 'unset';
+            } if ('hide_launcher' in newprops && document.getElementById(this.elements.chatbotIconContainer)) {
+                document.getElementById(this.elements.chatbotIconContainer).style.display = (newprops.hide_launcher === true || newprops.hide_launcher === 'true') ? 'none' : 'unset';
+                // this.hideHelloIcon = newprops?.hide_launcher;
             } if ('hideCloseButton' in newprops && document.getElementById('hello-close-button-interfaceEmbed')) {
                 document.getElementById('hello-close-button-interfaceEmbed').style.display = (newprops.hideCloseButton === true || newprops.hideCloseButton === 'true') ? 'none' : 'unset';
+            } if ('launch_widget' in newprops && document.getElementById(this.elements.chatbotIconContainer) && document.getElementById(this.elements.chatbotIframeContainer)) {
+                const shouldLaunchWidget = newprops.launch_widget === true || newprops.launch_widget === 'true';
+                if (shouldLaunchWidget) {
+                    this.openChatbot();
+                } else {
+                    document.getElementById(this.elements.chatbotIframeContainer).style.display = 'none';
+                    if (this.helloProps?.hide_launcher === undefined || this.helloProps?.hide_launcher === false || this.helloProps?.hide_launcher === 'false') {
+                        document.getElementById(this.elements.chatbotIconContainer).style.display = 'unset';
+                    }
+                }
+                // this.helloLaunchWidget = newprops?.launch_widget;
             }
         }
 
@@ -870,7 +882,7 @@
             }
             if (this.state.interfaceLoaded && this.state.delayElapsed) {
                 const interfaceEmbed = document.getElementById(this.elements.chatbotIconContainer);
-                if (!this.hideHelloIcon && !helloChatbotManager.helloProps?.isMobileSDK) {
+                if (!this.hideHelloIcon && (this.helloProps?.hide_launcher !== undefined && (this.helloProps?.hide_launcher === false || this.helloProps?.hide_launcher === 'false')) && !helloChatbotManager.helloProps?.isMobileSDK) {
                     if (interfaceEmbed) interfaceEmbed.style.display = 'block';
                 }
                 if (this.helloLaunchWidget) helloChatbotManager.openChatbot()
@@ -952,7 +964,8 @@
 
             // Collect all UI properties in one object
             if ('hideCloseButton' in data) propsToUpdate.hideCloseButton = data.hideCloseButton || false;
-            if ('hideIcon' in data) propsToUpdate.hideIcon = data.hideIcon || false;
+            if ('hide_launcher' in data) propsToUpdate.hide_launcher = data.hide_launcher || false;
+            if ('launch_widget' in data) propsToUpdate.launch_widget = data.launch_widget || false;
             if (data.iconColor) propsToUpdate.iconColor = data.iconColor || 'dark';
             if (data.fullScreen === true || data.fullScreen === 'true' ||
                 data.fullScreen === false || data.fullScreen === 'false') {
@@ -1047,7 +1060,7 @@
                 ...helloChatbotManager.state.tempDataToSend,
                 ...dataToSend
             };
-            const previousParentId = helloChatbotManager.props['parentId'];
+            const previousParentId = helloChatbotManager.helloProps['parentId'];
             const existingParent = document.getElementById(previousParentId);
 
             if (existingParent?.contains(helloChatbotManager.parentContainer)) {
@@ -1067,7 +1080,6 @@
                 helloChatbotManager.changeContainer(dataToSend.parentId || '');
             }
         }
-
         // Process other properties
         helloChatbotManager.processDataProperties(dataToSend, iframeComponent);
     };
@@ -1096,12 +1108,15 @@
             helloChatbotManager.helloProps = { ...data };
             if ('hide_launcher' in data) {
                 helloChatbotManager.hideHelloIcon = data.hide_launcher || false;
+                helloChatbotManager.helloProps['hide_launcher'] = data.hide_launcher || false;
             }
             if ('launch_widget' in data) {
                 helloChatbotManager.helloLaunchWidget = data.launch_widget || false;
+                helloChatbotManager.helloProps['launch_widget'] = data.launch_widget || false;
             }
             // Only recreate iframe container if parentId is provided
             if (data.parentId) {
+                helloChatbotManager.helloProps['parentId'] = data.parentId || '';
                 helloChatbotManager.recreateIframeContainer();
             }
         }
