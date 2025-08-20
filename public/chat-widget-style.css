@@ -11,9 +11,8 @@
   text-align: center;
   align-content: center;
   color: white;
-  letter-spacing: 2px;
   font-size: 18px;
-  cursor: pointer;
+  /* cursor: pointer; */
   z-index: 99999 !important;
 }
 
@@ -79,7 +78,8 @@
   object-fit: contain;
   height: 60px !important;
   width: 60px !important;
-  padding: 5px !important;
+  margin: 8px 0px 0px 2px !important;
+  box-sizing: border-box !important;
   float: right;
   cursor: pointer;
   z-index: 999999999 !important;
@@ -92,14 +92,15 @@
 #hello-chatbot-launcher-icon {
   /* background-color: transparent; */
   object-fit: contain;
-  cursor: pointer;
+  /* cursor: pointer; */
   z-index: 9999 !important;
   height: auto;
   width: auto;
+  box-sizing: border-box !important;
   /* position: relative; */
   position: fixed;
-  bottom: 1%;
-  right: 10px;
+  bottom: 18px !important;
+  right: 18px !important;
 }
 
 /* Starter Question Styles */
@@ -114,6 +115,7 @@
   transform: translateY(0);
   transition: all 0.3s ease-in-out;
   pointer-events: auto;
+  margin: 0px 4px;
 }
 
 .hello-starter-question-bubble {
