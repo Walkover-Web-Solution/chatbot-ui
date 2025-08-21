@@ -59,7 +59,10 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
                   <button
                     key={index}
                     className="btn btn-sm btn-outline w-full max-w-md rounded-md normal-case justify-start px-4 font-medium"
-                    onClick={() => sendMessageToHello?.(button?.reply?.title)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sendMessageToHello?.(button?.reply?.title)
+                    }}
                   >
                     {button.reply?.title}
                   </button>
