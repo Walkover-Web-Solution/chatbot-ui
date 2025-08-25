@@ -31,7 +31,7 @@ class HelloVoiceService {
         const clientToken = getLocalStorage('HelloClientToken');
         if (!clientToken) return;
 
-        this.webrtc = WebRTC(clientToken);
+        this.webrtc = WebRTC(clientToken, 'dev');
 
         this.webrtc.on("call", this.handleOutgoingCall);
     }
