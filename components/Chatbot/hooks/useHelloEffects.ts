@@ -47,7 +47,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
 
     const { currentChannelId, isHelloUser } = useReduxStateManagement({ chatSessionId, tabSessionId });
 
-    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotOpen, callToken, unReadCountInCurrentChannel } = useCustomSelector((state) => ({
+    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotMinimized, isChatbotOpen, callToken, unReadCountInCurrentChannel } = useCustomSelector((state) => ({
         companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
         botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
         reduxChatSessionId: state.draftData?.chatSessionId,
@@ -59,6 +59,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             return unreadCount;
         })(),
         isToggledrawer: state.Chat?.isToggledrawer,
+        isChatbotMinimized: state.draftData?.isChatbotMinimized,
         isChatbotOpen: state.appInfo?.[tabSessionId]?.isChatbotOpen,
         callToken: state.appInfo?.[tabSessionId]?.callToken || '',
         unReadCountInCurrentChannel: (() => {
@@ -98,6 +99,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                 currentChannelId &&
                 unReadCountInCurrentChannel > 0 &&
                 (isSmallScreen ? !isToggledrawer : true) &&
+                !isChatbotMinimized &&
                 isChatbotOpen &&
                 isHelloUser &&
                 isTabVisible
