@@ -31,7 +31,6 @@ class HelloVoiceService {
         if (!clientToken) return;
 
         this.webrtc = WebRTC(clientToken, 'test');
-
         this.webrtc.on("call", this.handleOutgoingCall);
     }
 
