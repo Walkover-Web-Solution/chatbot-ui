@@ -25,7 +25,6 @@ class HelloVoiceService {
 
     public initialize(): void {
         // Only initialize if not already done
-        // if (this.webrtc) return;
         if (this.webrtc) this.webrtc.close(); this.cleanUp();
 
         const clientToken = getLocalStorage('HelloClientToken');
