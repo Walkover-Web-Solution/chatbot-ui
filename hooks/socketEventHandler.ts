@@ -58,8 +58,15 @@ export const useSocketEvents = ({
 
         switch (type) {
             case 'chat': {
-                const { channel, chat_id, new_event } = message || {};
+                const { channel, chat_id, new_event, message_type = null, content: { status } } = message || {};
                 if (new_event) {
+                    if (message_type === 'voice_call') {
+                        if (status === "completed" || status === "no_answer") {
+                            const messageId = response.timetoken || response.id;
+                            addHelloMessage({ ...message, id: messageId }, channel);
+                        }
+                        return
+                    }
                     if (!chat_id) {
                         setLoading(false);
 

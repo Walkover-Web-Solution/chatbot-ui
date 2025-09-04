@@ -109,20 +109,21 @@ class HelloVoiceService {
         });
     }
 
-    public initiateCall(channelCallToken?: string): void {
+    public initiateCall(channelCallToken: string | null = null): void {
         if (!this.webrtc) {
             console.warn("WebRTC not initialized. Call initialize() first.");
             return;
         }
-        const callToken = channelCallToken || getLocalStorage('HelloCallToken');
+        const callToken = channelCallToken ?? getLocalStorage('HelloCallToken');
         if (!callToken) {
             console.warn("No call token found in localStorage.");
             return;
         }
 
-        this.webrtc.call(callToken);
-        this.callState = "ringing";
-        this.eventEmitter.emit("callStateChanged", { state: this.callState });
+        this.webrtc.call(callToken).then(() => {
+            this.callState = "ringing";
+            this.eventEmitter.emit("callStateChanged", { state: this.callState });
+        });
     }
 
     public rejoinCall(callId: string): void {

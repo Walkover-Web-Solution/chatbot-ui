@@ -30,9 +30,6 @@ function CallButton({ chatSessionId, currentChannelId }: CallButtonProps) {
                 helloVoiceService.initiateCall(data?.['call_jwt_token'] || '')
             });
         }
-        // getCallToken(currentChannelId).then((response: { jwt_token: string }) => {
-        //     helloVoiceService.initiateCall(response?.jwt_token);
-        // });
     };
 
     if (!isHelloUser || !voice_call_widget) return null;

@@ -63,7 +63,7 @@ const CallUI: React.FC = () => {
                         <div className="flex items-center space-x-4">
                             <button
                                 onClick={toggleMute}
-                                className={`p-2 rounded-full button-hover transition-colors ${isMuted ? 'bg-orange-500' : 'bg-blue-500'} text-white`}
+                                className={`p-2 rounded-full button-hover transition-colors ${isMuted ? 'bg-orange-400 text-white' : 'text-black'} `}
                                 aria-label={isMuted ? 'Unmute' : 'Mute'}
                             >
                                 {isMuted ? <MicOff size={18} /> : <Mic size={18} />}

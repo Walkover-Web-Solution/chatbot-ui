@@ -517,10 +517,17 @@
             if (interfaceEmbed && iframeContainer) {
                 interfaceEmbed.style.display = 'none';
                 iframeContainer.style.display = 'block';
-                iframeContainer.style.opacity = 0;
-                iframeContainer.style.transition = 'opacity 0.3s ease-in-out';
 
-                requestAnimationFrame(() => iframeContainer.style.opacity = 1);
+                // Set initial state for bottom-right to top-left animation
+                iframeContainer.style.opacity = 0;
+                iframeContainer.style.transform = 'scale(0)';
+                iframeContainer.style.transformOrigin = 'bottom right';
+                iframeContainer.style.transition = 'opacity 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+
+                requestAnimationFrame(() => {
+                    iframeContainer.style.opacity = 1;
+                    iframeContainer.style.transform = 'scale(1)';
+                });
             }
 
             if (window.parent) {
