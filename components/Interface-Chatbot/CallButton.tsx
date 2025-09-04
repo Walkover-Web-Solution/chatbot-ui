@@ -8,6 +8,7 @@ import helloVoiceService from '../Chatbot/hooks/HelloVoiceService';
 import { useCallUI } from '../Chatbot/hooks/useCallUI';
 import { useColor } from '../Chatbot/hooks/useColor';
 import { useOnSendHello } from '../Chatbot/hooks/useHelloIntegration';
+import { errorToast } from '../customToast';
 
 interface CallButtonProps {
     chatSessionId: string,
@@ -24,11 +25,19 @@ function CallButton({ chatSessionId, currentChannelId }: CallButtonProps) {
     const { callState } = useCallUI();
 
     // Handler for voice call
-    const handleVoiceCall = () => {
-        if (true) {
-            sendMessageToHello('', '', true).then((data) => {
-                helloVoiceService.initiateCall(data?.['call_jwt_token'] || '')
-            });
+    const handleVoiceCall = async () => {
+        try {
+            // Request microphone permission
+            const stream = await navigator?.mediaDevices?.getUserMedia({ audio: true });
+            // Stop tracks immediately (we just needed permission, not the raw stream here)
+            stream?.getTracks()?.forEach(track => track?.stop());
+
+            // Only if granted → call API
+            const data = await sendMessageToHello('', '', true);
+            helloVoiceService.initiateCall(data?.['call_jwt_token'] || '');
+        } catch (err) {
+            errorToast('Microphone access denied or unavailable');
+            console.warn('Microphone access denied or unavailable', err);
         }
     };
 
