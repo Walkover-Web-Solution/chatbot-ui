@@ -195,8 +195,21 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     if (!options || options.length === 0) return null;
 
     return (
-      <div className="relative scrollbar-hide">
-        <div className="flex overflow-x-auto sm:flex-wrap gap-2 p-2 animate-fadeIn whitespace-nowrap no-scrollbar overflow-hidden">
+      <div className="relative">
+        <div className="flex overflow-x-auto sm:flex-wrap gap-2 p-2 animate-fadeIn whitespace-nowrap overflow-hidden"
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            msOverflowStyle: 'none',
+            scrollbarWidth: 'none',
+            scrollBehavior: 'smooth'
+          }}
+        >
+          {/* Scrollbar-hiding styles for WebKit browsers */}
+          <style>{`
+            ::-webkit-scrollbar {
+              display: none;
+            }
+          `}</style>
           {options.slice(0, 3).map((option, index) => (
             <button
               key={index}
