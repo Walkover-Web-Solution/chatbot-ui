@@ -16,7 +16,6 @@ import {
 import Image from "next/image";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
-
 // App imports
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
@@ -482,7 +481,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
               )}
             </div>
             {lastMessage && (
-              <div className="flex items-center gap-1 ml-2">
+              <div className="flex items-center gap-1">
                 <p>:</p>
                 <div className="line-clamp-1 text-sm md:text-base" dangerouslySetInnerHTML={{
                   __html: lastMessage?.message_type === 'pushNotification'

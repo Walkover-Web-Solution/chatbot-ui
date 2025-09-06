@@ -1,5 +1,5 @@
 import { ThemeContext } from '@/components/AppWrapper';
-import { deleteReadReceipt, getAgentTeamApi, getCallToken, getClientToken, getGreetingQuestions, getJwtToken, initializeHelloChat, registerAnonymousUser, saveClientDetails } from '@/config/helloApi';
+import { deleteReadReceipt, getAgentTeamApi, getClientToken, getGreetingQuestions, getJwtToken, initializeHelloChat, registerAnonymousUser, saveClientDetails } from '@/config/helloApi';
 import useNotificationSocket from '@/hooks/notifications/notificationSocket';
 import useNotificationSocketEventHandler from '@/hooks/notifications/notificationSocketEventHandler';
 import useSocket from '@/hooks/socket';
@@ -10,6 +10,7 @@ import { GetSessionStorageData, SetSessionStorage } from '@/utils/ChatbotUtility
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 import { cleanObject, getLocalStorage } from '@/utils/utilities';
+import debounce from 'lodash.debounce';
 import { useContext, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import helloVoiceService from './HelloVoiceService';
@@ -18,7 +19,6 @@ import { useFetchChannels, useFetchHelloPreviousHistory } from './useHelloIntegr
 import { useReduxStateManagement } from './useReduxManagement';
 import { useScreenSize } from './useScreenSize';
 import { useTabVisibility } from './useTabVisibility';
-import debounce from 'lodash.debounce';
 
 interface HelloMessage {
     role: string;
@@ -47,7 +47,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
 
     const { currentChannelId, isHelloUser } = useReduxStateManagement({ chatSessionId, tabSessionId });
 
-    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotOpen, callToken, unReadCountInCurrentChannel } = useCustomSelector((state) => ({
+    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotMinimized, isChatbotOpen, callToken, unReadCountInCurrentChannel } = useCustomSelector((state) => ({
         companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
         botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
         reduxChatSessionId: state.draftData?.chatSessionId,
@@ -59,6 +59,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             return unreadCount;
         })(),
         isToggledrawer: state.Chat?.isToggledrawer,
+        isChatbotMinimized: state.draftData?.isChatbotMinimized,
         isChatbotOpen: state.appInfo?.[tabSessionId]?.isChatbotOpen,
         callToken: state.appInfo?.[tabSessionId]?.callToken || '',
         unReadCountInCurrentChannel: (() => {
@@ -98,6 +99,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                 currentChannelId &&
                 unReadCountInCurrentChannel > 0 &&
                 (isSmallScreen ? !isToggledrawer : true) &&
+                !isChatbotMinimized &&
                 isChatbotOpen &&
                 isHelloUser &&
                 isTabVisible
@@ -113,7 +115,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
         return () => {
             debouncedReset.cancel();
         };
-    }, [currentChannelId, isToggledrawer, unReadCountInCurrentChannel, isChatbotOpen, isHelloUser, isTabVisible]);
+    }, [currentChannelId, isToggledrawer, unReadCountInCurrentChannel, isChatbotOpen, isHelloUser, isTabVisible, isChatbotMinimized]);
 
 
     const initializeHelloServices = async (widgetToken: string = '') => {
