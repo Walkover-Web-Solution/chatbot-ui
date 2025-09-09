@@ -40,7 +40,6 @@ class EmbeddingScrpitEventRegistry {
 }
 
 export const useEmbeddingScriptEventHandler = (tabSessionId: string) => {
-
   const EmebeddingScriptEventHandler: EmbeddingScriptEventRegistryInstance = new EmbeddingScrpitEventRegistry(tabSessionId)
 
   useHandleGtwyEmbeddingScriptEvents(EmebeddingScriptEventHandler)
