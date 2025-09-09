@@ -9,6 +9,11 @@ import RenderHelloFeedbackMessage from "../../Hello/RenderHelloFeedbackMessage";
 import RenderHelloInteractiveMessage from "../../Hello/RenderHelloInteractiveMessage";
 import "./Message.css";
 import MessageTime from "./MessageTime";
+import ReactMarkdown from 'react-markdown';
+import { Anchor, Code } from "@/components/Interface-Chatbot/Interface-Markdown/MarkdownUtitily";
+import { supportsLookbehind } from "@/utils/appUtility";
+import dynamic from 'next/dynamic';
+const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 /**
  * A component that displays a human or bot message card.
@@ -200,7 +205,7 @@ const ShadowDomComponent = React.memo(({ htmlContent, messageId }: ShadowDomProp
 ShadowDomComponent.displayName = 'ShadowDomComponent';
 
 // Memoized message content renderer
-const MessageContent = React.memo(({ message }: { message: any }) => {
+const MessageContent = React.memo(({ message, isBot }: { message: any, isBot?: boolean }) => {
     const content = useMemo(() => {
         const messageType = message?.message_type;
 
@@ -228,13 +233,27 @@ const MessageContent = React.memo(({ message }: { message: any }) => {
                 );
 
             default:
-                return (
+                return isBot ? (
+                    // Bot messages - render as Markdown
+                    <div>
+                        <ReactMarkdown
+                            {...(!supportsLookbehind() ? {} : { remarkPlugins: [remarkGfm] })}
+                            components={{
+                                code: Code,
+                                a: Anchor,
+                            }}
+                        >
+                            {message?.content || JSON.stringify(message)}
+                        </ReactMarkdown>
+                    </div>
+                ) : (
+                    // Human messages - render as HTML
                     <div className="prose max-w-none">
                         <div dangerouslySetInnerHTML={{ __html: linkify(message?.content) }}></div>
                     </div>
                 );
         }
-    }, [message?.message_type, message?.content, message?.id]);
+    }, [message?.message_type, message?.content, message?.id, isBot]);
 
     return content;
 });
@@ -249,7 +268,7 @@ const HumanOrBotMessageCard = React.memo(({ message, isBot = false, isLastMessag
                 {/* <Avatar message={message} isBot={isBot} /> */}
                 <div className="w-fit whitespace-pre-wrap break-words" onClick={() => setShowSenderTime(!showSenderTime)}>
                     <div className="p-1 whitespace-pre-wrap w-full break-words message-card-backround">
-                        <MessageContent message={message} />
+                        <MessageContent message={message} isBot={isBot} />
                     </div>
                     <div className={`transition-all duration-300 ease-in-out ${showSenderTime ? 'opacity-100 max-h-12' : 'opacity-0 max-h-0'}`}>
                         <div className="flex items-center gap-1 text-gray-500 pl-1 pt-0.5">
