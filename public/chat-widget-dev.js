@@ -251,6 +251,7 @@
                             this.hideHelloIcon = true;
                             this.hideChatbotWithIcon();
                         } else {
+                            if (this.helloLaunchWidget) return;
                             this.hideHelloIcon = false;
                             this.showChatbotIcon();
                         }
@@ -312,7 +313,21 @@
                 iframeContainer.style.transition = 'width 0.3s ease-in-out, height 0.3s ease-in-out';
                 iframeContainer.classList.remove('full-screen-without-border');
                 iframeContainer.style.height = 'min(60px, calc(100% - 40px))';
-                iframeContainer.style.width = '280';
+
+                const parentContainer = document.getElementById(this.helloProps.parentId);
+                // Check if chatbot is in a parent container
+                if (this.helloProps?.parentId && parentContainer) {
+                    // When in parent container, minimize to a small portion of parent
+                    iframeContainer.style.position = 'absolute';
+                    iframeContainer.style.bottom = '0';        // Stick to bottom
+                    iframeContainer.style.top = 'auto';        // Don't use top positioning
+                    iframeContainer.style.left = '0';          // Full width from left
+                    iframeContainer.style.right = '0';         // Full width to right
+                    iframeContainer.style.width = '100%';
+                } else {
+                    // Original popup behavior when no parentId
+                    iframeContainer.style.width = '280';
+                }
             }
             const launcherContainer = document.getElementById(this.elements.chatbotIconContainer);
             if (launcherContainer) {
@@ -565,7 +580,7 @@
                 const interfaceEmbed = document.getElementById(this.elements.chatbotIconContainer);
                 if (interfaceEmbed) {
                     interfaceEmbed.style.display =
-                        (this.props.hideIcon === true || this.props.hideIcon === 'true' || this.hideHelloIcon || helloChatbotManager.helloProps?.isMobileSDK)
+                        (this.props.hide_launcher === true || this.props.hide_launcher === 'true' || this.hideHelloIcon || this.helloProps?.hide_launcher === true || this.helloProps?.hide_launcher === 'true' || helloChatbotManager.helloProps?.isMobileSDK)
                             ? 'none'
                             : 'unset';
                 }
@@ -590,8 +605,16 @@
                 } else {
                     this.state.chatbotSize = 'NORMAL';
                     iframeContainer.classList.remove('full-screen-without-border');
-                    iframeContainer.style.height = `${this.props?.config?.height}${this.props?.config?.heightUnit || ''}` || '70vh';
-                    iframeContainer.style.width = `${this.props?.config?.width}${this.props?.config?.widthUnit || ''}` || '40vw';
+                    const parentContainer = document.getElementById(this.helloProps.parentId);
+                    if (this.helloProps?.parentId && parentContainer) {
+                        // Restore to full parent container size
+                        iframeContainer.style.height = '100%';
+                        iframeContainer.style.width = '100%';
+                        iframeContainer.classList.add('full-screen-without-border');
+                    } else {
+                        iframeContainer.style.height = `${this.props?.config?.height}${this.props?.config?.heightUnit || ''}` || '70vh';
+                        iframeContainer.style.width = `${this.props?.config?.width}${this.props?.config?.widthUnit || ''}` || '40vw';
+                    }
                 }
             }
         }
@@ -630,17 +653,49 @@
 
             this.parentContainer.appendChild(iframe);
 
-            const parentId = this.props.parentId || '';
+            const parentId = this.helloProps?.parentId || '';
             this.changeContainer(parentId, this.parentContainer);
         }
 
         changeContainer(parentId, parentContainer = this.parentContainer) {
             const container = parentId && document.getElementById(parentId);
+            if (!parentContainer) return;
             if (container) {
                 container.style.position = 'relative';
                 parentContainer.style.position = 'absolute';
+
+                // Reset positioning to fill entire parent container
+                parentContainer.style.top = '0';
+                parentContainer.style.left = '0';
+                parentContainer.style.bottom = 'auto';
+                parentContainer.style.right = 'auto';
+                parentContainer.style.margin = '0';
+                parentContainer.style.padding = '0';
+                parentContainer.style.borderRadius = '0';
+                // Set full size when moving to parent container
+                parentContainer.style.height = '100%';
+                parentContainer.style.width = '100%';
+
                 container.appendChild(parentContainer);
             } else {
+                // Reset to original popup positioning and dimensions
+                parentContainer.style.position = 'fixed';
+                parentContainer.style.bottom = '10px';
+                parentContainer.style.right = '10px';
+                parentContainer.style.top = 'auto';
+                parentContainer.style.left = 'auto';
+                parentContainer.style.margin = '0';
+                parentContainer.style.padding = '0';
+                parentContainer.style.borderRadius = '12px';
+                // Apply original config dimensions
+                const config = this.props?.config || this.config;
+                const isFunctionalHeight = config.height?.includes('(');
+                parentContainer.style.height = isFunctionalHeight
+                    ? config.height
+                    : `${config.height}${config.heightUnit || ''}` || '70vh';
+                parentContainer.style.width = `${config?.width}${config?.widthUnit || ''}` || '40vw';
+                // Reset parentId in props since container doesn't exist
+                // this.updateProps({ parentId: null });               
                 document.body.appendChild(parentContainer);
             }
         }
@@ -796,23 +851,30 @@
                     this.className = config.type;
                 }
             }
-
-            if (this.className === 'all_available_space') {
+            // Check if parentId is provided - if yes, use full dimensions
+            const isParentIdExist = this.helloProps?.parentId
+            const isParentContainerExist = document.getElementById(this.helloProps?.parentId)
+            if (isParentIdExist && isParentContainerExist) {
                 iframeParentContainer.style.height = '100%';
                 iframeParentContainer.style.width = '100%';
-                iframeParentContainer.style.display = 'block';
             } else {
-                const isFunctionalHeight = config.height?.includes('(');
-                iframeParentContainer.style.height = isFunctionalHeight
-                    ? config.height  // use as-is
-                    : `${config.height}${config.heightUnit || ''}` || '70vh';
-                // iframeParentContainer.style.height = `${config?.height}${config?.heightUnit || ''}` || '70vh';
-                iframeParentContainer.style.width = `${config?.width}${config?.widthUnit || ''}` || '40vw';
+                if (this.className === 'all_available_space') {
+                    iframeParentContainer.style.height = '100%';
+                    iframeParentContainer.style.width = '100%';
+                    iframeParentContainer.style.display = 'block';
+                } else {
+                    const isFunctionalHeight = config.height?.includes('(');
+                    iframeParentContainer.style.height = isFunctionalHeight
+                        ? config.height  // use as-is
+                        : `${config.height}${config.heightUnit || ''}` || '70vh';
+                    // iframeParentContainer.style.height = `${config?.height}${config?.heightUnit || ''}` || '70vh';
+                    iframeParentContainer.style.width = `${config?.width}${config?.widthUnit || ''}` || '40vw';
+                }
             }
         }
 
         updateProps(newProps) {
-            this.props = { ...this.props, ...newProps };
+            this.helloProps = { ...this.helloProps, ...newProps };
             this.setPropValues(newProps);
         }
 
@@ -823,10 +885,15 @@
                 document.getElementById(this.elements.chatbotIframeContainer)?.classList.add('hello-full-screen-interfaceEmbed')
             } if (newprops.fullScreen === false || newprops.fullScreen === 'false') {
                 document.getElementById(this.elements.chatbotIframeContainer)?.classList.remove('hello-full-screen-interfaceEmbed')
-            } if ('hideIcon' in newprops && document.getElementById(this.elements.chatbotIconContainer)) {
-                document.getElementById(this.elements.chatbotIconContainer).style.display = (newprops.hideIcon === true || newprops.hideIcon === 'true') ? 'none' : 'unset';
+            } if ('hide_launcher' in newprops && document.getElementById(this.elements.chatbotIconContainer)) {
+                document.getElementById(this.elements.chatbotIconContainer).style.display = (newprops.hide_launcher === true || newprops.hide_launcher === 'true') ? 'none' : 'unset';
+                // this.hideHelloIcon = newprops?.hide_launcher;
             } if ('hideCloseButton' in newprops && document.getElementById('hello-close-button-interfaceEmbed')) {
                 document.getElementById('hello-close-button-interfaceEmbed').style.display = (newprops.hideCloseButton === true || newprops.hideCloseButton === 'true') ? 'none' : 'unset';
+            }
+            if ('launch_widget' in newprops && newprops.launch_widget === true || newprops.launch_widget === 'true') {
+                this.helloLaunchWidget = newprops?.launch_widget
+                this.openChatbot()
             }
         }
 
@@ -845,8 +912,8 @@
                 this.closeChatbot()
             }
             if (this.state.interfaceLoaded && this.state.delayElapsed) {
-                if (!this.hideHelloIcon && !helloChatbotManager.helloProps?.isMobileSDK) {
-                    const interfaceEmbed = document.getElementById(this.elements.chatbotIconContainer);
+                const interfaceEmbed = document.getElementById(this.elements.chatbotIconContainer);
+                if (!this.hideHelloIcon && (this.helloProps?.hide_launcher !== undefined && (this.helloProps?.hide_launcher === false || this.helloProps?.hide_launcher === 'false')) && !helloChatbotManager.helloProps?.isMobileSDK) {
                     if (interfaceEmbed) interfaceEmbed.style.display = 'block';
                 }
                 if (this.helloLaunchWidget) helloChatbotManager.openChatbot()
@@ -922,18 +989,26 @@
             }
         }
 
-        processDataProperties = (data, iframeComponent) => {
+        processDataProperties = (data) => {
             // Create a props object for all UI-related properties
             const propsToUpdate = {};
 
             // Collect all UI properties in one object
-            if ('hideCloseButton' in data) propsToUpdate.hideCloseButton = data.hideCloseButton || false;
-            if ('hideIcon' in data) propsToUpdate.hideIcon = data.hideIcon || false;
-            if (data.iconColor) propsToUpdate.iconColor = data.iconColor || 'dark';
-            if (data.fullScreen === true || data.fullScreen === 'true' ||
-                data.fullScreen === false || data.fullScreen === 'false') {
-                propsToUpdate.fullScreen = data.fullScreen;
+            if ('hideCloseButton' in data) {
+                propsToUpdate.hideCloseButton = data.hideCloseButton || false;
             }
+            if ('hide_launcher' in data) {
+                propsToUpdate.hide_launcher = data.hide_launcher || false;
+                helloChatbotManager.hideHelloIcon = data.hide_launcher || false;
+            }
+            if ('launch_widget' in data) {
+                propsToUpdate.launch_widget = data.launch_widget || false;
+                helloChatbotManager.helloLaunchWidget = data.launch_widget || false;
+            }
+            if ('parentId' in data) {
+                propsToUpdate.parentId = data.parentId || '';
+            }
+            if (data.iconColor) propsToUpdate.iconColor = data.iconColor || 'dark';
 
             // Handle starter question configuration
             if ('starter_question' in data) {
@@ -954,21 +1029,18 @@
                 helloChatbotManager.updateProps(propsToUpdate);
             }
 
-            // Handle iframe communication
-            if (iframeComponent?.contentWindow) {
-                // Send general data
-                if (data) {
-                    helloChatbotManager.state.tempDataToSend = {
-                        ...helloChatbotManager.state.tempDataToSend,
-                        ...data
-                    };
-                    sendMessageToChatbot({ type: 'interfaceData', data: data });
-                }
+            // Send general data
+            if (data) {
+                helloChatbotManager.state.tempDataToSend = {
+                    ...helloChatbotManager.state.tempDataToSend,
+                    ...data
+                };
+                sendMessageToChatbot({ type: 'helloRunTimeData', data: data });
+            }
 
-                // Handle askAi specifically
-                if (data.askAi) {
-                    sendMessageToChatbot({ type: 'askAi', data: data || {} });
-                }
+            // Handle askAi specifically
+            if (data.askAi) {
+                sendMessageToChatbot({ type: 'askAi', data: data || {} });
             }
 
             // Handle config updates
@@ -998,9 +1070,7 @@
 
     const helloChatbotManager = new HelloChatbotEmbedManager();
 
-    window.SendDataToBot = function (dataToSend) {
-        const iframeComponent = document.getElementById(helloChatbotManager.elements.chatbotIframeComponent);
-
+    function SendDataToBot(dataToSend) {
         // Parse string data if needed
         if (typeof dataToSend === 'string') {
             try {
@@ -1016,16 +1086,18 @@
             sendDataToMobileSDK({ type: 'data', data: dataToSend })
         }
 
-
         // Handle parent container changes
         if ('parentId' in dataToSend) {
             helloChatbotManager.state.tempDataToSend = {
                 ...helloChatbotManager.state.tempDataToSend,
                 ...dataToSend
             };
-            const previousParentId = helloChatbotManager.props['parentId'];
+            helloChatbotManager.helloProps = {
+                ...helloChatbotManager.helloProps,
+                ...dataToSend
+            }
+            const previousParentId = helloChatbotManager.helloProps['parentId'];
             const existingParent = document.getElementById(previousParentId);
-
             if (existingParent?.contains(helloChatbotManager.parentContainer)) {
                 if (previousParentId !== dataToSend.parentId) {
                     if (previousParentId) {
@@ -1045,7 +1117,7 @@
         }
 
         // Process other properties
-        helloChatbotManager.processDataProperties(dataToSend, iframeComponent);
+        helloChatbotManager.processDataProperties(dataToSend);
     };
 
     // Helper function to send messages to the iframe
@@ -1064,7 +1136,6 @@
 
     // Initialize the widget function
     window.initChatWidget = (data, delay = 0) => {
-        console.log('initChatWidget through scritp', data)
         if (block_chatbot) return;
         if (data.previewLinks) {
             helloChatbotManager.addUrlMonitor(data);
@@ -1077,6 +1148,10 @@
             if ('launch_widget' in data) {
                 helloChatbotManager.helloLaunchWidget = data.launch_widget || false;
             }
+            // Only recreate iframe container if parentId is provided
+            if (data.parentId) {
+                SendDataToBot(data);
+            }
         }
         setTimeout(() => {
             helloChatbotManager.state.delayElapsed = true;
@@ -1086,7 +1161,15 @@
 
     // Create chatWidget object with all widget control functions
     window.chatWidget = {
-        SendDataToBot: (data) => sendMessageToChatbot({ type: "SET_VARIABLES_FOR_BOT", data }),
+        SendDataToBot: (data) => {
+            // Check if data has variables - send to iframe
+            if (data && 'variables' in data) {
+                sendMessageToChatbot({ type: "SET_VARIABLES_FOR_BOT", data });
+            } else {
+                // Handle parentId and other local operations
+                SendDataToBot(data);
+            }
+        },
         addCustomData: (data) => sendMessageToChatbot({ type: "UPDATE_USER_DATA_SEGMENTO", data }),
         modifyCustomData: (data) => sendMessageToChatbot({ type: "UPDATE_USER_DATA_SEGMENTO", data }),
         addUserEvent: (data) => sendMessageToChatbot({ type: "ADD_USER_EVENT_SEGMENTO", data }),
