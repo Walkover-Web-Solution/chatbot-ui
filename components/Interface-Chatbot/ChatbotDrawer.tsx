@@ -418,7 +418,7 @@ const ChatbotDrawer = ({
                 <h2 className="text-lg font-bold text-center">
                   {Name ? `Hello ${Name.split(' ')[0]}` : 'Hello There!'}
                 </h2>
-                {tagline && Name && (
+                {tagline && (
                   <p className="text-xs text-gray-500 text-center">{tagline}</p>
                 )}
               </div>

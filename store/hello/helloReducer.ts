@@ -62,7 +62,7 @@ export const reducers: ValidateSliceCaseReducers<
     if (chatSessionId) {
       state[chatSessionId] = {
         ...state[chatSessionId],
-        widgetInfo: action.payload
+        widgetInfo: { ...state[chatSessionId]?.widgetInfo, ...action.payload }
       };
     }
   },
