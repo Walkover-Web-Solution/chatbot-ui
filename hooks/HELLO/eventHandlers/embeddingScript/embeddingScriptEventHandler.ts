@@ -5,7 +5,7 @@ import { CBManger } from "@/hooks/coBrowser/CBManger";
 import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { setDataInDraftReducer, setVariablesForHelloBot } from "@/store/draftData/draftDataSlice";
-import { setHelloClientInfo, setHelloConfig, setHelloKeysData } from "@/store/hello/helloSlice";
+import { setHelloClientInfo, setHelloConfig, setHelloKeysData, setWidgetInfo } from "@/store/hello/helloSlice";
 import { setDataInInterfaceRedux } from "@/store/interface/interfaceSlice";
 import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
 import { cleanObject, removeFromLocalStorage, setLocalStorage } from "@/utils/utilities";
@@ -163,6 +163,20 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         }
     }
 
+    function handleHelloRuntimeData(event: MessageEvent) {
+        const { data } = event?.data;
+        
+        if (data.themeColor) {
+            handleThemeChange(data.themeColor);
+        }
+        if (data.tagline) {
+            dispatch(setWidgetInfo({ tagline: data.tagline }))
+        }
+        if ('show_widget_form' in data) {
+            dispatch(setWidgetInfo({ show_widget_form: data.show_widget_form ?? true }))
+        }
+    }
+
     useEffect(() => {
 
         eventHandler.addEventHandler('parent-route-changed', handleParentRouteChanged)
@@ -176,6 +190,8 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         eventHandler.addEventHandler('SET_VARIABLES_FOR_BOT', handleSetVariablesForBot)
 
         eventHandler.addEventHandler('helloData', handleHelloData)
+
+        eventHandler.addEventHandler('helloRunTimeData', handleHelloRuntimeData)
 
         eventHandler.addEventHandler('CHATBOT_OPEN', () => handleChatbotVisibility(true))
 
