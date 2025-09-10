@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import linkifyHtml from "linkify-html";
 import { customAlphabet } from "nanoid";
+import { v4 as uuidv4 } from "uuid";
 import { GetSessionStorageData } from "./ChatbotUtility";
 import relativeTime from 'dayjs/plugin/relativeTime'
 import updateLocale from 'dayjs/plugin/updateLocale'
@@ -37,6 +38,11 @@ export const generateNewId = (length = 8) => {
     length
   );
   return nanoid();
+};
+
+export const generateChannelId = (companyId = '') => {
+  const uuid = uuidv4().replace(/-/g, '');
+  return `ch-comp-${companyId}.${uuid}`;
 };
 
 function getDomain() {

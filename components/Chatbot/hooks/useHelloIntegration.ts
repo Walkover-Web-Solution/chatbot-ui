@@ -7,13 +7,13 @@ import { setData, setHelloEventMessage, setImages, setInitialMessages, setOpenHe
 import { setChannelListData, setHelloClientInfo, setHelloKeysData } from '@/store/hello/helloSlice';
 import { useAppDispatch } from '@/store/useTypedHooks';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
+import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 import { PAGE_SIZE } from '@/utils/enums';
-import { generateNewId } from '@/utils/utilities';
+import { generateChannelId, generateNewId } from '@/utils/utilities';
 import { useCallback, useContext, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
-import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 
 interface HelloMessage {
   role: string;
@@ -42,7 +42,7 @@ export const useHelloMessages = () => {
     globalDispatch(setInitialMessages({ messages, subThreadId: messages?.[0]?.channel || "" }));
   }, [globalDispatch]);
 
-  const addHelloMessage = useCallback((message: HelloMessage | HelloMessage[], subThreadId?: string) => {
+  const addHelloMessage = useCallback((message: HelloMessage | HelloMessage[] | any, subThreadId?: string) => {
     if (Array.isArray(message)) {
       globalDispatch(setPaginateMessages({ messages: message }));
       return;
@@ -183,7 +183,7 @@ export const useHelloTimeout = () => {
 };
 
 export const useOnSendHello = () => {
-  const { chatSessionId } = useHelloContext();
+  const { chatSessionId, tabSessionId } = useHelloContext();
   const globalDispatch = useAppDispatch();
   const dispatch = useDispatch();
   const { setLoading } = useChatActions();
@@ -200,24 +200,38 @@ export const useOnSendHello = () => {
     currentChannelId
   } = useReduxStateManagement({
     chatSessionId,
-    tabSessionId: useHelloContext().tabSessionId
+    tabSessionId
   });
 
-  const { assigned_type, showWidgetForm, images, helloVariables } = useCustomSelector((state) => ({
+  const { assigned_type, showWidgetForm, images, helloVariables, companyId } = useCustomSelector((state) => ({
     assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === currentChannelId
     )?.assigned_type,
     showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm,
     images: state.Chat.images,
-    helloVariables: state.draftData?.hello?.variables || {}
+    helloVariables: state.draftData?.hello?.variables || {},
+    companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || ''
   }));
 
   const isBot = assigned_type === 'bot';
 
-  return useCallback(async (message?: string, newMessage?: HelloMessage | string, voiceCall?: boolean) => {
+  return useCallback(async (message?: string, newMessage?: HelloMessage | string, voiceCall?: boolean, newChannelId?: string) => {
     if (!voiceCall && (!message?.trim() && (!images || images.length === 0))) return;
 
+
     try {
+
+      newChannelId = currentChannelId;
+      if (!currentChatId && !currentChannelId) {
+        newChannelId = generateChannelId(companyId);
+        dispatch(setDataInAppInfoReducer({
+          subThreadId: newChannelId
+        }));
+      }
+
+      if (newMessage) {
+        addHelloMessage(newMessage, newChannelId);
+      }
       const channelDetail = !currentChatId ? {
         call_enabled: null,
         uuid,
@@ -233,12 +247,14 @@ export const useOnSendHello = () => {
         customer_mail: null,
         team_id: currentTeamId,
         new: true,
+        channel_hex: newChannelId || undefined
       } : undefined;
       let attachments;
       if (!voiceCall) {
         // Show widget form only if in case of new chat and showWidgetForm is true
         if (!currentChatId && showWidgetForm) {
           globalDispatch(setOpenHelloForm(true));
+          setLoading(true);
         }
 
         attachments = Array.isArray(images) && images?.length ? images : null;
@@ -261,7 +277,8 @@ export const useOnSendHello = () => {
           currentChatId: data?.['id'],
           currentChannelId: data?.['channel']
         }));
-        addHelloMessage(newMessage, data?.['channel']);
+        // no need to append user message again this time
+        // addHelloMessage(newMessage, data?.['channel']);
         const response = await fetchChannels();
         if (response?.channels?.length === 1 && response?.channels?.[0]?.id !== null) {
           emitEventToParent('HIDE_STARTER_QUESTION')
@@ -298,7 +315,8 @@ export const useOnSendHello = () => {
     showWidgetForm,
     assigned_type,
     addHelloMessage,
-    helloVariables
+    helloVariables,
+    companyId
   ]);
 };
 
@@ -350,8 +368,8 @@ export const useSendMessageToHello = ({
       sender_id: "user"
     };
 
-    // Add message to chat
-    if (currentChannelId) addHelloMessage(newMessage);
+    // Always add message to chat so user can see it immediately
+    // addHelloMessage(newMessage, channelIdToUse);
 
     // Send message to API
     onSendHello(textMessage, newMessage);

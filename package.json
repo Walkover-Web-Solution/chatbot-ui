@@ -40,7 +40,8 @@
     "redux-state-sync": "^3.1.4",
     "remark-gfm": "^4.0.1",
     "rtlayer-client": "^1.5.5",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "uuid": "^12.0.0"
   },
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.14",
