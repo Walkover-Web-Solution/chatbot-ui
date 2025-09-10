@@ -45,9 +45,10 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     mode: state.Hello?.[chatSessionId]?.mode || [],
     inbox_id: state.Hello?.[chatSessionId]?.widgetInfo?.inbox_id,
     show_send_button: typeof state.Hello?.[chatSessionId]?.helloConfig?.show_send_button === 'boolean' ? state.Hello?.[chatSessionId]?.helloConfig?.show_send_button : true,
-    assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
-      (channel: any) => channel?.channel === currentChannelId
-    )?.assigned_type || '',
+    assigned_type: (() => {
+      const foundType = state.Hello?.[chatSessionId]?.channelListData?.channels?.find((channel: any) => channel?.channel === currentChannelId)?.assigned_type;
+      return foundType === undefined ? 'bot' : foundType;
+    })(),
   }));
 
   const { messageRef } = useContext(MessageContext);
