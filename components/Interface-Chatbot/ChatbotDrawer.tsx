@@ -24,6 +24,7 @@ import { useChatActions } from "../Chatbot/hooks/useChatActions";
 import { useColor } from "../Chatbot/hooks/useColor";
 import { useScreenSize } from "../Chatbot/hooks/useScreenSize";
 import { MessageContext } from "./InterfaceChatbot";
+import { useOnSendHello } from "../Chatbot/hooks/useHelloIntegration";
 
 const createRandomId = () => Math.random().toString(36).substring(2, 15);
 
@@ -63,6 +64,7 @@ const ChatbotDrawer = ({
 
   const { currentChatId, currentTeamId } = useReduxStateManagement({ chatSessionId, tabSessionId });
   const { callState } = useCallUI();
+  const sendMessageToHello = useOnSendHello();
 
   // Consolidated Redux state selection
   const {
@@ -163,9 +165,10 @@ const ChatbotDrawer = ({
     setToggleDrawer(isOpen);
   };
 
-  const handleVoiceCall = () => {
-    helloVoiceService.initiateCall();
+  const handleVoiceCall = async () => {
     if (isSmallScreen) setToggleDrawer(false);
+    const data = await sendMessageToHello('', '', true);
+    helloVoiceService.initiateCall(data?.['call_jwt_token'] || '');
   };
 
   const handleSendMessageWithNoTeam = () => {

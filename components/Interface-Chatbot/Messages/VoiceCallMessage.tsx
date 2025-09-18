@@ -1,12 +1,15 @@
-import { linkify } from '@/utils/utilities'
-import { Phone } from 'lucide-react'
-import React from 'react'
+import { linkify } from '@/utils/utilities';
+import { Phone } from 'lucide-react';
 
 function VoiceCallMessage({ message }: { message: any }) {
     const startTime = new Date(message?.content?.start_time);
     const endTime = new Date(message?.content?.end_time);
-    const duration = !isNaN(startTime.getTime()) && !isNaN(endTime.getTime()) ?
-        Math.floor((endTime.getTime() - startTime.getTime()) / 1000) : 0;
+    const durationFromMessage = Number(message?.content?.duration);
+    const fallbackDuration = (!isNaN(startTime.getTime()) && !isNaN(endTime.getTime()) ?
+        Math.floor((endTime.getTime() - startTime.getTime()) / 1000) : 0);
+    const duration = Number.isFinite(durationFromMessage) && durationFromMessage >= 0
+        ? Math.ceil(durationFromMessage)
+        : fallbackDuration;
     const minutes = Math.floor(duration / 60);
     const seconds = duration % 60;
 
@@ -28,5 +31,4 @@ function VoiceCallMessage({ message }: { message: any }) {
         </div>
     )
 }
-
 export default VoiceCallMessage

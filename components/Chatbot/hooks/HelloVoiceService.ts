@@ -114,9 +114,9 @@ class HelloVoiceService {
             console.warn("WebRTC not initialized. Call initialize() first.");
             return;
         }
-        const callToken = channelCallToken ?? getLocalStorage('HelloCallToken');
+        const callToken = channelCallToken;
         if (!callToken) {
-            console.warn("No call token found in localStorage.");
+            console.warn("No call token found.");
             return;
         }
 

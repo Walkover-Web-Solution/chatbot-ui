@@ -53,7 +53,6 @@ export const useSocketEvents = ({
                 channelId,
                 resetCount: false
             }));
-
         }
 
         switch (type) {
@@ -64,6 +63,10 @@ export const useSocketEvents = ({
                         if (status === "completed" || status === "no_answer") {
                             const messageId = response.timetoken || response.id;
                             addHelloMessage({ ...message, id: messageId }, channel);
+                            dispatch(setUnReadCount({
+                                channelId: channel,
+                                resetCount: false
+                            }));
                         }
                         return
                     }
