@@ -215,24 +215,28 @@ export const useOnSendHello = () => {
 
   const isBot = assigned_type === 'bot';
 
-  return useCallback(async (message?: string, newMessage?: HelloMessage | string, voiceCall?: boolean, newChannelId?: string) => {
+  return useCallback(async (message?: string, newMessage?: HelloMessage | string, voiceCall?: boolean, newChannelId?: string, overrideChatId?: string, overrideTeamId?: string) => {
     if (!voiceCall && (!message?.trim() && (!images || images.length === 0))) return;
 
 
     try {
 
-      newChannelId = currentChannelId;
-      if (!currentChatId && !currentChannelId) {
-        newChannelId = generateChannelId(companyId);
+      const channelIdToUse = newChannelId || currentChannelId;
+      const chatIdToUse = overrideChatId || currentChatId;
+      const teamIdToUse = overrideTeamId || currentTeamId;
+
+      let workingChannelId = channelIdToUse;
+      if (!chatIdToUse && !channelIdToUse) {
+        workingChannelId = generateChannelId(companyId);
         dispatch(setDataInAppInfoReducer({
-          subThreadId: newChannelId
+          subThreadId: workingChannelId
         }));
       }
 
       if (newMessage) {
-        addHelloMessage(newMessage, newChannelId);
+        addHelloMessage(newMessage, workingChannelId);
       }
-      const channelDetail = !currentChatId ? {
+      const channelDetail = !chatIdToUse ? {
         call_enabled: null,
         uuid,
         unique_id,
@@ -245,14 +249,14 @@ export const useOnSendHello = () => {
         customer_name: null,
         customer_number: null,
         customer_mail: null,
-        team_id: currentTeamId,
+        team_id: teamIdToUse,
         new: true,
-        channel_hex: newChannelId || undefined
+        channel_hex: workingChannelId || undefined
       } : undefined;
       let attachments;
       if (!voiceCall) {
         // Show widget form only if in case of new chat and showWidgetForm is true
-        if (!currentChatId && showWidgetForm) {
+        if (!chatIdToUse && showWidgetForm) {
           globalDispatch(setOpenHelloForm(true));
           setLoading(true);
         }
@@ -270,8 +274,8 @@ export const useOnSendHello = () => {
         startTimeoutTimer();
       }
 
-      const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId, helloVariables, voiceCall);
-      if (data && (!currentChatId || !currentChannelId)) {
+      const data = await sendMessageToHelloApi(message, attachments, channelDetail, chatIdToUse, helloVariables, voiceCall);
+      if (data && (!chatIdToUse || !channelIdToUse)) {
         dispatch(setDataInAppInfoReducer({
           subThreadId: data?.['channel'],
           currentChatId: data?.['id'],
