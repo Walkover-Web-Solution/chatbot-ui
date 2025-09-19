@@ -62,7 +62,7 @@ const ChatbotDrawer = ({
     isToggledrawer: state.Chat.isToggledrawer,
   }))
 
-  const { currentChatId, currentTeamId } = useReduxStateManagement({ chatSessionId, tabSessionId });
+  const { currentChatId, currentTeamId, currentChannelId } = useReduxStateManagement({ chatSessionId, tabSessionId });
   const { callState } = useCallUI();
   const sendMessageToHello = useOnSendHello();
 
@@ -166,8 +166,38 @@ const ChatbotDrawer = ({
   };
 
   const handleVoiceCall = async () => {
+    // If no channel is selected, pick the most recent (first valid) channel just for this action
+    let overrideChannelId;
+    let overrideChatId;
+    let overrideTeamId;
+    if (!currentChannelId && Array.isArray(channelList) && channelList.length > 0 && channelList?.[0]?.id) {
+      const firstValid = channelList.find((ch: any) => ch?.id);
+      if (firstValid) {
+        overrideChannelId = firstValid?.channel;
+        overrideChatId = firstValid?.id;
+        dispatch(
+          setDataInAppInfoReducer({
+            subThreadId: firstValid?.channel,
+            currentChannelId: firstValid?.channel,
+            currentChatId: firstValid?.id,
+            currentTeamId: firstValid?.team_id,
+          })
+        );
+      }
+    } else if (teamsList?.length > 0) {
+      const firstValid = teamsList[0]
+      if (firstValid) {
+        dispatch(
+          setDataInAppInfoReducer({
+            currentTeamId: firstValid?.id,
+          })
+        );
+        overrideTeamId = firstValid?.id;
+      }
+    }
     if (isSmallScreen) setToggleDrawer(false);
-    const data = await sendMessageToHello('', '', true);
+    // pass overrides so sendMessageToHello uses latest values in the same tick
+    const data = await sendMessageToHello('', '', true, overrideChannelId || currentChannelId, overrideChatId || currentChatId, overrideTeamId || currentTeamId);
     helloVoiceService.initiateCall(data?.['call_jwt_token'] || '');
   };
 
