@@ -9,6 +9,7 @@ export const useCallUI = () => {
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [mediaStream, setMediaStream] = useState<any>(null);
   const [rejoinSummary, setRejoinSummary] = useState<any>(null);
+  const [transcripts, setTranscripts] = useState<Array<{message: string, from: string, timestamp: number}>>([]);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -18,7 +19,7 @@ export const useCallUI = () => {
     // }
 
     // Set initial state
-    setCallState(helloVoiceService.getCallState());
+    setCallState(helloVoiceService.getCallState() as "idle" | "ringing" | "connected" | "ended" | "rejoined");
     setIsMuted(helloVoiceService.getMuteStatus());
 
     // Set up event listeners
@@ -32,6 +33,7 @@ export const useCallUI = () => {
       } else if (state === 'idle') {
         dispatch(setDataInAppInfoReducer({ callToken: '' }))
         setRejoinSummary(null)
+        setTranscripts([])
       } else if (state === 'rejoined') {
         setRejoinSummary(data?.summary)
       }
@@ -41,13 +43,19 @@ export const useCallUI = () => {
       setIsMuted(muted);
     };
 
+    const handleMessageReceived = ({ message, from, timestamp }: any) => {
+      setTranscripts(prev => [...prev, { message, from, timestamp }]);
+    };
+
     helloVoiceService.addEventListener("callStateChanged", handleCallStateChange);
     helloVoiceService.addEventListener("muteStatusChanged", handleMuteChange);
+    helloVoiceService.addEventListener("messageReceived", handleMessageReceived);
 
     // Clean up event listeners
     return () => {
       helloVoiceService.removeEventListener("callStateChanged", handleCallStateChange);
       helloVoiceService.removeEventListener("muteStatusChanged", handleMuteChange);
+      helloVoiceService.removeEventListener("messageReceived", handleMessageReceived);
     };
   }, []);
 
@@ -75,6 +83,7 @@ export const useCallUI = () => {
     answerCall,
     endCall,
     toggleMute,
-    rejoinSummary
+    rejoinSummary,
+    transcripts
   };
 };

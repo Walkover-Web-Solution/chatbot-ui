@@ -84,6 +84,11 @@ class HelloVoiceService {
             });
         });
 
+        call.on("message", ({ message, from }: { message: string, from: string }) => {
+            console.log('transcript message', message, 'from', from); // from can be user/bot
+            this.eventEmitter.emit("messageReceived", { message, from, timestamp: Date.now() });
+        });
+
         call.on("ended", (data: any) => {
             console.log('call ended', data);
             this.resetCall();
