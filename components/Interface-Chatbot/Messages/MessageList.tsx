@@ -46,9 +46,13 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
 
   const { isHelloUser, assigned_type, greetingMessage } = useCustomSelector((state) => ({
     isHelloUser: state.draftData?.isHelloUser,
-    assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find((channel: any) => channel?.channel === currentChannelId)?.assigned_type,
+    assigned_type: (() => {
+      const foundType = state.Hello?.[chatSessionId]?.channelListData?.channels?.find((channel: any) => channel?.channel === currentChannelId)?.assigned_type;
+      return foundType === undefined ? 'bot' : foundType;
+    })(),
     greetingMessage: state.Hello?.[chatSessionId]?.greeting
   }));
+  
   const themePalette = useMemo(() => ({
     "--primary-main": lighten(backgroundColor, 0.4),
   }), [backgroundColor]);
