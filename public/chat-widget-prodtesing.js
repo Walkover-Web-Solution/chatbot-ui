@@ -1,6 +1,11 @@
 /* eslint-disable */
 // IIFE Scope ( for avoiding global scope pollution )
 (function () {
+    if (window.__HELLO_WIDGET_LOADED__) {
+        console.warn('[Hello Widget] Script already loaded. Skipping second initialization.');
+        return;
+    }
+    window.__HELLO_WIDGET_LOADED__ = true;
     let block_chatbot = false;
 
     class CobrowseManager {
@@ -196,11 +201,17 @@
 
         cleanupChatbot() {
             // Remove elements by ID
-            [this.elements.chatbotIframeContainer, this.elements.chatbotIconContainer, this.elements.chatbotStyle, this.elements.starterQuestionContainer, 'CBParentScript']
-                .forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element) element.remove();
-                });
+            try {
+                [this.elements.chatbotIframeContainer, this.elements.chatbotIconContainer, this.elements.chatbotStyle, this.elements.starterQuestionContainer, 'CBParentScript']
+                    .forEach(id => {
+                        const element = document.getElementById(id);
+                        if (element) element.remove();
+                    });
+                // Allow fresh initialization if the script is injected again
+                window.__HELLO_WIDGET_LOADED__ = false;
+            } catch (e) {
+                // ignore cleanup errors
+            }
         }
 
         setupMessageListeners() {
