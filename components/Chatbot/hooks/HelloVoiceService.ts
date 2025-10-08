@@ -206,6 +206,23 @@ class HelloVoiceService {
         }
         // this.eventEmitter.removeAllListeners();
     }
+    public sendMessageOnCall(
+        payload: Array<{ type: 'text' | 'image' | 'button'; content?: string; options?: Array<{ title: string }> }> | string,
+        interrupt: boolean = true
+      ): any {
+        try {
+          if (this.currentCall && typeof this.currentCall.sendMessage === 'function') {
+            const response = this.currentCall.sendMessage(payload, interrupt);
+            return response;
+          } else {
+            console.warn('No active call to send message');
+            return null;
+          }
+        } catch (e) {
+          console.error('Failed to send message on call', e);
+          return null;
+        }
+      }
 }
 
 const helloVoiceService = HelloVoiceService.getInstance();

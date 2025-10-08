@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useCallUI } from '../Chatbot/hooks/useCallUI';
 import { useScreenSize } from '../Chatbot/hooks/useScreenSize';
 import './CallUI.css';
+import CallTextField from './CallTextField';
 
 
 // Simple call timer display component
@@ -248,6 +249,9 @@ const CallUI: React.FC = () => {
 
                 {/* Bottom call controls - fixed at bottom */}
                 <div className="flex-shrink-0 pb-6">
+                    {(callState === 'connected' || callState === 'rejoined') && (
+                        <CallTextField />
+                    )}
                     <div className="flex items-center justify-center space-x-8">
                         {(callState === 'connected' || callState === 'rejoined') && (
                             <button

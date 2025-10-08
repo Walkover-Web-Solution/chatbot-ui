@@ -3,6 +3,7 @@ import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import helloVoiceService from './HelloVoiceService';
+import { useChatActions } from './useChatActions';
 
 export const useCallUI = () => {
   const [callState, setCallState] = useState<"idle" | "ringing" | "connected" | "ended" | "rejoined">("idle");
@@ -11,6 +12,7 @@ export const useCallUI = () => {
   const [rejoinSummary, setRejoinSummary] = useState<any>(null);
   const [transcripts, setTranscripts] = useState<Array<{message: string, from: string, timestamp: number}>>([]);
   const dispatch = useDispatch();
+  const { clearCallVoiceHistory } = useChatActions();
 
   useEffect(() => {
     // Initialize service if not already done
@@ -69,6 +71,7 @@ export const useCallUI = () => {
 
   const endCall = () => {
     helloVoiceService.endCall();
+    clearCallVoiceHistory();
   };
 
   const toggleMute = () => {
