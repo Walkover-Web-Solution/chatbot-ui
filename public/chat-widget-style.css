@@ -1,3 +1,7 @@
+.msg-push-hide {
+  display: none;
+}
+
 .pop_over-interfaceEmbed,
 .all_available_space-interfaceEmbed,
 .left_slider-interfaceEmbed,
@@ -296,7 +300,9 @@
 
 /* Notification Overlay Styles */
 .notification-overlay {
+  padding: 24px;
   position: fixed;
+  box-sizing: border-box;
   top: 0;
   left: 0;
   width: 100vw;
@@ -306,6 +312,7 @@
   z-index: 999999;
   opacity: 1;
   transition: opacity 0.3s ease;
+  overflow: auto;
 }
 
 /* Horizontal position classes */
@@ -336,23 +343,25 @@
 
 /* Modal Container Styles */
 .notification-modal {
-  background-color: white;
+  position: relative;
+  /* background-color: white;
   padding: 4px;
   border-radius: 10px;
-  width: 500px;
-  height: 500px;
-  overflow: visible;
+  width: auto;
+  height: auto;
+  overflow: visible; */
+
   /* Single overflow property */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  position: relative;
+  /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   margin: 20px;
-  box-sizing: border-box;
+  box-sizing: border-box; */
   /* Ensures padding doesn't affect max dimensions */
 }
 
 /* Close Button Styles */
 .notification-close-btn {
   position: absolute;
+  z-index: 9;
   top: -12px;
   right: -12px;
   cursor: pointer;
@@ -414,4 +423,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.msg-push-loader {
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  font-family: system-ui;
 }
