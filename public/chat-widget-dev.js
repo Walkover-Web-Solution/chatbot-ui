@@ -332,7 +332,33 @@
             }
         }
 
-        handlePushNotification(data) {
+        getHTMLDimensions(htmlContent) {
+            // Create a temporary container
+            const tempContainer = document.createElement('body');
+            
+            // Style it to be invisible but measurable
+            tempContainer.style.position = 'absolute';            
+            
+            // Set the HTML content
+            tempContainer.innerHTML = htmlContent;
+            
+            // Append to body to trigger layout calculation
+            document.body.appendChild(tempContainer);
+            
+            // Get dimensions            
+            const rect = tempContainer.getBoundingClientRect();
+            const dimensions = {
+                width: rect.width,
+                height: rect.height                
+            };
+            
+            // Clean up
+            document.body.removeChild(tempContainer);
+            
+            return dimensions;
+        }
+
+        handlePushNotification(data) {            
             const message_type = data.message_type;
             //const message_type = 'Custom';            
 
@@ -391,32 +417,15 @@
 
                     // Set iframe.onload handler BEFORE writing content to avoid missing the load event
                     iframe.onload = function () {
-                        iframe.classList.remove('msg-push-hide');
-                        loader.classList.add('msg-push-hide');
-                        const body = iframeDoc.body;
-
-                        //without this scroller may seen
-                        body.style.setProperty('height', 'auto', 'important');
-                        body.style.setProperty('min-height', 'auto', 'important');
-                        body.style.setProperty('max-height', 'none', 'important');
-                        body.style.setProperty('line-height', 'normal', 'important');
+                        iframe.classList.remove('msg-push-hide');    
+                        loader.classList.add('msg-push-hide');                    
+                        const body = iframeDoc.body;                        
 
                         let height = 0, width = 0, top = 0, bgFound = false;
                         const position = ['absolute', 'relative', 'fixed'];
                         if (body.children.length) {
                             for (let i = 0; i < body.children.length; i++) {
                                 const el = body.children[i];
-                                height += el.getBoundingClientRect().height;
-                                if (position.includes(getComputedStyle(el).position) && el.getBoundingClientRect().top > 0) {
-                                    const combinedHeight = el.getBoundingClientRect().height + el.getBoundingClientRect().top;
-                                    if (height < combinedHeight) {
-                                        height = combinedHeight;
-                                    }
-                                    top = el.getBoundingClientRect().top;
-                                }
-                                if (width < el.getBoundingClientRect().width) {
-                                    width = el.getBoundingClientRect().width;
-                                }
                                 const computedStyle = getComputedStyle(el);
                                 const bgColor = computedStyle.backgroundColor;
                                 const bgImage = computedStyle.backgroundImage;
@@ -427,17 +436,7 @@
                                     bgFound = true;
                                 }
                             }
-
-                            if (body.getBoundingClientRect().height > height) {
-                                height = body.getBoundingClientRect().height;
-                            }
-
-                            if (body.getBoundingClientRect().width > width) {
-                                width = body.getBoundingClientRect().width;
-                            }
-                        } else {
-                            height += body.getBoundingClientRect().height;
-                            width += body.getBoundingClientRect().width;
+                        } else {                            
                             const bodyComputedStyle = getComputedStyle(body);
                             const bodyBgColor = bodyComputedStyle.backgroundColor;
                             const bodyBgImage = bodyComputedStyle.backgroundImage;
@@ -453,20 +452,7 @@
                             overlay.classList.remove(`v-${verticalPosition}`);
                         }
 
-                        iframe.style.width = `${width}px`;
-                        iframe.style.top = `${top}px`;
-                        iframe.style.position = 'relative';
-                        iframe.style.border = 'none';
-
-                        iframe.style.height = (height < 32) ? '36px' : `${height}px`;
-                        modalContainer.style.height = `${height}px`;
-
-                        setTimeout(() => {
-                            //bad hack to fix height issue iframe.onload is not working properly
-                            height = body.getBoundingClientRect().height;
-                            iframe.style.height = (height < 32) ? '36px' : `${height}px`;
-                            modalContainer.style.height = `${height}px`;
-                        }, 1000);
+                        iframe.style.border = 'none';                        
 
                         if (!bgFound) {
                             body.style.backgroundColor = '#ffffff';
@@ -480,11 +466,29 @@
                     }
                     htmlContent += `</head><body>${data.content}</body></html>`;
 
+                    const dimensions = this.getHTMLDimensions(htmlContent);
+                    iframe.style.width = `${dimensions.width}px`;
+                    iframe.style.height = `${dimensions.height}px`;
+                    
+                    requestAnimationFrame(() => {
+                        const checkHeight = setInterval(() => {
+                            const iframeBodyRect = iframeDoc.body.getBoundingClientRect();
+                            if (iframeBodyRect.height >= dimensions.height) {
+                                clearInterval(checkHeight);
+                                iframe.style.height = `${iframeBodyRect.height}px`;
+                                modalContainer.style.height = `${iframeBodyRect.height}px`;
+                            }
+                        }, 500);
+                        setTimeout(() => {
+                            clearInterval(checkHeight);
+                        }, 10000);
+                    });
+
                     // Write complete content in one operation
                     iframeDoc.open();
                     iframeDoc.write(htmlContent);
                     iframeDoc.close();
-                }, 0);
+                }, 100);
             }
 
             if (message_type === 'Custom') {
@@ -1011,8 +1015,8 @@
                 this.closeChatbot()
             }
             if (this.state.interfaceLoaded && this.state.delayElapsed) {
+                const interfaceEmbed = document.getElementById(this.elements.chatbotIconContainer);
                 if (!this.hideHelloIcon && !helloChatbotManager.helloProps?.isMobileSDK) {
-                    const interfaceEmbed = document.getElementById(this.elements.chatbotIconContainer);
                     if (interfaceEmbed) interfaceEmbed.style.display = 'block';
                 }
                 if (this.helloLaunchWidget) helloChatbotManager.openChatbot()
