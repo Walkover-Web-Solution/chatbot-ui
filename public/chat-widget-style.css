@@ -1,5 +1,5 @@
 .msg-push-hide {
-  display: none;
+  display: none !important;
 }
 
 .pop_over-interfaceEmbed,
@@ -430,4 +430,14 @@
   background: #fff;
   border-radius: 8px;
   font-family: system-ui;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: -webkit-fill-available;
+  min-width: 100px;
 }
