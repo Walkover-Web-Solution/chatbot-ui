@@ -1,7 +1,7 @@
 import { errorToast } from "@/components/customToast";
 import { PAGE_SIZE } from "@/utils/enums";
 import axios from "@/utils/helloInterceptor";
-import { getLocalStorage, setLocalStorage } from "@/utils/utilities";
+import { generateNewId, getLocalStorage, setLocalStorage } from "@/utils/utilities";
 
 const urlParams = new URLSearchParams(window.location.search);
 const env = urlParams.get('env');
@@ -281,7 +281,7 @@ export async function initializeHelloChat(): Promise<any> {
 }
 
 // Function to send message to Hello chat
-export async function sendMessageToHelloApi(message: string, attachment: Array<object> = [], channelDetail?: any, chat_id?: string, helloVariables: any = {}, voiceCall: boolean = false): Promise<any> {
+export async function sendMessageToHelloApi(message: string, attachment: Array<object> = [], channelDetail?: any, chat_id?: string, helloVariables: any = {}, voiceCall: boolean = false, demo_widget: boolean = false): Promise<any> {
   let messageType = !voiceCall ? 'text' : 'voice_call'
   // Determine message type based on attachment and message content
   if (attachment?.length > 0) {
@@ -296,15 +296,19 @@ export async function sendMessageToHelloApi(message: string, attachment: Array<o
     const response = await axios.post(
       `${HELLO_HOST_URL}/v2/send/`,
       {
-        type: "widget",
+        type: !demo_widget ? "widget" : "trial_bot",
         message_type: messageType,
         content: {
           text: message,
           attachment: attachment,
         },
-        ...(!chat_id ? { channelDetail } : {}),
+        ...((!chat_id || demo_widget) ? { channelDetail } : {}),
         chat_id: chat_id ? chat_id : null,
-        session_id: null,
+        ...(demo_widget ? {
+          "bot_id": helloVariables?.bot_id,
+          "bot_type": helloVariables?.bot_type,
+          session_id: generateNewId()
+        } : {}),
         user_data: getUserData(),
         sessionVariables: helloVariables,
         // is_anon: getIsAnonValue(),
@@ -317,7 +321,7 @@ export async function sendMessageToHelloApi(message: string, attachment: Array<o
       }
     );
 
-    if (channelDetail) {
+    if (channelDetail && response?.data?.data?.uuid) {
       setLocalStorage('k_clientId', response?.data?.data?.uuid);
     }
     return response?.data?.data;

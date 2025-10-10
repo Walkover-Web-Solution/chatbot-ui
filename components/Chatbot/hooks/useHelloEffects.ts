@@ -47,7 +47,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
 
     const { currentChannelId, isHelloUser } = useReduxStateManagement({ chatSessionId, tabSessionId });
 
-    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotOpen, isChatbotMinimized, unReadCountInCurrentChannel, callToken } = useCustomSelector((state) => ({
+    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotOpen, isChatbotMinimized, unReadCountInCurrentChannel, callToken, demo_widget } = useCustomSelector((state) => ({
         companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
         botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
         reduxChatSessionId: state.draftData?.chatSessionId,
@@ -66,6 +66,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             return channelListData?.channels?.find((channel) => channel?.channel === currentChannelId)?.widget_unread_count || 0;
         })(),
         callToken: state.appInfo?.[tabSessionId]?.callToken || '',
+        demo_widget: state.Hello?.[chatSessionId]?.widgetInfo?.demo_widget || false
     }));
 
     const dispatch = useDispatch();
@@ -74,14 +75,16 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
     useNotificationSocket({ chatSessionId });
 
     useEffect(() => {
-        if (isHelloUser && currentChannelId) {
+        if (isHelloUser && currentChannelId && !demo_widget) {
             fetchHelloPreviousHistory()
         }
-    }, [currentChannelId, isHelloUser])
+    }, [currentChannelId, isHelloUser, demo_widget])
 
     useEffect(() => {
-        emitEventToParent('SET_BADGE_COUNT', { badgeCount: totalNoOfUnreadMsgs > 99 ? '99+' : totalNoOfUnreadMsgs })
-    }, [totalNoOfUnreadMsgs])
+        if (!demo_widget) {
+            emitEventToParent('SET_BADGE_COUNT', { badgeCount: totalNoOfUnreadMsgs > 99 ? '99+' : totalNoOfUnreadMsgs })
+        }
+    }, [totalNoOfUnreadMsgs, demo_widget])
 
     useSocketEvents({ messageRef, fetchChannels, chatSessionId, setLoading, tabSessionId });
     useNotificationSocketEventHandler({ chatSessionId })

@@ -165,7 +165,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
 
     function handleHelloRuntimeData(event: MessageEvent) {
         const { data } = event?.data;
-        
+
         if (data.themeColor) {
             handleThemeChange(data.themeColor);
         }
@@ -174,6 +174,9 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         }
         if ('show_widget_form' in data) {
             dispatch(setWidgetInfo({ show_widget_form: data.show_widget_form ?? true }))
+        }
+        if ('variables' in data) {
+            dispatch(setVariablesForHelloBot(data.variables))
         }
     }
 
