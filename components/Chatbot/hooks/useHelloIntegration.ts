@@ -203,14 +203,15 @@ export const useOnSendHello = () => {
     tabSessionId
   });
 
-  const { assigned_type, showWidgetForm, images, helloVariables, companyId } = useCustomSelector((state) => ({
+  const { assigned_type, showWidgetForm, images, helloVariables, companyId, demo_widget } = useCustomSelector((state) => ({
     assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === currentChannelId
     )?.assigned_type,
     showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm,
     images: state.Chat.images,
     helloVariables: state.draftData?.hello?.variables || {},
-    companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || ''
+    companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
+    demo_widget: state.Hello?.[chatSessionId]?.widgetInfo?.demo_widget || false
   }));
 
   const isBot = assigned_type === 'bot';
@@ -232,11 +233,10 @@ export const useOnSendHello = () => {
           subThreadId: workingChannelId
         }));
       }
-
       if (newMessage) {
         addHelloMessage(newMessage, workingChannelId);
       }
-      const channelDetail = !chatIdToUse ? {
+      const channelDetail = (!chatIdToUse || demo_widget) ? {
         call_enabled: null,
         uuid,
         unique_id,
@@ -274,8 +274,11 @@ export const useOnSendHello = () => {
         startTimeoutTimer();
       }
 
-      const data = await sendMessageToHelloApi(message, attachments, channelDetail, chatIdToUse, helloVariables, voiceCall);
-      if (data && (!chatIdToUse || !channelIdToUse)) {
+      if (demo_widget && channelIdToUse) {
+        await socketManager.subscribe([channelIdToUse]);
+      }
+      const data = await sendMessageToHelloApi(message, attachments, channelDetail, chatIdToUse, helloVariables, voiceCall, demo_widget);
+      if (data && (!chatIdToUse || !channelIdToUse || demo_widget)) {
         dispatch(setDataInAppInfoReducer({
           subThreadId: data?.['channel'],
           currentChatId: data?.['id'],
@@ -283,13 +286,19 @@ export const useOnSendHello = () => {
         }));
         // no need to append user message again this time
         // addHelloMessage(newMessage, data?.['channel']);
-        const response = await fetchChannels();
-        if (response?.channels?.length === 1 && response?.channels?.[0]?.id !== null) {
-          emitEventToParent('HIDE_STARTER_QUESTION')
+        if (!demo_widget) {
+          const response = await fetchChannels();
+          if (response?.channels?.length === 1 && response?.channels?.[0]?.id !== null) {
+            emitEventToParent('HIDE_STARTER_QUESTION')
+          }
         }
-        if (data?.['presence_channel'] && data?.['channel']) {
+        if (data?.['channel']) {
           try {
-            await socketManager.subscribe([data?.['presence_channel'], data?.['channel']]);
+            if (demo_widget) {
+              await socketManager.subscribe([data?.['channel']]);
+            } else {
+              await socketManager.subscribe([data?.['presence_channel'], data?.['channel']]);
+            }
           } catch (error) {
             console.error("Failed to subscribe to channels:", error);
           }
@@ -320,7 +329,8 @@ export const useOnSendHello = () => {
     assigned_type,
     addHelloMessage,
     helloVariables,
-    companyId
+    companyId,
+    demo_widget
   ]);
 };
 
