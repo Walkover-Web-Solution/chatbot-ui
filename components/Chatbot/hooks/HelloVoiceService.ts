@@ -84,9 +84,9 @@ class HelloVoiceService {
             });
         });
 
-        call.on("message", ({ message, from }: { message: string, from: string }) => {
+        call.on("message", ({ message, from }: { message: any, from: string }) => {
             console.log('transcript message', message, 'from', from); // from can be user/bot
-            this.eventEmitter.emit("messageReceived", { message, from, timestamp: Date.now() });
+            this.eventEmitter.emit("messageReceived", { message: message, from, timestamp: Date.now() });
         });
 
         call.on("ended", (data: any) => {
@@ -205,6 +205,23 @@ class HelloVoiceService {
             this.webrtc = null;
         }
         // this.eventEmitter.removeAllListeners();
+    }
+    public sendMessageOnCall(
+        payload: Array<{ type: 'text' | 'image' | 'button'; content?: string; options?: Array<{ title: string }> }> | string,
+        interrupt: boolean = true
+    ): any {
+        try {
+            if (this.currentCall) {
+                const response = this.currentCall.sendMessage(payload, interrupt);
+                return response;
+            } else {
+                console.warn('No active call to send message');
+                return null;
+            }
+        } catch (e) {
+            console.error('Failed to send message on call', e);
+            return null;
+        }
     }
 }
 

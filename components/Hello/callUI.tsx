@@ -3,8 +3,11 @@ import { Mic, MicOff, Phone, Maximize2, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useCallUI } from '../Chatbot/hooks/useCallUI';
 import { useScreenSize } from '../Chatbot/hooks/useScreenSize';
+import { useCustomSelector } from '@/utils/deepCheckSelector';
 import './CallUI.css';
-
+import CallTextField from './CallTextField';
+import helloVoiceService from '../Chatbot/hooks/HelloVoiceService';
+import { useChatActions } from '../Chatbot/hooks/useChatActions';
 
 // Simple call timer display component
 const CallTimer: React.FC<{ seconds: number }> = ({ seconds }) => {
@@ -25,15 +28,50 @@ const CallUI: React.FC = () => {
         endCall,
         toggleMute,
         rejoinSummary,
-        transcripts
+        transcripts,
+        setTranscripts
     } = useCallUI();
 
     const audioRef = useRef<HTMLAudioElement>(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
     const { isSmallScreen } = useScreenSize();
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [callTimerSeconds, setCallTimerSeconds] = useState(0);
+    const { callVoiceHistory } = useCustomSelector((state) => ({
+        callVoiceHistory: state.Chat.callVoiceHistory || [],
+    }));
+    const { addCallVoiceEntry } = useChatActions();
 
-    // Connect media stream to audio element when available
+    useEffect(() => {
+        if (transcripts && transcripts.message) {
+            let messages;
+            if (Array.isArray(transcripts.message)) {
+                messages = transcripts.message;
+            } else {
+                messages = [transcripts.message];
+            }
+            addCallVoiceEntry({
+                from: transcripts.from,
+                messages: messages
+            });
+            setTranscripts(null);
+            if (!isFullscreen) {
+                setIsFullscreen(true);
+            }
+        }
+    }, [transcripts, addCallVoiceEntry, setTranscripts]);
+    useEffect(() => {
+        if (callVoiceHistory.length > 0) {
+            setTimeout(() => {
+                if (scrollContainerRef.current) {
+                    scrollContainerRef.current.scrollTo({
+                        top: scrollContainerRef.current.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 100);
+        }
+    }, [callVoiceHistory]);
     useEffect(() => {
         if (mediaStream && audioRef.current) {
             // Ensure we don't reassign the same stream
@@ -99,7 +137,22 @@ const CallUI: React.FC = () => {
     //     document.addEventListener('keydown', handleEscKey);
     //     return () => document.removeEventListener('keydown', handleEscKey);
     // }, [isFullscreen]);
+    const handleButtonClick = (buttonTitle: string) => {
+        // Create payload with button selection as text
+        const finalPayload = [{ type: 'text' as const, content: buttonTitle }];
 
+        // Only send when call is active
+        const state = callState;
+        if ((state === 'connected' || state === 'rejoined')) {
+            const response = helloVoiceService.sendMessageOnCall(finalPayload, false);
+            if (response) {
+                addCallVoiceEntry({
+                    from: 'user',
+                    messages: finalPayload
+                });
+            }
+        }
+    };
     // Render the compact call banner
     const renderCompactBanner = () => {
         switch (callState) {
@@ -211,35 +264,58 @@ const CallUI: React.FC = () => {
                             )}
                         </div>
                     </div>
-
-                    {/* Transcripts section - scrollable */}
-                    <div className="flex-1 overflow-hidden">
-                        <div className="h-full overflow-y-auto px-6 py-2">
+                    <div className={`flex-1 overflow-hidden ${callVoiceHistory.length > 0 ? 'border-t border-white/20' : ''}`}>
+                        <div ref={scrollContainerRef} className="h-full overflow-y-auto px-6 py-2">
                             <div className="space-y-3 pb-4">
-                                {transcripts.length === 0 ? (
-                                    <div className="flex items-center justify-center h-32">
-                                        <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
-                                            <p className="text-center text-white/80">Transcripts will appear here during the conversation</p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    transcripts.map((transcript, index) => (
-                                        <div
-                                            key={index}
-                                            className={`flex ${transcript.from === 'user' ? 'justify-end' : 'justify-start'
-                                                }`}
-                                        >
-                                            <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-xl text-sm shadow-lg ${transcript.from === 'user'
-                                                ? 'bg-blue-300 text-white'
-                                                : 'bg-white/10 backdrop-blur-sm text-white'
-                                                }`} style={{ backgroundColor: transcript.from === 'user' ? '#29486b' : '' }}>
-                                                <div className="text-xs opacity-75 mb-1">
-                                                    {transcript.from === 'user' ? 'You' : 'Assistant'}
+                                {callVoiceHistory.length > 0 && (
+                                    <>
+                                        <div className="text-center text-white/60 text-sm mb-4">Call History</div>
+                                        {callVoiceHistory.map((historyItem, index) => (
+                                            <div key={index} className={`flex ${historyItem.from === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-xl text-sm shadow-lg ${historyItem.from === 'user'
+                                                    ? 'bg-blue-300 text-white'
+                                                    : 'bg-white/10 backdrop-blur-sm text-white'
+                                                    }`} style={{ backgroundColor: historyItem.from === 'user' ? '#29486b' : '' }}>
+                                                    <div className="text-xs opacity-75 mb-1">
+                                                        {historyItem.from === 'user' ? 'You' : 'Assistant'}
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        {historyItem.messages.map((item, itemIndex) => (
+                                                            <div key={itemIndex}>
+                                                                {item.type === 'text' && (
+                                                                    <div style={{
+                                                                        whiteSpace: 'pre-wrap',
+                                                                        wordWrap: 'break-word',
+                                                                        overflowWrap: 'break-word'
+                                                                    }}>
+                                                                        {item.content}
+                                                                    </div>
+                                                                )}
+                                                                {item.type === 'image' && (
+                                                                    <div className="w-20 h-20 rounded overflow-hidden">
+                                                                        <img src={item.content} alt="Sent image" className="w-full h-full object-cover" />
+                                                                    </div>
+                                                                )}
+                                                                {item.type === 'button' && (
+                                                                    <div className="space-y-1">
+                                                                        {item.options?.map((option, optionIndex) => (
+                                                                            <button
+                                                                                key={optionIndex}
+                                                                                onClick={() => handleButtonClick(option.title)}
+                                                                                className="bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-xs transition-colors cursor-pointer w-full text-left"
+                                                                            >
+                                                                                {option.title}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
-                                                <div>{transcript.message}</div>
                                             </div>
-                                        </div>
-                                    ))
+                                        ))}
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -248,6 +324,9 @@ const CallUI: React.FC = () => {
 
                 {/* Bottom call controls - fixed at bottom */}
                 <div className="flex-shrink-0 pb-6">
+                    {(callState === 'connected' || callState === 'rejoined') && (
+                        <CallTextField />
+                    )}
                     <div className="flex items-center justify-center space-x-8">
                         {(callState === 'connected' || callState === 'rejoined') && (
                             <button

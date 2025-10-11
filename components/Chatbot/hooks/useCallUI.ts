@@ -3,14 +3,20 @@ import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import helloVoiceService from './HelloVoiceService';
+import { useChatActions } from './useChatActions';
 
 export const useCallUI = () => {
   const [callState, setCallState] = useState<"idle" | "ringing" | "connected" | "ended" | "rejoined">("idle");
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [mediaStream, setMediaStream] = useState<any>(null);
   const [rejoinSummary, setRejoinSummary] = useState<any>(null);
-  const [transcripts, setTranscripts] = useState<Array<{message: string, from: string, timestamp: number}>>([]);
+  const [transcripts, setTranscripts] = useState<{
+    from: 'user' | 'bot';
+    message: any; // Could be single object or array of objects
+    timestamp: number
+  } | null>(null);
   const dispatch = useDispatch();
+  const { clearCallVoiceHistory, addCallVoiceEntry } = useChatActions();
 
   useEffect(() => {
     // Initialize service if not already done
@@ -33,7 +39,7 @@ export const useCallUI = () => {
       } else if (state === 'idle') {
         dispatch(setDataInAppInfoReducer({ callToken: '' }))
         setRejoinSummary(null)
-        setTranscripts([])
+        setTranscripts(null)
       } else if (state === 'rejoined') {
         setRejoinSummary(data?.summary)
       }
@@ -44,7 +50,7 @@ export const useCallUI = () => {
     };
 
     const handleMessageReceived = ({ message, from, timestamp }: any) => {
-      setTranscripts(prev => [...prev, { message, from, timestamp }]);
+      setTranscripts({ from, message, timestamp });
     };
 
     helloVoiceService.addEventListener("callStateChanged", handleCallStateChange);
@@ -69,6 +75,7 @@ export const useCallUI = () => {
 
   const endCall = () => {
     helloVoiceService.endCall();
+    clearCallVoiceHistory();
   };
 
   const toggleMute = () => {
@@ -84,6 +91,7 @@ export const useCallUI = () => {
     endCall,
     toggleMute,
     rejoinSummary,
-    transcripts
+    transcripts,
+    setTranscripts
   };
 };
