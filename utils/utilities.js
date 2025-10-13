@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { GetSessionStorageData } from "./ChatbotUtility";
 import relativeTime from 'dayjs/plugin/relativeTime'
 import updateLocale from 'dayjs/plugin/updateLocale'
+import ObjectId from 'bson-objectid';
 dayjs.extend(relativeTime);
 dayjs.extend(updateLocale)
 
@@ -33,6 +34,9 @@ dayjs.updateLocale('en', {
 });
 
 export const generateNewId = (length = 8) => {
+  if (length === 24) {
+    return ObjectId().toHexString();
+  }
   const nanoid = customAlphabet(
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890",
     length

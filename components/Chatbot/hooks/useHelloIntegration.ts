@@ -277,7 +277,11 @@ export const useOnSendHello = () => {
       if (demo_widget && channelIdToUse) {
         await socketManager.subscribe([channelIdToUse]);
       }
-      const data = await sendMessageToHelloApi(message, attachments, channelDetail, chatIdToUse, helloVariables, voiceCall, demo_widget);
+      let widget_msg_id: string | undefined;
+      if (newMessage && typeof newMessage === 'object' && 'id' in newMessage) {
+        widget_msg_id = newMessage.id;
+      }
+      const data = await sendMessageToHelloApi(message, attachments, channelDetail, chatIdToUse, helloVariables, voiceCall, demo_widget, widget_msg_id);
       if (data && (!chatIdToUse || !channelIdToUse || demo_widget)) {
         dispatch(setDataInAppInfoReducer({
           subThreadId: data?.['channel'],
@@ -369,7 +373,7 @@ export const useSendMessageToHello = ({
     }
     if (!textMessage.trim() && (!images || images?.length === 0)) return false;
 
-    const messageId = generateNewId();
+    const messageId = generateNewId(24);
     const newMessage = {
       id: messageId,
       role: "user",
