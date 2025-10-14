@@ -47,7 +47,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
 
     const { currentChannelId, isHelloUser } = useReduxStateManagement({ chatSessionId, tabSessionId });
 
-    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotOpen, isChatbotMinimized, unReadCountInCurrentChannel, callToken, demo_widget } = useCustomSelector((state) => ({
+    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotOpen, isChatbotMinimized, unReadCountInCurrentChannel, callToken, demo_widget, helloVariables } = useCustomSelector((state) => ({
         companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
         botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
         reduxChatSessionId: state.draftData?.chatSessionId,
@@ -66,7 +66,8 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             return channelListData?.channels?.find((channel) => channel?.channel === currentChannelId)?.widget_unread_count || 0;
         })(),
         callToken: state.appInfo?.[tabSessionId]?.callToken || '',
-        demo_widget: state.Hello?.[chatSessionId]?.widgetInfo?.demo_widget || false
+        demo_widget: state.Hello?.[chatSessionId]?.widgetInfo?.demo_widget || false,
+        helloVariables: state.draftData?.hello?.variables || {},
     }));
 
     const dispatch = useDispatch();
@@ -79,6 +80,12 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             fetchHelloPreviousHistory()
         }
     }, [currentChannelId, isHelloUser, demo_widget])
+
+    useEffect(() => {
+        if (isHelloUser && demo_widget && helloVariables?.bot_id && helloVariables?.bot_type) {
+            dispatch(setDataInAppInfoReducer({ subThreadId: '', currentTeamId: "", currentChannelId: "", currentChatId: "" }));
+        }
+    }, [isHelloUser, demo_widget, helloVariables?.bot_id, helloVariables?.bot_type])
 
     useEffect(() => {
         if (!demo_widget) {
