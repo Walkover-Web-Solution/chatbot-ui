@@ -334,9 +334,11 @@
         getHTMLDimensions(htmlContent) {
             // Create a temporary container
             const tempContainer = document.createElement('body');
-
-            // Style it to be invisible but measurable
-            tempContainer.style.position = 'absolute';
+            
+            // Style it to be invisible but measurable            
+            tempContainer.style.position = 'absolute';            
+            tempContainer.style.height = 'initial !important';
+            tempContainer.style.width = 'initial !important';
 
             // Set the HTML content
             tempContainer.innerHTML = htmlContent;
@@ -394,6 +396,13 @@
                     this.removeNotification(overlay);
                 });
 
+                // Close popup when pressing ESC key
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.removeNotification(overlay);
+                    }
+                });
+                
                 // Set position classes based on horizontal and vertical position values
                 const horizontalPosition = data.horizontal_position || 'center';
                 const verticalPosition = data.vertical_position || 'center';
