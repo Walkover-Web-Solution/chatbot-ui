@@ -216,7 +216,7 @@ export const useOnSendHello = () => {
 
   const isBot = assigned_type === 'bot';
 
-  return useCallback(async (message?: string, newMessage?: HelloMessage | string, voiceCall?: boolean, newChannelId?: string, overrideChatId?: string, overrideTeamId?: string) => {
+  return useCallback(async (message?: string, newMessage?: HelloMessage | string, replyMessage?: any, voiceCall?: boolean, newChannelId?: string, overrideChatId?: string, overrideTeamId?: string) => {
     if (!voiceCall && (!message?.trim() && (!images || images.length === 0))) return;
 
 
@@ -281,7 +281,8 @@ export const useOnSendHello = () => {
       if (newMessage && typeof newMessage === 'object' && 'id' in newMessage) {
         widget_msg_id = newMessage.id;
       }
-      const data = await sendMessageToHelloApi(message, attachments, channelDetail, chatIdToUse, helloVariables, voiceCall, demo_widget, widget_msg_id);
+      const replied_on = replyMessage?.id || "";
+      const data = await sendMessageToHelloApi(message || "", attachments || [], channelDetail, chatIdToUse, helloVariables, voiceCall, demo_widget, widget_msg_id, replied_on);
       if (data && (!chatIdToUse || !channelIdToUse || demo_widget)) {
         dispatch(setDataInAppInfoReducer({
           subThreadId: data?.['channel'],
@@ -340,8 +341,12 @@ export const useOnSendHello = () => {
 
 export const useSendMessageToHello = ({
   messageRef: propMessageRef,
+  replyMessage,
+  onSuccess
 }: {
   messageRef?: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>,
+  replyMessage?: any,
+  onSuccess?: () => void,
 }) => {
   const context = useContext(MessageContext);
   const messageRef = propMessageRef ?? context.messageRef;
@@ -359,7 +364,7 @@ export const useSendMessageToHello = ({
     images: state.Chat.images,
   }));
 
-  return useCallback((message: string = '') => {
+  return useCallback(async (message: string = '') => {
     // Handle different types of input elements
     let textMessage = '';
     if (messageRef?.current) {
@@ -390,8 +395,11 @@ export const useSendMessageToHello = ({
     // addHelloMessage(newMessage, channelIdToUse);
 
     // Send message to API
-    onSendHello(textMessage, newMessage);
+    await onSendHello(textMessage, newMessage as any, replyMessage);
     setNewMessage(true);
+    if (onSuccess) {
+      onSuccess();
+    }
 
     // Clear input field
     if (messageRef?.current) {
@@ -403,5 +411,5 @@ export const useSendMessageToHello = ({
     }
 
     return true;
-  }, [onSendHello, addHelloMessage, images, messageRef, currentChannelId, currentChatId, setNewMessage]);
+  }, [onSendHello, addHelloMessage, images, messageRef, currentChannelId, currentChatId, setNewMessage, onSuccess, replyMessage]);
 };

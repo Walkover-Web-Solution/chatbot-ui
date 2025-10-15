@@ -61,7 +61,7 @@ export const useSocketEvents = ({
                 if (new_event) {
                     if (message_type === 'voice_call') {
                         if (status === "completed" || status === "no_answer") {
-                            const messageId = response.timetoken || response.id;
+                            const messageId = response?.id || response?.timetoken;
                             addHelloMessage({ ...message, id: messageId }, channel);
                             dispatch(setUnReadCount({
                                 channelId: channel,
@@ -76,14 +76,14 @@ export const useSocketEvents = ({
                         // Play notification sound when message is received
                         playMessageRecivedSound();
 
-                        const messageId = response.timetoken || response.id;
+                        const messageId = response?.id || response?.timetoken;
                         addHelloMessage({ ...message, id: messageId }, channel);
                         dispatch(setTyping({
                             subThreadId: channel,
                             data: false
                         }));
                     } else if (chat_id && !isTabVisible) {
-                        const messageId = response.timetoken || response.id;
+                        const messageId = response?.id || response?.timetoken;
                         addHelloMessage({ ...message, id: messageId }, channel);
                     }
                 }
@@ -101,7 +101,7 @@ export const useSocketEvents = ({
             case 'feedback': {
                 const { channel } = message || {};
                 if (message?.new_event) {
-                    const messageId = response.timetoken || response.id;
+                    const messageId = response?.id || response?.timetoken;
                     addHelloMessage(
                         { ...message, id: messageId },
                         channel

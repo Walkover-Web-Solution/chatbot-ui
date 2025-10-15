@@ -1,6 +1,6 @@
 import { LinearProgress } from '@mui/material';
 import Image from 'next/image';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 // Context and hooks
 import { MessageContext } from '../Interface-Chatbot/InterfaceChatbot';
@@ -62,13 +62,20 @@ const EmptyChatView = React.memo(() => (
   </div>
 ));
 
-const ActiveChatView = React.memo(() => (
+const ActiveChatView = React.memo(({ onReply,
+  replyMessage,
+  onClearReply }: {
+    onReply: (message: any) => void;
+    replyMessage: any;
+    onClearReply: () => void;
+  }) => (
   <div className="flex flex-col h-full overflow-auto" style={{ height: '100vh' }}>
     <div className="flex-1 overflow-y-auto max-w-5xl mx-auto w-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-      <MessageList />
+      <MessageList onReply={onReply} />
     </div>
     <div className="max-w-5xl mx-auto p-3 pb-3 w-full">
-      <ChatbotTextField />
+      <ChatbotTextField replyMessage={replyMessage}
+        onClearReply={onClearReply} />
     </div>
   </div>
 ));
@@ -79,7 +86,12 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
   const mountedRef = useRef<boolean>(false);
   const messageRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
-
+  const [replyMessage, setReplyMessage] = useState<{
+    id: string;
+    content: string;
+    role: string;
+    from_name: string | null;
+  } | null>(null);
   const { backgroundColor } = useColor();
   const { isSmallScreen } = useScreenSize();
   const dispatch = useAppDispatch();
@@ -141,6 +153,19 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
     (!greetingMessage || (!greetingMessage.text && !greetingMessage?.options?.length))
     : !subThreadId || messageIds[subThreadId]?.length === 0;
 
+  const handleReply = useCallback((message: any) => {
+    setReplyMessage({
+      id: message.id,
+      content: message.content,
+      role: message.role,
+      from_name: message.from_name
+    });
+  }, []);
+
+  const handleClearReply = useCallback(() => {
+    setReplyMessage(null);
+  }, []);
+
   return (
     <MessageContext.Provider value={contextValue}>
       <div className="flex h-screen w-full overflow-hidden relative">
@@ -177,7 +202,9 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
           {isChatEmpty ? (
             <EmptyChatView />
           ) : (
-            <ActiveChatView />
+            <ActiveChatView onReply={handleReply}
+              replyMessage={replyMessage}
+              onClearReply={handleClearReply} />
           )}
         </div>
       </div>

@@ -19,6 +19,8 @@ import CallButton from "./CallButton";
 import EmojiSelector from "./EmojiSelector";
 import { MessageContext } from "./InterfaceChatbot";
 import ImageWithFallback from "./Messages/ImageWithFallback";
+import { linkify } from "@/utils/utilities";
+import { useColor } from "../Chatbot/hooks/useColor";
 
 interface ChatbotTextFieldProps {
   className?: string;
@@ -27,11 +29,48 @@ interface ChatbotTextFieldProps {
   subThreadId: string;
   currentTeamId: string
   currentChannelId: string
+  replyMessage?: any
+  onClearReply?: () => void
 }
 
 const MAX_IMAGES = 4;
-
-const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "" }) => {
+const ReplyPreview = ({ replyMessage, onClose }: { replyMessage: any, onClose: () => void }) => {
+  const { textColor, backgroundColor } = useColor();
+  if (!replyMessage) return null;
+  return (
+    <div
+      className="border-l-4 px-3 pt-1 pb-3 mx-4 mb-2 rounded"
+      style={{
+        borderLeftColor: backgroundColor
+      }}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0">
+          <div
+            className="text-xs font-medium mb-1"
+            style={{ color: backgroundColor }}
+          >
+            Replying to {replyMessage.from_name || (replyMessage.role === 'user' ? 'You' : 'Bot')}
+          </div>
+          <div
+            className="text-sm max-h-16 overflow-y-auto overflow-x-hidden whitespace-nowrap"
+            style={{
+              wordBreak: 'break-word',
+            }}
+            dangerouslySetInnerHTML={{ __html: linkify(replyMessage.content) }}
+          />
+        </div>
+        <button
+          onClick={onClose}
+          className="ml-2 p-1 hover:bg-gray-200 rounded flex-shrink-0"
+        >
+          <X size={16} className="text-gray-500" />
+        </button>
+      </div>
+    </div >
+  );
+};
+const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "", replyMessage, onClearReply }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -52,7 +91,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }));
 
   const { messageRef } = useContext(MessageContext);
-  const sendMessageToHello = useSendMessageToHello({ messageRef });
+  const sendMessageToHello = useSendMessageToHello({ messageRef, replyMessage, onSuccess: onClearReply });
 
   const { setImages } = useChatActions();
   const sendMessage = useSendMessage({});
@@ -337,71 +376,75 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }
 
   return (
-    <div className={`relative w-full shadow-sm ${className}`}>
-      {optionButtons}
-      {imagePreviewsSection}
+    <div className="w-full">
+      <ReplyPreview replyMessage={replyMessage} onClose={onClearReply || (() => { })} />
 
-      <div className="w-full h-full cursor-text relative" onClick={focusTextField}>
-        <EmojiSelector
-          isVisible={showEmojiPicker}
-          onEmojiSelect={handleEmojiSelect}
-          onClose={() => { setShowEmojiPicker(false); focusTextField(); }}
-        />
-        <div
-          className="relative flex-col h-full items-center justify-between gap-2 p-2 bg-white rounded-xl border border-gray-300 focus-within:outline focus-within:outline-2 focus-within:outline-offset-0"
-          style={{ outlineColor: theme.palette.primary.main }}
-        >
-          <TextField
-            key={subThreadId || currentTeamId}
-            inputRef={messageRef}
-            onChange={handleInputChange}
-            multiline
-            fullWidth
-            onKeyDown={handleKeyDown}
-            placeholder="Message AI Assistant..."
-            className="h-full min-h-[10px] max-h-[400px] bg-transparent focus:outline-none disabled:cursor-not-allowed"
-            maxRows={6}
-            sx={textFieldStyles}
-            autoFocus
-            inputMode="text"
-            type="text"
+      <div className={`relative w-full shadow-sm ${className}`}>
+        {optionButtons}
+        {imagePreviewsSection}
+
+        <div className="w-full h-full cursor-text relative" onClick={focusTextField}>
+          <EmojiSelector
+            isVisible={showEmojiPicker}
+            onEmojiSelect={handleEmojiSelect}
+            onClose={() => { setShowEmojiPicker(false); focusTextField(); }}
           />
+          <div
+            className="relative flex-col h-full items-center justify-between gap-2 p-2 bg-white rounded-xl border border-gray-300 focus-within:outline focus-within:outline-2 focus-within:outline-offset-0"
+            style={{ outlineColor: theme.palette.primary.main }}
+          >
+            <TextField
+              key={subThreadId || currentTeamId}
+              inputRef={messageRef}
+              onChange={handleInputChange}
+              multiline
+              fullWidth
+              onKeyDown={handleKeyDown}
+              placeholder="Message AI Assistant..."
+              className="h-full min-h-[10px] max-h-[400px] bg-transparent focus:outline-none disabled:cursor-not-allowed"
+              maxRows={6}
+              sx={textFieldStyles}
+              autoFocus
+              inputMode="text"
+              type="text"
+            />
 
-          <div className="flex justify-between items-center w-full">
-            {/* Left section: Upload, Emoji and AI icon */}
-            <div className="flex items-center">
-              {aiIconElement}
-              <div
-                onClick={(e) => { e.stopPropagation(); e.preventDefault(); setShowEmojiPicker(!showEmojiPicker) }}
-                className="group flex items-center justify-center w-8 h-8 cursor-pointer"
-                aria-label="Add emoji"
-              >
-                <Smile className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600" />
-              </div>
-              {uploadButton}
-            </div>
-
-            {/* Right section: Call + Send button side by side */}
-            <div className="flex items-center gap-2">
-              <CallButton />
-              {show_send_button && (
-                <button
-                  onClick={() => !buttonDisabled && handleSendMessage()}
-                  className="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:scale-105 transition-transform duration-200"
-                  disabled={buttonDisabled}
-                  style={{
-                    backgroundColor: buttonDisabled ? '#d1d5db' : theme.palette.primary.main
-                  }}
-                  aria-label="Send message"
+            <div className="flex justify-between items-center w-full">
+              {/* Left section: Upload, Emoji and AI icon */}
+              <div className="flex items-center">
+                {aiIconElement}
+                <div
+                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); setShowEmojiPicker(!showEmojiPicker) }}
+                  className="group flex items-center justify-center w-8 h-8 cursor-pointer"
+                  aria-label="Add emoji"
                 >
-                  <Send className={`w-3 h-3 md:w-4 md:h-4 ${isLight ? 'text-black' : 'text-white'}`} />
-                </button>
-              )}
+                  <Smile className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600" />
+                </div>
+                {uploadButton}
+              </div>
+
+              {/* Right section: Call + Send button side by side */}
+              <div className="flex items-center gap-2">
+                <CallButton />
+                {show_send_button && (
+                  <button
+                    onClick={() => !buttonDisabled && handleSendMessage()}
+                    className="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:scale-105 transition-transform duration-200"
+                    disabled={buttonDisabled}
+                    style={{
+                      backgroundColor: buttonDisabled ? '#d1d5db' : theme.palette.primary.main
+                    }}
+                    aria-label="Send message"
+                  >
+                    <Send className={`w-3 h-3 md:w-4 md:h-4 ${isLight ? 'text-black' : 'text-white'}`} />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div >
+    </div>
   );
 };
 

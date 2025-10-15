@@ -26,7 +26,7 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                     if (chat?.message?.type === 'feedback') {
                         return {
                             role: "Human",
-                            id: chat?.timetoken || chat?.id,
+                            id: chat?.id || chat?.timetoken,
                             from_name: chat?.message?.dynamic_values?.agent_name,
                             message_type: 'feedback',
                             token: chat?.message?.token,
@@ -42,7 +42,7 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                             from_name: chat?.message?.from_name,
                             content: chat?.message?.content,
                             urls: chat?.message?.content?.attachment,
-                            id: chat?.timetoken || chat?.id,
+                            id: chat?.id || chat?.timetoken,
                             message_type: chat?.message?.message_type,
                             messageJson: chat?.message?.content,
                             time: chat?.timetoken || null,
@@ -52,7 +52,7 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
 
                     return {
                         role,
-                        id: chat?.timetoken || chat?.id,
+                        id: chat?.id || chat?.timetoken,
                         from_name: chat?.message?.from_name,
                         content: chat?.message?.message_type === 'interactive'
                             ? chat?.message?.content?.body?.text
@@ -121,7 +121,7 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
         return [{
             role: "Human",
             from_name: message?.dynamic_values?.agent_name,
-            id: message?.timetoken || message?.id,
+            id: message?.id || message?.timetoken,
             message_type: 'feedback',
             token: message?.token,
             dynamic_values: message?.dynamic_values,
@@ -138,7 +138,7 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
             from_name,
             content: content,
             urls: content?.body?.attachment || content?.attachment,
-            id: message?.timetoken || message?.id,
+            id: message?.id || message?.timetoken,
             message_type: message?.message_type,
             messageJson: message?.content,
             time: message?.timetoken || null,
@@ -152,7 +152,7 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
         from_name,
         content: content?.body?.text || content?.text,
         urls: content?.body?.attachment || content?.attachment,
-        id: message?.timetoken || message?.id,
+        id: message?.id || message?.timetoken,
         message_type: message?.message_type,
         messageJson: message?.content,
         time: message?.timetoken || null,

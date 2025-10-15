@@ -26,7 +26,7 @@ const SCROLL_BUFFER = -500;
  * It includes an infinite scroll component to load more messages as needed.
  */
 
-function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: string, currentChannelId: string }) {
+function MessageList({ chatSessionId, currentChannelId = "", onReply }: { chatSessionId: string, currentChannelId: string, onReply?: (message: any) => void }) {
   console.log('message list')
   const getMoreHelloChats = useGetMoreHelloChats();
   const getMoreChats = useGetMoreChats();
@@ -105,7 +105,7 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
       <Message
         message={{
           role: 'Bot',
-          id: generateNewId(),
+          id: generateNewId(24),
           message_type: 'interactive',
           messageJson: {
             type: 'button',
@@ -164,6 +164,7 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
           message={message}
           prevTime={prevTime}
           isLastMessage={index === lastHumanOrBotIndex}
+          onReply = {onReply}
         />
       );
     });

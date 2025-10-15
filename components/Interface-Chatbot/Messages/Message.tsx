@@ -20,6 +20,7 @@ interface MessageProps {
   addMessage?: any;
   prevTime?: string | number | null;
   isLastMessage?: boolean;
+  onReply?: (message: any) => void;
 }
 
 const ROLE_USER = "user";
@@ -29,7 +30,7 @@ const ROLE_BOT = "Bot";
 const ROLE_TOOLS_CALL = "tools_call";
 const ROLE_VOICE_CALL = "voice_call";
 
-function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps) {
+function Message({ message, addMessage, prevTime, isLastMessage, onReply }: MessageProps) {
   const { backgroundColor, textColor } = useColor();
 
   /**
@@ -46,6 +47,7 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
               message={message}
               textColor={textColor}
               backgroundColor={backgroundColor}
+              onReply={onReply}
             />
             {message?.error && (
               <AssistantMessageCard
@@ -68,10 +70,10 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
         );
 
       case ROLE_HUMAN:
-        return <HumanOrBotMessageCard message={message} isLastMessage={isLastMessage} />;
+        return <HumanOrBotMessageCard message={message} isLastMessage={isLastMessage} onReply={onReply} />;
 
       case ROLE_BOT:
-        return <HumanOrBotMessageCard message={message} isBot={true} isLastMessage={isLastMessage} />;
+        return <HumanOrBotMessageCard message={message} isBot={true} isLastMessage={isLastMessage} onReply={onReply} />;
 
       case ROLE_TOOLS_CALL:
         return <ToolsCallMessage message={message} />;

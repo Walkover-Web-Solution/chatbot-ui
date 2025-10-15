@@ -9,6 +9,7 @@ import RenderHelloFeedbackMessage from "../../Hello/RenderHelloFeedbackMessage";
 import RenderHelloInteractiveMessage from "../../Hello/RenderHelloInteractiveMessage";
 import "./Message.css";
 import MessageTime from "./MessageTime";
+import { Reply } from "lucide-react";
 
 /**
  * A component that displays a human or bot message card.
@@ -19,6 +20,7 @@ interface MessageCardProps {
     message: any;
     isBot?: boolean;
     isLastMessage?: boolean;
+    onReply?: (message: any) => void;
 }
 
 interface ShadowDomProps {
@@ -241,8 +243,14 @@ const MessageContent = React.memo(({ message }: { message: any }) => {
 
 MessageContent.displayName = 'MessageContent';
 
-const HumanOrBotMessageCard = React.memo(({ message, isBot = false, isLastMessage = false }: MessageCardProps) => {
+const HumanOrBotMessageCard = React.memo(({ message, isBot = false, isLastMessage = false, onReply }: MessageCardProps) => {
     const [showSenderTime, setShowSenderTime] = useState(isLastMessage);
+    const handleReplyClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (onReply) {
+            onReply(message);
+        }
+    };
     return (
         <div className="w-full pb-3 animate-fade-in animate-slide-left">
             <div className="flex items-start gap-2 max-w-[90%]">
@@ -263,6 +271,24 @@ const HumanOrBotMessageCard = React.memo(({ message, isBot = false, isLastMessag
                         </div>
                     </div>
                 </div>
+                <button
+                    onClick={handleReplyClick}
+                    className="p-1 hover:bg-gray-100 rounded-full mt-2 flex-shrink-0"
+                    title="Reply"
+                >
+                    <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        className="text-gray-500 hover:text-gray-700"
+                    >
+                        <path
+                            d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"
+                            fill="currentColor"
+                        />
+                    </svg>
+                </button>
             </div>
         </div>
     );
