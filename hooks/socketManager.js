@@ -12,6 +12,7 @@ class SocketManager {
     this.channels = [];
     this.listeners = new Map();
     this.connectionCallbacks = [];
+    this.reconnectionCallbacks = [];
     this.connecting = false;
   }
 
@@ -78,6 +79,15 @@ class SocketManager {
 
     this.socket.io.on("reconnect", (attempt) => {
       console.log("Reconnected to WebSocket server", attempt);
+      
+      // Execute reconnection callbacks
+      this.reconnectionCallbacks.forEach(callback => {
+        try {
+          callback();
+        } catch (error) {
+          console.error("Error executing reconnection callback:", error);
+        }
+      });
     });
 
     this.socket.on("connect_error", (err) => {
@@ -319,6 +329,7 @@ class SocketManager {
       this.connecting = false;
       this.channels = [];
       this.connectionCallbacks = [];
+      this.reconnectionCallbacks = [];
     }
   }
 
@@ -328,6 +339,28 @@ class SocketManager {
    */
   getSubscribedChannels() {
     return [...this.channels];
+  }
+
+  /**
+   * Register a callback to be executed on socket reconnection
+   * @param {Function} callback - Callback function to execute on reconnection
+   * @returns {SocketManager} - Instance for chaining
+   */
+  onReconnect(callback) {
+    if (typeof callback === 'function') {
+      this.reconnectionCallbacks.push(callback);
+    }
+    return this;
+  }
+
+  /**
+   * Remove a reconnection callback
+   * @param {Function} callback - Callback function to remove
+   * @returns {SocketManager} - Instance for chaining
+   */
+  offReconnect(callback) {
+    this.reconnectionCallbacks = this.reconnectionCallbacks.filter(cb => cb !== callback);
+    return this;
   }
 }
 

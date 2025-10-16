@@ -1,9 +1,10 @@
 import { ThemeContext } from '@/components/AppWrapper';
-import { deleteReadReceipt, getAgentTeamApi, getCallToken, getClientToken, getGreetingQuestions, getJwtToken, initializeHelloChat, registerAnonymousUser, saveClientDetails } from '@/config/helloApi';
+import { deleteReadReceipt, getAgentTeamApi, getClientToken, getGreetingQuestions, getJwtToken, initializeHelloChat, registerAnonymousUser, saveClientDetails } from '@/config/helloApi';
 import useNotificationSocket from '@/hooks/notifications/notificationSocket';
 import useNotificationSocketEventHandler from '@/hooks/notifications/notificationSocketEventHandler';
 import useSocket from '@/hooks/socket';
 import useSocketEvents from '@/hooks/socketEventHandler';
+import socketManager from '@/hooks/socketManager';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
 import { setAgentTeams, setGreeting, setHelloClientInfo, setHelloKeysData, setJwtToken, setUnReadCount, setWidgetInfo } from '@/store/hello/helloSlice';
 import { GetSessionStorageData, SetSessionStorage } from '@/utils/ChatbotUtility';
@@ -11,7 +12,7 @@ import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 import { cleanObject, getLocalStorage } from '@/utils/utilities';
 import debounce from 'lodash.debounce';
-import { useContext, useEffect } from 'react';
+import { useCallback, useContext, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import helloVoiceService from './HelloVoiceService';
 import { useChatActions } from './useChatActions';
@@ -95,6 +96,24 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
 
     useSocketEvents({ messageRef, fetchChannels, chatSessionId, setLoading, tabSessionId });
     useNotificationSocketEventHandler({ chatSessionId })
+
+    // Socket reconnection effect to fetch history
+    const handleReconnection = useCallback(() => {
+        if (isHelloUser && currentChannelId) {
+            console.log("Socket reconnected, fetching history for channel:", currentChannelId);
+            fetchHelloPreviousHistory();
+        }
+    }, [isHelloUser, currentChannelId]);
+
+    useEffect(() => {
+        // Register the reconnection callback
+        socketManager.onReconnect(handleReconnection);
+
+        // Clear all reconnection callbacks on unmount
+        return () => {
+            socketManager.reconnectionCallbacks = [];
+        };
+    }, [handleReconnection])
 
     useEffect(() => {
         if (reduxChatSessionId) {
