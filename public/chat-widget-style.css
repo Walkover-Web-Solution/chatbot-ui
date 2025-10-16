@@ -362,12 +362,12 @@
 .notification-close-btn {
   position: absolute;
   z-index: 9;
-  top: -12px;
-  right: -12px;
+  top: -16px;
+  right: -16px;
   cursor: pointer;
   color: #ffffff;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   display: flex;
   justify-content: center;
   align-items: center;
