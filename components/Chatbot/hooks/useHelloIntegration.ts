@@ -213,6 +213,7 @@ export const useOnSendHello = () => {
     companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
     demo_widget: state.Hello?.[chatSessionId]?.widgetInfo?.demo_widget || false
   }));
+  console.log(demo_widget, 'demo_widget')
 
   const isBot = assigned_type === 'bot';
 
@@ -273,7 +274,7 @@ export const useOnSendHello = () => {
       }
 
       const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId, helloVariables, demo_widget);
-      if (data && (!currentChatId || !currentChannelId)) {
+      if (data && (!currentChatId || !currentChannelId || demo_widget)) {
         dispatch(setDataInAppInfoReducer({
           subThreadId: data?.['channel'],
           currentChatId: data?.['id'],
