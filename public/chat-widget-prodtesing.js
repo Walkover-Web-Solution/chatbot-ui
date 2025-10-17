@@ -1078,6 +1078,9 @@
             if ('launch_widget' in data) {
                 helloChatbotManager.helloLaunchWidget = data.launch_widget || false;
             }
+            if ('variables' in data) {
+                sendMessageToChatbot({ type: "SET_VARIABLES_FOR_BOT", data });
+            }
         }
         setTimeout(() => {
             helloChatbotManager.state.delayElapsed = true;

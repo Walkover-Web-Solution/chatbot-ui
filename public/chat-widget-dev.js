@@ -335,30 +335,30 @@
         getHTMLDimensions(htmlContent) {
             // Create a temporary container
             const tempContainer = document.createElement('body');
-            
+
             // Style it to be invisible but measurable
-            tempContainer.style.position = 'absolute';            
-            
+            tempContainer.style.position = 'absolute';
+
             // Set the HTML content
             tempContainer.innerHTML = htmlContent;
-            
+
             // Append to body to trigger layout calculation
             document.body.appendChild(tempContainer);
-            
+
             // Get dimensions            
             const rect = tempContainer.getBoundingClientRect();
             const dimensions = {
                 width: rect.width,
-                height: rect.height                
+                height: rect.height
             };
-            
+
             // Clean up
             document.body.removeChild(tempContainer);
-            
+
             return dimensions;
         }
 
-        handlePushNotification(data) {            
+        handlePushNotification(data) {
             const message_type = data.message_type;
             //const message_type = 'Custom';            
 
@@ -417,9 +417,9 @@
 
                     // Set iframe.onload handler BEFORE writing content to avoid missing the load event
                     iframe.onload = function () {
-                        iframe.classList.remove('msg-push-hide');    
-                        loader.classList.add('msg-push-hide');                    
-                        const body = iframeDoc.body;                        
+                        iframe.classList.remove('msg-push-hide');
+                        loader.classList.add('msg-push-hide');
+                        const body = iframeDoc.body;
 
                         let height = 0, width = 0, top = 0, bgFound = false;
                         const position = ['absolute', 'relative', 'fixed'];
@@ -436,7 +436,7 @@
                                     bgFound = true;
                                 }
                             }
-                        } else {                            
+                        } else {
                             const bodyComputedStyle = getComputedStyle(body);
                             const bodyBgColor = bodyComputedStyle.backgroundColor;
                             const bodyBgImage = bodyComputedStyle.backgroundImage;
@@ -452,7 +452,7 @@
                             overlay.classList.remove(`v-${verticalPosition}`);
                         }
 
-                        iframe.style.border = 'none';                        
+                        iframe.style.border = 'none';
 
                         if (!bgFound) {
                             body.style.backgroundColor = '#ffffff';
@@ -469,7 +469,7 @@
                     const dimensions = this.getHTMLDimensions(htmlContent);
                     iframe.style.width = `${dimensions.width}px`;
                     iframe.style.height = `${dimensions.height}px`;
-                    
+
                     requestAnimationFrame(() => {
                         const checkHeight = setInterval(() => {
                             const iframeBodyRect = iframeDoc.body.getBoundingClientRect();
@@ -1245,6 +1245,9 @@
             }
             if ('launch_widget' in data) {
                 helloChatbotManager.helloLaunchWidget = data.launch_widget || false;
+            }
+            if ('variables' in data) {
+                sendMessageToChatbot({ type: "SET_VARIABLES_FOR_BOT", data });
             }
         }
         setTimeout(() => {

@@ -337,7 +337,7 @@
             const tempContainer = document.createElement('body');
 
             // Style it to be invisible but measurable            
-            tempContainer.style.position = 'absolute';            
+            tempContainer.style.position = 'absolute';
             tempContainer.style.height = 'initial !important';
             tempContainer.style.width = 'initial !important';
 
@@ -403,7 +403,7 @@
                         this.removeNotification(overlay);
                     }
                 });
-                
+
                 // Set position classes based on horizontal and vertical position values
                 const horizontalPosition = data.horizontal_position || 'center';
                 const verticalPosition = data.vertical_position || 'center';
@@ -1254,6 +1254,9 @@
             }
             if ('launch_widget' in data) {
                 helloChatbotManager.helloLaunchWidget = data.launch_widget || false;
+            }
+            if ('variables' in data) {
+                sendMessageToChatbot({ type: "SET_VARIABLES_FOR_BOT", data });
             }
         }
         setTimeout(() => {

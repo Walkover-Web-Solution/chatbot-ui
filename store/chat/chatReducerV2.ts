@@ -75,7 +75,7 @@ export const initialChatState: ChatState = {
 
     // Pagination & Message Handling
     currentPage: 1,
-    hasMoreMessages: true,
+    hasMoreMessages: false,
     newMessage: false,
     skip: 1,
 

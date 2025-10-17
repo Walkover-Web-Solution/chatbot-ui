@@ -47,7 +47,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
 
     const { currentChannelId, isHelloUser } = useReduxStateManagement({ chatSessionId, tabSessionId });
 
-    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotMinimized, isChatbotOpen, callToken, unReadCountInCurrentChannel } = useCustomSelector((state) => ({
+    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotMinimized, isChatbotOpen, callToken, unReadCountInCurrentChannel, demo_widget, helloVariables } = useCustomSelector((state) => ({
         companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
         botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
         reduxChatSessionId: state.draftData?.chatSessionId,
@@ -65,7 +65,9 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
         unReadCountInCurrentChannel: (() => {
             const channelListData = state.Hello?.[chatSessionId]?.channelListData;
             return channelListData?.channels?.find((channel) => channel?.channel === currentChannelId)?.widget_unread_count || 0;
-        })()
+        })(),
+        demo_widget: state.Hello?.[chatSessionId]?.widgetInfo?.demo_widget || false,
+        helloVariables: state.draftData?.hello?.variables || {},
     }));
 
     const dispatch = useDispatch();
@@ -74,14 +76,23 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
     useNotificationSocket({ chatSessionId });
 
     useEffect(() => {
-        if (isHelloUser && currentChannelId) {
+        if (isHelloUser && currentChannelId && !demo_widget) {
             fetchHelloPreviousHistory()
         }
-    }, [currentChannelId, isHelloUser])
+    }, [currentChannelId, isHelloUser, demo_widget])
 
     useEffect(() => {
-        emitEventToParent('SET_BADGE_COUNT', { badgeCount: totalNoOfUnreadMsgs > 99 ? '99+' : totalNoOfUnreadMsgs })
-    }, [totalNoOfUnreadMsgs])
+        if (isHelloUser && demo_widget && helloVariables?.bot_id && helloVariables?.bot_type) {
+            dispatch(setDataInAppInfoReducer({ subThreadId: '', currentTeamId: "", currentChannelId: "", currentChatId: "" }));
+            setLoading(false)
+        }
+    }, [isHelloUser, demo_widget, helloVariables?.bot_id, helloVariables?.bot_type])
+
+    useEffect(() => {
+        if (!demo_widget) {
+            emitEventToParent('SET_BADGE_COUNT', { badgeCount: totalNoOfUnreadMsgs > 99 ? '99+' : totalNoOfUnreadMsgs })
+        }
+    }, [totalNoOfUnreadMsgs, demo_widget])
 
     useSocketEvents({ messageRef, fetchChannels, chatSessionId, setLoading, tabSessionId });
     useNotificationSocketEventHandler({ chatSessionId })
