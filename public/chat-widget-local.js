@@ -298,6 +298,9 @@
                 case 'RELOAD_PARENT':
                     // window.location.reload()
                     break;
+                case 'REDIRECT_URL':
+                    this.redirectUrl(data);
+                    break;
                 default:
                     break;
             }
@@ -979,6 +982,30 @@
             const starterQuestionContainer = document.getElementById(this.elements.starterQuestionContainer);
             if (starterQuestionContainer) {
                 starterQuestionContainer.style.display = 'none';
+            }
+        }
+
+        redirectUrl(data) {
+            try {
+                const url = data?.url;
+                if (!url) {
+                    console.warn('No URL provided for redirect');
+                    return;
+                }
+                let validUrl;
+                try {
+                    validUrl = new URL(url);
+                } catch (e) {
+                    try {
+                        validUrl = new URL('https://' + url);
+                    } catch (e2) {
+                        console.error('Invalid URL format:', url);
+                        return;
+                    }
+                }
+                window.open(validUrl.href, '_blank');
+            } catch (error) {
+                console.error('Error redirecting to URL:', error);
             }
         }
 
