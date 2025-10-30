@@ -8,7 +8,7 @@ import { useChatActions } from './useChatActions';
 export const useCallUI = () => {
   const [callState, setCallState] = useState<"idle" | "ringing" | "connected" | "ended" | "rejoined">("idle");
   const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [mediaStream, setMediaStream] = useState<any>(null);
+  const [mediaStream, setMediaStream] = useState<any>({ key: null, mediaStream: null });
   const [rejoinSummary, setRejoinSummary] = useState<any>(null);
   const [transcripts, setTranscripts] = useState<{
     from: 'user' | 'bot';
@@ -19,11 +19,6 @@ export const useCallUI = () => {
   const { clearCallVoiceHistory, addCallVoiceEntry } = useChatActions();
 
   useEffect(() => {
-    // Initialize service if not already done
-    // if (!helloVoiceService.isInitialized()) {
-    // helloVoiceService.initialize();
-    // }
-
     // Set initial state
     setCallState(helloVoiceService.getCallState() as "idle" | "ringing" | "connected" | "ended" | "rejoined");
     setIsMuted(helloVoiceService.getMuteStatus());
@@ -32,7 +27,7 @@ export const useCallUI = () => {
     const handleCallStateChange = ({ state, mediaStream, data }: any) => {
       setCallState(state);
       if (mediaStream) {
-        setMediaStream(mediaStream);
+        setMediaStream({ key: Date.now(), mediaStream: mediaStream });
       }
       if (state === 'connected' && data?.id) {
         dispatch(setDataInAppInfoReducer({ callToken: data?.id }))
