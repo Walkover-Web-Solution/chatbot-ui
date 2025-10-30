@@ -1,14 +1,14 @@
 // CallUI.tsx
-import { Mic, MicOff, Phone, Maximize2, X } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
-import { useCallUI } from '../Chatbot/hooks/useCallUI';
-import { useScreenSize } from '../Chatbot/hooks/useScreenSize';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
-import './CallUI.css';
-import CallTextField from './CallTextField';
-import helloVoiceService from '../Chatbot/hooks/HelloVoiceService';
-import { useChatActions } from '../Chatbot/hooks/useChatActions';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
+import { Maximize2, Mic, MicOff, Phone, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import helloVoiceService from '../Chatbot/hooks/HelloVoiceService';
+import { useCallUI } from '../Chatbot/hooks/useCallUI';
+import { useChatActions } from '../Chatbot/hooks/useChatActions';
+import { useScreenSize } from '../Chatbot/hooks/useScreenSize';
+import CallTextField from './CallTextField';
+import './CallUI.css';
 
 // Simple call timer display component
 const CallTimer: React.FC<{ seconds: number }> = ({ seconds }) => {
@@ -25,7 +25,7 @@ const CallUI: React.FC = () => {
     const {
         callState,
         isMuted,
-        mediaStream,
+        mediaStream: audio,
         endCall,
         toggleMute,
         rejoinSummary,
@@ -72,6 +72,7 @@ const CallUI: React.FC = () => {
             }
         }
     }, [transcripts, addCallVoiceEntry, setTranscripts]);
+
     useEffect(() => {
         if (callVoiceHistory.length > 0) {
             setTimeout(() => {
@@ -84,23 +85,28 @@ const CallUI: React.FC = () => {
             }, 100);
         }
     }, [callVoiceHistory]);
+
     useEffect(() => {
-        if (mediaStream && audioRef.current) {
+        if (audio?.mediaStream && audioRef.current) {
             // Ensure we don't reassign the same stream
-            if (audioRef.current.srcObject !== mediaStream) {
-                audioRef.current.srcObject = mediaStream;
-                // Ensure playback continues
-                audioRef.current.play().catch(error => {
-                    console.log('Audio play failed:', error);
-                });
-            }
+            // if (audioRef.current.srcObject !== audio?.mediaStream) {
+            audioRef.current.srcObject = audio?.mediaStream;
+            // Ensure playback continues
+            audioRef.current.play().then(() => {
+                console.log('Audio play successful');
+            }).catch(error => {
+                console.log('Audio play failed:', error);
+            });
+            // }
         }
-    }, [mediaStream]);
+    }, [audio]);
 
     // Ensure audio continues playing when switching views
     useEffect(() => {
         if (audioRef.current && audioRef.current.srcObject) {
-            audioRef.current.play().catch(error => {
+            audioRef.current.play().then(() => {
+                console.log('Audio play successful on view switch');
+            }).catch(error => {
                 console.log('Audio play failed on view switch:', error);
             });
         }
@@ -282,7 +288,7 @@ const CallUI: React.FC = () => {
                                 {callVoiceHistory.length > 0 && (
                                     <>
                                         <div className="text-center text-white/60 text-sm mb-4">Call History</div>
-                                        {callVoiceHistory.map((historyItem : any , index : any) => (
+                                        {callVoiceHistory.map((historyItem: any, index: any) => (
                                             <div key={index} className={`flex ${historyItem.from === 'user' ? 'justify-end' : 'justify-start'}`}>
                                                 <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-xl text-sm shadow-lg ${historyItem.from === 'user'
                                                     ? 'bg-blue-300 text-white'
@@ -292,7 +298,7 @@ const CallUI: React.FC = () => {
                                                         {historyItem.from === 'user' ? 'You' : 'Assistant'}
                                                     </div>
                                                     <div className="space-y-2">
-                                                        {historyItem.messages.map((item : any, itemIndex : any) => (
+                                                        {historyItem.messages.map((item: any, itemIndex: any) => (
                                                             <div key={itemIndex}>
                                                                 {(item.type === 'text' || item.type === 'redirect') && (
                                                                     <div style={{
@@ -310,7 +316,7 @@ const CallUI: React.FC = () => {
                                                                 )}
                                                                 {item.type === 'button' && (
                                                                     <div className="space-y-1">
-                                                                        {item.options?.map((option : any, optionIndex : any) => (
+                                                                        {item.options?.map((option: any, optionIndex: any) => (
                                                                             <button
                                                                                 key={optionIndex}
                                                                                 onClick={() => handleButtonClick(option.title)}
