@@ -281,7 +281,7 @@ const ChatbotDrawer = ({
                             const lastMessageId = channelMessages[0];
                             const lastMessage = allMessagesData[channel?.channel]?.[lastMessageId];
                             if (lastMessage) {
-                              const isUserMessage = lastMessage?.role == "user";
+                              const isUserMessage = lastMessage?.role == "user" || lastMessage?.role === "voice_call";
                               return (
                                 <>
                                   {isUserMessage ? "You: " : "Sender: "}
