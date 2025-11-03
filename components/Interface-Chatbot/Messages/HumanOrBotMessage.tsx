@@ -2,11 +2,13 @@
 import { UserAssistant } from "@/assests/assestsIndex";
 import RenderHelloVedioCallMessage from "@/components/Hello/RenderHelloVedioCallMessage";
 import { linkify } from "@/utils/utilities";
+import { Reply } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import RenderHelloAttachmentMessage from "../../Hello/RenderHelloAttachmentMessage";
 import RenderHelloFeedbackMessage from "../../Hello/RenderHelloFeedbackMessage";
 import RenderHelloInteractiveMessage from "../../Hello/RenderHelloInteractiveMessage";
+import { useReplyContext } from "../contexts/ReplyContext";
 import "./Message.css";
 import MessageTime from "./MessageTime";
 
@@ -243,13 +245,74 @@ MessageContent.displayName = 'MessageContent';
 
 const HumanOrBotMessageCard = React.memo(({ message, isBot = false, isLastMessage = false }: MessageCardProps) => {
     const [showSenderTime, setShowSenderTime] = useState(isLastMessage);
+    const [showReplyButton, setShowReplyButton] = useState(false);
+    const { setReplyToMessage } = useReplyContext();
+
+    const handleReplyClick = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        setReplyToMessage({
+            id: message?.message_id || message?.id,
+            content: message?.content,
+            urls: message?.urls || [],
+            from_name: message?.from_name,
+            is_auto_response: message?.is_auto_response,
+            message_id: message?.message_id || message?.id
+        });
+    }, [message, setReplyToMessage]);
+
+    const renderReplySection = () => {
+        if (!message?.replied_msg_content?.text &&
+            !(message?.replied_msg_content?.attachment && message?.replied_msg_content?.attachment?.length > 0)) {
+            return null;
+        }
+
+        return (
+            <div className="mb-1 p-2 bg-gray-200 rounded-md border-l-4 border-blue-400 not-prose">
+                <div className="text-xs text-gray-600 mb-1 font-medium">Replying to message:</div>
+                <div className="text-sm text-gray-700" dangerouslySetInnerHTML={{
+                    __html: (() => {
+                        if (typeof message.replied_msg_content === 'string') {
+                            return message.replied_msg_content;
+                        }
+                        const replyText = message.replied_msg_content?.text || '';
+                        const hasAttachment = message.replied_msg_content?.attachment &&
+                            message.replied_msg_content.attachment.length > 0;
+
+                        if (replyText.trim()) {
+                            return replyText;
+                        }
+                        if (hasAttachment) {
+                            return "Attachment";
+                        }
+                        return "Message";
+                    })()
+                }}></div>
+            </div>
+        );
+    };
+
     return (
-        <div className="w-full pb-3 animate-fade-in animate-slide-left">
+        <div
+            className="w-full pb-3 animate-fade-in animate-slide-left group"
+            onMouseEnter={() => setShowReplyButton(true)}
+            onMouseLeave={() => setShowReplyButton(false)}
+        >
             <div className="flex items-start gap-2 max-w-[90%]">
                 {/* <Avatar message={message} isBot={isBot} /> */}
-                <div className="w-fit whitespace-pre-wrap break-words" onClick={() => setShowSenderTime(!showSenderTime)}>
-                    <div className="p-1 whitespace-pre-wrap w-full break-words message-card-backround">
+                <div className="w-fit whitespace-pre-wrap break-words relative" onClick={() => setShowSenderTime(!showSenderTime)}>
+                    <div className="p-1 whitespace-pre-wrap w-full break-words message-card-backround relative">
+                        {renderReplySection()}
                         <MessageContent message={message} />
+
+                        {/* Reply Button */}
+                        {message?.type !== "greeting_msg" && <button
+                            onClick={handleReplyClick}
+                            className={`absolute -right-8 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 ${showReplyButton ? 'opacity-100' : 'opacity-0'
+                                }`}
+                            aria-label="Reply to message"
+                        >
+                            <Reply className="w-4 h-4 text-gray-600" />
+                        </button>}
                     </div>
                     <div className={`transition-all duration-300 ease-in-out ${showSenderTime ? 'opacity-100 max-h-12' : 'opacity-0 max-h-0'}`}>
                         <div className="flex items-center gap-1 text-gray-500 pl-1 pt-0.5">

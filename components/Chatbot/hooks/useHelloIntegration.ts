@@ -14,6 +14,7 @@ import { useCallback, useContext, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
+import { useReplyContext } from '@/components/Interface-Chatbot/contexts/ReplyContext';
 
 interface HelloMessage {
   role: string;
@@ -190,7 +191,7 @@ export const useOnSendHello = () => {
   const { addHelloMessage } = useHelloMessages();
   const { startTimeoutTimer } = useHelloTimeout();
   const fetchChannels = useFetchChannels();
-
+  const { replyToMessage } = useReplyContext();
   const {
     uuid,
     unique_id,
@@ -216,9 +217,8 @@ export const useOnSendHello = () => {
 
   const isBot = assigned_type === 'bot';
 
-  return useCallback(async (message?: string, newMessage?: HelloMessage | string, voiceCall?: boolean, newChannelId?: string, overrideChatId?: string, overrideTeamId?: string) => {
+  return useCallback(async (message?: string, newMessage?: HelloMessage | string, voiceCall?: boolean, newChannelId?: string, overrideChatId?: string, overrideTeamId?: string, repliedOn?: string) => {
     if (!voiceCall && (!message?.trim() && (!images || images.length === 0))) return;
-
 
     try {
 
@@ -234,7 +234,18 @@ export const useOnSendHello = () => {
         }));
       }
       if (newMessage) {
-        addHelloMessage(newMessage, workingChannelId);
+        const getMessageContent = (content: string | { text: string }): string => {
+          if (typeof content === 'string') return content;
+          return content?.text || '';
+        };
+        const messageWithReply = typeof newMessage === 'object' ? {
+          ...newMessage,
+          replied_msg_content: replyToMessage ? {
+            text: getMessageContent(replyToMessage.content),
+            attachment: replyToMessage.urls || []
+          } : null
+        } : newMessage;
+        addHelloMessage(messageWithReply, workingChannelId);
       }
       const channelDetail = (!chatIdToUse || demo_widget) ? {
         call_enabled: null,
@@ -277,7 +288,11 @@ export const useOnSendHello = () => {
       if (demo_widget && channelIdToUse) {
         await socketManager.subscribe([channelIdToUse]);
       }
-      const data = await sendMessageToHelloApi(message, attachments, channelDetail, chatIdToUse, helloVariables, voiceCall, demo_widget);
+      let widget_msg_id: string | undefined;
+      if (newMessage && typeof newMessage === 'object' && 'id' in newMessage) {
+        widget_msg_id = newMessage.id;
+      }
+      const data = await sendMessageToHelloApi(message, attachments, channelDetail, chatIdToUse, helloVariables, voiceCall, demo_widget, widget_msg_id, repliedOn);
       if (data && (!chatIdToUse || !channelIdToUse || demo_widget)) {
         dispatch(setDataInAppInfoReducer({
           subThreadId: data?.['channel'],
@@ -330,14 +345,17 @@ export const useOnSendHello = () => {
     addHelloMessage,
     helloVariables,
     companyId,
-    demo_widget
+    demo_widget,
+    replyToMessage
   ]);
 };
 
 export const useSendMessageToHello = ({
   messageRef: propMessageRef,
+  replyToMessageId,
 }: {
   messageRef?: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>,
+  replyToMessageId?: string,
 }) => {
   const context = useContext(MessageContext);
   const messageRef = propMessageRef ?? context.messageRef;
@@ -369,7 +387,7 @@ export const useSendMessageToHello = ({
     }
     if (!textMessage.trim() && (!images || images?.length === 0)) return false;
 
-    const messageId = generateNewId();
+    const messageId = generateNewId(24);
     const newMessage = {
       id: messageId,
       role: "user",
@@ -386,7 +404,7 @@ export const useSendMessageToHello = ({
     // addHelloMessage(newMessage, channelIdToUse);
 
     // Send message to API
-    onSendHello(textMessage, newMessage);
+    onSendHello(textMessage, newMessage, false, undefined, undefined, undefined, replyToMessageId);
     setNewMessage(true);
 
     // Clear input field
@@ -399,5 +417,5 @@ export const useSendMessageToHello = ({
     }
 
     return true;
-  }, [onSendHello, addHelloMessage, images, messageRef, currentChannelId, currentChatId, setNewMessage]);
+  }, [onSendHello, addHelloMessage, images, messageRef, currentChannelId, currentChatId, setNewMessage, replyToMessageId]);
 };

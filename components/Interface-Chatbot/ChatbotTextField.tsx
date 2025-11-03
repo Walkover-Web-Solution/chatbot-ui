@@ -16,9 +16,11 @@ import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } 
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
 import { useSendMessageToHello } from "../Chatbot/hooks/useHelloIntegration";
 import CallButton from "./CallButton";
+import { useReplyContext } from "./contexts/ReplyContext";
 import EmojiSelector from "./EmojiSelector";
 import { MessageContext } from "./InterfaceChatbot";
 import ImageWithFallback from "./Messages/ImageWithFallback";
+import ReplyPreview from "./ReplyPreview";
 
 interface ChatbotTextFieldProps {
   className?: string;
@@ -40,6 +42,9 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const fileInputRef = useRef<HTMLInputElement>(null);
   const emitTypingStatus = useTypingStatus({ chatSessionId, tabSessionId });
 
+  // Reply context
+  const { replyToMessage, clearReply } = useReplyContext();
+
   const { isHelloUser, mode, inbox_id, show_send_button, assigned_type } = useCustomSelector((state) => ({
     isHelloUser: state.draftData?.isHelloUser || false,
     mode: state.Hello?.[chatSessionId]?.mode || [],
@@ -52,7 +57,10 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }));
 
   const { messageRef } = useContext(MessageContext);
-  const sendMessageToHello = useSendMessageToHello({ messageRef });
+  const sendMessageToHello = useSendMessageToHello({
+    messageRef,
+    replyToMessageId: replyToMessage?.message_id || replyToMessage?.id
+  });
 
   const { setImages } = useChatActions();
   const sendMessage = useSendMessage({});
@@ -87,7 +95,9 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     } else {
       sendMessage(messageObj);
     }
-  }, [isHelloUser, sendMessage, sendMessageToHello]);
+    // Clear reply after sending message
+    clearReply();
+  }, [isHelloUser, sendMessage, sendMessageToHello, clearReply]);
 
   const handleMessage = useCallback((event: MessageEvent) => {
     if (event?.data?.type === "open") {
@@ -338,6 +348,12 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
 
   return (
     <div className={`relative w-full shadow-sm ${className}`}>
+      {/* Reply Preview */}
+      <ReplyPreview
+        replyToMessage={replyToMessage}
+        onCloseReply={clearReply}
+      />
+
       {optionButtons}
       {imagePreviewsSection}
 

@@ -20,6 +20,7 @@ import { useFetchChannels, useFetchHelloPreviousHistory } from './useHelloIntegr
 import { useReduxStateManagement } from './useReduxManagement';
 import { useScreenSize } from './useScreenSize';
 import { useTabVisibility } from './useTabVisibility';
+import { useReplyContext } from '@/components/Interface-Chatbot/contexts/ReplyContext';
 
 interface HelloMessage {
     role: string;
@@ -45,6 +46,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
     const fetchChannels = useFetchChannels();
     const { isSmallScreen } = useScreenSize();
     const { isTabVisible } = useTabVisibility();
+    const { clearReply } = useReplyContext();
 
     const { currentChannelId, isHelloUser } = useReduxStateManagement({ chatSessionId, tabSessionId });
 
@@ -145,6 +147,10 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             debouncedReset.cancel();
         };
     }, [currentChannelId, isToggledrawer, unReadCountInCurrentChannel, isChatbotOpen, isHelloUser, isTabVisible, isChatbotMinimized]);
+
+    useEffect(() => {
+        clearReply();
+    }, [currentChannelId]);
 
 
     const initializeHelloServices = async (widgetToken: string = '') => {

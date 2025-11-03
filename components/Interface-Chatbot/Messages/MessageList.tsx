@@ -106,6 +106,7 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
         message={{
           role: 'Bot',
           id: generateNewId(),
+          type: 'greeting_msg',
           message_type: 'interactive',
           messageJson: {
             type: 'button',
