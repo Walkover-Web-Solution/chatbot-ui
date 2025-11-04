@@ -119,7 +119,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
 
     // Listen for call-completed events to fetch history
     useEffect(() => {
-        if (isHelloUser && currentChannelId && demo_widget) {
+        if (isHelloUser && currentChannelId && !demo_widget) {
             const handleCallCompleted = () => {
                 fetchHelloPreviousHistory();
             }
