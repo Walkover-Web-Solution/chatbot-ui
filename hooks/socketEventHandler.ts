@@ -1,4 +1,5 @@
 // useSocketEvents.ts
+import helloVoiceService from '@/components/Chatbot/hooks/HelloVoiceService';
 import { useReduxStateManagement } from '@/components/Chatbot/hooks/useReduxManagement';
 import { useTabVisibility } from '@/components/Chatbot/hooks/useTabVisibility';
 import { setHelloEventMessage, setTyping } from '@/store/chat/chatSlice';
@@ -61,7 +62,7 @@ export const useSocketEvents = ({
                 const { channel, chat_id, new_event, message_type = null, content: { status } } = message || {};
                 if (new_event) {
                     if (message_type === 'voice_call') {
-                        if (status === "completed" || status === "no_answer") {
+                        if (status === "completed" || status === "no_answer" || status === "in-progress") {
                             const messageId = response.id || response.timetoken;
                             addHelloMessage({ ...message, id: messageId }, channel);
                             dispatch(setUnReadCount({
@@ -69,6 +70,9 @@ export const useSocketEvents = ({
                                 resetCount: false
                             }));
                             dispatch(moveChannelToTop({ channelId: channel }));
+                        }
+                        if (status === "completed" && currentChannelId === channel) {
+                            helloVoiceService.emitEvent('call-completed', {})
                         }
                         return
                     }
