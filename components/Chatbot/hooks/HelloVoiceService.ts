@@ -187,6 +187,10 @@ class HelloVoiceService {
         this.eventEmitter.off(event, callback);
     }
 
+    public emitEvent(event: string, data: any): void {
+        this.eventEmitter.emit(event, data);
+    }
+
     public isInitialized(): boolean {
         return !!this.webrtc;
     }
