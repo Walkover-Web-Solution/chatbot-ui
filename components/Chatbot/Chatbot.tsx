@@ -51,7 +51,7 @@ const EmptyChatView = React.memo(() => (
         height={100}
         priority
       />
-      <h2 className="text-xl font-bold text-black">
+      <h2 className="text-xl font-bold text-base-content">
         What can I help with?
       </h2>
     </div>
