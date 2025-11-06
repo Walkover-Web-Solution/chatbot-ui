@@ -66,6 +66,10 @@ html:has(.drawer-toggle:checked) {
 }
 
 .message-card-backround {
-  @apply border border-gray-200 rounded-lg p-3;
-  background-color: #f0f0f0;
+  @apply border border-base-200 rounded-lg p-3 bg-base-100;
+}
+
+html[data-theme='dark'] .message-card-backround {
+  @apply border-slate-700;
+  background-color: #1f2937;
 }
