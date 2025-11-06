@@ -1,5 +1,5 @@
 'use client';
-import React, { createContext, useCallback, useMemo, useState } from 'react'
+import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import { ThemeProvider } from '@mui/material/styles'
@@ -28,7 +28,38 @@ function AppWrapper({
     const themeFromSession = JSON.parse(GetSessionStorageData('helloConfig') || '{}')?.primary_color;
 
     const [themeColor, setThemeColor] = useState(themeFromSession || "#333333");
-    const theme = generateTheme(themeColor);
+    const [colorScheme, setColorScheme] = useState<"light" | "dark">("light");
+
+    useEffect(() => {
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        const root = document.documentElement;
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)");
+
+        const applyScheme = (isDark: boolean) => {
+            const scheme = isDark ? "dark" : "light";
+            setColorScheme(scheme);
+            root.setAttribute("data-theme", scheme);
+        };
+
+        applyScheme(prefersDark.matches);
+
+        const handleSchemeChange = (event: MediaQueryListEvent) => {
+            applyScheme(event.matches);
+        };
+
+          if (typeof prefersDark.addEventListener === "function") {
+            prefersDark.addEventListener("change", handleSchemeChange);
+            return () => prefersDark.removeEventListener("change", handleSchemeChange);
+        } else {
+            prefersDark.addListener(handleSchemeChange);
+            return () => prefersDark.removeListener(handleSchemeChange);
+        }
+    }, []);
+
+    const theme = useMemo(() => generateTheme(themeColor, colorScheme), [themeColor, colorScheme]);
 
     const handleThemeChange = useCallback((color: string) => {
         setThemeColor(color);

@@ -1,8 +1,10 @@
 import { createTheme } from "@mui/material/styles";
 
-export const generateTheme = (colorHex) => {
+export const generateTheme = (colorHex, mode = "light") => {
+  const isDark = mode === "dark";
   return createTheme({
     palette: {
+      mode,
       primary: {
         main: colorHex,
       },
@@ -10,12 +12,12 @@ export const generateTheme = (colorHex) => {
         main: colorHex,
       },
       background: {
-        default: "#f8f8f8", // Light grey
-        paper: "#ffffff", // White
+        default: isDark ? "#222222" : "#f8f8f8",
+        paper: isDark ? "#1b1b1b" : "#ffffff",
       },
       text: {
-        primary: "#000000", // Black
-        secondary: "#ffffff", // White for secondary text
+        primary: isDark ? "#f8fafc" : "#000000",
+        secondary: isDark ? "#cbd5f5" : "#ffffff",
       },
     },
     components: {
