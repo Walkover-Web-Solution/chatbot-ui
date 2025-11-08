@@ -2,10 +2,11 @@ import { PdfLogo } from "@/assests/assestsIndex";
 import { useScreenSize } from "@/components/Chatbot/hooks/useScreenSize";
 import { Download, FileWarning } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type ImageWithFallbackProps = {
   src: string;
+  permanentUrl?: string;
   alt?: string;
   style?: React.CSSProperties;
   canDownload?: boolean;
@@ -25,7 +26,11 @@ const FALLBACK_ICON = "https://cdn1.iconfinder.com/data/icons/leto-files/64/leto
 // Memoized utility function
 const getFileType = (url: string): string => {
   if (!url) return "other"; // e.g. null, undefined, empty string
-  const extension = url?.split(".")?.pop()?.toLowerCase()?.split("?")[0] || "";
+  
+  // Remove query parameters first, then extract extension
+  const urlWithoutQuery = url.split("?")[0];
+  const extension = urlWithoutQuery.split(".").pop()?.toLowerCase() || "";
+  
   if (["jpg", "jpeg", "png", "gif", "webp", "bmp"].includes(extension)) return "image";
   if (["mp4", "webm", "ogg"].includes(extension)) return "video";
   if (["mp3", "wav", "aac", "flac"].includes(extension)) return "audio";
@@ -73,42 +78,61 @@ const DownloadButton = ({ onClick }: { onClick: () => void }) => (
 
 const ImageWithFallback = ({
   src,
+  permanentUrl,
   alt = "attachment",
   style,
   canDownload = true,
   preview = false
 }: ImageWithFallbackProps) => {
   const [error, setError] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState(src);
+  const [hasTriedFallback, setHasTriedFallback] = useState(false);
   const { isSmallScreen } = useScreenSize();
 
+  // Reset states when src changes
+  useEffect(() => {
+    setCurrentSrc(src);
+    setError(false);
+    setHasTriedFallback(false);
+  }, [src]);
+
   // Memoized file type calculation
-  const fileType = useMemo(() => getFileType(src), [src]);
+  const fileType = useMemo(() => getFileType(currentSrc), [currentSrc]);
 
   // Memoized video type for source element
   const videoType = useMemo(() =>
-    fileType === "video" ? `video/${src.split('.').pop()}` : "",
-    [fileType, src]
+    fileType === "video" ? `video/${currentSrc.split('.').pop()}` : "",
+    [fileType, currentSrc]
   );
 
   // Memoized audio type for source element
   const audioType = useMemo(() =>
-    fileType === "audio" ? `audio/${src.split('.').pop()}` : "",
-    [fileType, src]
+    fileType === "audio" ? `audio/${currentSrc.split('.').pop()}` : "",
+    [fileType, currentSrc]
   );
 
   // Memoized callbacks
-  const handleError = useCallback(() => setError(true), []);
-
+  const handleError = useCallback(() => {
+    if (currentSrc === src && permanentUrl && permanentUrl !== src && !hasTriedFallback) {
+      // Try fallback URL if primary URL fails and we haven't tried it yet
+      setError(false); // Reset error state when trying fallback
+      setCurrentSrc(permanentUrl);
+      setHasTriedFallback(true);
+    } else {
+      // Show error if both URLs fail or no fallback available
+      setError(true);
+    }
+  }, [currentSrc, src, permanentUrl, hasTriedFallback]);
   const handleClick = useCallback(() => {
-    window.open(src, "_blank");
-  }, [src]);
+    window.open(currentSrc, "_blank");
+  }, [currentSrc]);
 
   const downloadFile = useCallback(() => {
     window.parent.postMessage({
       type: "downloadAttachment",
-      data: { url: src }
+      data: { url: currentSrc }
     }, "*");
-  }, [src]);
+  }, [currentSrc]);
 
   // Memoized container classes
   const containerClasses = useMemo(() =>
@@ -123,7 +147,7 @@ const ImageWithFallback = ({
       case "image":
         return (
           <img
-            src={src}
+            src={currentSrc}
             alt={alt}
             onError={handleError}
             onClick={handleClick}
@@ -142,7 +166,7 @@ const ImageWithFallback = ({
               className="w-full h-full object-cover rounded-md"
               onError={handleError}
             >
-              <source src={src} type={videoType} />
+              <source src={currentSrc} type={videoType} />
             </video>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-12 h-12 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
@@ -157,7 +181,7 @@ const ImageWithFallback = ({
             onError={handleError}
             style={style}
           >
-            <source src={src} type={videoType} />
+            <source src={currentSrc} type={videoType} />
             Your browser does not support the video tag.
           </video>
         );
@@ -170,7 +194,7 @@ const ImageWithFallback = ({
               onError={handleError}
               className="w-full"
             >
-              <source src={src} type={audioType} />
+              <source src={currentSrc} type={audioType} />
             </audio>
           </div>
         );
@@ -198,7 +222,7 @@ const ImageWithFallback = ({
           />
         );
     }
-  }, [error, fileType, src, alt, style, preview, handleError, handleClick, videoType, audioType]);
+  }, [error, fileType, currentSrc, alt, style, preview, handleError, handleClick, videoType, audioType]);
 
   return (
     <div className={containerClasses}>

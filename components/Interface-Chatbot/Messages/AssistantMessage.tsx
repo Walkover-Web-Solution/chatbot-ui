@@ -119,6 +119,7 @@ const AssistantMessageCard = React.memo(
                                         <div className="space-y-2" key={image}>
                                             <ImageWithFallback
                                                 src={image?.image_url || image?.permanent_url}
+                                                permanentUrl={image?.permanent_url}
                                                 alt="Loading image, please wait..."
                                                 width={400}
                                                 height={400}
