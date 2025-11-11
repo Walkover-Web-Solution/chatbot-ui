@@ -503,16 +503,13 @@
 
                     const dimensions = this.getHTMLDimensions(htmlContent);
                     iframe.style.width = `${dimensions.width}px`;
-                    iframe.style.height = `${dimensions.height}px`;
+                    //iframe.style.height = `${dimensions.height}px`;
 
                     requestAnimationFrame(() => {
                         const checkHeight = setInterval(() => {
-                            const iframeBodyRect = iframeDoc.body.getBoundingClientRect();
-                            if (iframeBodyRect.height >= dimensions.height) {
-                                clearInterval(checkHeight);
-                                iframe.style.height = `${iframeBodyRect.height}px`;
-                                modalContainer.style.height = `${iframeBodyRect.height}px`;
-                            }
+                            const iframeBodyRect = iframeDoc.body.getBoundingClientRect();                            
+                            iframe.style.height = `${iframeBodyRect.height}px`;
+                            modalContainer.style.height = `${iframeBodyRect.height}px`;                            
                         }, 500);
                         setTimeout(() => {
                             clearInterval(checkHeight);
