@@ -52,7 +52,7 @@ export const useNotificationSocketEventHandler = ({ chatSessionId }: { chatSessi
         const { type, message_type } = message || {};
         switch (type) {
             case 'notification':
-                if (message_type === 'Popup') {
+                if (message_type === 'Popup' || message_type?.toLowerCase() === 'custom') {
                     emitEventToParent('PUSH_NOTIFICATION', message)
                 } else if (message_type === 'Message') {
                     addHelloMessage(message)
