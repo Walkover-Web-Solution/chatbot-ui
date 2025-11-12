@@ -361,6 +361,34 @@
             }
         }
 
+        getHTMLDimensions(htmlContent) {
+            // Create a temporary container
+            const tempContainer = document.createElement('body');
+
+            // Style it to be invisible but measurable            
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.height = 'initial !important';
+            tempContainer.style.width = 'initial !important';
+
+            // Set the HTML content
+            tempContainer.innerHTML = htmlContent;
+
+            // Append to body to trigger layout calculation
+            document.body.appendChild(tempContainer);
+
+            // Get dimensions            
+            const rect = tempContainer.getBoundingClientRect();
+            const dimensions = {
+                width: rect.width,
+                height: rect.height
+            };
+
+            // Clean up
+            document.body.removeChild(tempContainer);
+
+            return dimensions;
+        }
+
         handlePushNotification(data) {
             const message_type = data.message_type;
             //const message_type = 'Custom';            
@@ -398,6 +426,13 @@
                     this.removeNotification(overlay);
                 });
 
+                // Close popup when pressing ESC key
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.removeNotification(overlay);
+                    }
+                });
+
                 // Set position classes based on horizontal and vertical position values
                 const horizontalPosition = data.horizontal_position || 'center';
                 const verticalPosition = data.vertical_position || 'center';
@@ -424,28 +459,11 @@
                         loader.classList.add('msg-push-hide');
                         const body = iframeDoc.body;
 
-                        //without this scroller may seen
-                        body.style.setProperty('height', 'auto', 'important');
-                        body.style.setProperty('min-height', 'auto', 'important');
-                        body.style.setProperty('max-height', 'none', 'important');
-                        body.style.setProperty('line-height', 'normal', 'important');
-
                         let height = 0, width = 0, top = 0, bgFound = false;
                         const position = ['absolute', 'relative', 'fixed'];
                         if (body.children.length) {
                             for (let i = 0; i < body.children.length; i++) {
                                 const el = body.children[i];
-                                height += el.getBoundingClientRect().height;
-                                if (position.includes(getComputedStyle(el).position) && el.getBoundingClientRect().top > 0) {
-                                    const combinedHeight = el.getBoundingClientRect().height + el.getBoundingClientRect().top;
-                                    if (height < combinedHeight) {
-                                        height = combinedHeight;
-                                    }
-                                    top = el.getBoundingClientRect().top;
-                                }
-                                if (width < el.getBoundingClientRect().width) {
-                                    width = el.getBoundingClientRect().width;
-                                }
                                 const computedStyle = getComputedStyle(el);
                                 const bgColor = computedStyle.backgroundColor;
                                 const bgImage = computedStyle.backgroundImage;
@@ -456,17 +474,7 @@
                                     bgFound = true;
                                 }
                             }
-
-                            if (body.getBoundingClientRect().height > height) {
-                                height = body.getBoundingClientRect().height;
-                            }
-
-                            if (body.getBoundingClientRect().width > width) {
-                                width = body.getBoundingClientRect().width;
-                            }
                         } else {
-                            height += body.getBoundingClientRect().height;
-                            width += body.getBoundingClientRect().width;
                             const bodyComputedStyle = getComputedStyle(body);
                             const bodyBgColor = bodyComputedStyle.backgroundColor;
                             const bodyBgImage = bodyComputedStyle.backgroundImage;
@@ -482,20 +490,7 @@
                             overlay.classList.remove(`v-${verticalPosition}`);
                         }
 
-                        iframe.style.width = `${width}px`;
-                        iframe.style.top = `${top}px`;
-                        iframe.style.position = 'relative';
                         iframe.style.border = 'none';
-
-                        iframe.style.height = (height < 32) ? '36px' : `${height}px`;
-                        modalContainer.style.height = `${height}px`;
-
-                        setTimeout(() => {
-                            //bad hack to fix height issue iframe.onload is not working properly
-                            height = body.getBoundingClientRect().height;
-                            iframe.style.height = (height < 32) ? '36px' : `${height}px`;
-                            modalContainer.style.height = `${height}px`;
-                        }, 1000);
 
                         if (!bgFound) {
                             body.style.backgroundColor = '#ffffff';
@@ -509,87 +504,116 @@
                     }
                     htmlContent += `</head><body>${data.content}</body></html>`;
 
+                    const dimensions = this.getHTMLDimensions(htmlContent);
+                    iframe.style.width = `${dimensions.width}px`;
+                    //iframe.style.height = `${dimensions.height}px`;
+
+                    requestAnimationFrame(() => {
+                        const checkHeight = setInterval(() => {
+                            const iframeBodyRect = iframeDoc.body.getBoundingClientRect();
+                            iframe.style.height = `${iframeBodyRect.height}px`;
+                            modalContainer.style.height = `${iframeBodyRect.height}px`;
+                        }, 500);
+                        setTimeout(() => {
+                            clearInterval(checkHeight);
+                        }, 10000);
+                    });
+
                     // Write complete content in one operation
                     iframeDoc.open();
                     iframeDoc.write(htmlContent);
                     iframeDoc.close();
-                }, 0);
+                }, 100);
             }
 
-            if (message_type === 'Custom') {
+            if (message_type?.toLowerCase() === 'custom') {
+                // Close popup when pressing ESC key
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.removeNotification(modalContainer);
+                    }
+                });
 
+                iframe.style.height = '100vh';
+                iframe.style.width = '100vw';
 
                 modalContainer.appendChild(iframe);
                 document.body.appendChild(modalContainer);
 
+                // Get reference to the iframe's document
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
 
-                // Once the iframe is added to the DOM, we can access its document
-                setTimeout(() => {
-                    // Get reference to the iframe's document
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                // Set iframe.onload handler BEFORE writing content to avoid missing the load event
+                iframe.onload = function () {
+                    iframe.classList.remove('msg-push-hide');
+                    loader.classList.add('msg-push-hide');
+                    const body = iframeDoc.body;
 
-                    // Set iframe.onload handler BEFORE writing content to avoid missing the load event
-                    iframe.onload = function () {
-                        iframe.classList.remove('msg-push-hide');
-                        loader.classList.add('msg-push-hide');
-                        const body = iframeDoc.body;
-                        let height = 0, width = 0, top = null, bottom = null;
-                        const position = ['absolute', 'relative', 'fixed'];
-                        if (body.children.length) {
-                            for (let i = 0; i < body.children.length; i++) {
-                                const el = body.children[i];
-                                height += el.getBoundingClientRect().height;
-                                if (position.includes(getComputedStyle(el).position) && el.getBoundingClientRect().top >= 0) {
-                                    const combinedHeight = el.getBoundingClientRect().height + el.getBoundingClientRect().top;
-                                    if (height < combinedHeight) {
-                                        height = combinedHeight;
-                                    }
-                                    top = el.getBoundingClientRect().top;
-                                }
+                    let height = 0,
+                        width = 0,
+                        top = 0,
+                        bottom = null,
+                        left = null,
+                        right = null,
+                        paddingTop = 0,
+                        paddingBottom = 0,
+                        position = 'fixed';
 
-                                if (window.getComputedStyle(el).getPropertyValue('bottom')) {
-                                    bottom = window.getComputedStyle(el).getPropertyValue('bottom');
-                                }
-                                if (width < el.getBoundingClientRect().width) {
-                                    width = el.getBoundingClientRect().width;
-                                }
-                            }
-                        } else {
-                            height += body.getBoundingClientRect().height;
-                            width += body.getBoundingClientRect().width;
+                    for (let i = 0; i < body.children.length; i++) {
+                        const el = body.children[i];
+                        if (el.tagName.toLowerCase() === 'script' || el.tagName.toLowerCase() === 'style') {
+                            continue;
                         }
+                        const rect = el.getBoundingClientRect();
 
-                        modalContainer.style.width = `${width}px`;
-                        modalContainer.style.height = `${height}px`;
-                        modalContainer.style.position = 'absolute';
-                        iframe.style.width = `${width}px`;
-                        iframe.style.height = `${height}px`;
-                        iframe.style.border = 'none';
+                        // Use inline styles if set, otherwise use computed styles                        
+                        top = parseFloat(getComputedStyle(el).top) ? parseFloat(getComputedStyle(el).top) : rect.top;
+                        bottom = parseFloat(getComputedStyle(el).bottom) ? parseFloat(getComputedStyle(el).bottom) : rect.bottom;
+                        left = parseFloat(getComputedStyle(el).left) ? parseFloat(getComputedStyle(el).left) : rect.left;
+                        right = parseFloat(getComputedStyle(el).right) ? parseFloat(getComputedStyle(el).right) : rect.right;
+                        paddingTop = parseFloat(getComputedStyle(el).paddingTop);
+                        paddingBottom = parseFloat(getComputedStyle(el).paddingBottom);
 
-                        if (top) {
-                            modalContainer.style.top = `${top}px`;
+                        height += parseFloat(getComputedStyle(el).height) + paddingTop + paddingBottom;
+                        width += parseFloat(getComputedStyle(el).width);
+
+                        height = Math.max(height, rect.height);
+                        width = Math.max(width, rect.width);
+
+                        height += paddingTop + paddingBottom;
+                        console.log('top', top, 'bottom', bottom);
+                        top = top > bottom ? 'unset' : top < 0 ? 0 : top;
+                        bottom = bottom > top ? 'unset' : bottom < 0 ? 0 : bottom;
+                        left = left > right ? 'unset' : left < 0 ? 0 : left;
+                        right = right > left ? 'unset' : right < 0 ? 0 : right;
+
+                        const style = window.getComputedStyle(el);
+                        const boxShadow = style.boxShadow;
+                        if (boxShadow && boxShadow !== 'none') {
+                            height += 40;
+                            width += 40;
                         }
-                        if (bottom) {
-                            modalContainer.style.bottom = bottom;
-                        }
-
-                        if (body.children.length == 1) {
-                            body.children[0].style.position = 'static';
-                        }
-                    };
-
-                    // Build complete HTML content with stylesheet if needed
-                    let htmlContent = '<!DOCTYPE html><html><head>';
-                    if (this.urls && this.urls.styleSheet) {
-                        htmlContent += `<link rel="stylesheet" href="${this.urls.styleSheet}" type="text/css">`;
                     }
-                    htmlContent += `</head><body>${data.content}</body></html>`;
 
-                    // Write complete content in one operation
-                    iframeDoc.open();
-                    iframeDoc.write(htmlContent);
-                    iframeDoc.close();
-                }, 0);
+                    modalContainer.style.width = `${width}px`;
+                    modalContainer.style.height = `${height}px`;
+                    modalContainer.style.position = position;
+                    modalContainer.style.top = `${top}px`;
+                    modalContainer.style.bottom = `${bottom}px`;
+                    modalContainer.style.left = `${left}px`;
+                    modalContainer.style.right = `${right}px`;
+
+                    iframe.style.width = `${width}px`;
+                    iframe.style.height = `${height}px`;
+                    iframe.style.border = 'none';
+                    body.style.height = `auto`;
+                    body.style.minHeight = `auto`;
+                };
+
+                // Write complete content in one operation
+                iframeDoc.open();
+                iframeDoc.write(data.content);
+                iframeDoc.close();
             }
         }
 
