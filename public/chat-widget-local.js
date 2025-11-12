@@ -515,80 +515,93 @@
                 }, 0);
             }
 
-            if (message_type === 'Custom') {
+            if (message_type?.toLowerCase() === 'custom') {
+                // Close popup when pressing ESC key
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.removeNotification(modalContainer);
+                    }
+                });
 
-
+                iframe.style.height = '100vh';
+                iframe.style.width = '100vw';                
                 modalContainer.appendChild(iframe);
                 document.body.appendChild(modalContainer);
 
+                // Get reference to the iframe's document
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
 
-                // Once the iframe is added to the DOM, we can access its document
-                setTimeout(() => {
-                    // Get reference to the iframe's document
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                // Set iframe.onload handler BEFORE writing content to avoid missing the load event
+                iframe.onload = function () {
+                    iframe.classList.remove('msg-push-hide');
+                    loader.classList.add('msg-push-hide');
+                    const body = iframeDoc.body;
 
-                    // Set iframe.onload handler BEFORE writing content to avoid missing the load event
-                    iframe.onload = function () {
-                        iframe.classList.remove('msg-push-hide');
-                        loader.classList.add('msg-push-hide');
-                        const body = iframeDoc.body;
-                        let height = 0, width = 0, top = null, bottom = null;
-                        const position = ['absolute', 'relative', 'fixed'];
-                        if (body.children.length) {
-                            for (let i = 0; i < body.children.length; i++) {
-                                const el = body.children[i];
-                                height += el.getBoundingClientRect().height;
-                                if (position.includes(getComputedStyle(el).position) && el.getBoundingClientRect().top >= 0) {
-                                    const combinedHeight = el.getBoundingClientRect().height + el.getBoundingClientRect().top;
-                                    if (height < combinedHeight) {
-                                        height = combinedHeight;
-                                    }
-                                    top = el.getBoundingClientRect().top;
-                                }
+                    let height = 0,
+                        width = 0,
+                        top = 0,
+                        bottom = null,
+                        left = null,
+                        right = null,
+                        paddingTop = 0,
+                        paddingBottom = 0,
+                        position = 'fixed';
 
-                                if (window.getComputedStyle(el).getPropertyValue('bottom')) {
-                                    bottom = window.getComputedStyle(el).getPropertyValue('bottom');
-                                }
-                                if (width < el.getBoundingClientRect().width) {
-                                    width = el.getBoundingClientRect().width;
-                                }
-                            }
-                        } else {
-                            height += body.getBoundingClientRect().height;
-                            width += body.getBoundingClientRect().width;
+                    for (let i = 0; i < body.children.length; i++) {
+                        const el = body.children[i];
+                        if (el.tagName.toLowerCase() === 'script' || el.tagName.toLowerCase() === 'style') {
+                            continue;
                         }
+                        const rect = el.getBoundingClientRect();
+                        // Use inline styles if set, otherwise use computed styles                        
+                        top = !isNaN(parseFloat(getComputedStyle(el).top)) ? parseFloat(getComputedStyle(el).top) : rect.top;
+                        bottom = !isNaN(parseFloat(getComputedStyle(el).bottom)) ? parseFloat(getComputedStyle(el).bottom) : rect.bottom;
+                        left = !isNaN(parseFloat(getComputedStyle(el).left)) ? parseFloat(getComputedStyle(el).left) : rect.left;
+                        right = !isNaN(parseFloat(getComputedStyle(el).right)) ? parseFloat(getComputedStyle(el).right) : rect.right;
+                        paddingTop = parseFloat(getComputedStyle(el).paddingTop);
+                        paddingBottom = parseFloat(getComputedStyle(el).paddingBottom);
 
-                        modalContainer.style.width = `${width}px`;
-                        modalContainer.style.height = `${height}px`;
-                        modalContainer.style.position = 'absolute';
-                        iframe.style.width = `${width}px`;
-                        iframe.style.height = `${height}px`;
-                        iframe.style.border = 'none';
+                        height += parseFloat(getComputedStyle(el).height) + paddingTop + paddingBottom;
+                        width += parseFloat(getComputedStyle(el).width);
 
-                        if (top) {
-                            modalContainer.style.top = `${top}px`;
+                        height = Math.max(height, rect.height);
+                        width = Math.max(width, rect.width);
+
+                        height += paddingTop + paddingBottom;
+                        console.log('top', top, 'bottom', bottom);
+                        top = top > bottom ? 'unset' : top < 0 ? 0 : top;
+                        bottom = bottom > top ? 'unset' : bottom < 0 ? 0 : bottom;
+                        left = left > right ? 'unset' : left < 0 ? 0 : left;
+                        right = right > left ? 'unset' : right < 0 ? 0 : right;
+
+                        const style = window.getComputedStyle(el);
+                        const boxShadow = style.boxShadow;
+                        if (boxShadow && boxShadow !== 'none') {
+                            height += 40;
+                            width += 40;
                         }
-                        if (bottom) {
-                            modalContainer.style.bottom = bottom;
-                        }
-
-                        if (body.children.length == 1) {
-                            body.children[0].style.position = 'static';
-                        }
-                    };
-
-                    // Build complete HTML content with stylesheet if needed
-                    let htmlContent = '<!DOCTYPE html><html><head>';
-                    if (this.urls && this.urls.styleSheet) {
-                        htmlContent += `<link rel="stylesheet" href="${this.urls.styleSheet}" type="text/css">`;
                     }
-                    htmlContent += `</head><body>${data.content}</body></html>`;
 
-                    // Write complete content in one operation
-                    iframeDoc.open();
-                    iframeDoc.write(htmlContent);
-                    iframeDoc.close();
-                }, 0);
+                    modalContainer.style.width = `${width}px`;
+                    modalContainer.style.height = `${height}px`;
+                    modalContainer.style.position = position;
+                    modalContainer.style.top = `${top}px`;
+                    modalContainer.style.bottom = `${bottom}px`;
+                    modalContainer.style.left = `${left}px`;
+                    modalContainer.style.right = `${right}px`;
+                    modalContainer.style.zIndex = '9999';
+
+                    iframe.style.width = `${width}px`;
+                    iframe.style.height = `${height}px`;
+                    iframe.style.border = 'none';
+                    body.style.height = `auto`;
+                    body.style.minHeight = `auto`;
+                };
+
+                // Write complete content in one operation
+                iframeDoc.open();
+                iframeDoc.write(data.content);
+                iframeDoc.close();
             }
         }
 
