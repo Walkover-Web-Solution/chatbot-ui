@@ -289,7 +289,6 @@ interface ChatbotHeaderProps {
 }
 
 const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSessionId, tabSessionId, currentTeamId = "", currentChannelId = "", threadId = "", bridgeName = "" }) => {
-  console.log('header')
   const dispatch = useDispatch();
   const {
     setOptions,

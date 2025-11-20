@@ -27,7 +27,6 @@ const SCROLL_BUFFER = -500;
  */
 
 function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: string, currentChannelId: string }) {
-  console.log('message list')
   const getMoreHelloChats = useGetMoreHelloChats();
   const getMoreChats = useGetMoreChats();
   const { setNewMessage } = useChatActions();
