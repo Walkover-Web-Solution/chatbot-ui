@@ -213,7 +213,6 @@ export const useOnSendHello = () => {
     companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
     demo_widget: state.Hello?.[chatSessionId]?.widgetInfo?.demo_widget || false
   }));
-  console.log(demo_widget, 'demo_widget')
 
   const isBot = assigned_type === 'bot';
 

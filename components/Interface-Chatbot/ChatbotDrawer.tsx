@@ -48,7 +48,6 @@ const ChatbotDrawer = ({
   const dispatch = useDispatch();
   const { backgroundColor, textColor } = useColor();
 
-  console.log('chatbotdrawer')
   // Context hooks
   const { messageRef } = useContext(MessageContext);
   const { isSmallScreen } = useScreenSize();
