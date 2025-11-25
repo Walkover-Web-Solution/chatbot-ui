@@ -402,7 +402,7 @@ const ChatbotDrawer = ({
       )}
 
       <div className={`drawer-side ${isHelloUser && isSmallScreen ? '100%' : 'max-w-[286px]'} ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
-        <div className="w-full h-full text-base-content relative bg-base-200 border-r-base-300 border flex flex-col">
+        <div className="w-full h-full text-base-content relative bg-base-200 flex flex-col">
           {/* Header with padding */}
           <div className="px-4 pt-4 pb-4">
             <div className="flex items-center justify-between">
