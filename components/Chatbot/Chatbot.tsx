@@ -145,7 +145,7 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
     <MessageContext.Provider value={contextValue}>
       <div className="flex h-screen w-full overflow-hidden relative">
         {/* Sidebar - visible on large screens */}
-        <div className={`bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer && !isSmallScreen ? 'w-96 max-w-[286px]' : 'w-0'}`}>
+        <div className={`bg-base-100 overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer && !isSmallScreen ? 'w-96 max-w-[286px]' : 'w-0'}`}>
           <ChatbotDrawer
             setToggleDrawer={(data: boolean) => { dispatch(setToggleDrawer(data)) }}
             isToggledrawer={isToggledrawer}

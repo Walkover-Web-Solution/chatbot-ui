@@ -29,7 +29,7 @@ const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatS
             {Array.isArray(message?.urls) && message.urls.length > 0 && (
                 <div className="flex flex-row-reverse flex-wrap gap-2.5 w-full">
                     {message.urls.map((url: any, index: number) => {
-                        const imageUrl = typeof url === 'object' ? url?.path : url;
+                        const imageUrl = typeof url === 'object' ? url?.url : url;
 
                         return (
                             <ImageWithFallback
