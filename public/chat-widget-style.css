@@ -273,7 +273,7 @@
   position: fixed !important;
   border: none !important;
   border-radius: 0%;
-  right: 0;
+  right: 0 !important;
   bottom: 0 !important;
 }
 
