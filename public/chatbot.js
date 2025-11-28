@@ -180,7 +180,9 @@
                 if (width < 600) {
                     iframeParentContainer.style.height = '100%';
                     iframeParentContainer.style.width = '100%';
+                    iframeParentContainer.classList.add('full-screen-interfaceEmbed');
                 } else {
+                    iframeParentContainer.classList.remove('full-screen-interfaceEmbed');
                     this.applyConfig(this?.props?.config || {});
                 }
             });
