@@ -3,20 +3,13 @@ import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import helloVoiceService from './HelloVoiceService';
-import { useChatActions } from './useChatActions';
 
 export const useCallUI = () => {
   const [callState, setCallState] = useState<"idle" | "ringing" | "connected" | "ended" | "rejoined">("idle");
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [mediaStream, setMediaStream] = useState<any>({ key: null, mediaStream: null });
   const [rejoinSummary, setRejoinSummary] = useState<any>(null);
-  const [transcripts, setTranscripts] = useState<{
-    from: 'user' | 'bot';
-    message: any; // Could be single object or array of objects
-    timestamp: number
-  } | null>(null);
   const dispatch = useDispatch();
-  const { clearCallVoiceHistory, addCallVoiceEntry } = useChatActions();
 
   useEffect(() => {
     // Set initial state
@@ -34,7 +27,6 @@ export const useCallUI = () => {
       } else if (state === 'idle') {
         dispatch(setDataInAppInfoReducer({ callToken: '' }))
         setRejoinSummary(null)
-        setTranscripts(null)
       } else if (state === 'rejoined') {
         setRejoinSummary(data?.summary)
       }
@@ -44,19 +36,13 @@ export const useCallUI = () => {
       setIsMuted(muted);
     };
 
-    const handleMessageReceived = ({ message, from, timestamp }: any) => {
-      setTranscripts({ from, message, timestamp });
-    };
-
     helloVoiceService.addEventListener("callStateChanged", handleCallStateChange);
     helloVoiceService.addEventListener("muteStatusChanged", handleMuteChange);
-    helloVoiceService.addEventListener("messageReceived", handleMessageReceived);
 
     // Clean up event listeners
     return () => {
       helloVoiceService.removeEventListener("callStateChanged", handleCallStateChange);
       helloVoiceService.removeEventListener("muteStatusChanged", handleMuteChange);
-      helloVoiceService.removeEventListener("messageReceived", handleMessageReceived);
     };
   }, []);
 
@@ -70,7 +56,6 @@ export const useCallUI = () => {
 
   const endCall = () => {
     helloVoiceService.endCall();
-    clearCallVoiceHistory();
   };
 
   const toggleMute = () => {
@@ -85,8 +70,6 @@ export const useCallUI = () => {
     answerCall,
     endCall,
     toggleMute,
-    rejoinSummary,
-    transcripts,
-    setTranscripts
+    rejoinSummary
   };
 };
