@@ -906,7 +906,7 @@
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Proxy_auth_token': this.token
+                    'Authorization': this.token
                 }
             });
 
