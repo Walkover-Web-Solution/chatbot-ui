@@ -76,7 +76,7 @@ function ChatbotPreview() {
     return (
         <div className="flex h-screen w-full overflow-hidden relative bg-base-100">
             {/* Sidebar - always visible on large screens */}
-            <div className={`hidden lg:block bg-base-100 border-r border-base-300 overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? 'w-64' : 'w-0'}`}>
+            <div className={`hidden lg:block bg-base-100 border-base-300 overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer ? 'w-64' : 'w-0'}`}>
                 <div className="p-4">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-xl font-bold">Conversations</h2>
@@ -254,7 +254,7 @@ function ChatbotPreview() {
                                             }}
                                             aria-label="Send message"
                                         >
-                                            <Send className={`w-3 h-3 md:w-4 md:h-4 ${isLight ? 'text-white' : 'text-black'}`} />
+                                            <Send className={`w-3 h-3 md:w-4 md:h-4 ${isLight ? 'text-white' : 'text-slate-900'}`} />
                                         </button>
                                     </div>
                                 </div>

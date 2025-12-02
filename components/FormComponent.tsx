@@ -132,7 +132,7 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
   if (!open && !showWidgetForm) return null;
   if (!open && showWidgetForm) return (
     <div
-      className={`bg-white p-2 px-4 cursor-pointer z-[9999] hover:shadow-md transition-all mx-auto rounded-br-md rounded-bl-md ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
+      className={`bg-base-100 dark:bg-slate-800 p-2 px-4 cursor-pointer z-[9999] hover:shadow-md transition-all mx-auto rounded-br-md rounded-bl-md ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
       onClick={() => setOpen(true)}
       style={{
         background: `linear-gradient(to right, ${backgroundColor}, ${backgroundColor}CC)`,
@@ -152,7 +152,7 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
   );
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] overflow-y-auto flex items-start justify-center py-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 relative my-auto">
+      <div className="bg-base-100 dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-md mx-4 relative my-auto">
         {/* Card header */}
         <div className="bg-primary text-white p-5 rounded-t-lg" style={{
           background: `linear-gradient(to right, ${backgroundColor}, ${backgroundColor}CC)`,
@@ -172,7 +172,7 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
               <span className="label-text font-medium">Name *</span>
             </label>
             <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-slate-400">
                 <User size={18} />
               </div>
               <input
@@ -200,7 +200,7 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
               <span className="label-text font-medium">Email</span>
             </label>
             <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-slate-400">
                 <Mail size={18} />
               </div>
               <input
@@ -242,7 +242,7 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
                       </option>
                     ))}
                 </select>
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-slate-400">
                   <Phone size={18} />
                 </div>
               </div>

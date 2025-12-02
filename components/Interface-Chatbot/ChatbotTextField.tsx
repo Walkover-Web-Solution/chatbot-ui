@@ -191,6 +191,17 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     };
   }, [debouncedStopTyping]);
 
+  const suggestionButtonStyles = useMemo(() => ({
+    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#ffffff',
+    color: theme.palette.text.primary,
+    borderColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#e5e7eb',
+  }), [theme]);
+
+  const suggestionScrollButtonStyles = useMemo(() => ({
+    backgroundColor: theme.palette.mode === 'dark' ? `${theme.palette.background.paper}cc` : 'rgba(255,255,255,0.8)',
+    color: theme.palette.text.primary,
+  }), [theme]);
+
   const optionButtons = useMemo(() => {
     if (!options || options.length === 0) return null;
 
@@ -214,7 +225,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             <button
               key={index}
               onClick={() => handleSendMessage({ message: option })}
-              className="flex-shrink-0 px-4 py-2 text-sm rounded-lg shadow-sm bg-white hover:bg-gray-50 border border-gray-200 transition-colors duration-200"
+              className="flex-shrink-0 px-4 py-2 text-sm rounded-lg shadow-sm border transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-[#242424]"
+              style={suggestionButtonStyles}
             >
               {option}
             </button>
@@ -222,15 +234,19 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
         </div>
         {options.length > 1 && (
           <button
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/100 rounded-full p-1 shadow-md sm:hidden"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 rounded-full p-1 shadow-md sm:hidden transition-colors duration-200 hover:bg-gray-200/80 dark:hover:bg-[#242424]/80"
+            style={suggestionScrollButtonStyles}
             onClick={scrollOptions}
           >
-            <ChevronDown className="w-5 h-5" style={{ transform: 'rotate(-90deg)' }} />
+            <ChevronDown
+              className="w-5 h-5"
+              style={{ transform: 'rotate(-90deg)', color: suggestionScrollButtonStyles.color }}
+            />
           </button>
         )}
       </div>
     );
-  }, [options, handleSendMessage, scrollOptions]);
+  }, [options, handleSendMessage, scrollOptions, suggestionButtonStyles, suggestionScrollButtonStyles]);
 
   const imagePreviewsSection = useMemo(() => {
     if (images.length === 0) return null;
@@ -264,6 +280,16 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const textFieldStyles = useMemo(() => ({
     '& .MuiOutlinedInput-root': {
       padding: '4px 8px',
+      borderRadius: '12px',
+      backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#ffffff',
+      color: theme.palette.text.primary,
+    },
+    '& .MuiOutlinedInput-input': {
+      color: theme.palette.text.primary,
+    },
+    '& .MuiOutlinedInput-input::placeholder': {
+      color: theme.palette.text.primary,
+      opacity: 0.6,
     },
     '& .MuiOutlinedInput-notchedOutline': {
       border: 'none',
@@ -274,7 +300,13 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
       border: 'none',
     },
-  }), []);
+  }), [theme]);
+
+  const containerStyles = useMemo(() => ({
+    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#ffffff',
+    borderColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#e5e7eb',
+    outlineColor: theme.palette.primary.main,
+  }), [theme]);
 
   const aiIconElement = useMemo(() => {
     if (isHelloUser) return null;
@@ -311,10 +343,10 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             {isUploading ? (
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
-                <span className="text-[10px] font-medium text-gray-600">Uploading...</span>
+                <span className="text-[10px] font-medium text-gray-600 dark:text-slate-300">Uploading...</span>
               </div>
             ) : (
-              <Paperclip className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600" />
+            <Paperclip className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600 dark:text-slate-300" />
             )}
           </div>
         </label>
@@ -355,8 +387,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           onClose={() => { setShowEmojiPicker(false); focusTextField(); }}
         />
         <div
-          className="relative flex-col h-full items-center justify-between gap-2 p-2 bg-white rounded-xl border border-gray-300 focus-within:outline focus-within:outline-2 focus-within:outline-offset-0"
-          style={{ outlineColor: theme.palette.primary.main }}
+          className="relative flex-col h-full items-center justify-between gap-2 p-2 rounded-xl border focus-within:outline focus-within:outline-2 focus-within:outline-offset-0"
+          style={containerStyles}
         >
           <TextField
             key={subThreadId || currentTeamId}
@@ -383,7 +415,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                 className="group flex items-center justify-center w-8 h-8 cursor-pointer"
                 aria-label="Add emoji"
               >
-                <Smile className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600" />
+            <Smile className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600 dark:text-slate-300" />
               </div>
               {uploadButton}
             </div>
@@ -401,7 +433,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                   }}
                   aria-label="Send message"
                 >
-                  <Send className={`w-3 h-3 md:w-4 md:h-4 ${isLight ? 'text-black' : 'text-white'}`} />
+                  <Send className={`w-3 h-3 md:w-4 md:h-4 ${isLight ? 'text-slate-900' : 'text-white'}`} />
                 </button>
               )}
             </div>

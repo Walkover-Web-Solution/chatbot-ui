@@ -16,6 +16,7 @@ import {
 import Image from "next/image";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
+import { useTheme } from "@mui/material";
 
 // App imports
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
@@ -51,32 +52,33 @@ export function ChatbotHeaderPreview() {
   );
 }
 
-const SendEventOnComponentPress = ({ item, children }: { item: { type: string }, children: React.ReactNode }) => (
+const SendEventOnComponentPress = ({ item, iconColor, children }: { item: { type: string }, iconColor: string, children: React.ReactNode }) => (
   <button
-    className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+    className="p-2 rounded-full transition-colors hover:bg-base-200 dark:hover:bg-slate-700"
+    style={{ color: iconColor }}
     onClick={() => emitEventToParent("HEADER_BUTTON_PRESS", item)}
   >
     {children}
   </button>
 );
 
-const renderIconsByType = (item: { type: string }) => {
+const renderIconsByType = (item: { type: string }, iconColor: string) => {
   switch (item.type) {
     case 'setting':
       return (
-        <SendEventOnComponentPress item={item}>
+        <SendEventOnComponentPress item={item} iconColor={iconColor}>
           <Settings />
         </SendEventOnComponentPress>
       );
     case 'history':
       return (
-        <SendEventOnComponentPress item={item}>
+        <SendEventOnComponentPress item={item} iconColor={iconColor}>
           <History />
         </SendEventOnComponentPress>
       );
     case 'verticalThreeDots':
       return (
-        <SendEventOnComponentPress item={item}>
+        <SendEventOnComponentPress item={item} iconColor={iconColor}>
           <EllipsisVertical />
         </SendEventOnComponentPress>
       );
@@ -95,20 +97,21 @@ const renderIconsByType = (item: { type: string }) => {
           <div>
             <button
               type="button"
-              className="inline-flex items-center justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="inline-flex items-center justify-between w-full rounded-md border border-base-200 dark:border-slate-600 shadow-sm px-4 py-2 bg-base-100 dark:bg-slate-800 text-sm font-medium text-base-content hover:bg-base-200 dark:hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
               id="menu-button"
               aria-expanded={dropdownIsOpen}
               aria-haspopup="true"
               onClick={() => setDropdownIsOpen(!dropdownIsOpen)}
+              style={{ color: iconColor }}
             >
               <span className={selectedOption?.value ? "font-bold" : ""}>{selectedOption?.value || "Select"}</span>
-              <ChevronDown className="w-4 h-4 ml-2" />
+              <ChevronDown className="w-4 h-4 ml-2" color={iconColor} />
             </button>
           </div>
 
           {dropdownIsOpen && (
             <div
-              className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+              className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-base-100 dark:bg-slate-800 border border-base-200 dark:border-slate-700 focus:outline-none"
               role="menu"
               aria-orientation="vertical"
               aria-labelledby="menu-button"
@@ -118,13 +121,13 @@ const renderIconsByType = (item: { type: string }) => {
                 {item?.options && Array.isArray(item?.options) && item?.options.map((item, sectionIndex) => (
                   item?.section && (
                     <div key={sectionIndex}>
-                      <h4 className="text-gray-900 font-semibold px-4 py-2">{item?.section}</h4>
+                      <h4 className="px-4 py-2 font-semibold text-base-content">{item?.section}</h4>
                       <div className="pl-4">
                         {Array.isArray(item?.options) && item?.options.map((optionValue, optionIndex) => (
                           <a
                             key={optionIndex}
                             href="#"
-                            className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100"
+                            className="block px-4 py-2 text-sm text-base-content hover:bg-base-200 dark:hover:bg-slate-700 rounded-md"
                             role="menuitem"
                             tabIndex={-1}
                             id={`menu-item-${sectionIndex}-${optionIndex}`}
@@ -291,6 +294,8 @@ interface ChatbotHeaderProps {
 const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSessionId, tabSessionId, currentTeamId = "", currentChannelId = "", threadId = "", bridgeName = "" }) => {
   console.log('header')
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const iconColor = theme.palette.text.primary;
   const {
     setOptions,
     setToggleDrawer,
@@ -427,13 +432,13 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
 
     return (
       <button
-        className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+        className="p-2 hover:bg-base-200 dark:hover:bg-slate-700 rounded-full transition-colors"
         onClick={() => setToggleDrawer(!isToggledrawer)}
       >
-        {isToggledrawer ? null : <AlignLeft size={22} color="#555555" />}
+        {isToggledrawer ? null : <AlignLeft size={22} color={iconColor} />}
       </button>
     );
-  }, [subThreadList?.length, isHelloUser, isToggledrawer, setToggleDrawer]);
+  }, [subThreadList?.length, isHelloUser, isToggledrawer, setToggleDrawer, iconColor]);
 
   // Memoized create thread button
   const CreateThreadButton = useMemo(() => {
@@ -442,14 +447,14 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
     return (
       <div className="tooltip tooltip-right" data-tip="Create new thread">
         <button
-          className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+          className="p-2 hover:bg-base-200 dark:hover:bg-slate-700 rounded-full transition-colors"
           onClick={handleCreateNewSubThread}
         >
-          <SquarePen size={22} color="#555555" />
+          <SquarePen size={22} color={iconColor} />
         </button>
       </div>
     );
-  }, [showCreateThreadButton, isToggledrawer, handleCreateNewSubThread]);
+  }, [showCreateThreadButton, isToggledrawer, handleCreateNewSubThread, iconColor]);
 
   // Memoized header title section
   const HeaderTitleSection = useMemo(() => {
@@ -471,7 +476,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
           )}
           <div className="flex items-center">
             <div className="relative">
-              <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis text-sm">
+              <h1 className="text-base-content text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis text-sm">
                 {displayTitle}
               </h1>
               {unReadCount > 0 && (
@@ -513,7 +518,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
           )}
           <div className="flex items-center">
             <div className="relative">
-              <h1 className="text-gray-800 text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis text-base">
+              <h1 className="text-base-content text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis text-base">
                 {displayTitle}
               </h1>
             </div>
@@ -550,22 +555,22 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
 
     return fullScreen ? (
       <div
-        className="cursor-pointer p-2 rounded-full hover:bg-gray-200 transition-colors"
+        className="cursor-pointer p-2 rounded-full hover:bg-base-200 dark:hover:bg-slate-700 transition-colors"
         onClick={() => toggleFullScreen(false)}
       >
         {/* <PictureInPicture2 size={22} color="#555555" /> */}
-        <Minimize2 size={22} color="#555555" style={{ transform: 'rotate(90deg)' }} />
+        <Minimize2 size={22} color={iconColor} style={{ transform: 'rotate(90deg)' }} />
       </div>
     ) : (
       <div
-        className="cursor-pointer p-2 rounded-full transition-colors hover:bg-gray-200"
+        className="cursor-pointer p-2 rounded-full transition-colors hover:bg-base-200 dark:hover:bg-slate-700"
         onClick={() => toggleFullScreen(true)}
       >
         {/* <Maximize size={22} color="#555555" /> */}
-        <Maximize2 size={22} color="#555555" style={{ transform: 'rotate(90deg)' }} />
+        <Maximize2 size={22} color={iconColor} style={{ transform: 'rotate(90deg)' }} />
       </div>
     );
-  }, [shouldToggleScreenSize, hideFullScreenButton, fullScreen, toggleFullScreen]);
+  }, [shouldToggleScreenSize, hideFullScreenButton, fullScreen, toggleFullScreen, iconColor]);
 
   // Memoized close button
   const CloseButton = useMemo(() => {
@@ -573,13 +578,13 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
 
     return (
       <div
-        className="cursor-pointer p-2 py-2 rounded-full hover:bg-gray-200 transition-colors"
+        className="cursor-pointer p-2 py-2 rounded-full hover:bg-base-200 dark:hover:bg-slate-700 transition-colors"
         onClick={handleCloseChatbot}
       >
-        <X size={22} color="#555555" />
+        <X size={22} color={iconColor} />
       </div>
     );
-  }, [hideCloseButton, handleCloseChatbot]);
+  }, [hideCloseButton, handleCloseChatbot, iconColor]);
 
   const handleToggleMinimize = () => {
     if (!isChatbotMinimized && fullScreen) {
@@ -597,13 +602,13 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
     if (!isHelloUser) return null;
     return (
       <div
-        className="cursor-pointer p-2 py-2 rounded-full hover:bg-gray-200 transition-colors"
+        className="cursor-pointer p-2 py-2 rounded-full hover:bg-base-200 dark:hover:bg-slate-700 transition-colors"
         onClick={handleToggleMinimize}
       >
-        {isChatbotMinimized ? <Maximize2 size={22} color="#555555" style={{ transform: 'rotate(90deg)' }} /> : <Minus size={22} color="#555555" />}
+        {isChatbotMinimized ? <Maximize2 size={22} color={iconColor} style={{ transform: 'rotate(90deg)' }} /> : <Minus size={22} color={iconColor} />}
       </div>
     );
-  }, [isHelloUser, isChatbotMinimized, fullScreen, toggleFullScreen])
+  }, [isHelloUser, isChatbotMinimized, fullScreen, toggleFullScreen, iconColor])
 
   return isChatbotMinimized ?
     <div className="px-2 sm:py-4 py-3 w-full cursor-pointer" onClick={handleToggleMinimize}>
@@ -644,7 +649,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
 
           {headerButtons?.map((item, index) => (
             <React.Fragment key={`header-button-${index}`}>
-              {renderIconsByType(item)}
+              {renderIconsByType(item, iconColor)}
             </React.Fragment>
           ))}
 

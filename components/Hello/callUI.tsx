@@ -112,9 +112,9 @@ const CallUI: React.FC = () => {
         <div
             className={`transition-all duration-500 ease-in-out transform
                    ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}
-                   flex items-center justify-center mx-auto p-3 bg-white
+                   flex items-center justify-center mx-auto p-3 bg-base-100 dark:bg-slate-800
                    ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}
-                   border border-gray-300 rounded-bl-lg rounded-br-lg
+                   border border-base-200 dark:border-slate-700 rounded-bl-lg rounded-br-lg
                    shadow-lg overflow-hidden`}
         >
             {renderCallUI()}

@@ -1,6 +1,6 @@
 'use client';
 
-import { lighten } from "@mui/material";
+import { lighten, useTheme } from "@mui/material";
 import { AlignLeft, ChevronRight, SquarePen, Users, X } from "lucide-react";
 import { useContext, useEffect, useMemo } from "react";
 import { useDispatch } from "react-redux";
@@ -46,6 +46,9 @@ const ChatbotDrawer = ({
 }: ChatbotDrawerProps) => {
   const dispatch = useDispatch();
   const { backgroundColor, textColor } = useColor();
+  const theme = useTheme();
+  const iconColor = theme.palette.text.primary;
+  const mutedIconColor = theme.palette.text.secondary;
 
   // Context hooks
   const { messageRef } = useContext(MessageContext);
@@ -213,7 +216,7 @@ const ChatbotDrawer = ({
               .map((channel: any, index: number) => (
                 <div
                   key={`${channel?._id}-${index}`}
-                  className={`conversation-card max-h-16 h-full overflow-hidden text-ellipsis p-3 ${channel?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center`}
+                  className={`conversation-card max-h-16 h-full overflow-hidden text-ellipsis p-3 ${channel?.id === currentChatId ? 'border-2 border-primary' : 'border border-base-200 dark:border-slate-700'} bg-base-100 dark:bg-slate-800 rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center`}
                   style={{
                     borderColor: channel?.id === currentChatId ? backgroundColor : ''
                   }}
@@ -290,7 +293,7 @@ const ChatbotDrawer = ({
                         {channel?.widget_unread_count}
                       </div>
                     )}
-                    <ChevronRight size={16} className="text-gray-800" />
+                    <ChevronRight size={16} className="text-base-content" />
                   </div>
                 </div>
               ))}
@@ -313,7 +316,7 @@ const ChatbotDrawer = ({
               {teamsList.map((team: any, index: number) => (
                 <div
                   key={`${team?.id}-${index}`}
-                  className={`team-card p-3 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer rounded-lg flex items-center justify-between`}
+                  className={`team-card p-3 bg-base-100 dark:bg-slate-800 shadow-sm hover:shadow-md transition-all cursor-pointer rounded-lg flex items-center justify-between border border-base-200 dark:border-slate-700`}
                   onClick={() => handleChangeTeam(team?.id)}
                 >
                   <div className="flex items-center overflow-hidden">
@@ -325,7 +328,7 @@ const ChatbotDrawer = ({
                     </div>
                   </div>
                   <div className="flex-shrink-0 ml-2">
-                    <SquarePen size={16} color="#555555" />
+                    <SquarePen size={16} color={iconColor} />
                   </div>
                 </div>
               ))}
@@ -375,10 +378,10 @@ const ChatbotDrawer = ({
         className="cursor-pointer p-2 hover:bg-gray-200 rounded-full transition-colors"
         onClick={handleCloseChatbot}
       >
-        <X size={22} color="#555555" />
+        <X size={22} color={iconColor} />
       </div>
     );
-  }, [hideCloseButton, handleCloseChatbot]);
+  }, [hideCloseButton, handleCloseChatbot, iconColor]);
 
   return (
     <div className={`drawer ${isSmallScreen ? 'z-[99999]' : 'z-[999]'}`}>
@@ -399,7 +402,7 @@ const ChatbotDrawer = ({
       )}
 
       <div className={`drawer-side ${isHelloUser && isSmallScreen ? '100%' : 'max-w-[286px]'} ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
-        <div className="w-full h-full text-base-content relative bg-base-200 border-r-base-300 border flex flex-col">
+        <div className="w-full h-full text-base-content relative bg-base-200 flex flex-col">
           {/* Header with padding */}
           <div className="px-4 pt-4 pb-4">
             <div className="flex items-center justify-between">
@@ -409,7 +412,7 @@ const ChatbotDrawer = ({
                     className="p-2 hover:bg-gray-200 rounded-full transition-colors"
                     onClick={() => closeToggleDrawer(!isToggledrawer)}
                   >
-                    <AlignLeft size={22} color="#555555" />
+                    <AlignLeft size={22} color={iconColor} />
                   </button>
                 )}
               </div>
@@ -418,7 +421,12 @@ const ChatbotDrawer = ({
                   {Name ? `Hello ${Name.split(' ')[0]}` : 'Hello There!'}
                 </h2>
                 {tagline && Name && (
-                  <p className="text-xs text-gray-500 text-center">{tagline}</p>
+                  <p
+                    className="text-xs text-center"
+                    style={{ color: mutedIconColor }}
+                  >
+                    {tagline}
+                  </p>
                 )}
               </div>
               <div className="w-10 flex items-center justify-end">
@@ -428,7 +436,7 @@ const ChatbotDrawer = ({
                       className="p-2 hover:bg-gray-200 rounded-full transition-colors"
                       onClick={handleCreateNewSubThread}
                     >
-                      <SquarePen size={22} color="#555555" />
+                      <SquarePen size={22} color={iconColor} />
                     </button>
                   </div>
                 )}
@@ -446,7 +454,7 @@ const ChatbotDrawer = ({
 
           {/* Footer with branding - always stays at bottom */}
           <div className="px-4 pt-2 pb-2 flex items-center justify-center mt-auto">
-            <div className="text-xs text-gray-500 flex items-baseline gap-1">
+            <div className="text-xs text-gray-500 dark:text-slate-400 flex items-baseline gap-1">
               {isHelloUser && show_msg91 ? (
                 <>
                   Powered by

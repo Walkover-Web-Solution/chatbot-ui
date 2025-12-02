@@ -50,8 +50,8 @@ const EmojiSelector: React.FC<EmojiSelectorProps> = ({
 
     return (
         <div ref={emojiPickerRef} className="absolute bottom-full left-0 mb-2 z-50">
-            <EmojiPicker.Root onEmojiSelect={onEmojiSelect} className="isolate flex h-[368px] w-fit flex-col bg-white border-2 rounded-lg shadow-xl">
-                <EmojiPicker.Search ref={emojiSearchRef} className="z-10 mx-2 mt-2 appearance-none rounded-md bg-neutral-100 px-2.5 py-2 text-sm focus" />
+            <EmojiPicker.Root onEmojiSelect={onEmojiSelect} className="isolate flex h-[368px] w-fit flex-col bg-base-100 dark:bg-slate-900 border border-base-200 dark:border-slate-700 rounded-lg shadow-xl">
+                <EmojiPicker.Search ref={emojiSearchRef} className="z-10 mx-2 mt-2 appearance-none rounded-md bg-neutral-100 dark:bg-slate-800 px-2.5 py-2 text-sm focus text-base-content dark:text-slate-100" />
                 <EmojiPicker.Viewport className="relative flex-1 outline-hidden">
                     <EmojiPicker.Loading className="absolute inset-0 flex items-center justify-center text-neutral-400 text-sm">
                         Loading…
@@ -64,7 +64,7 @@ const EmojiSelector: React.FC<EmojiSelectorProps> = ({
                         components={{
                             CategoryHeader: ({ category, ...props }) => (
                                 <div
-                                    className="bg-white px-3 pt-3 pb-1.5 font-medium text-neutral-600 text-xs"
+                                    className="px-3 pt-3 pb-1.5 font-medium text-neutral-600 dark:text-slate-300 text-xs bg-base-100 dark:bg-slate-900"
                                     {...props}
                                 >
                                     {category.label}
@@ -77,7 +77,7 @@ const EmojiSelector: React.FC<EmojiSelectorProps> = ({
                             ),
                             Emoji: ({ emoji, ...props }) => (
                                 <button
-                                    className="flex size-10 items-center justify-center rounded-md text-2xl data-[active]:bg-neutral-100"
+                                    className="flex size-10 items-center justify-center rounded-md text-2xl data-[active]:bg-neutral-100 dark:data-[active]:bg-slate-700"
                                     {...props}
                                 >
                                     {emoji.emoji}
