@@ -92,7 +92,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
 
     useEffect(() => {
         if (!demo_widget) {
-            emitEventToParent('SET_BADGE_COUNT', { badgeCount: totalNoOfUnreadMsgs > 99 ? '99+' : totalNoOfUnreadMsgs })
+            emitEventToParent('SET_BADGE_COUNT', { badgeCount: totalNoOfUnreadMsgs > 99 ? '99+' : totalNoOfUnreadMsgs, channelId: '*' })
         }
     }, [totalNoOfUnreadMsgs, demo_widget])
 

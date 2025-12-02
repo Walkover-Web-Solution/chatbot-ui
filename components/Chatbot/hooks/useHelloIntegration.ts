@@ -198,7 +198,8 @@ export const useOnSendHello = () => {
     presence_channel,
     currentChatId,
     currentTeamId,
-    currentChannelId
+    currentChannelId,
+    overrideChannelId
   } = useReduxStateManagement({
     chatSessionId,
     tabSessionId
@@ -222,7 +223,7 @@ export const useOnSendHello = () => {
 
     try {
 
-      const channelIdToUse = newChannelId || currentChannelId;
+      const channelIdToUse = newChannelId || currentChannelId || overrideChannelId;
       const chatIdToUse = overrideChatId || currentChatId;
       const teamIdToUse = overrideTeamId || currentTeamId;
 
@@ -297,7 +298,8 @@ export const useOnSendHello = () => {
         dispatch(setDataInAppInfoReducer({
           subThreadId: data?.['channel'],
           currentChatId: data?.['id'],
-          currentChannelId: data?.['channel']
+          currentChannelId: data?.['channel'],
+          overrideChannelId: ""
         }));
         // no need to append user message again this time
         // addHelloMessage(newMessage, data?.['channel']);

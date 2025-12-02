@@ -298,13 +298,20 @@
                     this.enableDomainTracking();
                     break;
                 case 'SET_BADGE_COUNT':
-                    this.updateBadgeCount(data?.badgeCount);
+                    this.updateBadgeCount(data?.badgeCount, data?.channelId || '*');
                     break;
                 case 'SHOW_STARTER_QUESTION':
                     this.createAndShowStarterQuestion(data?.message, data?.options);
                     break;
                 case 'HIDE_STARTER_QUESTION':
                     this.hideStarterQuestion();
+                    break;
+                case 'TICKET_UNREAD_COUNT':
+                    // Resolve the promise stored in getTicketUnreadCount
+                    if (this.state.unreadCountResolver) {
+                        this.state.unreadCountResolver(data?.count || 0);
+                        this.state.unreadCountResolver = null;
+                    }
                     break;
                 case 'RELOAD_PARENT':
                     // window.location.reload()
@@ -345,15 +352,20 @@
             }
         }
 
-        updateBadgeCount(data) {
+        updateBadgeCount(data, channelId) {
             const badgeElement = document.getElementById(this.elements.unReadMsgCountBadge);
-            if (badgeElement) {
+            if (badgeElement && channelId === '*') {
                 if (!data || parseInt(data) === 0) {
                     badgeElement.style.display = 'none';
                 } else {
                     badgeElement.textContent = data;
                     badgeElement.style.display = 'block'; // or 'block' depending on your layout
                 }
+            }
+            const divElement = document.getElementById(`unread-${channelId}`);
+            if (divElement) {
+                divElement.style.display = 'block';
+                divElement.textContent = data;
             }
         }
 
@@ -521,7 +533,7 @@
                 });
 
                 iframe.style.height = '100vh';
-                iframe.style.width = '100vw';                
+                iframe.style.width = '100vw';
                 modalContainer.appendChild(iframe);
                 document.body.appendChild(modalContainer);
 
@@ -711,7 +723,7 @@
             iframeObserver.observe(document.documentElement);
         }
 
-        openChatbot() {
+        openChatbot(id = "") {
             if (this.state?.chatbotSize !== 'NORMAL') {
                 this.toggleFullscreen(false);
             }
@@ -744,7 +756,7 @@
 
             const iframeComponent = document.getElementById(this.elements.chatbotIframeComponent);
             iframeComponent?.contentWindow?.postMessage(openMessage, '*');
-            sendMessageToChatbot({ type: "CHATBOT_OPEN" })
+            sendMessageToChatbot({ type: "CHATBOT_OPEN", data: { id } })
         }
 
         closeChatbot() {
@@ -1365,7 +1377,7 @@
         addCustomData: (data) => sendMessageToChatbot({ type: "UPDATE_USER_DATA_SEGMENTO", data }),
         modifyCustomData: (data) => sendMessageToChatbot({ type: "UPDATE_USER_DATA_SEGMENTO", data }),
         addUserEvent: (data) => sendMessageToChatbot({ type: "ADD_USER_EVENT_SEGMENTO", data }),
-        open: () => helloChatbotManager.openChatbot(),
+        open: (id = "") => helloChatbotManager.openChatbot(id),
         close: () => helloChatbotManager.closeChatbot(),
         hide: () => {
             helloChatbotManager.hideChatbotWithIcon();
@@ -1383,7 +1395,24 @@
         },
         handlePushNotification(data) {
             helloChatbotManager.handlePushNotification(data);
-        }
+        },
+        showTicket: (id) => sendMessageToChatbot({ type: "SHOW_TICKET", data: { id } }),
+        getTicketUnreadCount: (id) => {
+            return new Promise((resolve, reject) => {
+                // Store the resolver so handleIncomingMessages can call it
+                helloChatbotManager.state.unreadCountResolver = resolve;
+
+                // Set a timeout to clean up and resolve with 0 if no response
+                setTimeout(() => {
+                    if (helloChatbotManager.state.unreadCountResolver) {
+                        helloChatbotManager.state.unreadCountResolver(0);
+                        helloChatbotManager.state.unreadCountResolver = null;
+                    }
+                }, 5000);
+
+                sendMessageToChatbot({ type: "GET_TICKET_UNREAD_COUNT", data: { id } });
+            });
+        },
     };
 
     helloChatbotManager.initializeChatbot();

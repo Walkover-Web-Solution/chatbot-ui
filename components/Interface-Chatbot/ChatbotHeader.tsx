@@ -295,20 +295,25 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
     setToggleDrawer,
   } = useChatActions();
 
-  const { isToggledrawer, bridgeName: reduxBridgeName, headerButtons, messageIds, lastMessage, unReadCount, isChatbotMinimized } = useCustomSelector((state) => ({
-    isToggledrawer: state.Chat?.isToggledrawer,
-    bridgeName: state.Chat.bridgeName || [],
-    headerButtons: state.Chat?.headerButtons || [],
-    messageIds: state.Chat?.messageIds?.[state.Chat.subThreadId] || [],
-    lastMessage: (() => {
-      const lastMessageId = state.Chat?.messageIds?.[currentChannelId]?.[0]
-      return state.Chat?.msgIdAndDataMap?.[currentChannelId]?.[lastMessageId]
-    })(),
-    unReadCount: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
-      (channel: any) => channel?.channel === currentChannelId
-    )?.widget_unread_count || 0,
-    isChatbotMinimized: state.draftData?.isChatbotMinimized || false
-  }))
+  const { isToggledrawer, bridgeName: reduxBridgeName, headerButtons, messageIds, lastMessage, unReadCount, isChatbotMinimized, isFullScreen } = useCustomSelector((state) => {
+    const fullScreen = state.Hello?.[chatSessionId]?.helloConfig?.fullScreen
+    return {
+      isToggledrawer: state.Chat?.isToggledrawer,
+      bridgeName: state.Chat.bridgeName || [],
+      headerButtons: state.Chat?.headerButtons || [],
+      messageIds: state.Chat?.messageIds?.[state.Chat.subThreadId] || [],
+      lastMessage: (() => {
+        const lastMessageId = state.Chat?.messageIds?.[currentChannelId]?.[0]
+        return state.Chat?.msgIdAndDataMap?.[currentChannelId]?.[lastMessageId]
+      })(),
+      unReadCount: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
+        (channel: any) => channel?.channel === currentChannelId
+      )?.widget_unread_count || 0,
+      isChatbotMinimized: state.draftData?.isChatbotMinimized || false,
+      isFullScreen: (fullScreen === true || fullScreen === 'true') ?? false
+    }
+  }
+  )
 
   const { chatbotConfig } = useContext<any>(ChatbotContext);
   const {
@@ -647,10 +652,10 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
             </React.Fragment>
           ))}
 
-          <div className="flex items-center">
+          {!isFullScreen && <div className="flex items-center">
             {ScreenSizeToggleButton}
             {(isMobileSDK || !isHelloUser) ? CloseButton : MinimizeButton}
-          </div>
+          </div>}
         </div>
       </div>
     </div>
