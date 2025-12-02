@@ -51,7 +51,7 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
     })(),
     greetingMessage: state.Hello?.[chatSessionId]?.greeting
   }));
-  
+
   const themePalette = useMemo(() => ({
     "--primary-main": lighten(backgroundColor, 0.4),
   }), [backgroundColor]);
@@ -84,6 +84,16 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
 
     setShowScrollButton(!isNearBottom);
   }, []);
+
+  // Scroll to bottom on initial mount and when session changes
+  useEffect(() => {
+    if (scrollableDivRef.current) {
+      scrollableDivRef.current.scrollTo({
+        top: scrollableDivRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }, [currentChannelId]);
 
   // Handle new message and scroll to bottom
   useEffect(() => {
@@ -176,40 +186,45 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
   ));
 
   return (
-    <div
-      id="scrollableDiv"
-      ref={scrollableDivRef}
-      onScroll={handleScroll}
-      className="w-full h-full flex-1 overflow-auto px-3 sm:p-4"
-      style={{
-        display: 'flex',
-        flexDirection: 'column-reverse',
-        minHeight: 0 // Important for flex child to properly scroll
-      }}
-    >
-      <InfiniteScroll
-        dataLength={messageIds.length}
-        next={fetchMoreData}
-        hasMore={hasMoreMessages}
-        loader={<Loader />}
-        scrollableTarget="scrollableDiv"
-        scrollThreshold='200px'
-        inverse={true}
+    <div className="w-full h-full flex-1 relative overflow-hidden flex flex-col">
+      <div
+        id="scrollableDiv"
+        ref={scrollableDivRef}
+        onScroll={handleScroll}
+        className="w-full h-full overflow-auto px-3 sm:p-4"
         style={{
           display: 'flex',
-          flexDirection: 'column-reverse'
+          flexDirection: 'column-reverse',
+          minHeight: 0 // Important for flex child to properly scroll
         }}
       >
-        {renderThinkingIndicator}
-        {renderedMessages}
-        {renderGreetingMessage}
-      </InfiniteScroll>
-      <MoveToDownButton
-        movetoDown={moveToDown}
-        showScrollButton={showScrollButton}
-        backgroundColor={lighten(backgroundColor, 0.1)}
-        textColor={textColor}
-      />
+        <InfiniteScroll
+          dataLength={messageIds.length}
+          next={fetchMoreData}
+          hasMore={hasMoreMessages}
+          loader={<Loader />}
+          scrollableTarget="scrollableDiv"
+          scrollThreshold='400px'
+          inverse={true}
+          style={{
+            display: 'flex',
+            flexDirection: 'column-reverse'
+          }}
+          className="max-w-5xl mx-auto w-full"
+        >
+          {renderThinkingIndicator}
+          {renderedMessages}
+          {renderGreetingMessage}
+        </InfiniteScroll>
+      </div>
+      <div className="max-w-5xl mx-auto w-full pointer-events-none relative">
+        <MoveToDownButton
+          movetoDown={moveToDown}
+          showScrollButton={showScrollButton}
+          backgroundColor={lighten(backgroundColor, 0.1)}
+          textColor={textColor}
+        />
+      </div>
     </div>
   );
 

@@ -31,12 +31,15 @@
 
 .move-to-down-button {
   position: absolute !important;
-  bottom: 120px !important;
+  bottom: 10px !important;
   right: 10px !important;
   padding: 5px !important;
   border-radius: 50px !important;
   cursor: pointer !important;
-  z-index: 99;
+  z-index: 999999 !important;
+  pointer-events: auto !important;
+  background-color: var(--down-btn-bg-color, #333) !important;
+  color: var(--down-btn-text-color, white) !important;
   /* box-shadow: 1px 0 2px 2px rgba(0, 0, 0, 0.2); */
 }
 
