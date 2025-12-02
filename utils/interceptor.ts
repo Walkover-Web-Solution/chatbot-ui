@@ -19,7 +19,7 @@ axios.interceptors.request.use(
   async (config) => {
     // Check if URL contains 'rag' to determine which token to use
     if (config.url?.includes("rag")) {
-      config.headers["proxy_auth_token"] = sessionStorage.getItem("ragToken");
+      config.headers["Authorization"] = sessionStorage.getItem("ragToken");
     } else {
       config.headers["Authorization"] =
       sessionStorage.getItem("interfaceToken")
