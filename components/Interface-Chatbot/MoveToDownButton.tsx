@@ -9,13 +9,10 @@ function MoveToDownButton({ movetoDown, showScrollButton, backgroundColor, textC
     <IconButton
       onClick={movetoDown}
       className="move-to-down-button"
-      sx={{
-        backgroundColor: backgroundColor || "#333",
-        color: textColor || "white",
-        position: "fixed",
-        bottom: "20px",
-        right: "20px",
-      }}
+      style={{
+        '--down-btn-bg-color': backgroundColor || "#333",
+        '--down-btn-text-color': textColor || "white",
+      } as React.CSSProperties}
       disableRipple
     >
       <KeyboardDoubleArrowDownIcon color="inherit" />
