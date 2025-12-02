@@ -152,7 +152,7 @@ const ChatbotDrawer = ({
   };
 
   const handleChangeTeam = (teamId: string) => {
-    dispatch(setDataInAppInfoReducer({ subThreadId: '', currentTeamId: teamId, currentChannelId: "", currentChatId: "" }));
+    dispatch(setDataInAppInfoReducer({ subThreadId: '', currentTeamId: teamId, currentChannelId: "", currentChatId: "", overrideChannelId: "" }));
 
     if (isSmallScreen) setToggleDrawer(false);
     if (images?.length > 0) setImages([]);
@@ -201,7 +201,7 @@ const ChatbotDrawer = ({
   };
 
   const handleSendMessageWithNoTeam = () => {
-    dispatch(setDataInAppInfoReducer({ subThreadId: '', currentTeamId: "", currentChannelId: "", currentChatId: "" }));
+    dispatch(setDataInAppInfoReducer({ subThreadId: '', currentTeamId: "", currentChannelId: "", currentChatId: "", overrideChannelId: "" }));
 
     if (isSmallScreen) setToggleDrawer(false);
     if (images?.length > 0) setImages([]);
