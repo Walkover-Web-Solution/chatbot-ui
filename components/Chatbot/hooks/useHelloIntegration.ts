@@ -326,6 +326,9 @@ export const useOnSendHello = () => {
       if (isBot) {
         setLoading(false);
       }
+      dispatch(setDataInAppInfoReducer({
+        overrideChannelId: ""
+      }));
       console.error("Error sending message to Hello:", error);
     }
   }, [
