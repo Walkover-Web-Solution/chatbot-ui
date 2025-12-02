@@ -63,8 +63,8 @@ const EmptyChatView = React.memo(() => (
 ));
 
 const ActiveChatView = React.memo(() => (
-  <div className="flex flex-col h-full overflow-auto" style={{ height: '100vh' }}>
-    <div className="flex-1 overflow-y-auto max-w-5xl mx-auto w-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+  <div className="flex flex-col flex-1 overflow-hidden">
+    <div className="w-full h-full overflow-hidden relative flex-1">
       <MessageList />
     </div>
     <div className="max-w-5xl mx-auto p-3 pb-3 w-full">
