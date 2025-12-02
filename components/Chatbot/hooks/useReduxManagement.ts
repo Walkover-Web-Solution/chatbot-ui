@@ -32,7 +32,8 @@ export const useReduxStateManagement = ({
     currentChatId,
     currentChannelId,
     currentTeamId,
-    isDefaultNavigateToChatScreen
+    isDefaultNavigateToChatScreen,
+    overrideChannelId
   } = useCustomSelector((state) => ({
     interfaceContextData: state.Interface?.[chatSessionId]?.interfaceContext?.variables,
     isHelloUser: state.draftData?.isHelloUser || false,
@@ -50,6 +51,7 @@ export const useReduxStateManagement = ({
     currentChatId: state?.appInfo?.[tabSessionId]?.currentChatId,
     currentChannelId: state?.appInfo?.[tabSessionId]?.currentChannelId,
     currentTeamId: state?.appInfo?.[tabSessionId]?.currentTeamId,
+    overrideChannelId: state?.appInfo?.[tabSessionId]?.overrideChannelId,
   }));
 
   return {
@@ -68,6 +70,7 @@ export const useReduxStateManagement = ({
     widgetToken,
     currentChatId,
     currentChannelId,
-    currentTeamId
+    currentTeamId,
+    overrideChannelId
   };
 };

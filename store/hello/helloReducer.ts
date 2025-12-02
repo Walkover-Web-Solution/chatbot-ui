@@ -1,4 +1,5 @@
 import actionType from "@/types/utility.js";
+import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 import { SliceCaseReducers, ValidateSliceCaseReducers } from "@reduxjs/toolkit";
 import { $HelloReduxType, ChannelListData, HelloData } from "../../types/hello/HelloReduxType";
 
@@ -160,6 +161,7 @@ export const reducers: ValidateSliceCaseReducers<
       } else {
         channel.widget_unread_count = (channel.widget_unread_count || 0) + 1;
       }
+      emitEventToParent('SET_BADGE_COUNT', { badgeCount: channel.widget_unread_count > 99 ? '99+' : channel.widget_unread_count, channelId: channel?.channel })
     }
   },
 

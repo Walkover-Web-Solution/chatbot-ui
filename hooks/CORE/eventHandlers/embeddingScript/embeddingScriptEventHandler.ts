@@ -39,15 +39,15 @@ class EmbeddingScrpitEventRegistry {
   }
 }
 
-export const useEmbeddingScriptEventHandler = (tabSessionId: string) => {
+export const useEmbeddingScriptEventHandler = (tabSessionId: string, chatSessionId: string) => {
   const EmebeddingScriptEventHandler: EmbeddingScriptEventRegistryInstance = new EmbeddingScrpitEventRegistry(tabSessionId)
 
   useHandleGtwyEmbeddingScriptEvents(EmebeddingScriptEventHandler)
-  useHandleHelloEmbeddingScriptEvents(EmebeddingScriptEventHandler)
+  useHandleHelloEmbeddingScriptEvents(EmebeddingScriptEventHandler, chatSessionId)
 
   const handleMessage = (event: MessageEvent) => {
     const { type } = event.data;
-    if ( EmebeddingScriptEventHandler.isEventAllowed(type) ) {
+    if (EmebeddingScriptEventHandler.isEventAllowed(type)) {
       EmebeddingScriptEventHandler.on(type, event)
     }
   }

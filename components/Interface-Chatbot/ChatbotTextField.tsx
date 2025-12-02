@@ -45,7 +45,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   // Reply context
   const { replyToMessage, clearReply } = useReplyContext();
 
-  const { isHelloUser, mode, inbox_id, show_send_button, assigned_type } = useCustomSelector((state) => ({
+  const { isHelloUser, mode, inbox_id, show_send_button, assigned_type, ticketMode } = useCustomSelector((state) => ({
     isHelloUser: state.draftData?.isHelloUser || false,
     mode: state.Hello?.[chatSessionId]?.mode || [],
     inbox_id: state.Hello?.[chatSessionId]?.widgetInfo?.inbox_id,
@@ -54,6 +54,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
       const foundType = state.Hello?.[chatSessionId]?.channelListData?.channels?.find((channel: any) => channel?.channel === currentChannelId)?.assigned_type;
       return foundType === undefined ? 'bot' : foundType;
     })(),
+    ticketMode: state.Hello?.[chatSessionId]?.helloConfig?.viewMode === 'ticket',
   }));
 
   const { messageRef } = useContext(MessageContext);
@@ -377,6 +378,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             placeholder="Message AI Assistant..."
             className="h-full min-h-[10px] max-h-[400px] bg-transparent focus:outline-none disabled:cursor-not-allowed"
             maxRows={6}
+            minRows={ticketMode ? 3 : 1}
             sx={textFieldStyles}
             autoFocus
             inputMode="text"
