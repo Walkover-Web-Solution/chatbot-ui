@@ -351,7 +351,8 @@ export const useOnSendHello = () => {
     helloVariables,
     companyId,
     demo_widget,
-    replyToMessage
+    replyToMessage,
+    overrideChannelId
   ]);
 };
 

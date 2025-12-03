@@ -161,10 +161,15 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         dispatch(setDataInAppInfoReducer({ isChatbotOpen }))
         dispatch(setDataInDraftReducer({ isChatbotMinimized: false }))
         if (id) {
-            dispatch(setDataInAppInfoReducer({
-                subThreadId: id,
-                currentChannelId: id
-            }));
+            // Create a mock MessageEvent to pass to handleShowTicket
+            const mockEvent = {
+                data: {
+                    data: {
+                        id: id
+                    }
+                }
+            } as MessageEvent;
+            handleShowTicket(mockEvent);
         }
     }
 
@@ -251,7 +256,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
 
         eventHandler.addEventHandler('helloRunTimeData', handleHelloRuntimeData)
 
-        eventHandler.addEventHandler('CHATBOT_OPEN', (event: MessageEvent) => { console.log(event, 'event'), handleChatbotVisibility(true, event?.data?.data?.id) })
+        eventHandler.addEventHandler('CHATBOT_OPEN', (event: MessageEvent) => { handleChatbotVisibility(true, event?.data?.data?.id) })
 
         eventHandler.addEventHandler('CHATBOT_CLOSE', () => handleChatbotVisibility(false))
 
