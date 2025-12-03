@@ -4,6 +4,9 @@ import { getLocalStorage } from "@/utils/utilities";
 import { EventEmitter } from "events";
 import WebRTC from "msg91-webrtc-call";
 
+const urlParams = new URLSearchParams(window.location.search);
+const env = urlParams.get('env');
+const WebRTC_environment = env === 'stage' ? 'prod' : 'test';
 class HelloVoiceService {
     private static instance: HelloVoiceService | null = null;
     private webrtc: any = null;
@@ -30,7 +33,7 @@ class HelloVoiceService {
         const clientToken = getLocalStorage('HelloClientToken');
         if (!clientToken) return;
 
-        this.webrtc = WebRTC(clientToken, 'test');
+        this.webrtc = WebRTC(clientToken, WebRTC_environment);
         this.webrtc.on("call", this.handleOutgoingCall);
     }
 

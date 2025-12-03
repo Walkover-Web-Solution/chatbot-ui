@@ -1002,7 +1002,12 @@
             if (!iframeComponent) return;
             let encodedData = '';
             encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true }));
-            const modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
+            let modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
+            const urlParams = new URLSearchParams(window.location.search);
+            const env = urlParams.get('env');
+            if (env === 'stage') {
+                modifiedUrl += `&env=${env}`;
+            }
             iframeComponent.src = modifiedUrl;
 
             this.props.config = { ...this.config };
