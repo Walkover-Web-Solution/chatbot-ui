@@ -48,9 +48,10 @@ export const useNotificationSocketEventHandler = ({ chatSessionId }: { chatSessi
     const handleNewMessage = useCallback((data: any, acknowledgement: any) => {
         const { response } = data;
         const { message } = response || {};
-        const { type, message_type } = message || {};
+        const { type, message_type, content = null } = message || {};
         switch (type) {
             case 'notification':
+                if (!content) return;
                 if (message_type === 'Popup' || message_type?.toLowerCase() === 'custom') {
                     emitEventToParent('PUSH_NOTIFICATION', message)
                 } else if (message_type === 'Message') {
