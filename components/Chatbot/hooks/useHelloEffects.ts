@@ -189,7 +189,9 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                     }
                     window.parent.postMessage({ type: 'hide_widget', data: widgetData?.hide_launcher }, '*');
                     window.parent.postMessage({ type: 'setDataInLocal', data: { key: 'widgetInfo', payload: JSON.stringify({ additionalData: { widgetToken } }) } }, '*');
-                    window.parent.postMessage({ type: 'launch_widget', data: widgetData?.launch_widget }, '*');
+                    if (widgetData?.launch_widget) {
+                        window.parent.postMessage({ type: 'launch_widget', data: widgetData?.launch_widget }, '*');
+                    }
                     botType = widgetData?.bot_type;
                     enable_call = widgetData?.voice_call_widget;
                     // is_domain_enable = widgetData?.is_domain_enable
