@@ -281,10 +281,10 @@ export async function initializeHelloChat(): Promise<any> {
 }
 
 // Function to send message to Hello chat
-export async function sendMessageToHelloApi(message: string, attachment: Array<object> = [], channelDetail?: any, chat_id?: string, helloVariables: any = {}, demo_widget: boolean = false): Promise<any> {
-  let messageType = 'text'
-  // Determine message type based on attachment and message content
-  if (attachment?.length > 0) {
+export async function sendMessageToHelloApi({ message = "", attachments = [], channelDetail, chat_id, helloVariables = {}, voiceCall = false, demo_widget = false }: { message?: string, attachments?: any, channelDetail?: any, chat_id?: string | number, helloVariables?: any, voiceCall?: boolean, demo_widget?: boolean }): Promise<any> {
+  let messageType = !voiceCall ? 'text' : 'voice_call';
+  // Determine message type based on attachments and message content
+  if (attachments?.length > 0) {
     if (message === '') {
       messageType = 'attachment'
     } else {
@@ -300,7 +300,7 @@ export async function sendMessageToHelloApi(message: string, attachment: Array<o
         message_type: messageType,
         content: {
           text: message,
-          attachment: attachment,
+          attachment: attachments,
         },
         ...((!chat_id || demo_widget) ? { channelDetail } : {}),
         chat_id: chat_id ? chat_id : null,
@@ -379,19 +379,19 @@ export async function getClientToken(): Promise<any> {
 }
 
 // Get call token for WebRTC
-export async function getCallToken(): Promise<any> {
+export async function getCallToken(channelId?: string): Promise<any> {
   try {
     // const isAnon = getIsAnonValue();
     // `${HELLO_HOST_URL}/web-rtc/get-call-token/?is_anon=${isAnon}${channelId ? `&channel=${channelId}` : ''}`,
     const response = await axios.get(
-      `${HELLO_HOST_URL}/web-rtc/get-call-token/`,
+      `${HELLO_HOST_URL}/web-rtc/get-call-token/?${channelId ? `channel=${channelId}` : ''}`,
       {
         headers: {
           authorization: getAuthorization(),
         },
       }
     );
-    if (response?.data?.data?.jwt_token) {
+    if (response?.data?.data?.jwt_token && !channelId) {
       setLocalStorage("HelloCallToken", response?.data?.data?.jwt_token);
     }
     return response?.data?.data;

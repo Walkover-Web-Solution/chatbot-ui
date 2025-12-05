@@ -1,12 +1,13 @@
 // useSocketEvents.ts
+import helloVoiceService from '@/components/Chatbot/hooks/HelloVoiceService';
 import { useReduxStateManagement } from '@/components/Chatbot/hooks/useReduxManagement';
+import { useTabVisibility } from '@/components/Chatbot/hooks/useTabVisibility';
 import { setHelloEventMessage, setTyping } from '@/store/chat/chatSlice';
-import { changeChannelAssigned, setUnReadCount } from '@/store/hello/helloSlice';
+import { changeChannelAssigned, moveChannelToTop, setUnReadCount } from '@/store/hello/helloSlice';
 import { getLocalStorage, playMessageRecivedSound, setLocalStorage } from '@/utils/utilities';
 import { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import socketManager from './socketManager';
-import { useTabVisibility } from '@/components/Chatbot/hooks/useTabVisibility';
 // Define types for better type safety
 export interface HelloMessage {
     role: string;
@@ -53,13 +54,28 @@ export const useSocketEvents = ({
                 channelId,
                 resetCount: false
             }));
-
+            dispatch(moveChannelToTop({ channelId }));
         }
 
         switch (type) {
             case 'chat': {
-                const { channel, chat_id, new_event } = message || {};
+                const { channel, chat_id, new_event, message_type = null, content: { status } } = message || {};
                 if (new_event) {
+                    if (message_type === 'voice_call') {
+                        if (status === "completed" || status === "no_answer" || status === "in-progress") {
+                            const messageId = response.id || response.timetoken;
+                            addHelloMessage({ ...message, id: messageId }, channel);
+                            dispatch(setUnReadCount({
+                                channelId: channel,
+                                resetCount: false
+                            }));
+                            dispatch(moveChannelToTop({ channelId: channel }));
+                        }
+                        if (status === "completed" && currentChannelId === channel) {
+                            helloVoiceService.emitEvent('call-completed', {})
+                        }
+                        return
+                    }
                     if (!chat_id) {
                         setLoading(false);
 
@@ -75,6 +91,10 @@ export const useSocketEvents = ({
                     } else if (chat_id && !isTabVisible) {
                         const messageId = response.timetoken || response.id;
                         addHelloMessage({ ...message, id: messageId }, channel);
+                    }
+                    else if (chat_id && isTabVisible) {
+                        // move channel to top on user message
+                        dispatch(moveChannelToTop({ channelId: channel }));
                     }
                 }
                 break;

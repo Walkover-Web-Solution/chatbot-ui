@@ -216,24 +216,26 @@ export const useOnSendHello = () => {
 
   const isBot = assigned_type === 'bot';
 
-  return useCallback(async (message: string, newMessage: HelloMessage, newChannelId?: string) => {
-    if (!message.trim() && (!images || images.length === 0)) return;
-
+  return useCallback(async ({ message, newMessage, voiceCall, overrideChannelId, overrideChatId, overrideTeamId }: { message?: string, newMessage?: any, voiceCall?: boolean, overrideChannelId?: string, overrideChatId?: string | number, overrideTeamId?: string }) => {
+    if (!voiceCall && (!message?.trim() && (!images || images.length === 0))) return;
 
     try {
+      const channelIdToUse = overrideChannelId || currentChannelId;
+      const chatIdToUse = overrideChatId || currentChatId;
+      const teamIdToUse = overrideTeamId || currentTeamId;
 
-      newChannelId = currentChannelId;
-      if (!currentChatId && !currentChannelId) {
-        newChannelId = generateChannelId(companyId);
+      let workingChannelId = channelIdToUse;
+      if (!chatIdToUse && !channelIdToUse) {
+        workingChannelId = generateChannelId(companyId);
         dispatch(setDataInAppInfoReducer({
-          subThreadId: newChannelId
+          subThreadId: workingChannelId
         }));
       }
 
       if (newMessage) {
-        addHelloMessage(newMessage, newChannelId);
+        addHelloMessage(newMessage, workingChannelId);
       }
-      const channelDetail = (!currentChatId || demo_widget) ? {
+      const channelDetail = (!chatIdToUse || demo_widget) ? {
         call_enabled: null,
         uuid,
         unique_id,
@@ -246,34 +248,39 @@ export const useOnSendHello = () => {
         customer_name: null,
         customer_number: null,
         customer_mail: null,
-        team_id: currentTeamId,
+        team_id: teamIdToUse,
         new: true,
-        channel_hex: newChannelId || undefined
+        channel_hex: workingChannelId || undefined
       } : undefined;
 
-      // Show widget form only if in case of new chat and showWidgetForm is true
-      if (!currentChatId && showWidgetForm) {
-        globalDispatch(setOpenHelloForm(true));
+      let attachments;
+      if (!voiceCall) {
+        // Show widget form only if in case of new chat and showWidgetForm is true
+        if (!chatIdToUse && showWidgetForm) {
+          globalDispatch(setOpenHelloForm(true));
+          setLoading(true);
+        }
+
+        attachments = Array.isArray(images) && images?.length ? images : null;
+
+        if (attachments) {
+          globalDispatch(setImages([]));
+        }
+
+        if ((isBot || !assigned_type)) {
+          setLoading(true);
+        }
+
+        startTimeoutTimer();
       }
 
-      const attachments = Array.isArray(images) && images?.length ? images : null;
-
-      if (attachments) {
-        globalDispatch(setImages([]));
+      if (demo_widget && channelIdToUse) {
+        await socketManager.subscribe([channelIdToUse]);
       }
 
-      if (isBot || !assigned_type) {
-        setLoading(true);
-      }
-
-      startTimeoutTimer();
-
-      if (demo_widget && newChannelId) {
-        await socketManager.subscribe([newChannelId]);
-      }
-
-      const data = await sendMessageToHelloApi(message, attachments, channelDetail, currentChatId, helloVariables, demo_widget);
-      if (data && (!currentChatId || !currentChannelId || demo_widget)) {
+      // const data = await sendMessageToHelloApi(message, attachments, channelDetail, chatIdToUse, helloVariables, voiceCall, demo_widget);
+      const data = await sendMessageToHelloApi({ message, attachments, channelDetail, chat_id: chatIdToUse, helloVariables, voiceCall, demo_widget })
+      if (data && (!chatIdToUse || !channelIdToUse || demo_widget)) {
         dispatch(setDataInAppInfoReducer({
           subThreadId: data?.['channel'],
           currentChatId: data?.['id'],
@@ -300,6 +307,7 @@ export const useOnSendHello = () => {
           }
         }
       }
+      return data;
     } catch (error) {
       if (isBot) {
         setLoading(false);
@@ -381,7 +389,7 @@ export const useSendMessageToHello = ({
     // addHelloMessage(newMessage, channelIdToUse);
 
     // Send message to API
-    onSendHello(textMessage, newMessage);
+    onSendHello({ message: textMessage, newMessage: newMessage });
     setNewMessage(true);
 
     // Clear input field
