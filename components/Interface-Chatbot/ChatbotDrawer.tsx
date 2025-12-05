@@ -22,9 +22,9 @@ import { setThreads } from "@/store/interface/interfaceSlice";
 import { ParamsEnums } from "@/utils/enums";
 import { useChatActions } from "../Chatbot/hooks/useChatActions";
 import { useColor } from "../Chatbot/hooks/useColor";
+import { useOnSendHello } from "../Chatbot/hooks/useHelloIntegration";
 import { useScreenSize } from "../Chatbot/hooks/useScreenSize";
 import { MessageContext } from "./InterfaceChatbot";
-import { getCallToken } from "@/config/helloApi";
 
 const createRandomId = () => Math.random().toString(36).substring(2, 15);
 
@@ -61,8 +61,9 @@ const ChatbotDrawer = ({
     isToggledrawer: state.Chat.isToggledrawer,
   }))
 
-  const { currentChatId, currentTeamId } = useReduxStateManagement({ chatSessionId, tabSessionId });
+  const { currentChatId, currentTeamId, currentChannelId } = useReduxStateManagement({ chatSessionId, tabSessionId });
   const { callState } = useCallUI();
+  const sendMessageToHello = useOnSendHello();
 
   // Consolidated Redux state selection
   const {
@@ -115,7 +116,6 @@ const ChatbotDrawer = ({
           bridgeName: bridgeName,
           threadId: threadId,
         })
-
       );
       setOptions([]);
 
@@ -163,11 +163,40 @@ const ChatbotDrawer = ({
     setToggleDrawer(isOpen);
   };
 
-  const handleVoiceCall = () => {
-    getCallToken().then(() => {
-      helloVoiceService.initiateCall();
-    })
+  const handleVoiceCall = async () => {
+    // If no channel is selected, pick the most recent (first valid) channel just for this action
+    let overrideChannelId;
+    let overrideChatId;
+    let overrideTeamId;
+    if (!currentChannelId && Array.isArray(channelList) && channelList.length > 0 && channelList?.[0]?.id) {
+      const firstValid = channelList.find((ch: any) => ch?.id);
+      if (firstValid) {
+        overrideChannelId = firstValid?.channel;
+        overrideChatId = firstValid?.id;
+        dispatch(
+          setDataInAppInfoReducer({
+            subThreadId: firstValid?.channel,
+            currentChannelId: firstValid?.channel,
+            currentChatId: firstValid?.id,
+            currentTeamId: firstValid?.team_id,
+          })
+        );
+      }
+    } else if (teamsList?.length > 0) {
+      const firstValid = teamsList[0]
+      if (firstValid) {
+        dispatch(
+          setDataInAppInfoReducer({
+            currentTeamId: firstValid?.id,
+          })
+        );
+        overrideTeamId = firstValid?.id;
+      }
+    }
     if (isSmallScreen) setToggleDrawer(false);
+    // pass overrides so sendMessageToHello uses latest values in the same tick
+    const data = await sendMessageToHello({ voiceCall: true, overrideChannelId: overrideChannelId || currentChannelId, overrideChatId: overrideChatId || currentChatId, overrideTeamId: overrideTeamId || currentTeamId });
+    helloVoiceService.initiateCall(data?.['call_jwt_token'] || '');
   };
 
   const handleSendMessageWithNoTeam = () => {
@@ -250,7 +279,7 @@ const ChatbotDrawer = ({
                             const lastMessageId = channelMessages[0];
                             const lastMessage = allMessagesData[channel?.channel]?.[lastMessageId];
                             if (lastMessage) {
-                              const isUserMessage = lastMessage?.role == "user";
+                              const isUserMessage = lastMessage?.role == "user" || lastMessage?.role === "voice_call";
                               return (
                                 <>
                                   {isUserMessage ? "You: " : "Sender: "}
@@ -371,7 +400,7 @@ const ChatbotDrawer = ({
   };
 
   const CloseButton = useMemo(() => {
-    if (hideCloseButton === true || hideCloseButton === "true" || !isSmallScreen) return null;
+    if ((hideCloseButton === true || String(hideCloseButton) === 'true') || !isSmallScreen) return null;
 
     return (
       <div

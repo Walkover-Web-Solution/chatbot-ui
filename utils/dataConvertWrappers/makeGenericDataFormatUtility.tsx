@@ -12,10 +12,12 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
             return history
                 .map((chat: any) => {
                     let role;
-                    if (chat?.message?.chat_id) {
+                    if (chat?.message?.chat_id && chat?.message?.message_type !== 'voice_call') {
                         role = 'user'
                     } else if (chat?.message?.sender_id === 'workflow' || chat?.message?.sender_id === 'bot' || chat?.message?.is_auto_response) {
                         role = "Bot"
+                    } else if (chat?.message?.message_type === 'voice_call') {
+                        role = "voice_call"
                     } else {
                         role = "Human"
                     }
@@ -32,6 +34,20 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                             chat_id: chat?.message?.chat_id,
                             channel: chat?.message?.channel,
                             time: chat?.timetoken || null
+                        };
+                    }
+
+                    if (chat?.message?.message_type === 'voice_call') {
+                        return {
+                            role: "voice_call",
+                            from_name: chat?.message?.from_name,
+                            content: chat?.message?.content,
+                            urls: chat?.message?.content?.attachment,
+                            id: chat?.id || chat?.message?.id || chat?.timetoken,
+                            message_type: chat?.message?.message_type,
+                            messageJson: chat?.message?.content,
+                            time: chat?.timetoken || null,
+                            is_auto_response: chat?.message?.is_auto_response
                         };
                     }
 
@@ -100,7 +116,7 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
     }
 
 
-    const { sender_id, from_name, content, type, is_auto_response = false } = message || {};
+    const { sender_id, from_name, content, type, is_auto_response, message_type } = message || {};
     // Handle feedback type messages    
     if (type === 'feedback') {
         return [{
@@ -112,6 +128,20 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
             dynamic_values: message?.dynamic_values,
             chat_id: message?.chat_id,
             channel: message?.channel,
+            time: message?.timetoken || null,
+            is_auto_response
+        }];
+    }
+
+    if (type === 'chat' && message_type === 'voice_call') {
+        return [{
+            role: "voice_call",
+            from_name,
+            content: content,
+            urls: content?.body?.attachment || content?.attachment,
+            id: message?.id || message?.message?.id || message?.timetoken,
+            message_type: message?.message_type,
+            messageJson: message?.content,
             time: message?.timetoken || null,
             is_auto_response
         }];

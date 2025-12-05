@@ -31,7 +31,7 @@ class HelloVoiceService {
         const clientToken = getLocalStorage('HelloClientToken');
         if (!clientToken) return;
 
-        this.webrtc = WebRTC(clientToken);
+        this.webrtc = WebRTC(clientToken, "prod");
 
         this.webrtc.on("call", this.handleOutgoingCall);
     }
@@ -111,21 +111,22 @@ class HelloVoiceService {
         });
     }
 
-    public initiateCall(): void {
+    public initiateCall(channelCallToken: string | null = null): void {
         if (!this.webrtc) {
             console.warn("WebRTC not initialized. Call initialize() first.");
             return;
         }
 
-        const callToken = getLocalStorage('HelloCallToken');
+        const callToken = channelCallToken;
         if (!callToken) {
             console.warn("No call token found in localStorage.");
             return;
         }
 
-        this.webrtc.call(callToken);
-        this.callState = "ringing";
-        this.eventEmitter.emit("callStateChanged", { state: this.callState });
+        this.webrtc.call(callToken).then(() => {
+            this.callState = "ringing";
+            this.eventEmitter.emit("callStateChanged", { state: this.callState });
+        });
     }
 
     public rejoinCall(callId: string): void {
@@ -182,6 +183,10 @@ class HelloVoiceService {
 
     public removeEventListener(event: string, callback: (...args: any[]) => void): void {
         this.eventEmitter.off(event, callback);
+    }
+
+    public emitEvent(event: string, data: any): void {
+        this.eventEmitter.emit(event, data);
     }
 
     public isInitialized(): boolean {

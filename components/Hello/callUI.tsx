@@ -9,7 +9,7 @@ const CallUI: React.FC = () => {
     const {
         callState,
         isMuted,
-        mediaStream,
+        mediaStream: audio,
         endCall,
         toggleMute,
         rejoinSummary
@@ -20,10 +20,19 @@ const CallUI: React.FC = () => {
 
     // Connect media stream to audio element when available
     useEffect(() => {
-        if (mediaStream && audioRef.current) {
-            audioRef.current.srcObject = mediaStream;
+        if (audio?.mediaStream && audioRef.current) {
+            // Ensure we don't reassign the same stream
+            // if (audioRef.current.srcObject !== audio?.mediaStream) {
+            audioRef.current.srcObject = audio?.mediaStream;
+            // Ensure playback continues
+            audioRef.current.play().then(() => {
+                console.log('Audio play successful');
+            }).catch(error => {
+                console.log('Audio play failed:', error);
+            });
+            // }
         }
-    }, [mediaStream]);
+    }, [audio]);
 
     // Render different UI based on call state
     const renderCallUI = () => {
@@ -63,7 +72,7 @@ const CallUI: React.FC = () => {
                         <div className="flex items-center space-x-4">
                             <button
                                 onClick={toggleMute}
-                                className={`p-2 rounded-full button-hover transition-colors ${isMuted ? 'bg-orange-500' : 'bg-blue-500'} text-white`}
+                                className={`p-2 rounded-full button-hover transition-colors ${isMuted ? 'bg-orange-400 text-white' : 'text-black'} `}
                                 aria-label={isMuted ? 'Unmute' : 'Mute'}
                             >
                                 {isMuted ? <MicOff size={18} /> : <Mic size={18} />}

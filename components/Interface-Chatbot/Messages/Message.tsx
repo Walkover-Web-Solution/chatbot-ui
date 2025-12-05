@@ -8,6 +8,7 @@ import HumanOrBotMessageCard from "./HumanOrBotMessage";
 import "./Message.css";
 import ToolsCallMessage from "./ToolsCallMessage";
 import UserMessageCard from "./UserMessage";
+import VoiceCallMessage from "./VoiceCallMessage";
 
 /**
  * A component that displays a message.
@@ -26,6 +27,7 @@ const ROLE_ASSISTANT = "assistant";
 const ROLE_HUMAN = "Human";
 const ROLE_BOT = "Bot";
 const ROLE_TOOLS_CALL = "tools_call";
+const ROLE_VOICE_CALL = "voice_call";
 
 function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps) {
   const { backgroundColor, textColor } = useColor();
@@ -73,6 +75,9 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
 
       case ROLE_TOOLS_CALL:
         return <ToolsCallMessage message={message} />;
+
+      case ROLE_VOICE_CALL:
+        return <VoiceCallMessage message={message} />;
 
       default:
         return null;

@@ -117,6 +117,20 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
     }, [handleReconnection])
 
     useEffect(() => {
+        if (isHelloUser && currentChannelId && !demo_widget) {
+            const handleCallCompleted = () => {
+                fetchHelloPreviousHistory();
+            }
+
+            helloVoiceService.addEventListener('call-completed', handleCallCompleted);
+
+            return () => {
+                helloVoiceService.removeEventListener('call-completed', handleCallCompleted);
+            }
+        }
+    }, [isHelloUser, currentChannelId, fetchHelloPreviousHistory, demo_widget])
+
+    useEffect(() => {
         if (reduxChatSessionId) {
             const widgetToken = reduxChatSessionId?.split('_')[0] // Extract first part (e.g., "d1bc7")
             initializeHelloServices(widgetToken);

@@ -160,7 +160,16 @@ export const reducers: ValidateSliceCaseReducers<
       } else {
         channel.widget_unread_count = (channel.widget_unread_count || 0) + 1;
       }
+    }
+  },
 
+  moveChannelToTop(state, action: actionType<{ channelId: string }>) {
+    const chatSessionId = action.urlData?.chatSessionId
+    if (chatSessionId) {
+      const { channelId } = action.payload;
+      const channelIndex = state[chatSessionId].channelListData.channels.findIndex(
+        (channel: any) => channel.channel === channelId
+      );
       if (channelIndex > 0) {
         const [movedChannel] = state[chatSessionId].channelListData.channels.splice(channelIndex, 1);
         state[chatSessionId]?.channelListData.channels.unshift(movedChannel);
