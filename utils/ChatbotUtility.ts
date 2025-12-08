@@ -25,13 +25,18 @@ export const isJSONString = (str: string) => {
   }
 };
 
-export const perFormAction = (actionData, sendMessage, props) => {
-
+export const perFormAction = (actionData: any, sendMessage: any, props: any) => {
   switch (actionData?.actionType) {
     case "reply":
       sendMessage({ message: (props?.label || props?.children || props?.text || props?.title || props?.name) });
       break;
     case "sendDataToFrontEnd":
+      emitEventToParent(
+        'FRONT_END_ACTION',
+        actionData?.variables || actionData?.variable || actionData?.data || actionData?.dataToSend || {}
+      );
+      break;
+    case "sendDataToFrontend":
       emitEventToParent(
         'FRONT_END_ACTION',
         actionData?.variables || actionData?.variable || actionData?.data || actionData?.dataToSend || {}
