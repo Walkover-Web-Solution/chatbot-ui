@@ -12,8 +12,6 @@ function StarterQuestions() {
         starterQuestions: state.Chat.starterQuestions || []
     }))
 
-    if (starterQuestions?.length === 0) return null;
-
     const cardStyles = useMemo(() => ({
         backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#ffffff',
         borderColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#e5e7eb',
@@ -21,6 +19,8 @@ function StarterQuestions() {
     }), [theme]);
 
     const iconColor = theme.palette.text.secondary;
+
+    if (starterQuestions?.length === 0) return null;
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 mt-4 w-full max-5xl">
