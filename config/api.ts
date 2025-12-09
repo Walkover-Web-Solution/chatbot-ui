@@ -5,6 +5,7 @@ import { UrlDataType } from "@/types/utility";
 import axios from "@/utils/interceptor";
 import { getLocalStorage } from "@/utils/utilities";
 import { PAGE_SIZE } from "@/utils/enums";
+import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 
 const URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const PYTHON_URL = process.env.NEXT_PUBLIC_PYTHON_API_BASE_URL;
@@ -166,6 +167,7 @@ export async function sendDataToAction(data: any): Promise<any> {
         );
         return { success: true, data: response?.data?.data };
     } catch (error) {
+        emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', error);
         errorToast(
             error?.response?.data?.detail?.error ||
             error?.response?.data?.detail ||

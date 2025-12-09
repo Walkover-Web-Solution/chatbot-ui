@@ -2,6 +2,7 @@ import { ChatbotContext } from '@/components/context';
 import { setHelloEventMessage, setLoading, setOptions, updateLastAssistantMessage } from '@/store/chat/chatSlice';
 import { setThreads } from '@/store/interface/interfaceSlice';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
+import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 import { generateNewId } from '@/utils/utilities';
 import React, { useCallback, useContext, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
@@ -66,6 +67,7 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
 
       // Case: Error is present without response data
       case !data && !!parsedMessage?.error:
+        emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', parsedMessage?.error || error || "Error while talking to AI");
         dispatch(updateLastAssistantMessage({ role: "assistant", content: `${parsedMessage?.error || error || "Error while talking to AI"}`, id: generateNewId() }));
         dispatch(setLoading(false));
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
@@ -91,6 +93,7 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
 
       // Case: Response data is present
       case !!data:
+        emitEventToParent('MESSAGE_RECEIVED', parsedMessage.response.data?.content || {});
         dispatch(updateLastAssistantMessage({ role: parsedMessage?.response?.data?.role || "assistant", ...(parsedMessage.response.data || {}) }));
         dispatch(setLoading(false));
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
