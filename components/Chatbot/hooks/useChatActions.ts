@@ -9,6 +9,7 @@ import { PAGE_SIZE } from '@/utils/enums';
 import React, { useCallback, useContext, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { SendMessagePayloadType } from './chatTypes';
+import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 
 
 export const useChatContext = () => {
@@ -209,6 +210,7 @@ export const useSendMessage = ({
                 service: selectedAiServiceAndModal?.service
             } : {})
         };
+        emitEventToParent('MESSAGE_SENT', payload.message);
         const response = await sendDataToAction(payload);
         if (!response?.success) {
             globalDispatch(setLoading(false));
