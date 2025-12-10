@@ -17,7 +17,7 @@
             this.urls = {
                 chatbotUrl: 'https://dev-chatbot.gtwy.ai/chatbot',
                 styleSheet: 'https://dev-chatbot.gtwy.ai/chatbot-style.css',
-                login: 'https://dev-db.gtwy.ai/chatbot/loginuser'
+                login: 'https://dev-db.gtwy.ai/api/chatbot/loginuser'
             };
             this.icons = {
                 white: this.makeImageUrl('b1357e23-2fc6-4dc3-855a-7a213b1fa100'),
