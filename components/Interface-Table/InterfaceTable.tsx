@@ -71,7 +71,7 @@ function InterfaceTable({ props, meta, propsPath }: InterfaceTableProps) {
   const path: any | { data: string } = outputDataKey || propsPath || "data";
 
   const dataPath = typeof path === 'string' ? path.replace(/^variables\./, "") :
-    propsPath?.data?.replace(/^variables\./, "") || "";
+    (typeof propsPath?.data === 'string' ? propsPath.data.replace(/^variables\./, "") : "") || "";
 
   const [paginationModel, setPaginationModel] = React.useState<PaginationModel>(
     {
