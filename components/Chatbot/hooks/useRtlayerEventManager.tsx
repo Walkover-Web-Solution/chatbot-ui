@@ -57,7 +57,7 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
     switch (true) {
       // Case: Function call is present without a message
       case function_call && !responseMessage:
-        dispatch(updateLastAssistantMessage({ role: "assistant", wait: true, content: "Function Calling", Name: parsedMessage?.response?.Name || [], id: generateNewId() }));
+        dispatch(updateLastAssistantMessage({ role: "assistant", wait: true, content: "Running ", Name: parsedMessage?.response?.Name || [], id: generateNewId() }));
         break;
 
       // Case: Function call is present with a message
