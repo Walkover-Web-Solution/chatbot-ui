@@ -191,7 +191,7 @@ export const useSendMessage = ({
         }));
 
         globalDispatch(setHelloEventMessage({ message: { role: "user", content: textMessage, urls: images } }));
-        globalDispatch(setHelloEventMessage({ message: { role: "assistant", content: "Talking with AI", wait: true } }));
+        globalDispatch(setHelloEventMessage({ message: { role: "assistant", content: "Understanding your request…", wait: true } }));
 
         const payload = {
             message: textMessage,
