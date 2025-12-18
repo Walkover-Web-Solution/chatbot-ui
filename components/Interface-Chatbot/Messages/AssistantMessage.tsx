@@ -217,18 +217,23 @@ const AssistantMessageCard = React.memo(
                     <div className="flex items-center gap-2">
                         {!message?.wait && !message?.timeOut && !message?.error && (
                             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                                <button
-                                    className="btn btn-ghost btn-xs tooltip tooltip-right"
-                                    data-tip={isCopied ? "Copied!" : "Copy"}
-                                    onClick={handleCopy}
-                                >
-                                    {isCopied ? (
-                                        <Check className="w-4 h-4 text-success" />
-                                    ) : (
-                                        <Copy className="w-4 h-4" />
-                                    )}
-                                </button>
-
+                                {(() => {
+                                    const parsedContent = isJSONString(message?.content)? JSON.parse(message?.content): null
+                                    const shouldHideCopyButton = (message.chatbot_message || (parsedContent && Object.prototype.hasOwnProperty.call(parsedContent, 'components') && Object.prototype.hasOwnProperty.call(parsedContent, 'variables')));
+                                    return !shouldHideCopyButton && (
+                                        <button
+                                            className="btn btn-ghost btn-xs tooltip tooltip-right"
+                                            data-tip={isCopied ? "Copied!" : "Copy"}
+                                            onClick={handleCopy}
+                                        >
+                                            {isCopied ? (
+                                                <Check className="w-4 h-4 text-success" />
+                                            ) : (
+                                                <Copy className="w-4 h-4" />
+                                            )}
+                                        </button>
+                                    );
+                                })()}
                                 {message?.message_id && (
                                     <FeedBackButtons msgId={message?.Id || message?.id} />
                                 )}
