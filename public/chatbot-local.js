@@ -180,9 +180,7 @@
                 if (width < 600) {
                     iframeParentContainer.style.height = '100%';
                     iframeParentContainer.style.width = '100%';
-                    iframeParentContainer.classList.add('full-screen-interfaceEmbed');
                 } else {
-                    iframeParentContainer.classList.remove('full-screen-interfaceEmbed');
                     this.applyConfig(this?.props?.config || {});
                 }
             });
@@ -395,13 +393,13 @@
                 if (config.buttonName) {
                     this.buttonName = config.buttonName;
                     const textElement = document.getElementById('popup-interfaceEmbed-text');
-                    textElement.innerText = this.buttonName;
+                    if (textElement) textElement.innerText = this.buttonName;
                     interfaceEmbedElement.classList.add('show-bg-color');
                     const imgElement = document.getElementById('popup-interfaceEmbed');
                     if (imgElement) imgElement.style.visibility = 'hidden';
                 } else {
                     const textElement = document.getElementById('popup-interfaceEmbed-text');
-                    textElement.innerText = '';
+                    if (textElement) textElement.innerText = '';
                     interfaceEmbedElement?.classList.remove('show-bg-color');
                     const imgElement = document.getElementById('popup-interfaceEmbed');
                     if (imgElement) imgElement.style.visibility = 'visible';
@@ -411,7 +409,7 @@
                     if (imgElement) imgElement.src = config.iconUrl;
                     interfaceEmbedElement?.classList.remove('show-bg-color');
                     const textElement = document.getElementById('popup-interfaceEmbed-text');
-                    textElement.innerText = '';
+                    if (textElement) textElement.innerText = '';
                     if (imgElement) imgElement.style.visibility = 'visible';
                 }
                 if (config.type && iframeParentContainer) {
