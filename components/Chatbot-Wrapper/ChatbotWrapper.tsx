@@ -18,7 +18,7 @@ export const ChatContext = createContext<ChatContextType | undefined>(undefined)
 
 // Create a separate component for the hooks that need context
 function ChatbotWithHooks({ tabSessionId, chatSessionId }: { tabSessionId: string, chatSessionId: string }) {
-  useEmbeddingScriptEventHandler(tabSessionId);
+  useEmbeddingScriptEventHandler(tabSessionId, chatSessionId);
   useLocalStorageEventHandler(tabSessionId);
 
   if (!chatSessionId) {
