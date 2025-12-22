@@ -39,6 +39,8 @@ export interface HelloData {
   sdkConfig: {
     customTheme?: string
   }
+  fullScreen?: 'true' | 'false',
+  viewMode?: 'chatbot' | 'ticket'
 }
 
 export interface ChannelListData {

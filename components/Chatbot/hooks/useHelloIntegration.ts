@@ -197,7 +197,8 @@ export const useOnSendHello = () => {
     presence_channel,
     currentChatId,
     currentTeamId,
-    currentChannelId
+    currentChannelId,
+    overrideChannelId
   } = useReduxStateManagement({
     chatSessionId,
     tabSessionId
@@ -216,11 +217,11 @@ export const useOnSendHello = () => {
 
   const isBot = assigned_type === 'bot';
 
-  return useCallback(async ({ message, newMessage, voiceCall, overrideChannelId, overrideChatId, overrideTeamId }: { message?: string, newMessage?: any, voiceCall?: boolean, overrideChannelId?: string, overrideChatId?: string | number, overrideTeamId?: string }) => {
+  return useCallback(async ({ message, newMessage, voiceCall, overrideChannelId: customChannelId, overrideChatId, overrideTeamId }: { message?: string, newMessage?: any, voiceCall?: boolean, overrideChannelId?: string, overrideChatId?: string | number, overrideTeamId?: string }) => {
     if (!voiceCall && (!message?.trim() && (!images || images.length === 0))) return;
 
     try {
-      const channelIdToUse = overrideChannelId || currentChannelId;
+      const channelIdToUse = customChannelId || overrideChannelId || currentChannelId;
       const chatIdToUse = overrideChatId || currentChatId;
       const teamIdToUse = overrideTeamId || currentTeamId;
 
@@ -284,7 +285,8 @@ export const useOnSendHello = () => {
         dispatch(setDataInAppInfoReducer({
           subThreadId: data?.['channel'],
           currentChatId: data?.['id'],
-          currentChannelId: data?.['channel']
+          currentChannelId: data?.['channel'],
+          overrideChannelId: ""
         }));
         // no need to append user message again this time
         // addHelloMessage(newMessage, data?.['channel']);
@@ -312,6 +314,9 @@ export const useOnSendHello = () => {
       if (isBot) {
         setLoading(false);
       }
+      dispatch(setDataInAppInfoReducer({
+        overrideChannelId: ""
+      }));
       console.error("Error sending message to Hello:", error);
     }
   }, [
@@ -333,7 +338,8 @@ export const useOnSendHello = () => {
     addHelloMessage,
     helloVariables,
     companyId,
-    demo_widget
+    demo_widget,
+    overrideChannelId
   ]);
 };
 

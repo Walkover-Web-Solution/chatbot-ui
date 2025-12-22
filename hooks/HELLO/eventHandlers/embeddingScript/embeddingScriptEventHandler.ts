@@ -4,13 +4,16 @@ import { addDomainToHello, saveClientDetails } from "@/config/helloApi";
 import { CBManger } from "@/hooks/coBrowser/CBManger";
 import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
+import { setToggleDrawer } from "@/store/chat/chatSlice";
 import { setDataInDraftReducer, setVariablesForHelloBot } from "@/store/draftData/draftDataSlice";
 import { setHelloClientInfo, setHelloConfig, setHelloKeysData, setWidgetInfo } from "@/store/hello/helloSlice";
 import { setDataInInterfaceRedux } from "@/store/interface/interfaceSlice";
 import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
+import { useCustomSelector } from "@/utils/deepCheckSelector";
+import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 import { cleanObject, removeFromLocalStorage, setLocalStorage } from "@/utils/utilities";
 import isPlainObject from "lodash.isplainobject";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 
 
@@ -19,10 +22,20 @@ const helloToChatbotPropsMap: Record<string, string> = {
     hideFullScreenButton: 'hideFullScreenButton'
 }
 
-const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
+const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance, chatSessionId: string) => {
     const sendMessageToHello = useSendMessageToHello({});
     const dispatch = useDispatch()
-    const { handleThemeChange } = useContext(ThemeContext)
+    const { handleThemeChange } = useContext(ThemeContext);
+    // We need to access the channel list. Let's use the custom selector to get it.
+    const { channelList } = useCustomSelector((state) => ({
+        channelList: state.Hello?.[chatSessionId]?.channelListData?.channels
+    }));
+
+    // Use a ref to keep track of the latest channel list without re-running the effect
+    const channelListRef = useRef(channelList);
+    useEffect(() => {
+        channelListRef.current = channelList;
+    }, [channelList]);
 
     const handleParentRouteChanged = (event: MessageEvent) => {
         if (event?.data?.data?.websiteUrl) {
@@ -146,9 +159,21 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         return;
     };
 
-    function handleChatbotVisibility(isChatbotOpen = false) {
+    function handleChatbotVisibility(isChatbotOpen = false, id = "") {
         dispatch(setDataInAppInfoReducer({ isChatbotOpen }))
         dispatch(setDataInDraftReducer({ isChatbotMinimized: false }))
+        if (id) {
+            // Create a mock MessageEvent to pass to handleShowTicket
+            const mockEvent = {
+                data: {
+                    data: {
+                        id: id
+                    }
+                }
+            } as MessageEvent;
+            handleShowTicket(mockEvent);
+            dispatch(setToggleDrawer(false));
+        }
     }
 
     function handleSetVariablesForBot(event: MessageEvent) {
@@ -166,7 +191,6 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
 
     function handleHelloRuntimeData(event: MessageEvent) {
         const { data } = event?.data;
-
         if (data.themeColor) {
             handleThemeChange(data.themeColor);
         }
@@ -178,6 +202,50 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         }
         if ('variables' in data) {
             dispatch(setVariablesForHelloBot(data.variables))
+        }
+        if ('fullScreen' in data) {
+            dispatch(setHelloConfig({ fullScreen: data.fullScreen }))
+        }
+        if ('viewMode' in data) {
+            dispatch(setHelloConfig({ viewMode: data.viewMode }))
+        }
+    }
+
+    function handleShowTicket(event: MessageEvent) {
+        const ticketId = event?.data?.data?.id;
+        let subThreadIdToDispatch: string = "";
+        let currentChannelIdToDispatch: string = "";
+        let currentChatIdToDispatch: number | string = "";
+
+        if (ticketId) {
+            const foundChannel = channelListRef.current?.find((channel: any) => channel.channel === ticketId);
+            if (foundChannel) {
+                subThreadIdToDispatch = foundChannel.channel;
+                currentChannelIdToDispatch = foundChannel.channel;
+                currentChatIdToDispatch = foundChannel?.id;
+            }
+        }
+
+        dispatch(setDataInAppInfoReducer({
+            subThreadId: subThreadIdToDispatch,
+            currentChannelId: currentChannelIdToDispatch,
+            currentChatId: currentChatIdToDispatch,
+            overrideChannelId: ticketId,
+        }));
+        dispatch(setToggleDrawer(false));
+    }
+
+    function handleGetTicketUnreadCount(event: MessageEvent) {
+        const { id } = event?.data?.data || {};
+        if (id && channelListRef.current) {
+            if (id === '*') {
+                const totalUnreadCount = channelListRef.current?.reduce((acc, channel) => acc + (channel.widget_unread_count || 0), 0);
+                emitEventToParent('TICKET_UNREAD_COUNT', { id, count: totalUnreadCount });
+                return;
+            }
+            const channel = channelListRef.current.find((c: any) => c.channel === id);
+            const count = channel ? (channel.widget_unread_count || 0) : 0;
+            emitEventToParent('TICKET_UNREAD_COUNT', { id, count });
         }
     }
 
@@ -197,11 +265,15 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
 
         eventHandler.addEventHandler('helloRunTimeData', handleHelloRuntimeData)
 
-        eventHandler.addEventHandler('CHATBOT_OPEN', () => handleChatbotVisibility(true))
+        eventHandler.addEventHandler('CHATBOT_OPEN', (event: MessageEvent) => handleChatbotVisibility(true, event?.data?.data?.id))
 
         eventHandler.addEventHandler('CHATBOT_CLOSE', () => handleChatbotVisibility(false))
 
         eventHandler.addEventHandler('STARTER_QUESTION_OPTION_CLICKED', handleStarterQuestionOptionClicked)
+
+        eventHandler.addEventHandler('SHOW_TICKET', handleShowTicket)
+
+        eventHandler.addEventHandler('GET_TICKET_UNREAD_COUNT', handleGetTicketUnreadCount)
 
     }, [])
 

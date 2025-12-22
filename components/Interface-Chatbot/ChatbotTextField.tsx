@@ -42,16 +42,20 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const fileInputRef = useRef<HTMLInputElement>(null);
   const emitTypingStatus = useTypingStatus({ chatSessionId, tabSessionId });
 
-  const { isHelloUser, mode, inbox_id, show_send_button, assigned_type } = useCustomSelector((state) => ({
-    isHelloUser: state.draftData?.isHelloUser || false,
-    mode: state.Hello?.[chatSessionId]?.mode || [],
-    inbox_id: state.Hello?.[chatSessionId]?.widgetInfo?.inbox_id,
-    show_send_button: typeof state.Hello?.[chatSessionId]?.helloConfig?.show_send_button === 'boolean' ? state.Hello?.[chatSessionId]?.helloConfig?.show_send_button : true,
-    assigned_type: (() => {
-      const foundType = state.Hello?.[chatSessionId]?.channelListData?.channels?.find((channel: any) => channel?.channel === currentChannelId)?.assigned_type;
-      return foundType === undefined ? 'bot' : foundType;
-    })(),
-  }));
+  const { isHelloUser, mode, inbox_id, show_send_button, assigned_type, ticketMode } = useCustomSelector((state) => {
+    const ticketMode = state.Hello?.[chatSessionId]?.helloConfig?.viewMode;
+    return {
+      isHelloUser: state.draftData?.isHelloUser || false,
+      mode: state.Hello?.[chatSessionId]?.mode || [],
+      inbox_id: state.Hello?.[chatSessionId]?.widgetInfo?.inbox_id,
+      show_send_button: typeof state.Hello?.[chatSessionId]?.helloConfig?.show_send_button === 'boolean' ? state.Hello?.[chatSessionId]?.helloConfig?.show_send_button : true,
+      assigned_type: (() => {
+        const foundType = state.Hello?.[chatSessionId]?.channelListData?.channels?.find((channel: any) => channel?.channel === currentChannelId)?.assigned_type;
+        return foundType === undefined ? 'bot' : foundType;
+      })(),
+      ticketMode: ticketMode === 'ticket',
+    }
+  });
 
   const { messageRef } = useContext(MessageContext);
   const sendMessageToHello = useSendMessageToHello({ messageRef });
@@ -360,6 +364,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             placeholder="Message AI Assistant..."
             className="h-full min-h-[10px] max-h-[400px] bg-transparent focus:outline-none disabled:cursor-not-allowed"
             maxRows={6}
+            minRows={ticketMode ? 3 : 1}
             sx={textFieldStyles}
             autoFocus
             inputMode="text"
