@@ -17,7 +17,7 @@
             this.urls = {
                 chatbotUrl: 'https://chatbot.gtwy.ai/chatbot',
                 styleSheet: 'https://chatbot.gtwy.ai/chatbot-style.css',
-                login: 'https://db.gtwy.ai/chatbot/loginuser'
+                login: 'https://db.gtwy.ai/api/chatbot/loginuser'
             };
             this.icons = {
                 white: this.makeImageUrl('b1357e23-2fc6-4dc3-855a-7a213b1fa100'),
@@ -393,13 +393,13 @@
                 if (config.buttonName) {
                     this.buttonName = config.buttonName;
                     const textElement = document.getElementById('popup-interfaceEmbed-text');
-                    textElement.innerText = this.buttonName;
+                    if (textElement) textElement.innerText = this.buttonName;
                     interfaceEmbedElement.classList.add('show-bg-color');
                     const imgElement = document.getElementById('popup-interfaceEmbed');
                     if (imgElement) imgElement.style.visibility = 'hidden';
                 } else {
                     const textElement = document.getElementById('popup-interfaceEmbed-text');
-                    textElement.innerText = '';
+                    if (textElement) textElement.innerText = '';
                     interfaceEmbedElement?.classList.remove('show-bg-color');
                     const imgElement = document.getElementById('popup-interfaceEmbed');
                     if (imgElement) imgElement.style.visibility = 'visible';
@@ -409,7 +409,7 @@
                     if (imgElement) imgElement.src = config.iconUrl;
                     interfaceEmbedElement?.classList.remove('show-bg-color');
                     const textElement = document.getElementById('popup-interfaceEmbed-text');
-                    textElement.innerText = '';
+                    if (textElement) textElement.innerText = '';
                     if (imgElement) imgElement.style.visibility = 'visible';
                 }
                 if (config.type && iframeParentContainer) {
