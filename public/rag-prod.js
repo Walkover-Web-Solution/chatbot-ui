@@ -9,8 +9,8 @@
             this.lastProcessedMessage = null; // Add this line
             this.urls = {
                 ragUrl: 'https://chatbot.gtwy.ai/rag',
-                login: 'https://db.gtwy.ai/user/embed/login',
-                docsApi: 'https://db.gtwy.ai/rag/docs',
+                login: 'https://db.gtwy.ai/user/api/rag/embed/login',
+                docsApi: 'https://db.gtwy.ai/user/api/rag/docs',
                 cssURL: 'https://chatbot.gtwy.ai/rag.css'
             };
             this.state = {

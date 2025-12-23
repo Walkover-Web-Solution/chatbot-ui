@@ -9,8 +9,8 @@
             this.lastProcessedMessage = null; // Add this line
             this.urls = {
                 ragUrl: 'http://localhost:3001/rag',
-                login: 'http://localhost:7072/user/embed/login',
-                docsApi: 'http://localhost:7072/rag/docs',
+                login: 'http://localhost:7072/api/rag/embed/login',
+                docsApi: 'http://localhost:7072/api/rag/docs',
                 cssURL: 'http://localhost:3001/rag.css'
             };
             this.state = {
