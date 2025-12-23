@@ -23,6 +23,15 @@ function FeedBackButtons({ msgId }: { msgId: string }) {
     const { msgIdAndDataMap } = useCustomSelector((state) => ({
         msgIdAndDataMap: state.Chat.msgIdAndDataMap?.[state.Chat?.subThreadId] || {},
     }))
+
+    // Function to clean message_id by removing _user or _llm suffix
+    const cleanMessageId = (messageId: string) => {
+        if (messageId?.endsWith('_user') || messageId?.endsWith('_llm')) {
+            return messageId.replace(/(_user|_llm)$/, '');
+        }
+        return messageId;
+    };
+
     return <>
         <button
             className={`btn btn-ghost btn-xs tooltip tooltip-bottom ${msgIdAndDataMap?.[msgId]?.user_feedback === 1 ? "text-success" : ""
@@ -30,7 +39,7 @@ function FeedBackButtons({ msgId }: { msgId: string }) {
             data-tip="Good response"
             onClick={() =>
                 handleMessageFeedback({
-                    msgId: msgIdAndDataMap?.[msgId]?.message_id,
+                    msgId: cleanMessageId(msgIdAndDataMap?.[msgId]?.message_id),
                     reduxMsgId: msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
                     feedback: 1,
                 })
@@ -45,7 +54,7 @@ function FeedBackButtons({ msgId }: { msgId: string }) {
             data-tip="Bad response"
             onClick={() =>
                 handleMessageFeedback({
-                    msgId: msgIdAndDataMap?.[msgId]?.message_id,
+                    msgId: cleanMessageId(msgIdAndDataMap?.[msgId]?.message_id),
                     reduxMsgId: msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
                     feedback: 2
                 }
