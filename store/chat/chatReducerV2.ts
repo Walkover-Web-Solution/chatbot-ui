@@ -286,6 +286,26 @@ export const chatReducerV2 = {
         }
     },
 
+    updateHelloMessage: (state: any, action: any) => {
+        const subThreadId = action.payload?.subThreadId || state.subThreadId;
+        const messagesArray = convertEventMessageToGenericFormat(action.payload.message, state.isHelloUser);
+        if (subThreadId) {
+
+            if (!state.msgIdAndDataMap[subThreadId]) {
+                state.msgIdAndDataMap[subThreadId] = {};
+            }
+            const dataMap = state.msgIdAndDataMap[subThreadId];
+
+            Object.assign(
+                dataMap,
+                messagesArray.reduce((acc: Record<string, any>, item) => {
+                    acc[item.id] = item;
+                    return acc;
+                }, {})
+            );
+        }
+    },
+
     resetState: (state) => {
         const preservedValues = {
             threadId: state.threadId,

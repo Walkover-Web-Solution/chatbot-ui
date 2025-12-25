@@ -4,6 +4,7 @@ import { useEmbeddingScriptEventHandler } from "@/hooks/CORE/eventHandlers/embed
 import { useLocalStorageEventHandler } from "@/hooks/CORE/eventHandlers/localStorage/localStorageEventsHandler";
 import React, { createContext, useEffect } from "react";
 import Chatbot from "../Chatbot/Chatbot";
+import { ReplyProvider } from "../Interface-Chatbot/contexts/ReplyContext";
 
 interface ChatbotWrapperProps {
   tabSessionId: string;
@@ -38,7 +39,9 @@ function ChatbotWrapper({ tabSessionId, chatSessionId }: ChatbotWrapperProps) {
 
   return (
     <ChatContext.Provider value={{ chatSessionId, tabSessionId }}>
-      <ChatbotWithHooks tabSessionId={tabSessionId} chatSessionId={chatSessionId} />
+      <ReplyProvider>
+        <ChatbotWithHooks tabSessionId={tabSessionId} chatSessionId={chatSessionId} />
+      </ReplyProvider>
     </ChatContext.Provider>
   )
 }

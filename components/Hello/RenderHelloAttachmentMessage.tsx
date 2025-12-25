@@ -29,7 +29,7 @@ function RenderHelloAttachmentMessage({ message }: { message: any }) {
       {caption && (
         <div className="flex justify-between items-center w-full mt-1">
           <div className="prose max-w-none">
-            <div dangerouslySetInnerHTML={{ __html: linkify(message?.content) }}></div>
+            <div dangerouslySetInnerHTML={{ __html: linkify(message?.content || caption) }}></div>
           </div>
         </div>
       )}

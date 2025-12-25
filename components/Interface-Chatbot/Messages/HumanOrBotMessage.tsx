@@ -2,13 +2,17 @@
 import { UserAssistant } from "@/assests/assestsIndex";
 import RenderHelloVedioCallMessage from "@/components/Hello/RenderHelloVedioCallMessage";
 import { linkify } from "@/utils/utilities";
+import { Reply } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import RenderHelloAttachmentMessage from "../../Hello/RenderHelloAttachmentMessage";
 import RenderHelloFeedbackMessage from "../../Hello/RenderHelloFeedbackMessage";
 import RenderHelloInteractiveMessage from "../../Hello/RenderHelloInteractiveMessage";
+import { useReplyContext } from "../contexts/ReplyContext";
 import "./Message.css";
 import MessageTime from "./MessageTime";
+import { MESSAGE_TYPES } from "./MessageType";
+import RepliedMessage from "./RepliedMessage";
 
 /**
  * A component that displays a human or bot message card.
@@ -25,16 +29,6 @@ interface ShadowDomProps {
     htmlContent: string;
     messageId: string;
 }
-
-// Message types as constants
-const MESSAGE_TYPES = {
-    VIDEO_CALL: 'video_call',
-    INTERACTIVE: 'interactive',
-    ATTACHMENT: 'attachment',
-    TEXT_ATTACHMENT: 'text-attachment',
-    FEEDBACK: 'feedback',
-    PUSH_NOTIFICATION: 'pushNotification'
-} as const;
 
 // Bot icon URL as constant to prevent recreation
 const BOT_ICON_URL = "https://img.icons8.com/ios/50/message-bot.png";
@@ -243,22 +237,45 @@ MessageContent.displayName = 'MessageContent';
 
 const HumanOrBotMessageCard = React.memo(({ message, isBot = false, isLastMessage = false }: MessageCardProps) => {
     const [showSenderTime, setShowSenderTime] = useState(isLastMessage);
+    const [showReplyButton, setShowReplyButton] = useState(false);
+    const { setReplyToMessage } = useReplyContext();
+
+    const handleReplyClick = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        setReplyToMessage(message);
+    }, [message, setReplyToMessage]);
+
     return (
-        <div className="w-full pb-3 animate-fade-in animate-slide-left">
+        <div
+            className="w-full pb-3 animate-fade-in animate-slide-left group"
+            onMouseEnter={() => setShowReplyButton(true)}
+            onMouseLeave={() => setShowReplyButton(false)}
+        >
             <div className="flex items-start gap-2 max-w-[90%]">
                 {/* <Avatar message={message} isBot={isBot} /> */}
-                <div className="w-fit whitespace-pre-wrap break-words" onClick={() => setShowSenderTime(!showSenderTime)}>
-                    <div className="p-1 whitespace-pre-wrap w-full break-words message-card-backround">
+                <div className="w-fit whitespace-pre-wrap break-words relative" onClick={() => setShowSenderTime(!showSenderTime)}>
+                    <div className="p-1 whitespace-pre-wrap w-full break-words message-card-backround relative">
+                        <RepliedMessage message={message} />
                         <MessageContent message={message} />
+
+                        {/* Reply Button */}
+                        {(message?.type !== "greeting_msg" && message?.message_type !== "feedback") && <button
+                            onClick={handleReplyClick}
+                            className={`absolute -right-8 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 ${showReplyButton ? 'opacity-100' : 'opacity-0'
+                                }`}
+                            aria-label="Reply to message"
+                        >
+                            <Reply className="w-4 h-4 text-gray-600" />
+                        </button>}
                     </div>
                     <div className={`transition-all duration-300 ease-in-out ${showSenderTime ? 'opacity-100 max-h-12' : 'opacity-0 max-h-0'}`}>
                         <div className="flex items-center gap-1 text-gray-500 pl-1 pt-0.5">
                             {message?.from_name && !message?.is_auto_response && (
                                 <div className="text-xs">{message.from_name} •</div>
                             )}
-                            {message?.is_auto_response && (
+                            {/* {message?.is_auto_response && (
                                 <div className="text-xs">Bot •</div>
-                            )}
+                            )} */}
                             <MessageTime message={message} tooltipPosition="tooltip-right" />
                         </div>
                     </div>

@@ -1,16 +1,16 @@
 import React from 'react'
 
-function RenderHelloVedioCallMessage({message}:any) {
+function RenderHelloVedioCallMessage({ message }: any) {
   // Calculate expiration time if available
   const calculateExpirationTime = () => {
     const expirationTime = message?.messageJson?.expiration_time;
     if (!expirationTime) return null;
-    
+
     const now = Date.now();
     const timeLeft = expirationTime - now;
-    
+
     if (timeLeft <= 0) return "Meet has expired";
-    
+
     const minutesLeft = Math.floor(timeLeft / (1000 * 60));
     return `Note: Meet will expire in next ${minutesLeft} mins`;
   };
@@ -26,10 +26,10 @@ function RenderHelloVedioCallMessage({message}:any) {
 
   return (
     <div className="flex flex-col gap-2">
-      <button 
+      <button
         onClick={handleJoinCall}
-        style={{ maxWidth: '220px' }}
-        className={`px-4 py-2 ${isMeetExpired ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'} text-white rounded-md transition-colors flex items-center gap-2`}
+        style={{ maxWidth: '400px' }}
+        className={`px-4 py-2 ${isMeetExpired ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'} text-white rounded-md transition-colors flex items-center gap-2 text-sm`}
         disabled={isMeetExpired}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -39,7 +39,7 @@ function RenderHelloVedioCallMessage({message}:any) {
         Click here to join Meet
       </button>
       {expirationNote && (
-        <div className={`text-sm ${isMeetExpired ? 'text-red-600' : 'text-gray-600'}`}>
+        <div className={`text-sm ${isMeetExpired ? 'text-red-600' : 'text-inherit'}`}>
           {expirationNote}
         </div>
       )}

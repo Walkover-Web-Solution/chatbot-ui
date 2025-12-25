@@ -58,7 +58,7 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
                 {messageJson.action.buttons.map((button: any, index: number) => (
                   <button
                     key={index}
-                    className="btn btn-sm btn-outline w-full max-w-md rounded-md normal-case justify-start px-4 font-medium"
+                    className="btn btn-sm btn-outline w-full max-w-md rounded-md normal-case justify-start px-4 font-medium text-inherit border-current"
                     onClick={(e) => {
                       e.stopPropagation();
                       sendMessageToHello?.(button?.reply?.title)
@@ -143,7 +143,7 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
                     )}
                     <ul className="menu menu-sm w-fit min-w-40 p-0 gap-2">
                       {section?.rows?.map((row: any, rowIndex: number) => (
-                        <li key={row?.id || rowIndex} className='border border-gray-500 rounded-lg'>
+                        <li key={row?.id || rowIndex} className='border border-gray-500 dark:border-inherit rounded-lg'>
                           <a
                             className="py-2"
                             onClick={() => sendMessageToHello?.(row?.title)}

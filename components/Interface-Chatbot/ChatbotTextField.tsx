@@ -1,5 +1,4 @@
 'use client';
-
 import { AiIcon } from "@/assests/assestsIndex";
 import { errorToast } from "@/components/customToast";
 import { uploadImage } from "@/config/api";
@@ -17,9 +16,11 @@ import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } 
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
 import { useSendMessageToHello } from "../Chatbot/hooks/useHelloIntegration";
 import CallButton from "./CallButton";
+import { useReplyContext } from "./contexts/ReplyContext";
 import EmojiSelector from "./EmojiSelector";
 import { MessageContext } from "./InterfaceChatbot";
 import ImageWithFallback from "./Messages/ImageWithFallback";
+import ReplyPreview from "./ReplyPreivew";
 
 interface ChatbotTextFieldProps {
   className?: string;
@@ -28,7 +29,6 @@ interface ChatbotTextFieldProps {
   subThreadId: string;
   currentTeamId: string
   currentChannelId: string
-  isVision: Record<string, any>
 }
 
 const MAX_IMAGES = 4;
@@ -41,6 +41,9 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const isLight = isColorLight(theme.palette.primary.main);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const emitTypingStatus = useTypingStatus({ chatSessionId, tabSessionId });
+
+  // Reply context
+  const { replyToMessage, clearReply } = useReplyContext();
 
   const { isHelloUser, mode, inbox_id, show_send_button, assigned_type, ticketMode } = useCustomSelector((state) => {
     const ticketMode = state.Hello?.[chatSessionId]?.helloConfig?.viewMode;
@@ -58,7 +61,10 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   });
 
   const { messageRef } = useContext(MessageContext);
-  const sendMessageToHello = useSendMessageToHello({ messageRef });
+  const sendMessageToHello = useSendMessageToHello({
+    messageRef,
+    replyToMessageId: replyToMessage?.message_id || replyToMessage?.id
+  });
 
   const { setImages } = useChatActions();
   const sendMessage = useSendMessage({});
@@ -94,7 +100,9 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     } else {
       sendMessage(messageObj);
     }
-  }, [isHelloUser, sendMessage, sendMessageToHello]);
+    // Clear reply after sending message
+    clearReply();
+  }, [isHelloUser, sendMessage, sendMessageToHello, clearReply]);
 
   const handleMessage = useCallback((event: MessageEvent) => {
     if (event?.data?.type === "open") {
@@ -276,7 +284,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     if (isHelloUser) return null;
 
     return (
-      <div className="relative w-6 h-6 z-[2]">
+      <div className="relative w-6 h-6 z-[2] ml-1">
         <Image
           src={AiIcon}
           // width={28}
@@ -307,10 +315,10 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             {isUploading ? (
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
-                <span className="text-[10px] font-medium text-gray-600">Uploading...</span>
+                <span className="text-[10px] font-medium text-gray-600 dark:text-white">Uploading...</span>
               </div>
             ) : (
-              <Paperclip className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600" />
+              <Paperclip className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 icn" />
             )}
           </div>
         </label>
@@ -341,6 +349,12 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
 
   return (
     <div className={`relative w-full shadow-sm ${className}`}>
+      {/* Reply Preview */}
+      <ReplyPreview
+        replyToMessage={replyToMessage}
+        onCloseReply={clearReply}
+      />
+
       {optionButtons}
       {imagePreviewsSection}
 
