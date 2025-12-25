@@ -64,7 +64,7 @@ const DownloadButton = ({ onClick }: { onClick: () => void }) => (
     className="absolute top-2 right-2 px-2 pt-1 ml-2 bg-gray-200 shadow-md rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-200"
   >
     <div className="tooltip tooltip-left" data-tip="Download">
-      <Download size={18} />
+      <Download size={18} color="black" />
     </div>
   </button>
 );

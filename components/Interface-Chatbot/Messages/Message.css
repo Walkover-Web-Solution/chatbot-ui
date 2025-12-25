@@ -206,8 +206,13 @@
 .link-text {
   color: #0000EE;
   text-decoration: none;
+}
 
-  &:hover {
-    text-decoration: underline;
-  }
+.user-message-bubble .link-text {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.link-text:hover {
+  text-decoration: underline;
 }
