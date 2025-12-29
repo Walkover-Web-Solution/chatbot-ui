@@ -221,7 +221,7 @@ export async function sendFeedbackAction(data: {
 }
 
 export async function loginUser(data: any): Promise<{ [key: string]: any }[]> {
-    const response = await axios.post(`${URL}/chatbot/login`, {
+    const response = await axios.post(`${URL}/api/chatbot/login`, {
         ...data,
     });
     return response?.data?.data;
@@ -245,7 +245,7 @@ export async function getHelloDetailsApi({
     if (helloId !== null) data.helloId = helloId;
     if (versionId !== null) data.versionId = versionId;
     try {
-        const response = await axios.post(`${URL}/hello/subscribe`, data);
+        const response = await axios.post(`${URL}/api/chatbot/subscribe`, data);
         return response?.data;
     } catch (error) {
         console.error("Error getting hello details:", error);
@@ -303,7 +303,7 @@ export const getAllThreadsApi = async ({ threadId = "", bridgeName = "" }) => {
         return null;
     }
     try {
-        const response = await axios.get(`${URL}/thread/${threadId}?slugName=${bridgeName}`);
+        const response = await axios.get(`${URL}/api/thread/${threadId}?slugName=${bridgeName}`);
         return response?.data;
     } catch (error: any) {
         console.warn(error);
@@ -319,7 +319,7 @@ export const createNewThreadApi = async ({
     subThreadId = "",
 }) => {
     try {
-        const response = await axios.post(`${URL}/thread/`, {
+        const response = await axios.post(`${URL}/api/thread/`, {
             thread_id: threadId,
             subThreadId,
         });
@@ -390,7 +390,7 @@ export const getTemplateFlowList = async (emebedToken: string) => {
 
 export const getEmebedToken = async () => {
     try {
-        const response = await axios.get(`${URL}/rag/get-emebed-token`);
+        const response = await axios.get(`${URL}/api/rag/get-emebed-token`);
         return response?.data?.token;
     } catch (e) {
         return e;

@@ -409,7 +409,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           <div className="flex justify-between items-center w-full">
             {/* Left section: Upload, Emoji and AI icon */}
             <div className="flex items-center">
-              {aiIconElement}
+              {/* {aiIconElement} */}
               <div
                 onClick={(e) => { e.stopPropagation(); e.preventDefault(); setShowEmojiPicker(!showEmojiPicker) }}
                 className="group flex items-center justify-center w-8 h-8 cursor-pointer"
