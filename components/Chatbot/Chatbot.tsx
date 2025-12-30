@@ -106,8 +106,6 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
 
   const { isHelloUser, currentChatId, isDefaultNavigateToChatScreen } = useReduxStateManagement({ chatSessionId, tabSessionId });
 
-  // Initialize RTLayer event listeners
-
   // Effect to open drawer for new human users
   useEffect(() => {
     if (isHelloUser && !currentChatId && !mountedRef.current) {
