@@ -166,14 +166,20 @@ export async function sendDataToAction(data: any): Promise<any> {
             }
         );
         return { success: true, data: response?.data?.data };
-    } catch (error) {
-        emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', error);
-        errorToast(
-            error?.response?.data?.detail?.error ||
+    } catch (error: any) {
+        const sanitizedError = {
+            message: error?.message || "API call failed",
+            status: error?.response?.status,
+            statusText: error?.response?.statusText,
+            data: error?.response?.data
+        };
+        emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', sanitizedError);
+        
+        const errorMessage = error?.response?.data?.detail?.error ||
             error?.response?.data?.detail ||
-            "Something went wrong!"
-        );
-        return { success: false };
+            "Something went wrong!";
+            
+        return { success: false, error: errorMessage };
     }
 }
 

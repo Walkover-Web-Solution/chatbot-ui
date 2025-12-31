@@ -56,10 +56,11 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const { setImages } = useChatActions();
   const sendMessage = useSendMessage({});
 
-  const { images = [], options = [], loading } = useCustomSelector((state) => ({
+  const { images = [], options = [], loading, error } = useCustomSelector((state) => ({
     images: state.Chat.images || [],
     loading: state.Chat.loading,
     options: state.Chat.options || [],
+    error: state.Chat.error,
   }))
 
   const buttonDisabled = useMemo(() => {
@@ -384,6 +385,16 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     <div className={`relative w-full shadow-sm ${className}`}>
       {optionButtons}
       {imagePreviewsSection}
+      
+      {/* Error message display - above input field */}
+      {error && (
+        <div className="px-2 pb-2">
+          <div className="text-red-500 text-sm flex items-center gap-2">
+            <span className="text-red-500">⚠</span>
+            {error}
+          </div>
+        </div>
+      )}
 
       <div className="w-full h-full cursor-text relative" onClick={focusTextField}>
         <EmojiSelector

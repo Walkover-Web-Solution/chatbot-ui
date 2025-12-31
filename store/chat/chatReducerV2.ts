@@ -41,6 +41,9 @@ interface ChatState {
     options: any[];
     images: any[];
 
+    // Error handling
+    error: string | null;
+
     // Additional properties that might be needed
     open?: boolean;
     isHelloUser?: boolean;
@@ -82,6 +85,9 @@ export const initialChatState: ChatState = {
     // Options & Media
     options: [],
     images: [],
+
+    // Error handling
+    error: null,
 };
 
 export const chatReducerV2 = {
@@ -284,6 +290,10 @@ export const chatReducerV2 = {
                 }, {})
             );
         }
+    },
+
+    setError: (state, action: PayloadAction<string | null>) => {
+        state.error = action.payload;
     },
 
     resetState: (state) => {
