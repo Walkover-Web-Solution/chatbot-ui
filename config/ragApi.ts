@@ -4,7 +4,7 @@ const URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export const createKnowledgeBaseEntry = async (data: any) => {
     try {
         const response = await axios.post(`${URL}/api/rag`, data);
-        return response;
+        return response?.data;
     } catch (error) {
         console.error(error);
         return error;
