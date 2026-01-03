@@ -10,7 +10,7 @@ import { ParamsEnums } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import { TextField, useTheme } from "@mui/material";
 import debounce from "lodash.debounce";
-import { ChevronDown, Paperclip, Send, Smile, X } from "lucide-react";
+import { ChevronDown, Paperclip, Send, Smile, TriangleAlert, X } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
@@ -56,10 +56,11 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const { setImages } = useChatActions();
   const sendMessage = useSendMessage({});
 
-  const { images = [], options = [], loading } = useCustomSelector((state) => ({
+  const { images = [], options = [], loading, error } = useCustomSelector((state) => ({
     images: state.Chat.images || [],
     loading: state.Chat.loading,
     options: state.Chat.options || [],
+    error: state.Chat.error,
   }))
 
   const buttonDisabled = useMemo(() => {
@@ -384,6 +385,16 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     <div className={`relative w-full shadow-sm ${className}`}>
       {optionButtons}
       {imagePreviewsSection}
+      
+      {/* Error message display - above input field */}
+      {error && (
+        <div className="px-2 pb-2">
+          <div className="text-red-500 text-sm flex items-center gap-2">
+            <TriangleAlert className="w-4 h-4 text-error" />
+            {error}
+          </div>
+        </div>
+      )}
 
       <div className="w-full h-full cursor-text relative" onClick={focusTextField}>
         <EmojiSelector

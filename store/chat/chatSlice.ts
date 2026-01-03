@@ -36,6 +36,7 @@ export const {
     setInitialMessages,
     setPaginateMessages,
     setHelloEventMessage,
+    setError,
     resetState
 } = chatSlice.actions;
 

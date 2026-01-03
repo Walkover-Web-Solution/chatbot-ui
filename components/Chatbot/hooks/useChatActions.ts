@@ -2,7 +2,7 @@ import { ChatContext } from '@/components/Chatbot-Wrapper/ChatbotWrapper';
 import { errorToast } from '@/components/customToast';
 import { MessageContext } from '@/components/Interface-Chatbot/InterfaceChatbot';
 import { getAllThreadsApi, getPreviousMessage, sendDataToAction, sendFeedbackAction } from '@/config/api';
-import { removeMessages, setChatsLoading, setData, setHelloEventMessage, setImages, setInitialMessages, setIsFetching, setLoading, setNewMessage, setOptions, setPaginateMessages, setStarterQuestions, setToggleDrawer, updateLastAssistantMessage, updateSingleMessage } from '@/store/chat/chatSlice';
+import { removeMessages, setChatsLoading, setData, setError, setHelloEventMessage, setImages, setInitialMessages, setIsFetching, setLoading, setNewMessage, setOptions, setPaginateMessages, setStarterQuestions, setToggleDrawer, updateLastAssistantMessage, updateSingleMessage } from '@/store/chat/chatSlice';
 import { setThreads } from '@/store/interface/interfaceSlice';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { PAGE_SIZE } from '@/utils/enums';
@@ -168,6 +168,7 @@ export const useSendMessage = ({
 
     return useCallback(async ({ message = '', customVariables = {}, customThreadId = '', customBridgeSlug = '', apiCall = true }: SendMessagePayloadType) => {
         globalDispatch(setNewMessage(true));
+        globalDispatch(setError(null)); // Clear any previous errors
         const textMessage = message || (messageRef?.current as HTMLInputElement)?.value;
         const files = images
             ?.filter((url) => url.split(".").pop()?.toLowerCase() === "pdf")
@@ -215,6 +216,7 @@ export const useSendMessage = ({
         if (!response?.success) {
             globalDispatch(setLoading(false));
             globalDispatch(removeMessages({ numberOfMessages: 2 }));
+            globalDispatch(setError(response?.error || "Failed to send message. Please try again."));
             return;
         }
     }, [
