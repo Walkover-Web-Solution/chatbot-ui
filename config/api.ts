@@ -336,10 +336,10 @@ export const createNewThreadApi = async ({
     }
 };
 
-export const uploadImage = async ({ formData = {} }) => {
+export const uploadImage = async ({ formData = {}, isVedioOrPdf = false }: { formData: any, isVedioOrPdf?: boolean }) => {
     try {
         const response = await axios.post(
-            `${PYTHON_URL}/image/processing/`,
+            `${PYTHON_URL}/image/processing/${isVedioOrPdf ? 'upload' : ''}`,
             formData
         );
         return response?.data;
