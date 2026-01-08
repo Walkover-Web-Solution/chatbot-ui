@@ -497,6 +497,26 @@
             const name = document.createElement('div');
             name.className = 'rag-document-name';
             name.textContent = doc.name || doc.title || 'Untitled Document';
+
+            // Add description if available
+            const description = document.createElement('div');
+            description.className = 'rag-document-description';
+            description.style.fontSize = '13px';
+            description.style.color = '#6b7280';
+            description.style.marginTop = '4px';
+            description.style.lineHeight = '1.4';
+            if (doc.description) {
+                // Truncate description to 100 words
+                const words = doc.description.split(' ');
+                if (words.length > 20) {
+                    description.textContent = words.slice(0, 20).join(' ') + '...';
+                } else {
+                    description.textContent = doc.description;
+                }
+            } else {
+                description.textContent = 'No description available';
+                description.style.fontStyle = 'italic';
+            }
         
             const details = document.createElement('div');
             details.className = 'rag-document-details';
@@ -562,6 +582,7 @@
             }
 
             infoContainer.appendChild(name);
+            infoContainer.appendChild(description);
             infoContainer.appendChild(details);
             leftSection.appendChild(infoContainer);
 

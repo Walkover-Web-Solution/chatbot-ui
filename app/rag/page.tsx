@@ -552,7 +552,20 @@ function RagComponent() {
                     </div>
 
                     {/* Description Field */}
-                   
+                    <div className="form-control">
+                        <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
+                            Description
+                        </label>
+                        <textarea
+                            ref={descriptionInputRef}
+                            name="description"
+                            rows={3}
+                            className={getInputClassName(aiGenerationEnabled)}
+                            placeholder="Enter a description for this knowledge base entry"
+                            defaultValue={editingKnowledgeBase?.description || ""}
+                            disabled={aiGenerationEnabled}
+                        />
+                    </div>
 
                     {/* File/URL/Content Input */}
                     <div className="form-control">
