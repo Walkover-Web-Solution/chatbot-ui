@@ -11,30 +11,61 @@ const interfaceSlice = createSlice({
       const threadData = action.payload?.newThreadData || {};
       const allThreadList = action.payload?.threadList || [];
       const tabSessionId = action?.urlData?.tabSessionId;
+
+      // Initialize session state if not exists
       if (!state[tabSessionId]) {
         state[tabSessionId] = {};
       }
-      if (!(Object.keys(threadData || {}).length > 0)) {
-        if (state[tabSessionId]?.threadId) {
-          const selectedThread = allThreadList.find(
-            (thread: any) => thread.thread_id === state[tabSessionId]?.threadId
-          );
 
-          if (!selectedThread) {
-            state[tabSessionId].subThreadId = state[tabSessionId]?.threadId;
-          } else if (!state[tabSessionId]?.subThreadId && state[tabSessionId]?.threadId === selectedThread.thread_id) {
-            const lastSubThreadId = allThreadList[allThreadList.length - 1]?.sub_thread_id;
-            if (lastSubThreadId) {
-              state[tabSessionId].subThreadId = lastSubThreadId;
-            }
-          }
-        }
-        if (allThreadList?.length === 0) {
-          state[tabSessionId].subThreadId = state[tabSessionId]?.threadId;
-        }
+      const sessionState = state[tabSessionId];
+      const hasNewThreadData = Object.keys(threadData).length > 0;
 
+      if (hasNewThreadData) {
+        // New thread data provided, use it directly
+        sessionState.subThreadId = threadData.sub_thread_id || "";
+        return;
+      }
+
+      // Handle empty thread list case
+      if (allThreadList.length === 0) {
+        sessionState.subThreadId = sessionState.threadId || "";
+        return;
+      }
+
+      const currentSubThreadId = sessionState.subThreadId;
+      const currentThreadId = sessionState.threadId;
+      const firstSubThreadId = allThreadList[0]?.sub_thread_id;
+
+      // Check if current subThreadId exists in the thread list
+      if (currentSubThreadId) {
+        const subThreadExists = allThreadList.find(
+          (thread: any) => thread.sub_thread_id === currentSubThreadId
+        );
+
+        if (subThreadExists) {
+          // Current subThreadId exists in list, keep it
+          return;
+        }
+      }
+
+      // Handle thread selection when subThreadId doesn't exist or is empty
+      if (currentThreadId) {
+
+        // Check if threadId exists as a main thread
+        const mainThread = allThreadList.find(
+          (thread: any) => thread.thread_id === currentThreadId
+        );
+
+        if (mainThread) {
+          // ThreadId exists in list, use first available subThreadId
+          sessionState.subThreadId = firstSubThreadId || "";
+        } else {
+          // ThreadId doesn't exist in list, keep it as subThreadId
+          sessionState.subThreadId = currentThreadId;
+        }
       } else {
-        state[tabSessionId].subThreadId = threadData?.sub_thread_id || "";
+        // No current threadId, use first available subThreadId
+        sessionState.subThreadId = firstSubThreadId || "";
       }
     });
   }

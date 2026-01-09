@@ -1,7 +1,6 @@
 'use client';
-
-import { useEffect, useRef } from 'react';
 import { EmojiPicker } from 'frimousse';
+import { useEffect, useRef } from 'react';
 
 interface EmojiSelectorProps {
     isVisible: boolean;
@@ -49,9 +48,9 @@ const EmojiSelector: React.FC<EmojiSelectorProps> = ({
     if (!isVisible) return null;
 
     return (
-        <div ref={emojiPickerRef} className="absolute bottom-full left-0 mb-2 z-50">
-            <EmojiPicker.Root onEmojiSelect={onEmojiSelect} className="isolate flex h-[368px] w-fit flex-col bg-white border-2 rounded-lg shadow-xl">
-                <EmojiPicker.Search ref={emojiSearchRef} className="z-10 mx-2 mt-2 appearance-none rounded-md bg-neutral-100 px-2.5 py-2 text-sm focus" />
+        <div ref={emojiPickerRef} className="absolute bottom-full left-0 mb-2 z-[10000]">
+            <EmojiPicker.Root onEmojiSelect={onEmojiSelect} className="isolate flex h-[368px] w-fit flex-col bg-base-100 dark:bg-slate-900 border-2 rounded-lg shadow-xl">
+                <EmojiPicker.Search ref={emojiSearchRef} className="z-10 mx-2 mt-2 appearance-none rounded-md bg-neutral-100 dark:bg-slate-800 px-2.5 py-2 text-sm focus text-base-content dark:text-slate-100" />
                 <EmojiPicker.Viewport className="relative flex-1 outline-hidden">
                     <EmojiPicker.Loading className="absolute inset-0 flex items-center justify-center text-neutral-400 text-sm">
                         Loading…
@@ -64,7 +63,7 @@ const EmojiSelector: React.FC<EmojiSelectorProps> = ({
                         components={{
                             CategoryHeader: ({ category, ...props }) => (
                                 <div
-                                    className="bg-white px-3 pt-3 pb-1.5 font-medium text-neutral-600 text-xs"
+                                    className="dark:text-slate-300 bg-base-100 dark:bg-slate-900 px-3 pt-3 pb-1.5 font-medium text-neutral-600 text-xs"
                                     {...props}
                                 >
                                     {category.label}
@@ -77,7 +76,7 @@ const EmojiSelector: React.FC<EmojiSelectorProps> = ({
                             ),
                             Emoji: ({ emoji, ...props }) => (
                                 <button
-                                    className="flex size-10 items-center justify-center rounded-md text-2xl data-[active]:bg-neutral-100"
+                                    className="flex size-10 items-center justify-center rounded-md text-2xl data-[active]:bg-neutral-100 dark:bg-slate-800"
                                     {...props}
                                 >
                                     {emoji.emoji}

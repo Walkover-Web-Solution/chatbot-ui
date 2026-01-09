@@ -1,8 +1,9 @@
 import { createTheme } from "@mui/material/styles";
 
-export const generateTheme = (colorHex) => {
+export const generateTheme = (colorHex, mode = 'light') => {
   return createTheme({
     palette: {
+      mode: mode,
       primary: {
         main: colorHex,
       },
@@ -10,12 +11,12 @@ export const generateTheme = (colorHex) => {
         main: colorHex,
       },
       background: {
-        default: "#f8f8f8", // Light grey
-        paper: "#ffffff", // White
+        default: mode === 'dark' ? "#121212" : "#f8f8f8",
+        paper: mode === 'dark' ? "#1e1e1e" : "#ffffff",
       },
       text: {
-        primary: "#000000", // Black
-        secondary: "#ffffff", // White for secondary text
+        primary: mode === 'dark' ? "#ffffff" : "#000000",
+        secondary: mode === 'dark' ? "#b0b0b0" : "#666666",
       },
     },
     components: {
@@ -23,13 +24,6 @@ export const generateTheme = (colorHex) => {
         styleOverrides: {
           root: {
             textTransform: "none",
-          },
-        },
-      },
-      MuiAppBar: {
-        styleOverrides: {
-          colorPrimary: {
-            backgroundColor: colorHex,
           },
         },
       },

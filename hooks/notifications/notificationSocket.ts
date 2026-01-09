@@ -36,7 +36,7 @@ const useNotificationSocket = ({ chatSessionId }: { chatSessionId: string }) => 
       // We don't disconnect here as other components might be using the socket
       // The socket manager will handle cleanup when the app unmounts
     };
-  }, [jwtToken, company_id, pushConfig,isMobileSDK]);
+  }, [jwtToken, company_id, pushConfig, isMobileSDK]);
 
   return null;
 };

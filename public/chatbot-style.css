@@ -163,16 +163,16 @@
     height: 100% !important;
     position: absolute !important;
     border: none !important;
-    border-radius: 0%;
-    right: 0;
-    bottom: 0;
+    border-radius: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
 }
 
 .full-screen-without-border {
     width: 100% !important;
     height: 100% !important;
-    border-radius: 0%;
+    border-radius: 0 !important;
     border: none !important;
-    right: 0;
-    bottom: 0;
+    right: 0 !important;
+    bottom: 0 !important;
 }

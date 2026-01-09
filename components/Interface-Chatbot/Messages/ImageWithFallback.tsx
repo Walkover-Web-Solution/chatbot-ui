@@ -1,5 +1,7 @@
+import { PdfLogo } from "@/assests/assestsIndex";
 import { useScreenSize } from "@/components/Chatbot/hooks/useScreenSize";
 import { Download, FileWarning } from "lucide-react";
+import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
 
 type ImageWithFallbackProps = {
@@ -64,7 +66,7 @@ const DownloadButton = ({ onClick }: { onClick: () => void }) => (
     className="absolute top-2 right-2 px-2 pt-1 ml-2 bg-gray-200 shadow-md rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-200"
   >
     <div className="tooltip tooltip-left" data-tip="Download">
-      <Download size={18} color="black" />
+      <Download size={18} />
     </div>
   </button>
 );
@@ -171,6 +173,18 @@ const ImageWithFallback = ({
               <source src={src} type={audioType} />
             </audio>
           </div>
+        );
+
+      case "pdf":
+        return (
+          <Image
+            src={PdfLogo}
+            alt={alt}
+            width={100}
+            height={100}
+            onClick={handleClick}
+            style={style}
+          />
         );
 
       default:

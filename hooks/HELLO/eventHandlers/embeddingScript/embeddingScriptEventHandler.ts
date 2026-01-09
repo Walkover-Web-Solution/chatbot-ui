@@ -25,7 +25,7 @@ const helloToChatbotPropsMap: Record<string, string> = {
 const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance, chatSessionId: string) => {
     const sendMessageToHello = useSendMessageToHello({});
     const dispatch = useDispatch()
-    const { handleThemeChange } = useContext(ThemeContext);
+    const { handleThemeChange, handleModeChange } = useContext(ThemeContext);
     // We need to access the channel list. Let's use the custom selector to get it.
     const { channelList } = useCustomSelector((state) => ({
         channelList: state.Hello?.[chatSessionId]?.channelListData?.channels
@@ -106,6 +106,11 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         // Apply theme if present
         if (sdkConfig?.customTheme) {
             handleThemeChange(sdkConfig.customTheme);
+        }
+
+        const themeMode = event.data.data.theme || sdkConfig?.theme;
+        if (themeMode && ['light', 'dark', 'system'].includes(themeMode)) {
+            handleModeChange(themeMode);
         }
 
         // Store variables in redux
@@ -204,7 +209,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
             dispatch(setVariablesForHelloBot(data.variables))
         }
         if ('fullScreen' in data) {
-            dispatch(setHelloConfig({ fullScreen: data.fullScreen }))
+            dispatch(setWidgetInfo({ fullScreen: data.fullScreen }))
         }
         if ('viewMode' in data) {
             dispatch(setHelloConfig({ viewMode: data.viewMode }))

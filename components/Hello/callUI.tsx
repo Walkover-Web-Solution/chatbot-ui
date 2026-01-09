@@ -72,7 +72,7 @@ const CallUI: React.FC = () => {
                         <div className="flex items-center space-x-4">
                             <button
                                 onClick={toggleMute}
-                                className={`p-2 rounded-full button-hover transition-colors ${isMuted ? 'bg-orange-400 text-white' : 'text-black'} `}
+                                className={`p-2 rounded-full button-hover transition-colors ${isMuted ? 'bg-orange-400 text-white' : 'text-black dark:text-white'} `}
                                 aria-label={isMuted ? 'Unmute' : 'Mute'}
                             >
                                 {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
@@ -121,10 +121,10 @@ const CallUI: React.FC = () => {
         <div
             className={`transition-all duration-500 ease-in-out transform
                    ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}
-                   flex items-center justify-center mx-auto p-3 bg-white
+                   flex items-center justify-center mx-auto p-3 bg-white dark:bg-gray-800
                    ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}
-                   border border-gray-300 rounded-bl-lg rounded-br-lg
-                   shadow-lg overflow-hidden`}
+                   border border-gray-300 dark:border-gray-700 rounded-bl-lg rounded-br-lg
+                   shadow-lg overflow-hidden dark:text-white`}
         >
             {renderCallUI()}
         </div>
@@ -157,7 +157,7 @@ const CallTimer: React.FC<{ answeredAt: number }> = ({ answeredAt = 0 }) => {
         return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     };
 
-    return <div className="timer">{formatTime(seconds)}</div>;
+    return <div className="call-timer text-gray-600 dark:text-gray-300">{formatTime(seconds)}</div>;
 };
 
 export default CallUI;
