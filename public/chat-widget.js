@@ -899,7 +899,8 @@
                 parentContainer.style.left = 'auto';
                 parentContainer.style.margin = '0';
                 parentContainer.style.padding = '0';
-                parentContainer.style.borderRadius = '12px';
+                parentContainer.style.border = 'none';
+                // parentContainer.style.borderRadius = '12px';
                 // Apply original config dimensions
                 const config = this.props?.config || this.config;
                 const isFunctionalHeight = config.height?.includes('(');

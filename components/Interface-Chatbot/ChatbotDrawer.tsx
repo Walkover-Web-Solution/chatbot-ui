@@ -345,7 +345,7 @@ const ChatbotDrawer = ({
               {teamsList.map((team: any, index: number) => (
                 <div
                   key={`${team?.id}-${index}`}
-                  className={`team-card p-3 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer rounded-lg flex items-center justify-between`}
+                  className={`team-card p-3 bg-[var(--background)] shadow-sm hover:shadow-md transition-all cursor-pointer rounded-lg flex items-center justify-between`}
                   onClick={() => handleChangeTeam(team?.id)}
                 >
                   <div className="flex items-center overflow-hidden">
