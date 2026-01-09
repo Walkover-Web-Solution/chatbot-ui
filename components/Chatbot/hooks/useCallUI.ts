@@ -13,7 +13,7 @@ export const useCallUI = () => {
 
   useEffect(() => {
     // Set initial state
-    setCallState(helloVoiceService.getCallState());
+    setCallState(helloVoiceService.getCallState() as "idle" | "ringing" | "connected" | "ended" | "rejoined");
     setIsMuted(helloVoiceService.getMuteStatus());
 
     // Set up event listeners

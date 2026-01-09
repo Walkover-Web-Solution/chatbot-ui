@@ -209,7 +209,7 @@ const ChatbotDrawer = ({
 
   // Memoized components
   const DrawerList = useMemo(() => (
-    <div className="menu p-0 w-full h-full bg-base-200 text-base-content">
+    <div className="menu p-0 w-full h-full bg-[var(--drawer-color)] text-base-content">
       {(subThreadList || []).length === 0 ? (
         <div className="flex justify-center items-center mt-5">
           <span>No Conversations</span>
@@ -235,7 +235,7 @@ const ChatbotDrawer = ({
     <div className="teams-container pb-2 relative gap-6 flex flex-col">
       {/* Conversations Section */}
       {(channelList || []).length > 0 && channelList.some((thread: any) => thread?.id) && (
-        <div className="conversations-section border-b">
+        <div className="conversations-section">
           <div className="conversations-header pb-2">
             <h3 className="text-base font-semibold">Continue Conversations</h3>
           </div>
@@ -245,7 +245,7 @@ const ChatbotDrawer = ({
               .map((channel: any, index: number) => (
                 <div
                   key={`${channel?._id}-${index}`}
-                  className={`conversation-card max-h-16 h-full overflow-hidden text-ellipsis p-3 ${channel?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center`}
+                  className={`conversation-card max-h-16 h-full overflow-hidden text-ellipsis p-3 ${channel?.id === currentChatId ? 'border-2 border-primary' : ''} bg-white dark:bg-[var(--background)] rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center`}
                   style={{
                     borderColor: channel?.id === currentChatId ? backgroundColor : ''
                   }}
@@ -322,7 +322,7 @@ const ChatbotDrawer = ({
                         {channel?.widget_unread_count}
                       </div>
                     )}
-                    <ChevronRight size={16} className="text-gray-800" />
+                    <ChevronRight size={16} className="var(--icon-color)" />
                   </div>
                 </div>
               ))}
@@ -357,7 +357,7 @@ const ChatbotDrawer = ({
                     </div>
                   </div>
                   <div className="flex-shrink-0 ml-2">
-                    <SquarePen size={16} color="#555555" />
+                    <SquarePen size={16} color="var(--icon-color)" />
                   </div>
                 </div>
               ))}
@@ -366,18 +366,19 @@ const ChatbotDrawer = ({
         </div>
       </div>
 
-      {voice_call_widget && <div className="marketing-banner p-3 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg">
+      {voice_call_widget && <div className="marketing-banner p-3 bg-gradient-to-r from-primaryTheme/20 to-secondaryTheme/20 rounded-lg">
         <p className="text-sm font-medium">Need specialized help?</p>
         <p className="text-xs">Our teams are ready to assist you with any questions</p>
         <button
-          className={`mt-2 text-xs py-1 px-3 rounded-md transition-colors ${callState !== "idle" ? "bg-gray-400 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/80"}`}
+          className={`mt-2 text-xs py-1 px-3 rounded-md transition-colors ${callState !== "idle" ? "bg-gray-400 cursor-not-allowed" : "bg-primaryTheme hover:bg-primaryTheme/80"}`}
+          style={{ color: textColor }}
           onClick={handleVoiceCall}
           disabled={callState !== "idle"}
         >
           Call Us
         </button>
       </div>}
-    </div>
+    </div >
   ), [
     channelList,
     teamsList,
@@ -404,10 +405,10 @@ const ChatbotDrawer = ({
 
     return (
       <div
-        className="cursor-pointer p-2 hover:bg-gray-200 rounded-full transition-colors"
+        className="cursor-pointer p-2 hover:bg-gray-200 rounded-full transition-colors icn"
         onClick={handleCloseChatbot}
       >
-        <X size={22} color="#555555" />
+        <X size={22} color="var(--icon-color)" />
       </div>
     );
   }, [hideCloseButton, handleCloseChatbot]);
@@ -431,17 +432,17 @@ const ChatbotDrawer = ({
       )}
 
       <div className={`drawer-side ${isHelloUser && isSmallScreen ? '100%' : 'max-w-[286px]'} ${isToggledrawer ? 'lg:translate-x-0' : 'lg:-translate-x-full'} transition-transform duration-100`}>
-        <div className="w-full h-full text-base-content relative bg-base-200 border-r-base-300 border flex flex-col">
+        <div className="w-full h-full relative flex flex-col bg-[var(--drawer-color)]">
           {/* Header with padding */}
           <div className="px-4 pt-4 pb-4">
             <div className="flex items-center justify-between">
               <div className="w-10">
                 {isToggledrawer && (
                   <button
-                    className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                    className="p-2 hover:bg-gray-200 rounded-full transition-colors icn"
                     onClick={() => closeToggleDrawer(!isToggledrawer)}
                   >
-                    <AlignLeft size={22} color="#555555" />
+                    <AlignLeft size={22} />
                   </button>
                 )}
               </div>
@@ -449,7 +450,7 @@ const ChatbotDrawer = ({
                 <h2 className="text-lg font-bold text-center">
                   {Name ? `Hello ${Name.split(' ')[0]}` : 'Hello There!'}
                 </h2>
-                {tagline && Name && (
+                {tagline && (
                   <p className="text-xs text-gray-500 text-center">{tagline}</p>
                 )}
               </div>
@@ -460,7 +461,7 @@ const ChatbotDrawer = ({
                       className="p-2 hover:bg-gray-200 rounded-full transition-colors"
                       onClick={handleCreateNewSubThread}
                     >
-                      <SquarePen size={22} color="#555555" />
+                      <SquarePen size={22} color="var(--icon-color)" />
                     </button>
                   </div>
                 )}

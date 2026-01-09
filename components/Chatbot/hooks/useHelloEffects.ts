@@ -1,4 +1,5 @@
 import { ThemeContext } from '@/components/AppWrapper';
+import { useReplyContext } from '@/components/Interface-Chatbot/contexts/ReplyContext';
 import { deleteReadReceipt, getAgentTeamApi, getClientToken, getGreetingQuestions, getJwtToken, initializeHelloChat, registerAnonymousUser, saveClientDetails } from '@/config/helloApi';
 import useNotificationSocket from '@/hooks/notifications/notificationSocket';
 import useNotificationSocketEventHandler from '@/hooks/notifications/notificationSocketEventHandler';
@@ -45,10 +46,11 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
     const fetchChannels = useFetchChannels();
     const { isSmallScreen } = useScreenSize();
     const { isTabVisible } = useTabVisibility();
+    const { clearReply } = useReplyContext();
 
     const { currentChannelId, isHelloUser } = useReduxStateManagement({ chatSessionId, tabSessionId });
 
-    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotMinimized, isChatbotOpen, callToken, unReadCountInCurrentChannel, demo_widget, helloVariables } = useCustomSelector((state) => ({
+    const { companyId, botId, reduxChatSessionId, totalNoOfUnreadMsgs, isToggledrawer, isChatbotOpen, isChatbotMinimized, unReadCountInCurrentChannel, callToken, demo_widget, helloVariables } = useCustomSelector((state) => ({
         companyId: state.Hello?.[chatSessionId]?.widgetInfo?.company_id || '',
         botId: state.Hello?.[chatSessionId]?.widgetInfo?.bot_id || '',
         reduxChatSessionId: state.draftData?.chatSessionId,
@@ -60,13 +62,13 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             return unreadCount;
         })(),
         isToggledrawer: state.Chat?.isToggledrawer,
-        isChatbotMinimized: state.draftData?.isChatbotMinimized,
         isChatbotOpen: state.appInfo?.[tabSessionId]?.isChatbotOpen,
-        callToken: state.appInfo?.[tabSessionId]?.callToken || '',
+        isChatbotMinimized: state.draftData?.isChatbotMinimized,
         unReadCountInCurrentChannel: (() => {
             const channelListData = state.Hello?.[chatSessionId]?.channelListData;
             return channelListData?.channels?.find((channel) => channel?.channel === currentChannelId)?.widget_unread_count || 0;
         })(),
+        callToken: state.appInfo?.[tabSessionId]?.callToken || '',
         demo_widget: state.Hello?.[chatSessionId]?.widgetInfo?.demo_widget || false,
         helloVariables: state.draftData?.hello?.variables || {},
     }));
@@ -116,6 +118,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
         };
     }, [handleReconnection])
 
+    // Listen for call-completed events to fetch history
     useEffect(() => {
         if (isHelloUser && currentChannelId && !demo_widget) {
             const handleCallCompleted = () => {
@@ -143,10 +146,10 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                 currentChannelId &&
                 unReadCountInCurrentChannel > 0 &&
                 (isSmallScreen ? !isToggledrawer : true) &&
-                !isChatbotMinimized &&
                 isChatbotOpen &&
                 isHelloUser &&
-                isTabVisible
+                isTabVisible &&
+                !isChatbotMinimized
             ) {
                 deleteReadReceipt(currentChannelId)
                 dispatch(setUnReadCount({ channelId: currentChannelId, resetCount: true }));
@@ -160,6 +163,10 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             debouncedReset.cancel();
         };
     }, [currentChannelId, isToggledrawer, unReadCountInCurrentChannel, isChatbotOpen, isHelloUser, isTabVisible, isChatbotMinimized]);
+
+    useEffect(() => {
+        clearReply();
+    }, [currentChannelId]);
 
 
     const initializeHelloServices = async (widgetToken: string = '') => {
@@ -267,7 +274,6 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
 
                 // const callTokenPromise = getCallToken();
 
-                // await Promise.all([clientTokenPromise, callTokenPromise]);
                 await Promise.all([clientTokenPromise]);
             }
 

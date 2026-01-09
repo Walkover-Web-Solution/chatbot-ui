@@ -58,7 +58,7 @@ const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatS
                         className={`w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-50 transition-all duration-300 ${showReplyButton ? 'opacity-100' : 'opacity-0'}`}
                         aria-label="Reply to message"
                     >
-                        <Reply className="w-4 h-4 text-gray-600" />
+                        <Reply className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                     </button>
 
                     <div

@@ -1,6 +1,5 @@
-import { useMediaQuery } from "@mui/material";
-import ImageWithFallback from "../Interface-Chatbot/Messages/ImageWithFallback";
 import { linkify } from "@/utils/utilities";
+import ImageWithFallback from "../Interface-Chatbot/Messages/ImageWithFallback";
 
 function RenderHelloAttachmentMessage({ message }: { message: any }) {
 

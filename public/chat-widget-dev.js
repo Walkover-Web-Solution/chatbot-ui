@@ -124,8 +124,7 @@
                 delayElapsed: false,
                 domainTrackingStarted: false,
                 urlMonitorAdded: false,
-                chatbotSize: 'NORMAL',
-                unreadCountResolver: null
+                chatbotSize: 'NORMAL'
             };
 
             this.initializeEventListeners();
@@ -356,7 +355,7 @@
 
         updateBadgeCount(data, channelId) {
             const badgeElement = document.getElementById(this.elements.unReadMsgCountBadge);
-            if (badgeElement && (!channelId || channelId === '*')) {
+            if (badgeElement && channelId === '*') {
                 if (!data || parseInt(data) === 0) {
                     badgeElement.style.display = 'none';
                 } else {
@@ -611,6 +610,7 @@
                     modalContainer.style.bottom = `${bottom}px`;
                     modalContainer.style.left = `${left}px`;
                     modalContainer.style.right = `${right}px`;
+                    modalContainer.style.zIndex = '9999';
 
                     iframe.style.width = `${width}px`;
                     iframe.style.height = `${height}px`;
@@ -899,7 +899,8 @@
                 parentContainer.style.left = 'auto';
                 parentContainer.style.margin = '0';
                 parentContainer.style.padding = '0';
-                parentContainer.style.borderRadius = '12px';
+                parentContainer.style.border = 'none';
+                // parentContainer.style.borderRadius = '12px';
                 // Apply original config dimensions
                 const config = this.props?.config || this.config;
                 const isFunctionalHeight = config.height?.includes('(');
@@ -1014,7 +1015,12 @@
             if (!iframeComponent) return;
             let encodedData = '';
             encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true }));
-            const modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
+            let modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
+            const urlParams = new URLSearchParams(window.location.search);
+            const env = urlParams.get('env');
+            if (env === 'stage') {
+                modifiedUrl += `&env=${env}`;
+            }
             iframeComponent.src = modifiedUrl;
 
             this.props.config = { ...this.config };

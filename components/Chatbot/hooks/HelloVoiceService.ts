@@ -4,6 +4,7 @@ import { getLocalStorage } from "@/utils/utilities";
 import { EventEmitter } from "events";
 import WebRTC from "msg91-webrtc-call";
 
+const WebRTC_environment = 'prod';
 class HelloVoiceService {
     private static instance: HelloVoiceService | null = null;
     private webrtc: any = null;
@@ -25,14 +26,12 @@ class HelloVoiceService {
 
     public initialize(): void {
         // Only initialize if not already done
-        // if (this.webrtc) return;
         if (this.webrtc) this.webrtc.close(); this.cleanUp();
 
         const clientToken = getLocalStorage('HelloClientToken');
         if (!clientToken) return;
 
-        this.webrtc = WebRTC(clientToken, "prod");
-
+        this.webrtc = WebRTC(clientToken, WebRTC_environment);
         this.webrtc.on("call", this.handleOutgoingCall);
     }
 
@@ -55,7 +54,6 @@ class HelloVoiceService {
             // });
             return;
         }
-
         // Only persist the call if this tab is currently active
         this.currentCall = call;
         this.callState = "ringing";
@@ -116,10 +114,9 @@ class HelloVoiceService {
             console.warn("WebRTC not initialized. Call initialize() first.");
             return;
         }
-
         const callToken = channelCallToken;
         if (!callToken) {
-            console.warn("No call token found in localStorage.");
+            console.warn("No call token found.");
             return;
         }
 

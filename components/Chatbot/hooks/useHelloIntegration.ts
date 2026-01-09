@@ -1,5 +1,7 @@
 import { ChatContext } from '@/components/Chatbot-Wrapper/ChatbotWrapper';
+import { useReplyContext } from '@/components/Interface-Chatbot/contexts/ReplyContext';
 import { MessageContext } from '@/components/Interface-Chatbot/InterfaceChatbot';
+import { MESSAGE_TYPES } from '@/components/Interface-Chatbot/Messages/MessageType';
 import { getAllChannels, getHelloChatHistoryApi, sendMessageToHelloApi } from '@/config/helloApi';
 import socketManager from '@/hooks/socketManager';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
@@ -14,8 +16,6 @@ import { useCallback, useContext, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useChatActions } from './useChatActions';
 import { useReduxStateManagement } from './useReduxManagement';
-import { useReplyContext } from '@/components/Interface-Chatbot/contexts/ReplyContext';
-import { MESSAGE_TYPES } from '@/components/Interface-Chatbot/Messages/MessageType';
 
 interface HelloMessage {
   role: string;
@@ -193,7 +193,6 @@ export const useOnSendHello = () => {
   const { startTimeoutTimer } = useHelloTimeout();
   const fetchChannels = useFetchChannels();
   const { replyToMessage } = useReplyContext();
-
   const {
     uuid,
     unique_id,
@@ -235,10 +234,6 @@ export const useOnSendHello = () => {
           subThreadId: workingChannelId
         }));
       }
-
-      // if (newMessage) {
-      //   addHelloMessage(newMessage, workingChannelId);
-      // }
       if (newMessage) {
         const getMessageContent = (content: string | { text: string }): string => {
           if (typeof content === 'string') return content;
@@ -272,7 +267,6 @@ export const useOnSendHello = () => {
         new: true,
         channel_hex: workingChannelId || undefined
       } : undefined;
-
       let attachments;
       if (!voiceCall) {
         // Show widget form only if in case of new chat and showWidgetForm is true
@@ -319,7 +313,6 @@ export const useOnSendHello = () => {
             emitEventToParent('HIDE_STARTER_QUESTION')
           }
         }
-
         if (data?.['channel']) {
           try {
             if (demo_widget) {
@@ -362,20 +355,20 @@ export const useOnSendHello = () => {
     helloVariables,
     companyId,
     demo_widget,
-    overrideChannelId,
-    replyToMessage
+    replyToMessage,
+    overrideChannelId
   ]);
 };
 
 export const useSendMessageToHello = ({
   messageRef: propMessageRef,
-  replyToMessageId
+  replyToMessageId,
 }: {
   messageRef?: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>,
-  replyToMessageId?: string
+  replyToMessageId?: string,
 }) => {
   const context = useContext(MessageContext);
-  const messageRef = propMessageRef ?? context.messageRef;
+  const messageRef: any = propMessageRef ?? context.messageRef;
   const { chatSessionId } = useHelloContext();
   const { setNewMessage } = useChatActions();
   const { addHelloMessage } = useHelloMessages();

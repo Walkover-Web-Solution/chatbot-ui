@@ -124,8 +124,7 @@
                 delayElapsed: false,
                 domainTrackingStarted: false,
                 urlMonitorAdded: false,
-                chatbotSize: 'NORMAL',
-                unreadCountResolver: null
+                chatbotSize: 'NORMAL'
             };
 
             this.initializeEventListeners();
@@ -355,7 +354,7 @@
 
         updateBadgeCount(data, channelId) {
             const badgeElement = document.getElementById(this.elements.unReadMsgCountBadge);
-            if (badgeElement && (!channelId || channelId === '*')) {
+            if (badgeElement && channelId === '*') {
                 if (!data || parseInt(data) === 0) {
                     badgeElement.style.display = 'none';
                 } else {
@@ -368,34 +367,6 @@
                 divElement.style.display = 'block';
                 divElement.textContent = data;
             }
-        }
-
-        getHTMLDimensions(htmlContent) {
-            // Create a temporary container
-            const tempContainer = document.createElement('body');
-
-            // Style it to be invisible but measurable            
-            tempContainer.style.position = 'absolute';
-            tempContainer.style.height = 'initial !important';
-            tempContainer.style.width = 'initial !important';
-
-            // Set the HTML content
-            tempContainer.innerHTML = htmlContent;
-
-            // Append to body to trigger layout calculation
-            document.body.appendChild(tempContainer);
-
-            // Get dimensions            
-            const rect = tempContainer.getBoundingClientRect();
-            const dimensions = {
-                width: rect.width,
-                height: rect.height
-            };
-
-            // Clean up
-            document.body.removeChild(tempContainer);
-
-            return dimensions;
         }
 
         handlePushNotification(data) {
@@ -435,13 +406,6 @@
                     this.removeNotification(overlay);
                 });
 
-                // Close popup when pressing ESC key
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape') {
-                        this.removeNotification(overlay);
-                    }
-                });
-
                 // Set position classes based on horizontal and vertical position values
                 const horizontalPosition = data.horizontal_position || 'center';
                 const verticalPosition = data.vertical_position || 'center';
@@ -468,11 +432,28 @@
                         loader.classList.add('msg-push-hide');
                         const body = iframeDoc.body;
 
+                        //without this scroller may seen
+                        body.style.setProperty('height', 'auto', 'important');
+                        body.style.setProperty('min-height', 'auto', 'important');
+                        body.style.setProperty('max-height', 'none', 'important');
+                        body.style.setProperty('line-height', 'normal', 'important');
+
                         let height = 0, width = 0, top = 0, bgFound = false;
                         const position = ['absolute', 'relative', 'fixed'];
                         if (body.children.length) {
                             for (let i = 0; i < body.children.length; i++) {
                                 const el = body.children[i];
+                                height += el.getBoundingClientRect().height;
+                                if (position.includes(getComputedStyle(el).position) && el.getBoundingClientRect().top > 0) {
+                                    const combinedHeight = el.getBoundingClientRect().height + el.getBoundingClientRect().top;
+                                    if (height < combinedHeight) {
+                                        height = combinedHeight;
+                                    }
+                                    top = el.getBoundingClientRect().top;
+                                }
+                                if (width < el.getBoundingClientRect().width) {
+                                    width = el.getBoundingClientRect().width;
+                                }
                                 const computedStyle = getComputedStyle(el);
                                 const bgColor = computedStyle.backgroundColor;
                                 const bgImage = computedStyle.backgroundImage;
@@ -483,7 +464,17 @@
                                     bgFound = true;
                                 }
                             }
+
+                            if (body.getBoundingClientRect().height > height) {
+                                height = body.getBoundingClientRect().height;
+                            }
+
+                            if (body.getBoundingClientRect().width > width) {
+                                width = body.getBoundingClientRect().width;
+                            }
                         } else {
+                            height += body.getBoundingClientRect().height;
+                            width += body.getBoundingClientRect().width;
                             const bodyComputedStyle = getComputedStyle(body);
                             const bodyBgColor = bodyComputedStyle.backgroundColor;
                             const bodyBgImage = bodyComputedStyle.backgroundImage;
@@ -499,7 +490,20 @@
                             overlay.classList.remove(`v-${verticalPosition}`);
                         }
 
+                        iframe.style.width = `${width}px`;
+                        iframe.style.top = `${top}px`;
+                        iframe.style.position = 'relative';
                         iframe.style.border = 'none';
+
+                        iframe.style.height = (height < 32) ? '36px' : `${height}px`;
+                        modalContainer.style.height = `${height}px`;
+
+                        setTimeout(() => {
+                            //bad hack to fix height issue iframe.onload is not working properly
+                            height = body.getBoundingClientRect().height;
+                            iframe.style.height = (height < 32) ? '36px' : `${height}px`;
+                            modalContainer.style.height = `${height}px`;
+                        }, 1000);
 
                         if (!bgFound) {
                             body.style.backgroundColor = '#ffffff';
@@ -513,26 +517,11 @@
                     }
                     htmlContent += `</head><body>${data.content}</body></html>`;
 
-                    const dimensions = this.getHTMLDimensions(htmlContent);
-                    iframe.style.width = `${dimensions.width}px`;
-                    //iframe.style.height = `${dimensions.height}px`;
-
-                    requestAnimationFrame(() => {
-                        const checkHeight = setInterval(() => {
-                            const iframeBodyRect = iframeDoc.body.getBoundingClientRect();
-                            iframe.style.height = `${iframeBodyRect.height}px`;
-                            modalContainer.style.height = `${iframeBodyRect.height}px`;
-                        }, 500);
-                        setTimeout(() => {
-                            clearInterval(checkHeight);
-                        }, 10000);
-                    });
-
                     // Write complete content in one operation
                     iframeDoc.open();
                     iframeDoc.write(htmlContent);
                     iframeDoc.close();
-                }, 100);
+                }, 0);
             }
 
             if (message_type?.toLowerCase() === 'custom') {
@@ -545,7 +534,6 @@
 
                 iframe.style.height = '100vh';
                 iframe.style.width = '100vw';
-
                 modalContainer.appendChild(iframe);
                 document.body.appendChild(modalContainer);
 
@@ -574,12 +562,11 @@
                             continue;
                         }
                         const rect = el.getBoundingClientRect();
-
                         // Use inline styles if set, otherwise use computed styles                        
-                        top = parseFloat(getComputedStyle(el).top) ? parseFloat(getComputedStyle(el).top) : rect.top;
-                        bottom = parseFloat(getComputedStyle(el).bottom) ? parseFloat(getComputedStyle(el).bottom) : rect.bottom;
-                        left = parseFloat(getComputedStyle(el).left) ? parseFloat(getComputedStyle(el).left) : rect.left;
-                        right = parseFloat(getComputedStyle(el).right) ? parseFloat(getComputedStyle(el).right) : rect.right;
+                        top = !isNaN(parseFloat(getComputedStyle(el).top)) ? parseFloat(getComputedStyle(el).top) : rect.top;
+                        bottom = !isNaN(parseFloat(getComputedStyle(el).bottom)) ? parseFloat(getComputedStyle(el).bottom) : rect.bottom;
+                        left = !isNaN(parseFloat(getComputedStyle(el).left)) ? parseFloat(getComputedStyle(el).left) : rect.left;
+                        right = !isNaN(parseFloat(getComputedStyle(el).right)) ? parseFloat(getComputedStyle(el).right) : rect.right;
                         paddingTop = parseFloat(getComputedStyle(el).paddingTop);
                         paddingBottom = parseFloat(getComputedStyle(el).paddingBottom);
 
@@ -590,6 +577,7 @@
                         width = Math.max(width, rect.width);
 
                         height += paddingTop + paddingBottom;
+                        console.log('top', top, 'bottom', bottom);
                         top = top > bottom ? 'unset' : top < 0 ? 0 : top;
                         bottom = bottom > top ? 'unset' : bottom < 0 ? 0 : bottom;
                         left = left > right ? 'unset' : left < 0 ? 0 : left;
@@ -610,6 +598,7 @@
                     modalContainer.style.bottom = `${bottom}px`;
                     modalContainer.style.left = `${left}px`;
                     modalContainer.style.right = `${right}px`;
+                    modalContainer.style.zIndex = '9999';
 
                     iframe.style.width = `${width}px`;
                     iframe.style.height = `${height}px`;
@@ -898,7 +887,8 @@
                 parentContainer.style.left = 'auto';
                 parentContainer.style.margin = '0';
                 parentContainer.style.padding = '0';
-                parentContainer.style.borderRadius = '12px';
+                parentContainer.style.border = 'none';
+                // parentContainer.style.borderRadius = '12px';
                 // Apply original config dimensions
                 const config = this.props?.config || this.config;
                 const isFunctionalHeight = config.height?.includes('(');
@@ -1013,7 +1003,12 @@
             if (!iframeComponent) return;
             let encodedData = '';
             encodedData = encodeURIComponent(JSON.stringify({ isHelloUser: true }));
-            const modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
+            let modifiedUrl = `${this.urls.chatbotUrl}?interfaceDetails=${encodedData}`;
+            const urlParams = new URLSearchParams(window.location.search);
+            const env = urlParams.get('env');
+            if (env === 'stage') {
+                modifiedUrl += `&env=${env}`;
+            }
             iframeComponent.src = modifiedUrl;
 
             this.props.config = { ...this.config };

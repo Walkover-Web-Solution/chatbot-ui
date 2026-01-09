@@ -17,7 +17,7 @@ function MessageTime({ message, tooltipPosition = 'tooltip-top' }: { message: an
 
     return (
         <div className={`tooltip ${tooltipPosition}`} data-tip={formatTime(message.time, 'shortTime') || ''}>
-            <p className="text-xs text-gray-500">{formattedTime}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-300">{formattedTime}</p>
         </div>
     )
 }

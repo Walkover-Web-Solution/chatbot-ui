@@ -265,13 +265,13 @@ const HumanOrBotMessageCard = React.memo(({ message, isBot = false, isLastMessag
                                 }`}
                             aria-label="Reply to message"
                         >
-                            <Reply className="w-4 h-4 text-gray-600" />
+                            <Reply className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                         </button>}
                     </div>
                     <div className={`transition-all duration-300 ease-in-out ${showSenderTime ? 'opacity-100 max-h-12' : 'opacity-0 max-h-0'}`}>
                         <div className="flex items-center gap-1 text-gray-500 pl-1 pt-0.5">
                             {message?.from_name && !message?.is_auto_response && (
-                                <div className="text-xs">{message.from_name} •</div>
+                                <div className="text-xs dark:text-gray-300">{message.from_name} •</div>
                             )}
                             {/* {message?.is_auto_response && (
                                 <div className="text-xs">Bot •</div>

@@ -20,7 +20,7 @@ import { useReplyContext } from "./contexts/ReplyContext";
 import EmojiSelector from "./EmojiSelector";
 import { MessageContext } from "./InterfaceChatbot";
 import ImageWithFallback from "./Messages/ImageWithFallback";
-import ReplyPreview from "./ReplyPreivew";
+import ReplyPreview from "./ReplyPreview";
 
 interface ChatbotTextFieldProps {
   className?: string;
@@ -33,7 +33,7 @@ interface ChatbotTextFieldProps {
 
 const MAX_IMAGES = 4;
 
-const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "", isVision: reduxIsVision = {} }) => {
+const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "" }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -75,15 +75,14 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     options: state.Chat.options || [],
   }))
 
-  const isVisionEnabled = useMemo(() =>
-    (reduxIsVision?.vision || mode?.includes("vision")) || isHelloUser,
-    [reduxIsVision, mode, isHelloUser]
-  );
-
-  const buttonDisabled = useMemo(() =>
-    ((isHelloUser && (assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0),
-    [loading, isUploading, inputValue, images, assigned_type, isHelloUser]
-  );
+  const buttonDisabled = useMemo(() => {
+    if (isHelloUser) {
+      return ((isHelloUser && (assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0)
+    } else {
+      return loading || isUploading || (!inputValue.trim() && images.length === 0) ||
+        (images.some((imageUrl) => imageUrl?.toLowerCase()?.includes('.pdf')) && !inputValue.trim());
+    }
+  }, [loading, isUploading, inputValue, images, assigned_type, isHelloUser]);
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey && !buttonDisabled) {
@@ -297,7 +296,11 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }, [isHelloUser]);
 
   const uploadButton = useMemo(() => {
-    if (!isVisionEnabled || (isHelloUser && !subThreadId)) return null;
+    if (isHelloUser) {
+      if (!subThreadId) return null;
+    } else {
+      if (!mode?.includes("vision") && !mode?.includes("files")) return null;
+    }
 
     return (
       <>
@@ -324,7 +327,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
         </label>
       </>
     );
-  }, [isVisionEnabled, isUploading, handleImageUpload, subThreadId]);
+  }, [mode, isUploading, handleImageUpload, subThreadId]);
 
   const handleEmojiSelect = (data: { emoji: string }) => {
     if (messageRef?.current) {
@@ -365,7 +368,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           onClose={() => { setShowEmojiPicker(false); focusTextField(); }}
         />
         <div
-          className="relative flex-col h-full items-center justify-between gap-2 p-2 bg-white rounded-xl border border-gray-300 focus-within:outline focus-within:outline-2 focus-within:outline-offset-0"
+          className="relative flex-col h-full items-center justify-between gap-2 p-2 bg-white dark:bg-[rgb(48,48,48)] rounded-xl border border-gray-300 focus-within:outline focus-within:outline-2 focus-within:outline-offset-0"
           style={{ outlineColor: theme.palette.primary.main }}
         >
           <TextField
@@ -394,7 +397,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                 className="group flex items-center justify-center w-8 h-8 cursor-pointer"
                 aria-label="Add emoji"
               >
-                <Smile className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600" />
+                <Smile className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 icn" />
               </div>
               {uploadButton}
             </div>
@@ -419,8 +422,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
-export default React.memo(addUrlDataHoc(ChatbotTextField, [ParamsEnums.subThreadId, ParamsEnums.currentTeamId, ParamsEnums.currentChannelId, ParamsEnums.isVision]));
+export default React.memo(addUrlDataHoc(ChatbotTextField, [ParamsEnums.subThreadId, ParamsEnums.currentTeamId, ParamsEnums.currentChannelId]));

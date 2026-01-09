@@ -1,17 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@plugin "daisyui";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --message-card-background: #f0f0f0;
+  --icon-color: #555555;
+  --drawer-color: #f2f2f2;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+[data-theme="dark"] {
+  --background: #121212;
+  --foreground: #ededed;
+  --message-card-background: #1f1f1f;
+  --icon-color: #ffffff;
+  --drawer-color: #1f1f1f;
 }
 
 .infinite-scroll-component {
@@ -67,5 +72,19 @@ html:has(.drawer-toggle:checked) {
 
 .message-card-backround {
   @apply border border-gray-200 rounded-lg p-3;
-  background-color: #f0f0f0;
+  background-color: var(--message-card-background);
+}
+
+[data-theme="dark"] .message-card-backround {
+  @apply border-gray-800;
+}
+
+
+.icn {
+  color: var(--icon-color);
+  @apply hover:bg-gray-200 hover:text-gray-800
+}
+
+[data-theme="dark"] .icn {
+  @apply hover:bg-gray-800 hover:text-gray-200
 }

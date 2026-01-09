@@ -1,5 +1,6 @@
 import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
+import { ParamsEnums } from '@/utils/enums';
 import { darken, lighten } from '@mui/material';
 import { Phone } from 'lucide-react';
 import React from 'react';

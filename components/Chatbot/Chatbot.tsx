@@ -26,8 +26,8 @@ import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { useChatEffects } from './hooks/useChatEffects';
 import { useColor } from './hooks/useColor';
 import { useHelloEffects } from './hooks/useHelloEffects';
-import { useScreenSize } from './hooks/useScreenSize';
 import { useReduxEffects } from './hooks/useReduxEffects';
+import { useScreenSize } from './hooks/useScreenSize';
 
 /**
  * A component that displays a chatbot interface.
@@ -51,7 +51,7 @@ const EmptyChatView = React.memo(() => (
         height={100}
         priority
       />
-      <h2 className="text-xl font-bold text-black">
+      <h2 className="text-xl font-bold">
         What can I help with?
       </h2>
     </div>
@@ -143,7 +143,7 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
     <MessageContext.Provider value={contextValue}>
       <div className="flex h-screen w-full overflow-hidden relative">
         {/* Sidebar - visible on large screens */}
-        <div className={`bg-base-100 border-r overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer && !isSmallScreen ? 'w-96 max-w-[286px]' : 'w-0'}`}>
+        <div className={`overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer && !isSmallScreen ? 'w-96 max-w-[286px]' : 'w-0'}`}>
           <ChatbotDrawer
             setToggleDrawer={(data: boolean) => { dispatch(setToggleDrawer(data)) }}
             isToggledrawer={isToggledrawer}
