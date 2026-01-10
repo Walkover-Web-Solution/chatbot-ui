@@ -188,12 +188,62 @@
             iframeObserver.observe(document.documentElement);
         }
 
-        openChatbot() {
-            const interfaceEmbed = document.getElementById('interfaceEmbed');
-            const iframeContainer = document.getElementById('iframe-parent-container');
+        ensureStylesheetInjected() {
+            const styleLink = document.getElementById('chatbotEmbed-style');
+            if (!styleLink && document.head) {
+                document.head.appendChild(this.createStyleLink());
+            }
+        }
+
+        ensureInterfaceElements() {
+            this.ensureStylesheetInjected();
+
+            let interfaceEmbed = document.getElementById('interfaceEmbed');
+            if (!interfaceEmbed) {
+                if (!document.body) {
+                    console.warn('interfaceEmbed is missing and document.body is unavailable');
+                } else {
+                    const { chatBotIcon } = this.createChatbotIcon();
+                    document.body.appendChild(chatBotIcon);
+                    this.attachIconEvents(chatBotIcon);
+                    interfaceEmbed = chatBotIcon;
+                }
+            }
+
+            let iframeContainer = document.getElementById('iframe-parent-container');
+            let iframeRecreated = false;
+
+            if (!iframeContainer) {
+                this.createIframeContainer();
+                iframeContainer = document.getElementById('iframe-parent-container');
+                iframeRecreated = true;
+            }
+
+            if (interfaceEmbed) {
+                const shouldHideIcon = this.props.hideIcon === true || this.props.hideIcon === 'true';
+                interfaceEmbed.style.display = shouldHideIcon ? 'none' : 'unset';
+            }
+
+            if (iframeRecreated) {
+                this.loadChatbotEmbed();
+            }
 
             if (interfaceEmbed && iframeContainer) {
-                interfaceEmbed.style.display = 'none';
+                this.applyConfig(this.props?.config || this.config);
+            }
+
+            return {
+                interfaceEmbed: interfaceEmbed || null,
+                iframeContainer: iframeContainer || null
+            };
+        }
+
+        openChatbot() {
+            const { interfaceEmbed, iframeContainer } = this.ensureInterfaceElements();
+            if (iframeContainer) {
+                if (interfaceEmbed) {
+                    interfaceEmbed.style.display = 'none';
+                }
                 iframeContainer.style.display = 'block';
                 iframeContainer.style.opacity = 0;
                 iframeContainer.style.transition = 'opacity 0.3s ease-in-out';
@@ -266,24 +316,34 @@
         }
 
         async initializeChatbot() {
-            document.addEventListener('DOMContentLoaded', this.loadContent.bind(this));
-            if (document?.body) this.loadContent();
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', this.loadContent.bind(this));
+            } else {
+                await this.loadContent();
+            }
         }
 
         async loadContent() {
             if (this.state.bodyLoaded) return;
 
-            const { chatBotIcon, imgElement, textElement } = this.createChatbotIcon();
-            document.body.appendChild(chatBotIcon);
-            document.head.appendChild(this.createStyleLink()); // load the External Css for script
-
-            this.extractScriptProps();
-            this.attachIconEvents(chatBotIcon);
-            this.createIframeContainer();
-            await this.loadChatbotEmbed();
-            this.updateProps(this.state.tempDataToSend || {});
-
-            this.state.bodyLoaded = true;
+            try {
+                const { chatBotIcon } = this.createChatbotIcon();
+                if (!document.body) {
+                    console.error('Document body not available');
+                    return;
+                }
+                
+                document.body.appendChild(chatBotIcon);
+                document.head.appendChild(this.createStyleLink()); // load the External Css for script
+                this.extractScriptProps();
+                this.attachIconEvents(chatBotIcon);
+                this.createIframeContainer();
+                await this.loadChatbotEmbed();
+                this.updateProps(this.state.tempDataToSend || {});
+                this.state.bodyLoaded = true;
+            } catch (error) {
+                console.error('Error in loadContent:', error);
+            }
         }
 
         createIframeContainer() {
@@ -393,21 +453,21 @@
                 if (config.buttonName) {
                     this.buttonName = config.buttonName;
                     const textElement = document.getElementById('popup-interfaceEmbed-text');
-                    if (textElement) textElement.innerText = this.buttonName;
-                    interfaceEmbedElement.classList.add('show-bg-color');
+                    if (textElement) textElement.innerText = this.buttonName ? this.buttonName : '';
+                    if (interfaceEmbedElement) interfaceEmbedElement.classList.add('show-bg-color');
                     const imgElement = document.getElementById('popup-interfaceEmbed');
                     if (imgElement) imgElement.style.visibility = 'hidden';
                 } else {
                     const textElement = document.getElementById('popup-interfaceEmbed-text');
                     if (textElement) textElement.innerText = '';
-                    interfaceEmbedElement?.classList.remove('show-bg-color');
+                    if (interfaceEmbedElement) interfaceEmbedElement.classList.remove('show-bg-color');
                     const imgElement = document.getElementById('popup-interfaceEmbed');
                     if (imgElement) imgElement.style.visibility = 'visible';
                 }
                 if (config.iconUrl) {
                     const imgElement = document.getElementById('popup-interfaceEmbed');
                     if (imgElement) imgElement.src = config.iconUrl;
-                    interfaceEmbedElement?.classList.remove('show-bg-color');
+                    if (interfaceEmbedElement) interfaceEmbedElement.classList.remove('show-bg-color');
                     const textElement = document.getElementById('popup-interfaceEmbed-text');
                     if (textElement) textElement.innerText = '';
                     if (imgElement) imgElement.style.visibility = 'visible';
