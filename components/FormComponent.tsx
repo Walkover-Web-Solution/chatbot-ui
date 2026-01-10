@@ -69,8 +69,15 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    setErrors({ ...errors, [name]: "" }); // Clear error on change
+    let sanitizedValue = value;
+    if (name === "number") {
+      sanitizedValue = value.replace(/\D/g, "");
+    }
+    setFormData({
+      ...formData,
+      [name]: sanitizedValue
+    });
+    setErrors({ ...errors, [name]: "" })
   };
 
   const validate = () => {
@@ -247,7 +254,9 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
               </div>
               <div className="relative flex-1">
                 <input
-                  type="number"
+                  type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   name="number"
                   value={formData.number}
                   onChange={handleChange}
