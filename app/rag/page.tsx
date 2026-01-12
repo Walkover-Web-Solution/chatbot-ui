@@ -494,42 +494,6 @@ function RagComponent() {
                 <div className="flex-grow h-px bg-base-300"></div>
             </div>}
 
-            {/* Input Type Selection */}
-            {!editingKnowledgeBase && (
-                <div className="flex gap-4 px-4 mb-4">
-                    <label className={`flex items-center gap-2 cursor-pointer ${isDarkTheme ? 'text-gray-200' : 'text-gray-700'}`}>
-                        <input
-                            type="radio"
-                            name="inputType"
-                            className={`w-4 h-4 radio ${isDarkTheme ? 'text-blue-400 border-white' : 'text-blue-500'}`}
-                            checked={inputType === 'url'}
-                            onChange={() => setInputType('url')}
-                        />
-                        <span className="text-sm font-medium">URL</span>
-                    </label>
-                    <label className={`flex items-center gap-2 cursor-pointer ${isDarkTheme ? 'text-gray-200' : 'text-gray-700'}`}>
-                        <input
-                            type="radio"
-                            name="inputType"
-                            className={`w-4 h-4 radio ${isDarkTheme ? 'text-blue-400 border-white' : 'text-blue-500'}`}
-                            checked={inputType === 'file'}
-                            onChange={() => setInputType('file')}
-                        />
-                        <span className="text-sm font-medium">Upload File</span>
-                    </label>
-                    <label className={`flex items-center gap-2 cursor-pointer ${isDarkTheme ? 'text-gray-200' : 'text-gray-700'}`}>
-                        <input
-                            type="radio"
-                            name="inputType"
-                            className={`w-4 h-4 radio ${isDarkTheme ? 'text-blue-400 border-white' : 'text-blue-500'}`}
-                            checked={inputType === 'content'}
-                            onChange={() => setInputType('content')}
-                        />
-                        <span className="text-sm font-medium">Content</span>
-                    </label>
-                </div>
-            )}
-
             <form ref={formRef} onSubmit={handleSave} className="flex flex-col h-full">
                 <div className={`flex flex-col flex-grow overflow-auto p-4 gap-4 scrollbar-hide`}>
                     {/* Name Field */}
@@ -566,6 +530,42 @@ function RagComponent() {
                             disabled={aiGenerationEnabled}
                         />
                     </div>
+
+                    {/* Input Type Selection */}
+                    {!editingKnowledgeBase && (
+                        <div className="flex gap-4 m-2">
+                            <label className={`flex items-center gap-2 cursor-pointer ${isDarkTheme ? 'text-gray-200' : 'text-gray-700'}`}>
+                                <input
+                                    type="radio"
+                                    name="inputType"
+                                    className={`w-4 h-4 radio ${isDarkTheme ? 'text-blue-400 border-white' : 'text-blue-500'}`}
+                                    checked={inputType === 'url'}
+                                    onChange={() => setInputType('url')}
+                                />
+                                <span className="text-sm font-medium">URL</span>
+                            </label>
+                            <label className={`flex items-center gap-2 cursor-pointer ${isDarkTheme ? 'text-gray-200' : 'text-gray-700'}`}>
+                                <input
+                                    type="radio"
+                                    name="inputType"
+                                    className={`w-4 h-4 radio ${isDarkTheme ? 'text-blue-400 border-white' : 'text-blue-500'}`}
+                                    checked={inputType === 'file'}
+                                    onChange={() => setInputType('file')}
+                                />
+                                <span className="text-sm font-medium">Upload File</span>
+                            </label>
+                            <label className={`flex items-center gap-2 cursor-pointer ${isDarkTheme ? 'text-gray-200' : 'text-gray-700'}`}>
+                                <input
+                                    type="radio"
+                                    name="inputType"
+                                    className={`w-4 h-4 radio ${isDarkTheme ? 'text-blue-400 border-white' : 'text-blue-500'}`}
+                                    checked={inputType === 'content'}
+                                    onChange={() => setInputType('content')}
+                                />
+                                <span className="text-sm font-medium">Content</span>
+                            </label>
+                        </div>
+                    )}
 
                     {/* File/URL/Content Input */}
                     <div className="form-control">
@@ -775,7 +775,7 @@ function RagComponent() {
 
                     {/* Query Settings Accordion */}
                     {!editingKnowledgeBase && (
-                        <div className={`collapse collapse-arrow border bg-base-100 ${isDarkTheme ? 'border-gray-700 bg-gray-800' : 'border-base-300'}`}>
+                        <div className={`collapse collapse-arrow border ${isDarkTheme ? 'border-gray-700' : 'border-gray-200'}`}>
                             <input
                                 type="checkbox"
                                 checked={showQuerySettings}
