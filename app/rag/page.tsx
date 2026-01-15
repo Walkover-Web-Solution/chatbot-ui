@@ -219,10 +219,7 @@ function RagComponent() {
         try {
             const formData = new FormData();
             formData.append('file', file);
-
-            // Determine if it's video or PDF based on file type
-            const isVedioOrPdf = file.type.startsWith('video/') || file.type === 'application/pdf';
-            const response = await uploadImage({ formData, isVedioOrPdf });
+            const response = await uploadImage({ formData, isVedioOrPdf: true });
             // Adapt to response structure. KnowledgeBaseModal expects url or file_url or data.url
             const fileUrl = response.url || response.file_url || response.data?.url;
 
