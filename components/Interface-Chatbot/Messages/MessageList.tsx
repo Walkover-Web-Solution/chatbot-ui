@@ -210,4 +210,4 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
 
 }
 
-export default React.memo(addUrlDataHoc(MessageList, [ParamsEnums.currentChannelId]));
+export default React.memo(addUrlDataHoc(MessageList, [ParamsEnums.currentChannelId])); 

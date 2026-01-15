@@ -41,7 +41,8 @@ interface ChatbotProps {
 
 // Memoized components
 const EmptyChatView = React.memo(() => (
-  <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-84px] p-5">
+  <div className="flex-1 flex flex-col h-full w-full max-w-5xl mx-auto p-5 pt-20">
+
     <div className="flex flex-col items-center w-full">
       <Image
         src={ChatBotGif}
@@ -58,7 +59,9 @@ const EmptyChatView = React.memo(() => (
     <div className="max-w-5xl w-full mt-8">
       <ChatbotTextField />
     </div>
-    <StarterQuestions />
+    <div className='min-h-0 max-h-full overflow-y-auto mt-2 mb-2 pb-4'>
+  <StarterQuestions />
+    </div>
   </div>
 ));
 
