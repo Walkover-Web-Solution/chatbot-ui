@@ -1,4 +1,14 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## ProjectOverview
+This is a chatbot service provided to clients for use on their websites.
+
+### Why was this project created?
+It provides companies with a ready-to-use chatbot so they do not need to build one themselves.
+
+### How companies can use this project?
+Companies add a script provided by us to their website to embed the chat widget.
+
+### What does this project include?
+This project includes only the frontend part of the chatbot service.
 
 ## Getting Started
 
@@ -14,24 +24,10 @@ pnpm dev
 bun dev
 ```
 
+## Documentation Reading Order
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+AI tools and contributors must read the following documents
+in order before making any code changes:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. docs/ARCHITECTURE.md — High level architecture overview of the project
+2. docs/AI_INSTRUCTIONS.md — mandatory AI and contributor rules
