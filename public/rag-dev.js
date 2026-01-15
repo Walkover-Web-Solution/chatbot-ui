@@ -9,8 +9,8 @@
             this.lastProcessedMessage = null; // Add this line
             this.urls = {
                 ragUrl: 'https://dev-chatbot.gtwy.ai/rag',
-                login: 'https://dev-db.gtwy.ai/user/embed/login',
-                docsApi: 'https://dev-db.gtwy.ai/rag/docs',
+                login: 'https://dev-db.gtwy.ai/api/rag/embed/login',
+                docsApi: 'https://dev-db.gtwy.ai/api/rag/resource',
                 cssURL: 'https://dev-chatbot.gtwy.ai/rag.css'
             };
             this.state = {
@@ -47,7 +47,7 @@
             if (document.getElementById('rag-embed-styles')) {
                 return;
             }
-
+        
             const link = document.createElement('link');
             link.id = 'rag-embed-styles';
             link.rel = 'stylesheet';
@@ -62,17 +62,17 @@
             const parentId = this.props.parentId || this.state.tempDataToSend?.parentId || '';
             const parentContainer = parentId ? document.getElementById(parentId) : null;
             const isEmbedded = parentContainer && this.state.isEmbeddedInParent;
-
+        
             // Determine theme - default to light if not specified
             const theme = this.props.theme || this.state.tempDataToSend?.theme || 'light';
-
+        
             // Helper function to check if parent has height constraints
             const hasParentHeightConstraints = () => {
                 if (!parentContainer) return false;
-
+        
                 const computedStyle = window.getComputedStyle(parentContainer);
                 const inlineStyle = parentContainer.style;
-
+        
                 // Check for explicit height (not auto or empty)
                 const hasExplicitHeight = (inlineStyle.height &&
                     inlineStyle.height !== '' &&
@@ -81,7 +81,7 @@
                         computedStyle.height !== 'auto' &&
                         computedStyle.height !== '0px' &&
                         !computedStyle.height.includes('auto'));
-
+        
                 // Check for max-height constraints
                 const hasMaxHeight = (inlineStyle.maxHeight &&
                     inlineStyle.maxHeight !== '' &&
@@ -90,19 +90,19 @@
                     (computedStyle.maxHeight &&
                         computedStyle.maxHeight !== 'none' &&
                         computedStyle.maxHeight !== 'auto');
-
+        
                 // Also check if parent has any CSS that would constrain height
                 const hasFlexConstraints = computedStyle.display === 'flex' &&
                     (computedStyle.alignItems === 'stretch' || computedStyle.height !== 'auto');
-
+        
                 return hasExplicitHeight || hasMaxHeight || hasFlexConstraints;
             };
-
+        
             const parentHasHeightConstraints = hasParentHeightConstraints();
             // Helper function to make parent and ancestors grow with content
             const ensureParentCanGrow = () => {
                 if (!parentContainer) return [];
-
+        
                 // Store original styles of ONLY the immediate parent
                 const computedStyle = window.getComputedStyle(parentContainer);
                 const originalStyles = {
@@ -114,24 +114,24 @@
                     flex: parentContainer.style.flex,
                     display: parentContainer.style.display
                 };
-
+        
                 // ONLY modify the immediate parent - NO LOOP, NO TRAVERSAL
                 parentContainer.style.height = 'auto';
                 parentContainer.style.minHeight = '';
                 parentContainer.style.maxHeight = 'none';
                 parentContainer.style.overflow = 'visible';
-
+        
                 // Ensure proper display
                 if (!parentContainer.style.display || parentContainer.style.display === 'none') {
                     parentContainer.style.display = 'block';
                 }
-
+        
                 // Handle flex containers properly
                 if (computedStyle.display === 'flex' || computedStyle.display === 'inline-flex') {
                     parentContainer.style.alignItems = 'flex-start';
                     parentContainer.style.flexDirection = computedStyle.flexDirection || 'column';
                 }
-
+        
                 // Set up a mutation observer to catch WHO is modifying the grandparent
                 const grandparent = parentContainer.parentElement;
                 if (grandparent) {
@@ -142,63 +142,63 @@
                             }
                         });
                     });
-
+        
                     observer.observe(grandparent, {
                         attributes: true,
                         attributeFilter: ['style']
                     });
-
+        
                     // Clean up observer after 5 seconds
                     setTimeout(() => observer.disconnect(), 5000);
                 }
-
+        
                 return [originalStyles];
             };
-
+        
             let listModal;
-
+        
             if (isEmbedded) {
                 // Handle parent container with explicit logging
                 if (parentContainer) {
                     if (!parentHasHeightConstraints) {
                         // Store original styles for potential restoration
                         this.originalParentStyles = ensureParentCanGrow();
-
+        
                         // Ensure parent is properly configured for growth
                         parentContainer.style.display = parentContainer.style.display || 'block';
                         parentContainer.style.position = parentContainer.style.position || 'relative';
-
+        
                     } else {
                         // Has height constraints - FORCE container to respect them
                         parentContainer.style.overflow = 'hidden';
-
+        
                         // Ensure box-sizing is border-box
                         if (!parentContainer.style.boxSizing) {
                             parentContainer.style.boxSizing = 'border-box';
                         }
-
+        
                         // Preserve existing height constraints
                         const computedStyle = window.getComputedStyle(parentContainer);
                         const currentHeight = parentContainer.style.height || computedStyle.height;
                         const currentMaxHeight = parentContainer.style.maxHeight || computedStyle.maxHeight;
-
+        
                         if (currentHeight && currentHeight !== 'auto' && currentHeight !== '') {
                             parentContainer.style.height = currentHeight;
                         }
-
+        
                         if (currentMaxHeight && currentMaxHeight !== 'none' && currentMaxHeight !== 'auto' && currentMaxHeight !== '') {
                             parentContainer.style.maxHeight = currentMaxHeight;
                         }
                     }
                 }
-
+        
                 // Create embedded div
                 listModal = document.createElement('div');
                 listModal.id = 'rag-document-list-modal';
-
+                
                 // Add CSS classes
                 listModal.className = `modal-embedded rag-theme-${theme} ${parentHasHeightConstraints ? 'with-height-constraints' : 'no-height-constraints'}`;
-
+        
                 // Add resize observer for no height constraints mode
                 if (!parentHasHeightConstraints && window.ResizeObserver) {
                     const resizeObserver = new ResizeObserver(() => {
@@ -206,13 +206,13 @@
                         if (parentContainer) {
                             const event = new Event('resize');
                             parentContainer.dispatchEvent(event);
-
+        
                             // Trigger layout recalculation
                             parentContainer.style.height = 'auto';
                             void parentContainer.offsetHeight; // Force reflow
                         }
                     });
-
+        
                     resizeObserver.observe(listModal);
                     listModal._resizeObserver = resizeObserver;
                 }
@@ -222,20 +222,20 @@
                 listModal.id = 'rag-document-list-modal';
                 listModal.className = `modal-popup rag-theme-${theme}`;
             }
-
+        
             // Create list container
             const listContainer = document.createElement('div');
             listContainer.className = `rag-list-container ${isEmbedded ? 'embedded' : 'modal'} ${parentHasHeightConstraints && isEmbedded ? 'with-height-constraints' : 'no-height-constraints'}`;
-
+        
             // Header
             const header = document.createElement('div');
             header.className = 'rag-modal-header';
-
+        
             const title = document.createElement('h2');
             title.textContent = 'Knowledge Base Management';
             title.className = 'rag-modal-title';
             header.appendChild(title);
-
+        
             // Header actions container
             const headerRight = document.createElement('div');
             headerRight.className = 'rag-header-actions';
@@ -479,41 +479,61 @@
         createDocumentItem(doc) {
             const item = document.createElement('div');
             item.className = 'rag-document-item';
-
+        
             // Left section with icon and info
             const leftSection = document.createElement('div');
             leftSection.className = 'rag-document-left-section';
-
+        
             // Get file format from document source
             const fileFormat = doc.source?.fileFormat || doc.fileFormat || 'doc';
-
+        
             // Create and add icon
             const icon = this.getFileIcon(fileFormat);
             leftSection.appendChild(icon);
-
+        
             const infoContainer = document.createElement('div');
             infoContainer.className = 'rag-document-info-container';
-
+        
             const name = document.createElement('div');
             name.className = 'rag-document-name';
             name.textContent = doc.name || doc.title || 'Untitled Document';
 
+            // Add description if available
+            const description = document.createElement('div');
+            description.className = 'rag-document-description';
+            description.style.fontSize = '13px';
+            description.style.color = '#6b7280';
+            description.style.marginTop = '4px';
+            description.style.lineHeight = '1.4';
+            if (doc.description) {
+                // Truncate description to 100 words
+                const words = doc.description.split(' ');
+                if (words.length > 20) {
+                    description.textContent = words.slice(0, 20).join(' ') + '...';
+                } else {
+                    description.textContent = doc.description;
+                }
+            } else {
+                description.textContent = 'No description available';
+                description.style.fontStyle = 'italic';
+            }
+        
             const details = document.createElement('div');
             details.className = 'rag-document-details';
 
-            const createdDate = doc.created_at ? new Date(doc.created_at).toLocaleDateString() : 'Unknown date';
+            const createdDate = doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : 'Unknown date';
             const dateInfo = document.createElement('div');
             dateInfo.className = 'rag-document-date-info';
             dateInfo.textContent = `Created: ${createdDate}`;
             dateInfo.style.gridRow = '1';
             dateInfo.style.gridColumn = '1';
-
+        
             // Add source type if available
             if (doc.source?.type) {
                 const sourceInfo = document.createElement('div');
                 sourceInfo.textContent = `Source: ${doc.source.type}`;
                 details.appendChild(sourceInfo);
-
+        
                 if (doc.source?.data?.url) {
                     const url = document.createElement('div');
                     url.className = 'rag-document-url';
@@ -527,7 +547,42 @@
                     details.appendChild(url);
                 }
             }
+
+            // Add Chunking Info
+            if (doc.settings) {
+                const chunkInfo = document.createElement('div');
+                chunkInfo.className = 'rag-document-chunk-info';
+                // Add some basic inline styles to match the look, relying on existing css for classes if possible
+                // otherwise inline is safe for this specific script
+                chunkInfo.style.fontSize = '11px';
+                chunkInfo.style.color = '#6b7280';
+                chunkInfo.style.marginTop = '4px';
+                chunkInfo.style.display = 'flex';
+                chunkInfo.style.flexWrap = 'wrap';
+                chunkInfo.style.gap = '8px';
+
+                const strategy = doc.settings?.strategy || 'N/A';
+                const chunkSize = doc.settings?.chunkSize || 'N/A';
+
+                const strategySpan = document.createElement('span');
+                strategySpan.textContent = `Strategy: ${strategy}`;
+                chunkInfo.appendChild(strategySpan);
+
+                const sizeSpan = document.createElement('span');
+                sizeSpan.textContent = `Size: ${chunkSize}`;
+                chunkInfo.appendChild(sizeSpan);
+
+                if (doc.settings?.chunkOverlap) {
+                    const overlapSpan = document.createElement('span');
+                    overlapSpan.textContent = `Overlap: ${doc.settings.chunkOverlap}`;
+                    chunkInfo.appendChild(overlapSpan);
+                }
+
+                details.appendChild(chunkInfo);
+            }
+
             infoContainer.appendChild(name);
+            infoContainer.appendChild(description);
             infoContainer.appendChild(details);
             leftSection.appendChild(infoContainer);
 
@@ -915,7 +970,7 @@
             }
 
             const data = await response.json();
-            this.documents = data?.data || data || [];
+            this.documents = data?.data?.resources || data?.resources || data?.data || data || [];
             return this.documents;
         }
 

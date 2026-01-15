@@ -9,8 +9,8 @@
             this.lastProcessedMessage = null; // Add this line
             this.urls = {
                 ragUrl: 'http://localhost:3001/rag',
-                login: 'http://localhost:7072/user/embed/login',
-                docsApi: 'http://localhost:7072/rag/docs',
+                login: 'http://localhost:7072/api/rag/embed/login',
+                docsApi: 'http://localhost:7072/api/rag/resource',
                 cssURL: 'http://localhost:3001/rag.css'
             };
             this.state = {
@@ -32,7 +32,7 @@
                     buttonHover: '#556dd9',
                     border: '#ccc'
                 },
-                messageType:{
+                messageType: {
                     success: 'success-message',
                     error: 'error-message',
                     warning: 'warning-message'
@@ -239,7 +239,7 @@
             // Header actions container
             const headerRight = document.createElement('div');
             headerRight.className = 'rag-header-actions';
-        
+
             // Refresh button
             const refreshBtn = document.createElement('button');
             refreshBtn.innerHTML = '⟳';
@@ -247,7 +247,7 @@
             refreshBtn.title = 'Refresh Document List';
             refreshBtn.addEventListener('click', () => this.showDocumentList());
             headerRight.appendChild(refreshBtn);
-        
+
             // Close button (only for non-embedded mode)
             if (!parentContainer) {
                 const closeBtn = document.createElement('button');
@@ -256,19 +256,19 @@
                 closeBtn.addEventListener('click', () => this.closeDocumentList());
                 headerRight.appendChild(closeBtn);
             }
-            
+
             header.appendChild(headerRight);
-        
+
             // Add Document Button
             const addBtn = document.createElement('button');
             addBtn.textContent = '+ Add New Document';
             addBtn.className = 'rag-add-btn';
             addBtn.addEventListener('click', () => this.openRag());
-        
+
             // Documents List Container
             const documentsContainer = document.createElement('div');
             documentsContainer.id = 'rag-documents-container';
-            
+
             // Set container scroll behavior based on constraints
             if (isEmbedded && parentHasHeightConstraints) {
                 documentsContainer.className = 'scrollable';
@@ -276,7 +276,7 @@
                 documentsContainer.className = 'scrollable';
             } else {
                 documentsContainer.className = 'natural-growth';
-                
+
                 // Add mutation observer to trigger parent resize when content changes
                 if (window.MutationObserver) {
                     const mutationObserver = new MutationObserver(() => {
@@ -285,31 +285,31 @@
                             if (parentContainer) {
                                 parentContainer.style.height = 'auto';
                                 void parentContainer.offsetHeight; // Force reflow
-        
+
                                 // Also trigger any parent resize observers
                                 const event = new Event('resize');
                                 parentContainer.dispatchEvent(event);
                             }
                         }, 0);
                     });
-        
+
                     mutationObserver.observe(documentsContainer, {
                         childList: true,
                         subtree: true,
                         attributes: true,
                         attributeFilter: ['style']
                     });
-        
+
                     documentsContainer._mutationObserver = mutationObserver;
                 }
             }
-        
+
             // Assemble the modal
             listContainer.appendChild(header);
             listContainer.appendChild(addBtn);
             listContainer.appendChild(documentsContainer);
             listModal.appendChild(listContainer);
-        
+
             // Close modal when clicking on overlay (only for modal mode)
             if (!isEmbedded) {
                 listModal.addEventListener('click', (e) => {
@@ -318,12 +318,12 @@
                     }
                 });
             }
-        
+
             // Add show/hide methods
             listModal.showModal = function () {
                 if (isEmbedded) {
                     listModal.classList.add('rag-modal-visible');
-                    
+
                     // Force parent layout recalculation after showing
                     if (!parentHasHeightConstraints && parentContainer) {
                         setTimeout(() => {
@@ -335,10 +335,10 @@
                     listModal.classList.add('rag-modal-popup-visible');
                 }
             };
-        
+
             listModal.hideModal = function () {
                 listModal.classList.remove('rag-modal-visible', 'rag-modal-popup-visible');
-                
+
                 // Clean up observers after transition
                 setTimeout(() => {
                     if (listModal._resizeObserver) {
@@ -349,7 +349,7 @@
                     }
                 }, 300);
             };
-        
+
             return listModal;
         }
 
@@ -497,11 +497,31 @@
             const name = document.createElement('div');
             name.className = 'rag-document-name';
             name.textContent = doc.name || doc.title || 'Untitled Document';
+
+            // Add description if available
+            const description = document.createElement('div');
+            description.className = 'rag-document-description';
+            description.style.fontSize = '13px';
+            description.style.color = '#6b7280';
+            description.style.marginTop = '4px';
+            description.style.lineHeight = '1.4';
+            if (doc.description) {
+                // Truncate description to 100 words
+                const words = doc.description.split(' ');
+                if (words.length > 20) {
+                    description.textContent = words.slice(0, 20).join(' ') + '...';
+                } else {
+                    description.textContent = doc.description;
+                }
+            } else {
+                description.textContent = 'No description available';
+                description.style.fontStyle = 'italic';
+            }
         
             const details = document.createElement('div');
             details.className = 'rag-document-details';
-        
-            const createdDate = doc.created_at ? new Date(doc.created_at).toLocaleDateString() : 'Unknown date';
+
+            const createdDate = doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : 'Unknown date';
             const dateInfo = document.createElement('div');
             dateInfo.className = 'rag-document-date-info';
             dateInfo.textContent = `Created: ${createdDate}`;
@@ -527,14 +547,49 @@
                     details.appendChild(url);
                 }
             }
+
+            // Add Chunking Info
+            if (doc.settings) {
+                const chunkInfo = document.createElement('div');
+                chunkInfo.className = 'rag-document-chunk-info';
+                // Add some basic inline styles to match the look, relying on existing css for classes if possible
+                // otherwise inline is safe for this specific script
+                chunkInfo.style.fontSize = '11px';
+                chunkInfo.style.color = '#6b7280';
+                chunkInfo.style.marginTop = '4px';
+                chunkInfo.style.display = 'flex';
+                chunkInfo.style.flexWrap = 'wrap';
+                chunkInfo.style.gap = '8px';
+
+                const strategy = doc.settings?.strategy || 'N/A';
+                const chunkSize = doc.settings?.chunkSize || 'N/A';
+
+                const strategySpan = document.createElement('span');
+                strategySpan.textContent = `Strategy: ${strategy}`;
+                chunkInfo.appendChild(strategySpan);
+
+                const sizeSpan = document.createElement('span');
+                sizeSpan.textContent = `Size: ${chunkSize}`;
+                chunkInfo.appendChild(sizeSpan);
+
+                if (doc.settings?.chunkOverlap) {
+                    const overlapSpan = document.createElement('span');
+                    overlapSpan.textContent = `Overlap: ${doc.settings.chunkOverlap}`;
+                    chunkInfo.appendChild(overlapSpan);
+                }
+
+                details.appendChild(chunkInfo);
+            }
+
             infoContainer.appendChild(name);
+            infoContainer.appendChild(description);
             infoContainer.appendChild(details);
             leftSection.appendChild(infoContainer);
-        
+
             // Create ellipsis menu container
             const ellipsisMenuContainer = document.createElement('div');
             ellipsisMenuContainer.className = 'ellipsis-menu-container';
-            
+
             // Create ellipsis button
             const ellipsisBtn = document.createElement('button');
             ellipsisBtn.className = 'ellipsis-btn';
@@ -545,11 +600,11 @@
                     <circle cx="12" cy="19" r="2"/>
                 </svg>
             `;
-            
+
             // Create menu dropdown
             const ellipsisMenu = document.createElement('div');
             ellipsisMenu.className = 'ellipsis-menu';
-            
+
             // Edit button
             const editBtn = document.createElement('button');
             editBtn.className = 'menu-item edit-btn';
@@ -564,7 +619,7 @@
                 this.openEditDocumentModal(doc);
                 ellipsisMenu.classList.remove('show');
             });
-            
+
             // Delete button
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'menu-item delete-btn';
@@ -581,7 +636,7 @@
                 this.confirmDeleteDocument(doc);
                 ellipsisMenu.classList.remove('show');
             });
-            
+
             // Toggle menu functionality
             ellipsisBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -594,51 +649,51 @@
                 // Toggle current menu
                 ellipsisMenu.classList.toggle('show');
             });
-            
+
             // Close menu when clicking outside
             document.addEventListener('click', (e) => {
                 if (!ellipsisMenuContainer.contains(e.target)) {
                     ellipsisMenu.classList.remove('show');
                 }
             });
-            
+
             // Append elements
             ellipsisMenu.appendChild(editBtn);
             ellipsisMenu.appendChild(deleteBtn);
             ellipsisMenuContainer.appendChild(ellipsisBtn);
             ellipsisMenuContainer.appendChild(ellipsisMenu);
-            
+
             // Add date info and ellipsis menu to buttons container
             const buttonsContainer = document.createElement('div');
             buttonsContainer.className = 'rag-document-buttons';
-            
+
             const buttonContainer = document.createElement('div');
             buttonContainer.className = 'rag-document-button-container';
             buttonContainer.appendChild(dateInfo);
             buttonContainer.appendChild(ellipsisMenuContainer);
             buttonsContainer.appendChild(buttonContainer);
-        
+
             item.appendChild(leftSection);
             item.appendChild(buttonsContainer);
-        
+
             return item;
         }
 
 
 
-        
+
         createModalOverlay() {
             const overlay = document.createElement('div');
             overlay.id = 'rag-modal-overlay';
             overlay.className = 'rag-modal-overlay';
-        
+
             // Close modal when clicking on overlay
             overlay.addEventListener('click', (e) => {
                 if (e.target === overlay) {
                     this.closeRag();
                 }
             });
-        
+
             return overlay;
         }
 
@@ -688,20 +743,20 @@
                 if (message.type === 'rag' || message.type === 'iframe-message-rag') {
                     if (['create', 'update', 'delete'].includes(message.status)) {
                         // Refresh document list on document update or create
-                        if(message.status === 'create' && !message.error){
+                        if (message.status === 'create' && !message.error) {
                             this.showMessage(this.state.messageType.success, 'Document created successfully');
                         }
-                        if(message.status === 'update' && !message.error){
+                        if (message.status === 'update' && !message.error) {
                             this.showMessage(this.state.messageType.success, 'Document updated successfully');
                         }
-                        if(message.status === 'delete' && !message.error){
+                        if (message.status === 'delete' && !message.error) {
                             this.showMessage(this.state.messageType.success, 'Document deleted successfully');
                         }
-                       if ((this.props?.defaultOpen === true || this.props?.defaultOpen === "true") || (this.parentContainer && this.props.parentId)) {
-                           this.showDocumentList();
-                       } 
+                        if ((this.props?.defaultOpen === true || this.props?.defaultOpen === "true") || (this.parentContainer && this.props.parentId)) {
+                            this.showDocumentList();
+                        }
                     }
-                    if(error){
+                    if (error) {
                         this.showMessage(this.state.messageType.error, error);
                     }
                 } else {
@@ -757,7 +812,7 @@
             this.cleanupRag();
         }
 
-       cleanupRag() {
+        cleanupRag() {
             // Remove modal overlay
             if (this.modalOverlay) {
                 this.modalOverlay.remove();
@@ -838,10 +893,10 @@
         applyConfig() {
             const iframeContainer = document.getElementById('rag-iframe-parent-container');
             if (!iframeContainer) return;
-            
+
             // Remove any existing modal classes
             iframeContainer.classList.remove('rag-iframe-modal');
-            
+
             // Apply modal popup configuration using CSS class
             iframeContainer.classList.add('rag-iframe-modal');
         }
@@ -893,7 +948,7 @@
                 }
             } catch (error) {
                 console.error('Error showing document list:', error);
-                this.showMessage(this.messageHandler.error , 'Failed to load documents');
+                this.showMessage(this.messageHandler.error, 'Failed to load documents');
             }
         }
 
@@ -915,7 +970,7 @@
             }
 
             const data = await response.json();
-            this.documents = data?.data || data || [];
+            this.documents = data?.data?.resources || data?.resources || data?.data || data || [];
             return this.documents;
         }
 
@@ -1287,9 +1342,9 @@
             const errorDiv = document.createElement('div');
             errorDiv.className = type;
             errorDiv.textContent = message;
-            
+
             document.body.appendChild(errorDiv);
-            
+
             setTimeout(() => {
                 if (errorDiv.parentNode) {
                     errorDiv.classList.add('fade-out');
