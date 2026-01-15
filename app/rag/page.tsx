@@ -276,9 +276,6 @@ function RagComponent() {
                     resourceUrl = uploadedFile.url;
                     content = uploadedFile.url;
                 } else {
-                    // Unlike frontend, we enforce upload first for consistency in this implementation
-                    // unless we want to support direct file blob sending which is what the OLD page.tsx did.
-                    // The requirement is "acc to the frontend", so we use the URL flow.
                     if (!formData.get("file") && !uploadedFile) {
                         errorToast("Please upload a file");
                         setIsLoading(false);
@@ -332,17 +329,6 @@ function RagComponent() {
                     handleClose();
                 }
             } else {
-                // Create logic
-                // The existing createKnowledgeBaseEntry in chatbot-ui seemed to support FormData with 'file' blob.
-                // Now we are sending JSON payload mostly, as we have a URL.
-                // BUT current `createKnowledgeBaseEntry` in `ragApi.ts` takes `data` and sends it as BODY.
-                // It does NOT enforce FormData.
-                // However, the OLD page.tsx created FormData.
-                // If we send JSON object, `axios.post` handles it as JSON.
-
-                // Ensure `createKnowledgeBase ENTRY` can handle JSON.
-                // `ragApi.ts`: `axios.post(..., data)` -> Yes.
-
                 const response = await createKnowledgeBaseEntry(payload);
                 if (response?.data) {
                     window.parent.postMessage(
