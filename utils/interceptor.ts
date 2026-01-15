@@ -18,11 +18,15 @@ const axios = instance;
 axios.interceptors.request.use(
   async (config) => {
     // Check if URL contains 'rag' to determine which token to use
+
     if (config.url?.includes("rag")) {
       config.headers["Authorization"] = sessionStorage.getItem("ragToken");
+    }
+    else if (config.url?.includes('image')) {
+      config.headers["Authorization"] = sessionStorage.getItem("ragToken") ? sessionStorage.getItem("ragToken") : sessionStorage.getItem("interfaceToken");
     } else {
       config.headers["Authorization"] =
-      sessionStorage.getItem("interfaceToken")
+        sessionStorage.getItem("interfaceToken")
     }
     return config;
   },
