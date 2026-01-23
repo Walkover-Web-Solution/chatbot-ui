@@ -144,11 +144,12 @@ export const useSendMessage = ({
     const messageRef = propMessageRef ?? context.messageRef;
     const timeoutIdRef = propTimeoutIdRef ?? context.timeoutIdRef;
     const { tabSessionId, chatSessionId } = useChatContext();
-    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, wrapperId } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
         versionId: state.appInfo?.[tabSessionId]?.versionId || "null",
+        wrapperId: state.appInfo?.[tabSessionId]?.wrapperId || null,
         variables: state.Interface?.[chatSessionId]?.interfaceContext?.[state?.appInfo?.[tabSessionId]?.bridgeName]?.variables,
         selectedAiServiceAndModal: state.Interface?.[chatSessionId]?.selectedAiServiceAndModal || null,
         userId: state.appInfo?.[tabSessionId]?.userId || null,
@@ -206,6 +207,7 @@ export const useSendMessage = ({
             thread_flag: ((threadList?.length === 1 && threadList?.[0]?.thread_id === threadList?.[0]?.sub_thread_id && threadList?.[0]?.display_name === threadList?.[0]?.thread_id) || (threadList?.[0]?.newChat && threadList?.[0]?.sub_thread_id === subThreadId)) ? true : false,
             chatBotId: chatSessionId,
             version_id: versionId === "null" ? null : versionId,
+            wrapper_id: wrapperId || null,
             ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {
                 configuration: { model: selectedAiServiceAndModal?.modal },
                 service: selectedAiServiceAndModal?.service

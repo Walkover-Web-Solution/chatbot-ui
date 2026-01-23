@@ -5,6 +5,7 @@ export interface $AppInfoReduxType {
         subThreadId: string
         helloId: string
         versionId: string
+        wrapperId: string
         userId: string
         config: Record<string, unknown>
         currentChannelId: string,

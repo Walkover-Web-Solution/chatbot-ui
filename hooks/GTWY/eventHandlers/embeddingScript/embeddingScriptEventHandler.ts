@@ -8,6 +8,7 @@ import { useDispatch } from "react-redux";
 interface InterfaceData {
   threadId?: string | null;
   bridgeName?: string | null;
+  wrapper_id?: string | null;
   helloId?: string | null;
   versionId?: string | null;
   headerButtons?: Array<any>;
@@ -43,6 +44,10 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
 
     if (receivedData.version_id === 'null' || receivedData.version_id) {
       dispatch(setDataInAppInfoReducer({ versionId: receivedData.version_id }))
+    }
+
+    if (receivedData.wrapper_id) {
+      dispatch(setDataInAppInfoReducer({ wrapperId: receivedData.wrapper_id }))
     }
 
     // Process bridge data

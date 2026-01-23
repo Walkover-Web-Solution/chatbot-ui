@@ -72,7 +72,7 @@
             }
 
             const attributes = [
-                'interfaceId', 'embedToken', 'threadId', 'bridgeName', 'variables',
+                'interfaceId', 'embedToken', 'threadId', 'bridgeName', 'wrapper_id', 'variables',
                 'onOpen', 'onClose', 'iconColor', 'className', 'style', 'environment',
                 'fullScreen', 'hideCloseButton', 'hideIcon', 'parentId', 'config',
                 'headerButtons', 'eventsToSubscribe', 'modalConfig', 'allowModalSwitch',
