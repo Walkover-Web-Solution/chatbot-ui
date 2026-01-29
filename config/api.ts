@@ -137,7 +137,7 @@ export async function getPreviousMessage(
 
     try {
         const response = await axios.get(
-            `${URL}/api/v1/config/gethistory-chatbot/${threadId}/${bridgeName}?sub_thread_id=${subThreadId || threadId
+            `${URL}/api/history/${threadId}/${bridgeName}?sub_thread_id=${subThreadId || threadId
             }&pageNo=${pageNo}&limit=${limit}`,
             { signal: currentController.signal }
         );
@@ -146,8 +146,8 @@ export async function getPreviousMessage(
             starterQuestion: response?.data?.starterQuestion || [],
         };
     } catch (error) {
-        if (error.name === "AbortError") {
-            console.warn("Request aborted:", error.message);
+        if ((error as any).name === "AbortError") {
+            console.warn("Request aborted:", (error as any).message);
         } else {
             console.warn("Error fetching previous messages:", error);
         }
