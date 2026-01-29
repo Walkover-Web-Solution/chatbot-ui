@@ -56,16 +56,10 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
             return (Array.isArray(history) ? history : []).map((msgObj: any) => {
                 return {
                     ...msgObj,
-                    id: msgObj?.Id,
-                    content: msgObj?.chatbot_message || msgObj?.content,
-                    role: msgObj?.role,
-                    createdAt: msgObj?.createdAt,
-                    function: msgObj?.function,
-                    tools_call_data: msgObj?.tools_call_data,
+                    id: msgObj?.id,
+                    createdAt: msgObj?.created_at,
                     created_at: msgObj?.created_at,
-                    error: msgObj?.error,
-                    urls: msgObj?.urls
-                }
+                };
             });
 
         default:
