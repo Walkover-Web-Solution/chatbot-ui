@@ -38,6 +38,42 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
   const messageContent = useMemo(() => {
     const role = message?.role;
 
+    // Handle combined message format (new backend format with user and llm_message in same object)
+    if (message?.user || message?.llm_message) {
+      return (
+        <>
+          
+          {message?.user && (
+            <UserMessageCard
+              message={{
+                ...message,
+                content: message?.user,
+                role: 'user',
+                urls: message?.user_urls || [],
+                image_urls: message?.user_urls || [],
+              }}
+              textColor={textColor}
+              backgroundColor={backgroundColor}
+            />
+          )}
+          {message?.llm_message && (
+            <AssistantMessageCard
+              message={{
+                ...message,
+                content: message?.chatbot_message || message?.llm_message,
+                role: 'assistant',
+                urls: message?.llm_urls || [],
+                image_urls: message?.llm_urls || [],
+              }}
+              textColor={textColor}
+              backgroundColor={backgroundColor}
+            />
+          )}
+        </>
+      );
+    }
+
+    // Handle legacy message format (for backward compatibility)
     switch (role) {
       case ROLE_USER:
         return (
