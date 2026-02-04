@@ -56,11 +56,11 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
               backgroundColor={backgroundColor}
             />
           )}
-          {message?.llm_message && (
+          {(message?.llm_message || message?.error) && (
             <AssistantMessageCard
               message={{
                 ...message,
-                content: message?.chatbot_message || message?.llm_message,
+                content: message?.chatbot_message || message?.llm_message || message?.error,
                 role: 'assistant',
                 urls: message?.llm_urls || [],
                 image_urls: message?.llm_urls || [],
