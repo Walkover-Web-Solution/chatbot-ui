@@ -18,6 +18,16 @@ import ImageWithFallback from "./ImageWithFallback";
 import "./Message.css";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
+/**
+ * Helper function to detect if content contains HTML tags
+ */
+function isHTMLContent(content: string): boolean {
+    if (!content || typeof content !== 'string') return false;
+    // Check for common HTML tags
+    const htmlPattern = /<\/?[a-z][\s\S]*>/i;
+    return htmlPattern.test(content);
+}
+
 function FeedBackButtons({ msgId }: { msgId: string }) {
     const handleMessageFeedback = useMessageFeedback();
     const { msgIdAndDataMap } = useCustomSelector((state) => ({
@@ -202,6 +212,22 @@ const AssistantMessageCard = React.memo(
                                                     />
                                                 );
                                             }
+
+                                            // Check if content contains HTML
+                                            const messageContent = !isError
+                                                ? message?.chatbot_message || message?.content
+                                                : message.error;
+
+                                            if (isHTMLContent(messageContent)) {
+                                                return (
+                                                    <div
+                                                        className="template-html-container w-full"
+                                                        dangerouslySetInnerHTML={{ __html: messageContent }}
+                                                    />
+                                                );
+                                            }
+
+                                            // Default: Render as markdown
                                             return (
                                                 <ReactMarkdown
                                                     {...(!supportsLookbehind() ? {} : { remarkPlugins: [remarkGfm] })}
@@ -210,9 +236,7 @@ const AssistantMessageCard = React.memo(
                                                         a: Anchor,
                                                     }}
                                                 >
-                                                    {!isError
-                                                        ? message?.chatbot_message || message?.content
-                                                        : message.error}
+                                                    {messageContent}
                                                 </ReactMarkdown>
                                             );
                                         })()}
@@ -227,7 +251,7 @@ const AssistantMessageCard = React.memo(
                         {!message?.wait && !message?.timeOut && !message?.error && (
                             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                                 {(() => {
-                                    const parsedContent = isJSONString(message?.content)? JSON.parse(message?.content): null
+                                    const parsedContent = isJSONString(message?.content) ? JSON.parse(message?.content) : null
                                     const shouldHideCopyButton = (message.chatbot_message || (parsedContent && Object.prototype.hasOwnProperty.call(parsedContent, 'components') && Object.prototype.hasOwnProperty.call(parsedContent, 'variables')));
                                     return !shouldHideCopyButton && (
                                         <button
