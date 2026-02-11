@@ -97,6 +97,39 @@ const AssistantMessageCard = React.memo(
 
         const toolsData = Object.keys(message?.tools_data || {});
 
+        // Handler for rich UI actions (button clicks with data-action)
+        const handleRichUIActions = (event: React.MouseEvent) => {
+            // Event delegation: find closest element with data-action
+            const target = (event.target as HTMLElement).closest("[data-action]");
+            if (!target) return;
+
+            event.preventDefault();
+
+            const actionDataStr = target.getAttribute("data-action");
+            const elementId = target.getAttribute("id");
+
+            try {
+                const actionPayload = JSON.parse(actionDataStr || "{}");
+
+                // 1. Show loading state
+                target.classList.add("loading", "loading-spinner", "btn-disabled"); // DaisyUI classes
+
+                // 2. Send to parent
+                if (typeof window !== "undefined") {
+                    window.parent.postMessage(
+                        {
+                            type: "CHATBOT_ACTION",
+                            payload: actionPayload,
+                            elementId: elementId,
+                        },
+                        "*"
+                    );
+                }
+            } catch (e) {
+                console.error("Failed to parse action data", e);
+            }
+        };
+
         return (
             <div className="flex w-full pb-1">
                 {/* <div className="flex flex-col items-center w-8 pb-2">
@@ -223,6 +256,7 @@ const AssistantMessageCard = React.memo(
                                                     <div
                                                         className="template-html-container w-full"
                                                         dangerouslySetInnerHTML={{ __html: messageContent }}
+                                                        onClick={handleRichUIActions}
                                                     />
                                                 );
                                             }
