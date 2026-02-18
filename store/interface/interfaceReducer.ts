@@ -49,20 +49,21 @@ export const reducers: ValidateSliceCaseReducers<
       value: string;
     }>
   ) {
-    const { chatSessionId } = action.urlData;
-    if (!chatSessionId) return;
+    const { chatSessionId, tabSessionId } = action.urlData;
+    if (!chatSessionId || !tabSessionId) return;
     
+    const sessionKey = `${chatSessionId}_${tabSessionId}`;
     const { msgId = "", gridId } = action.payload;
     const newGridId = msgId?.length > 0 ? `${gridId}_${msgId}` : gridId;
-    if(!state[chatSessionId]){
-      state[chatSessionId] = {...initialState};
+    if(!state[sessionKey]){
+      state[sessionKey] = {...initialState};
     }
-    state[chatSessionId].interfaceContext = {
-      ...state[chatSessionId]?.interfaceContext,
+    state[sessionKey].interfaceContext = {
+      ...state[sessionKey]?.interfaceContext,
       context: {
-        ...state[chatSessionId]?.interfaceContext?.context,
+        ...state[sessionKey]?.interfaceContext?.context,
         [newGridId]: {
-          ...state[chatSessionId]?.interfaceContext?.context?.[newGridId],
+          ...state[sessionKey]?.interfaceContext?.context?.[newGridId],
           [action.payload.componentId]: action?.payload?.value || "",
         },
       },
@@ -70,39 +71,42 @@ export const reducers: ValidateSliceCaseReducers<
   },
 
   addDefaultContext(state, action: actionType<any>) {
-    const { chatSessionId , bridgeName : currentBridgeName } = action.urlData || {};
-    if (!chatSessionId) return;
+    const { chatSessionId, tabSessionId, bridgeName : currentBridgeName } = action.urlData || {};
+    if (!chatSessionId || !tabSessionId) return;
 
+    const sessionKey = `${chatSessionId}_${tabSessionId}`;
     const bridgeName = action.payload?.bridgeName || currentBridgeName || "root";
     const variables = action.payload?.variables;
 
-    if(!state[chatSessionId]){
-      state[chatSessionId] = {...initialState};
+    if(!state[sessionKey]){
+      state[sessionKey] = {...initialState};
     }
-    if(!state[chatSessionId]?.interfaceContext?.[bridgeName]){
-      state[chatSessionId].interfaceContext[bridgeName] = {
+    if(!state[sessionKey]?.interfaceContext?.[bridgeName]){
+      state[sessionKey].interfaceContext[bridgeName] = {
         interfaceData: {},
         threadList: {},
       };
     }
-    state[chatSessionId].interfaceContext[bridgeName].variables = {
-      ...state[chatSessionId]?.interfaceContext?.[bridgeName]?.variables,
+    state[sessionKey].interfaceContext[bridgeName].variables = {
+      ...state[sessionKey]?.interfaceContext?.[bridgeName]?.variables,
       ...variables,
     };
   },
 
   setThreads(state, action:actionType<any>) {
-    const { chatSessionId , bridgeName : currentBridgeName , threadId : currentThreadId } = action?.urlData || {};
-    if (!chatSessionId) return;
-    if(!state[chatSessionId]){
-      state[chatSessionId] = {...initialState};
+    const { chatSessionId, tabSessionId, bridgeName : currentBridgeName , threadId : currentThreadId } = action?.urlData || {};
+    if (!chatSessionId || !tabSessionId) return;
+    
+    const sessionKey = `${chatSessionId}_${tabSessionId}`;
+    if(!state[sessionKey]){
+      state[sessionKey] = {...initialState};
     }
     const bridgeName = action.payload?.bridgeName || currentBridgeName || "root";
     const threadId = action.payload?.threadId || currentThreadId;
     const threadData = action.payload?.newThreadData || {};
     const allThreadList = action.payload?.threadList || [];
 
-    const updatedInterfaceContext = { ...(state[chatSessionId]?.interfaceContext || {}) };
+    const updatedInterfaceContext = { ...(state[sessionKey]?.interfaceContext || {}) };
 
     if (!updatedInterfaceContext[bridgeName]) {
       updatedInterfaceContext[bridgeName] = {
@@ -138,60 +142,72 @@ export const reducers: ValidateSliceCaseReducers<
       updatedInterfaceContext[bridgeName].threadList[threadId].unshift(threadData);
     }
 
-    state[chatSessionId].interfaceContext = updatedInterfaceContext;
+    state[sessionKey].interfaceContext = updatedInterfaceContext;
   },
 
   setHeaderActionButtons(state, action: actionType<HeaderButtonType>) {
-    const { chatSessionId } = action?.urlData || {};
-    if (!chatSessionId) return;
-    if(!state[chatSessionId]){
-      state[chatSessionId] = {...initialState};
+    const { chatSessionId, tabSessionId } = action?.urlData || {};
+    if (!chatSessionId || !tabSessionId) return;
+    
+    const sessionKey = `${chatSessionId}_${tabSessionId}`;
+    if(!state[sessionKey]){
+      state[sessionKey] = {...initialState};
     }
-    state[chatSessionId].headerButtons = action.payload;
+    state[sessionKey].headerButtons = action.payload;
   },
 
   setEventsSubsribedByParent(state, action: actionType<string[]>) {
-    const { chatSessionId } = action?.urlData || {};
-    if (!chatSessionId) return;
-    if(!state[chatSessionId]){
-      state[chatSessionId] = {...initialState};
+    const { chatSessionId, tabSessionId } = action?.urlData || {};
+    if (!chatSessionId || !tabSessionId) return;
+    
+    const sessionKey = `${chatSessionId}_${tabSessionId}`;
+    if(!state[sessionKey]){
+      state[sessionKey] = {...initialState};
     }
-    state[chatSessionId].eventsSubscribedByParent = action.payload;
+    state[sessionKey].eventsSubscribedByParent = action.payload;
   },
 
   setAvailableModelsToSwitch(state, action: actionType<any>) {
-    const { chatSessionId } = action?.urlData || {};
-    if (!chatSessionId) return;
-    if(!state[chatSessionId]){
-      state[chatSessionId] = {...initialState};
+    const { chatSessionId, tabSessionId } = action?.urlData || {};
+    if (!chatSessionId || !tabSessionId) return;
+    
+    const sessionKey = `${chatSessionId}_${tabSessionId}`;
+    if(!state[sessionKey]){
+      state[sessionKey] = {...initialState};
     }
-    state[chatSessionId].availableAiServicesToSwitch = action.payload;
+    state[sessionKey].availableAiServicesToSwitch = action.payload;
   },
 
   setModalConfig(state, action: actionType<ModalConfigType>) {
-    const { chatSessionId } = action?.urlData || {};
-    if (!chatSessionId) return;
-    if(!state[chatSessionId]){
-      state[chatSessionId] = {...initialState};
+    const { chatSessionId, tabSessionId } = action?.urlData || {};
+    if (!chatSessionId || !tabSessionId) return;
+    
+    const sessionKey = `${chatSessionId}_${tabSessionId}`;
+    if(!state[sessionKey]){
+      state[sessionKey] = {...initialState};
     }
-    state[chatSessionId].modalConfig = action.payload;
+    state[sessionKey].modalConfig = action.payload;
   },
 
   setSelectedAIServiceAndModal(state, action: actionType<SelectedAiServicesType>) {
-    const { chatSessionId } = action?.urlData || {};
-    if (!chatSessionId) return;
-    if(!state[chatSessionId]){
-      state[chatSessionId] = {...initialState};
+    const { chatSessionId, tabSessionId } = action?.urlData || {};
+    if (!chatSessionId || !tabSessionId) return;
+    
+    const sessionKey = `${chatSessionId}_${tabSessionId}`;
+    if(!state[sessionKey]){
+      state[sessionKey] = {...initialState};
     }
-    state[chatSessionId].selectedAiServiceAndModal = action.payload;
+    state[sessionKey].selectedAiServiceAndModal = action.payload;
   },
 
   setDataInInterfaceRedux(state, action: actionType<any>) {   
-    const { chatSessionId } = action?.urlData || {};
-    if (!chatSessionId) return;
-    if(!state[chatSessionId]){
-      state[chatSessionId] = {...initialState};
+    const { chatSessionId, tabSessionId } = action?.urlData || {};
+    if (!chatSessionId || !tabSessionId) return;
+    
+    const sessionKey = `${chatSessionId}_${tabSessionId}`;
+    if(!state[sessionKey]){
+      state[sessionKey] = {...initialState};
     }
-    return { ...state, [chatSessionId]: { ...state[chatSessionId], ...action.payload } };
+    return { ...state, [sessionKey]: { ...state[sessionKey], ...action.payload } };
   }
 };

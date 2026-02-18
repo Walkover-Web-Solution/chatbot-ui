@@ -23,4 +23,5 @@ export interface UrlDataType {
   chatSessionId: string
   bridgeName: string
   threadId: string
+  tabSessionId: string
 }
