@@ -18,6 +18,16 @@ import ImageWithFallback from "./ImageWithFallback";
 import "./Message.css";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
+/**
+ * Helper function to detect if content contains HTML tags
+ */
+function isHTMLContent(content: string): boolean {
+    if (!content || typeof content !== 'string') return false;
+    // Check for common HTML tags
+    const htmlPattern = /<\/?[a-z][\s\S]*>/i;
+    return htmlPattern.test(content);
+}
+
 function FeedBackButtons({ msgId }: { msgId: string }) {
     const handleMessageFeedback = useMessageFeedback();
     const { msgIdAndDataMap } = useCustomSelector((state) => ({
@@ -86,6 +96,39 @@ const AssistantMessageCard = React.memo(
         };
 
         const toolsData = Object.keys(message?.tools_data || {});
+
+        // Handler for rich UI actions (button clicks with data-action)
+        const handleRichUIActions = (event: React.MouseEvent) => {
+            // Event delegation: find closest element with data-action
+            const target = (event.target as HTMLElement).closest("[data-action]");
+            if (!target) return;
+
+            event.preventDefault();
+
+            const actionDataStr = target.getAttribute("data-action");
+            const elementId = target.getAttribute("id");
+
+            try {
+                const actionPayload = JSON.parse(actionDataStr || "{}");
+
+                // 1. Show loading state
+                target.classList.add("loading", "loading-spinner", "btn-disabled"); // DaisyUI classes
+
+                // 2. Send to parent
+                if (typeof window !== "undefined") {
+                    window.parent.postMessage(
+                        {
+                            type: "CHATBOT_ACTION",
+                            payload: actionPayload,
+                            elementId: elementId,
+                        },
+                        "*"
+                    );
+                }
+            } catch (e) {
+                console.error("Failed to parse action data", e);
+            }
+        };
 
         return (
             <div className="flex w-full pb-1">
@@ -202,6 +245,23 @@ const AssistantMessageCard = React.memo(
                                                     />
                                                 );
                                             }
+
+                                            // Check if content contains HTML
+                                            const messageContent = !isError
+                                                ? message?.chatbot_message || message?.content
+                                                : message.error;
+
+                                            if (isHTMLContent(messageContent)) {
+                                                return (
+                                                    <div
+                                                        className="template-html-container w-full"
+                                                        dangerouslySetInnerHTML={{ __html: messageContent }}
+                                                        onClick={handleRichUIActions}
+                                                    />
+                                                );
+                                            }
+
+                                            // Default: Render as markdown
                                             return (
                                                 <ReactMarkdown
                                                     {...(!supportsLookbehind() ? {} : { remarkPlugins: [remarkGfm] })}
@@ -210,9 +270,7 @@ const AssistantMessageCard = React.memo(
                                                         a: Anchor,
                                                     }}
                                                 >
-                                                    {!isError
-                                                        ? message?.chatbot_message || message?.content
-                                                        : message.error}
+                                                    {messageContent}
                                                 </ReactMarkdown>
                                             );
                                         })()}
@@ -227,7 +285,7 @@ const AssistantMessageCard = React.memo(
                         {!message?.wait && !message?.timeOut && !message?.error && (
                             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                                 {(() => {
-                                    const parsedContent = isJSONString(message?.content)? JSON.parse(message?.content): null
+                                    const parsedContent = isJSONString(message?.content) ? JSON.parse(message?.content) : null
                                     const shouldHideCopyButton = (message.chatbot_message || (parsedContent && Object.prototype.hasOwnProperty.call(parsedContent, 'components') && Object.prototype.hasOwnProperty.call(parsedContent, 'variables')));
                                     return !shouldHideCopyButton && (
                                         <button
