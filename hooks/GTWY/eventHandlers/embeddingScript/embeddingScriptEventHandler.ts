@@ -4,7 +4,7 @@ import { addDefaultContext, setDataInInterfaceRedux, setEventsSubsribedByParent,
 import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
 import { useDispatch } from "react-redux";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 interface InterfaceData {
   threadId?: string | null;
@@ -28,11 +28,8 @@ interface InterfaceData {
 
 const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
   const dispatch = useDispatch();
-  // const tabSessionId = useCustomSelector((state) => `${state.draftData.chatSessionId}_${state.draftData.tabSessionId}`);
-const tabSessionIdRef = useRef('');
-const tabSessionId = useCustomSelector((state) => `${state.draftData.chatSessionId}_${state.draftData.tabSessionId}`);
-useEffect(() => { tabSessionIdRef.current = tabSessionId; }, [tabSessionId]);
-  
+  const tabSessionId = useCustomSelector((state) => `${state.draftData.chatSessionId}_${state.draftData.tabSessionId}`);
+
   const handleInterfaceData = (event: MessageEvent) => {
     
     const receivedData: InterfaceData = event.data.data;
@@ -57,11 +54,10 @@ useEffect(() => { tabSessionIdRef.current = tabSessionId; }, [tabSessionId]);
         addDefaultContext({
           variables: { ...receivedData.variables },
           bridgeName: receivedData.bridgeName,
-          tabSessionId: tabSessionIdRef.current,
         })
       );
     } else if (receivedData.variables) {
-      dispatch(addDefaultContext({ variables: { ...receivedData.variables }, tabSessionId: tabSessionIdRef.current }));
+      dispatch(addDefaultContext({ variables: { ...receivedData.variables } }));
     }
 
     // Process gtwy model change
