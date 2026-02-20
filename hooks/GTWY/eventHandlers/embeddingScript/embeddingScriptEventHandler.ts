@@ -2,8 +2,9 @@ import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { addDefaultContext, setDataInInterfaceRedux, setEventsSubsribedByParent, setHeaderActionButtons, setModalConfig } from "@/store/interface/interfaceSlice";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
-import { useEffect } from "react";
 import { useDispatch } from "react-redux";
+import { useCustomSelector } from "@/utils/deepCheckSelector";
+import { useEffect, useRef } from "react";
 
 interface InterfaceData {
   threadId?: string | null;
@@ -27,6 +28,10 @@ interface InterfaceData {
 
 const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
   const dispatch = useDispatch();
+  // const tabSessionId = useCustomSelector((state) => `${state.draftData.chatSessionId}_${state.draftData.tabSessionId}`);
+const tabSessionIdRef = useRef('');
+const tabSessionId = useCustomSelector((state) => `${state.draftData.chatSessionId}_${state.draftData.tabSessionId}`);
+useEffect(() => { tabSessionIdRef.current = tabSessionId; }, [tabSessionId]);
   
   const handleInterfaceData = (event: MessageEvent) => {
     
@@ -52,10 +57,11 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
         addDefaultContext({
           variables: { ...receivedData.variables },
           bridgeName: receivedData.bridgeName,
+          tabSessionId: tabSessionIdRef.current,
         })
       );
     } else if (receivedData.variables) {
-      dispatch(addDefaultContext({ variables: { ...receivedData.variables } }));
+      dispatch(addDefaultContext({ variables: { ...receivedData.variables }, tabSessionId: tabSessionIdRef.current }));
     }
 
     // Process gtwy model change
@@ -113,6 +119,7 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
       dispatch(setDataInAppInfoReducer({ hideFullScreenButton: receivedData.hideFullScreenButton }));
     }
   }
+ 
 
   useEffect(() => {
     eventHandler.addEventHandler('interfaceData', handleInterfaceData)

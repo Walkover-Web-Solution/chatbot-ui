@@ -21,6 +21,8 @@ export interface UrlDataType {
   versionIdOrStepId: string;
   versionId: string;
   chatSessionId: string
+  tabSessionId: string
   bridgeName: string
   threadId: string
+  tabSessionId: string
 }
