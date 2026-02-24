@@ -83,7 +83,7 @@
                 if (interfaceScript.hasAttribute(attr)) {
                     let value = interfaceScript.getAttribute(attr);
 
-                    if (['config', 'headerButtons', 'eventsToSubscribe', 'modalConfig'].includes(attr)) {
+                    if (['config', 'headerButtons', 'eventsToSubscribe', 'modalConfig', 'variables'].includes(attr)) {
                         try {
                             value = JSON.parse(value);
                         } catch (e) {
