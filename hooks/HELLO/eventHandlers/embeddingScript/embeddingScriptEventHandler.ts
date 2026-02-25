@@ -37,6 +37,11 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         channelListRef.current = channelList;
     }, [channelList]);
 
+    const sendMessageToHelloRef = useRef(sendMessageToHello);
+    useEffect(() => {
+        sendMessageToHelloRef.current = sendMessageToHello;
+    }, [sendMessageToHello]);
+
     const handleParentRouteChanged = (event: MessageEvent) => {
         if (event?.data?.data?.websiteUrl) {
             addDomainToHello({ domain: event?.data?.data?.websiteUrl });
@@ -190,7 +195,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
     function handleStarterQuestionOptionClicked(event: MessageEvent) {
         const optionText = event?.data?.data?.option;
         if (optionText) {
-            sendMessageToHello(optionText);
+            sendMessageToHelloRef.current(optionText);
         }
     }
 
