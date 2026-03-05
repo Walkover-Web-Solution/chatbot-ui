@@ -24,5 +24,4 @@ export interface UrlDataType {
   tabSessionId: string
   bridgeName: string
   threadId: string
-  tabSessionId: string
 }
