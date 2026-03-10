@@ -16,6 +16,9 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import ImageWithFallback from "./ImageWithFallback";
 import "./Message.css";
+import RenderNode from "../../richUI/RenderNode";
+import { componentRegistry } from "../../richUI/componentRegistry";
+import { resolveNode } from "../../../utils/templateEngine";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 /**
@@ -202,17 +205,20 @@ const AssistantMessageCard = React.memo(
                                             )
                                         }
                                         {(() => {
-                                            const parsedContent = isJSONString(
-                                                isError
-                                                    ? message?.error
-                                                    : message?.chatbot_message || message?.content
-                                            )
-                                                ? JSON.parse(
-                                                    isError
-                                                        ? message.error
-                                                        : message?.chatbot_message || message?.content
-                                                )
-                                                : null;
+                                            const rawContent = isError
+                                                ? message?.error
+                                                : message?.chatbot_message || message?.content;
+
+                                            let parsedContent: any = null;
+                                            if (typeof rawContent === "object" && rawContent !== null) {
+                                                parsedContent = rawContent;
+                                            } else if (isJSONString(rawContent)) {
+                                                try {
+                                                    parsedContent = JSON.parse(rawContent as string);
+                                                } catch (e) {
+                                                    // ignore
+                                                }
+                                            }
 
                                             if (
                                                 parsedContent &&
@@ -251,6 +257,58 @@ const AssistantMessageCard = React.memo(
                                                 ? message?.chatbot_message || message?.content
                                                 : message.error;
 
+                                            // Check if it's Rich UI JSON
+                                            if (
+                                                parsedContent &&
+                                                parsedContent.type &&
+                                                componentRegistry[parsedContent.type]
+                                            ) {
+                                                const finalContent = message?.ai_response
+                                                    ? resolveNode(parsedContent, message.ai_response)
+                                                    : parsedContent;
+                                                return (
+                                                    <div className="mt-4 richui-container w-full">
+                                                        <RenderNode
+                                                            node={finalContent}
+                                                            onAction={(action: any) => {
+                                                                if (action?.type === "reply" && action?.text) {
+                                                                    if (typeof window !== "undefined") {
+                                                                        window.postMessage({ type: "askAi", data: action.text }, "*");
+                                                                    }
+                                                                }
+                                                            }}
+                                                        />
+                                                    </div>
+                                                );
+                                            }
+
+                                            // Check if it's an array of Rich UI nodes
+                                            if (
+                                                Array.isArray(parsedContent) &&
+                                                parsedContent.length > 0 &&
+                                                parsedContent[0] &&
+                                                parsedContent[0].type &&
+                                                componentRegistry[parsedContent[0].type]
+                                            ) {
+                                                const finalContent = message?.ai_response
+                                                    ? resolveNode(parsedContent, message.ai_response)
+                                                    : parsedContent;
+                                                return (
+                                                    <div className="mt-4 richui-container w-full">
+                                                        <RenderNode
+                                                            node={finalContent}
+                                                            onAction={(action: any) => {
+                                                                if (action?.type === "reply" && action?.text) {
+                                                                    if (typeof window !== "undefined") {
+                                                                        window.postMessage({ type: "askAi", data: action.text }, "*");
+                                                                    }
+                                                                }
+                                                            }}
+                                                        />
+                                                    </div>
+                                                );
+                                            }
+
                                             if (isHTMLContent(messageContent)) {
                                                 return (
                                                     <div
@@ -270,7 +328,7 @@ const AssistantMessageCard = React.memo(
                                                         a: Anchor,
                                                     }}
                                                 >
-                                                    {messageContent}
+                                                    {typeof messageContent === "string" ? messageContent : JSON.stringify(messageContent)}
                                                 </ReactMarkdown>
                                             );
                                         })()}
