@@ -187,6 +187,7 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
     }
 
     function handleSetVariablesForBot(event: MessageEvent) {
+        console.log("VariablesForBot", event?.data?.data);
         if (event.data?.data?.variables && isPlainObject(event.data?.data?.variables)) {
             dispatch(setVariablesForHelloBot(event.data?.data?.variables))
         }

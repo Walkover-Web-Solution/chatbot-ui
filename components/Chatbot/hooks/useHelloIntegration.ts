@@ -297,6 +297,7 @@ export const useOnSendHello = () => {
       }
 
       // const data = await sendMessageToHelloApi(message, attachments, channelDetail, chatIdToUse, helloVariables, voiceCall, demo_widget);
+      console.log('helloVariables', helloVariables)
       const data = await sendMessageToHelloApi({ message, attachments, channelDetail, chat_id: chatIdToUse, helloVariables, voiceCall, demo_widget, widget_msg_id, replied_on: repliedOn })
       if (data && (!chatIdToUse || !channelIdToUse || demo_widget)) {
         dispatch(setDataInAppInfoReducer({

@@ -1363,7 +1363,7 @@
                 helloChatbotManager.helloLaunchWidget = data.launch_widget || false;
             }
             if ('variables' in data) {
-                sendMessageToChatbot({ type: "SET_VARIABLES_FOR_BOT", data });
+                sendMessageToChatbot({ type: "SET_VARIABLES_FOR_BOT", data: { ...data, name: 'initChatwidget' } });
             }
             // Only recreate iframe container if parentId is provided
             if (data.parentId) {
@@ -1381,7 +1381,7 @@
         SendDataToBot: (data) => {
             // Check if data has variables - send to iframe
             if (data && 'variables' in data) {
-                sendMessageToChatbot({ type: "SET_VARIABLES_FOR_BOT", data });
+                sendMessageToChatbot({ type: "SET_VARIABLES_FOR_BOT", data: { ...data, name: 'SendDataToBot' } });
             } else {
                 // Handle parentId and other local operations
                 SendDataToBot(data);
