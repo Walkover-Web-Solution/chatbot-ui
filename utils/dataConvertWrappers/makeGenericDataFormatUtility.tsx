@@ -54,8 +54,24 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
 
         case false:
             return (Array.isArray(history) ? history : []).map((msgObj: any) => {
+                let aiResponse: any = null;
+
+                // history API keeps dynamic values in llm_message.item (old/current rows)
+                try {
+                    const llm = typeof msgObj?.llm_message === "string"
+                        ? JSON.parse(msgObj.llm_message)
+                        : msgObj?.llm_message;
+
+                    if (llm && typeof llm === "object" && llm.item && typeof llm.item === "object") {
+                        aiResponse = llm.item;
+                    }
+                } catch {
+                    aiResponse = null;
+                }
+
                 return {
                     ...msgObj,
+                    ai_response: msgObj?.ai_response || aiResponse || null,
                     id: msgObj?.id,
                     createdAt: msgObj?.created_at,
                     created_at: msgObj?.created_at,
