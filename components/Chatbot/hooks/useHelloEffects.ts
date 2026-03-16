@@ -186,7 +186,8 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
             let needsAnonymousRegistration = !a_clientId && !k_clientId && !unique_id && widgetToken && isHelloUser && !mail && !number;
 
             if (needsAnonymousRegistration) {
-                await registerAnonymousUser();
+                const data = await registerAnonymousUser();
+                if (data === null) needsAnonymousRegistration = false;
                 a_clientId = getLocalStorage(`a_clientId`);
             } else {
                 // it gives the Hello Client Id for the registered user

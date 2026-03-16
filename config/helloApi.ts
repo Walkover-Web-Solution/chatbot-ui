@@ -218,7 +218,10 @@ export async function saveClientDetails(clientData = {}): Promise<any> {
       ...clientData
     }
 
-    const response = await axios.put(`${HELLO_HOST_URL}/v2/client/${getLocalStorage('k_clientId') || getLocalStorage('a_clientId')}`, payload, {
+    const clientId = getLocalStorage('k_clientId') || getLocalStorage('a_clientId');
+    if (!clientId) return null;
+
+    const response = await axios.put(`${HELLO_HOST_URL}/v2/client/${clientId}`, payload, {
       headers: {
         authorization: getAuthorization(),
       },
