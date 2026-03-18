@@ -21,16 +21,6 @@ import { componentRegistry } from "../../richUI/componentRegistry";
 import { resolveNode } from "../../../utils/templateEngine";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
-/**
- * Helper function to detect if content contains HTML tags
- */
-function isHTMLContent(content: string): boolean {
-    if (!content || typeof content !== 'string') return false;
-    // Check for common HTML tags
-    const htmlPattern = /<\/?[a-z][\s\S]*>/i;
-    return htmlPattern.test(content);
-}
-
 function FeedBackButtons({ msgId }: { msgId: string }) {
     const handleMessageFeedback = useMessageFeedback();
     const { msgIdAndDataMap } = useCustomSelector((state) => ({
@@ -303,16 +293,6 @@ const AssistantMessageCard = React.memo(
                                                             }}
                                                         />
                                                     </div>
-                                                );
-                                            }
-
-                                            if (isHTMLContent(messageContent)) {
-                                                return (
-                                                    <div
-                                                        className="template-html-container w-full"
-                                                        dangerouslySetInnerHTML={{ __html: messageContent }}
-                                                        onClick={handleRichUIActions}
-                                                    />
                                                 );
                                             }
 

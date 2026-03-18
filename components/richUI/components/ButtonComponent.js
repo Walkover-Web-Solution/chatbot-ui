@@ -1,6 +1,7 @@
 "use client";
 import { resolveAction } from "@/utils/templateEngine";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
+import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 import { useState } from "react";
 
 export default function ButtonComponent({
@@ -68,18 +69,11 @@ export default function ButtonComponent({
             target: resolved.target,
             payload: resolved.payload ?? {},
           });
-          // Also forward to parent window for embed contexts
-          if (typeof window !== "undefined") {
-            window.parent?.postMessage(
-              {
-                type: "CHATBOT_ACTION",
-                name: resolved.name,
-                target: resolved.target,
-                payload: resolved.payload ?? {},
-              },
-              "*"
-            );
-          }
+          emitEventToParent("FRONT_END_ACTION", {
+            name: resolved.name,
+            target: resolved.target,
+            payload: resolved.payload ?? {},
+          });
           return;
 
         default:
@@ -113,9 +107,7 @@ export default function ButtonComponent({
       case "senddatatofrontend":
       // treat "submit" as an alias for sendDataToFrontend
       case "submit":
-        if (typeof window !== "undefined") {
-          window.parent?.postMessage({ type: "CHATBOT_ACTION", payload: payload ?? actionPayload }, "*");
-        }
+        emitEventToParent("FRONT_END_ACTION", { payload: payload ?? actionPayload });
         onAction?.({ type: "sendDataToFrontend", payload: payload ?? actionPayload });
         break;
 
