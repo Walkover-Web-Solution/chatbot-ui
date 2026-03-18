@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { useMessageFeedback } from "@/components/Chatbot/hooks/useChatActions";
+import { useMessageFeedback, useSendMessage } from "@/components/Chatbot/hooks/useChatActions";
 import InterfaceGrid from "@/components/Grid/Grid";
 import { Anchor, Code } from "@/components/Interface-Chatbot/Interface-Markdown/MarkdownUtitily";
 import { supportsLookbehind } from "@/utils/appUtility";
@@ -16,17 +16,9 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import ImageWithFallback from "./ImageWithFallback";
 import "./Message.css";
+import RenderNode from "../../richUI/RenderNode";
+import { componentRegistry } from "../../richUI/componentRegistry";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
-
-/**
- * Helper function to detect if content contains HTML tags
- */
-function isHTMLContent(content: string): boolean {
-    if (!content || typeof content !== 'string') return false;
-    // Check for common HTML tags
-    const htmlPattern = /<\/?[a-z][\s\S]*>/i;
-    return htmlPattern.test(content);
-}
 
 function FeedBackButtons({ msgId }: { msgId: string }) {
     const handleMessageFeedback = useMessageFeedback();
@@ -83,6 +75,7 @@ const AssistantMessageCard = React.memo(
         isError = false,
     }: any) => {
         const [isCopied, setIsCopied] = React.useState(false);
+        const sendMessage = useSendMessage({});
         const handleCopy = () => {
             copy(message?.chatbot_message || message?.content);
             setIsCopied(true);
@@ -97,38 +90,6 @@ const AssistantMessageCard = React.memo(
 
         const toolsData = Object.keys(message?.tools_data || {});
 
-        // Handler for rich UI actions (button clicks with data-action)
-        const handleRichUIActions = (event: React.MouseEvent) => {
-            // Event delegation: find closest element with data-action
-            const target = (event.target as HTMLElement).closest("[data-action]");
-            if (!target) return;
-
-            event.preventDefault();
-
-            const actionDataStr = target.getAttribute("data-action");
-            const elementId = target.getAttribute("id");
-
-            try {
-                const actionPayload = JSON.parse(actionDataStr || "{}");
-
-                // 1. Show loading state
-                target.classList.add("loading", "loading-spinner", "btn-disabled"); // DaisyUI classes
-
-                // 2. Send to parent
-                if (typeof window !== "undefined") {
-                    window.parent.postMessage(
-                        {
-                            type: "CHATBOT_ACTION",
-                            payload: actionPayload,
-                            elementId: elementId,
-                        },
-                        "*"
-                    );
-                }
-            } catch (e) {
-                console.error("Failed to parse action data", e);
-            }
-        };
 
         return (
             <div className="flex w-full pb-1">
@@ -202,17 +163,20 @@ const AssistantMessageCard = React.memo(
                                             )
                                         }
                                         {(() => {
-                                            const parsedContent = isJSONString(
-                                                isError
-                                                    ? message?.error
-                                                    : message?.chatbot_message || message?.content
-                                            )
-                                                ? JSON.parse(
-                                                    isError
-                                                        ? message.error
-                                                        : message?.chatbot_message || message?.content
-                                                )
-                                                : null;
+                                            const rawContent = isError
+                                                ? message?.error
+                                                : message?.chatbot_message || message?.content;
+
+                                            let parsedContent: any = null;
+                                            if (typeof rawContent === "object" && rawContent !== null) {
+                                                parsedContent = rawContent;
+                                            } else if (isJSONString(rawContent)) {
+                                                try {
+                                                    parsedContent = JSON.parse(rawContent as string);
+                                                } catch (e) {
+                                                    // ignore
+                                                }
+                                            }
 
                                             if (
                                                 parsedContent &&
@@ -251,13 +215,45 @@ const AssistantMessageCard = React.memo(
                                                 ? message?.chatbot_message || message?.content
                                                 : message.error;
 
-                                            if (isHTMLContent(messageContent)) {
+                                            // Check if it's Rich UI JSON
+                                            if (
+                                                parsedContent &&
+                                                parsedContent.type &&
+                                                componentRegistry[parsedContent.type]
+                                            ) {
                                                 return (
-                                                    <div
-                                                        className="template-html-container w-full"
-                                                        dangerouslySetInnerHTML={{ __html: messageContent }}
-                                                        onClick={handleRichUIActions}
-                                                    />
+                                                    <div className="mt-4 richui-container w-full">
+                                                        <RenderNode
+                                                            node={parsedContent}
+                                                            onAction={(action: any) => {
+                                                                if (action?.type === "reply" && action?.text) {
+                                                                    sendMessage({ message: action.text });
+                                                                }
+                                                            }}
+                                                        />
+                                                    </div>
+                                                );
+                                            }
+
+                                            // Check if it's an array of Rich UI nodes
+                                            if (
+                                                Array.isArray(parsedContent) &&
+                                                parsedContent.length > 0 &&
+                                                parsedContent[0] &&
+                                                parsedContent[0].type &&
+                                                componentRegistry[parsedContent[0].type]
+                                            ) {
+                                                return (
+                                                    <div className="mt-4 richui-container w-full">
+                                                        <RenderNode
+                                                            node={parsedContent}
+                                                            onAction={(action: any) => {
+                                                                if (action?.type === "reply" && action?.text) {
+                                                                    sendMessage({ message: action.text });
+                                                                }
+                                                            }}
+                                                        />
+                                                    </div>
                                                 );
                                             }
 
@@ -270,7 +266,7 @@ const AssistantMessageCard = React.memo(
                                                         a: Anchor,
                                                     }}
                                                 >
-                                                    {messageContent}
+                                                    {typeof messageContent === "string" ? messageContent : JSON.stringify(messageContent)}
                                                 </ReactMarkdown>
                                             );
                                         })()}

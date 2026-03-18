@@ -80,7 +80,7 @@ const ChatbotDrawer = ({
   } = useCustomSelector((state) => {
     const show_close_button = state.Hello?.[chatSessionId]?.helloConfig?.show_close_button
     return {
-      subThreadList: state.Interface?.[chatSessionId]?.interfaceContext?.[bridgeName]?.threadList?.[threadId] || [],
+      subThreadList: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.interfaceContext?.[bridgeName]?.threadList?.[threadId] || [],
       teamsList: state.Hello?.[chatSessionId]?.widgetInfo?.teams || [],
       channelList: state.Hello?.[chatSessionId]?.channelListData?.channels || [],
       isHelloUser: state.draftData?.isHelloUser || false,

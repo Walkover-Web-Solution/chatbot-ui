@@ -13,10 +13,10 @@ import MessageTime from './MessageTime';
  * It includes an image with fallback, message content, and sender time.
  */
 
-const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatSessionId }: any) => {
+const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatSessionId, tabSessionId }: any) => {
     const [showSenderTime, setShowSenderTime] = useState(false);
     const { sendEventToParentOnMessageClick } = useCustomSelector((state) => ({
-        sendEventToParentOnMessageClick: state.Interface?.[chatSessionId]?.eventsSubscribedByParent?.includes(ALLOWED_EVENTS_TO_SUBSCRIBE.MESSAGE_CLICK) || false
+        sendEventToParentOnMessageClick: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.eventsSubscribedByParent?.includes(ALLOWED_EVENTS_TO_SUBSCRIBE.MESSAGE_CLICK) || false
     }))
 
     const handleMessageClick = () => {
