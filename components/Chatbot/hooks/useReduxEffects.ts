@@ -20,7 +20,7 @@ export const useReduxEffects = ({ tabSessionId, chatSessionId }: { tabSessionId:
     } = useCustomSelector((state) => ({
         reduxThreadId: state.appInfo?.[tabSessionId]?.threadId || "",
         reduxSubThreadId: state.appInfo?.[tabSessionId]?.subThreadId || "",
-        reduxHeaderButtons: state.Interface?.[chatSessionId]?.headerButtons || [],
+        reduxHeaderButtons: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.headerButtons || [],
         reduxBridgeName: state.appInfo?.[tabSessionId]?.bridgeName || "root",
         reduxHelloId: state.appInfo?.[tabSessionId]?.helloId || null,
         reduxBridgeVersionId: state.appInfo?.[tabSessionId]?.versionId || null,

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { useMessageFeedback } from "@/components/Chatbot/hooks/useChatActions";
+import { useMessageFeedback, useSendMessage } from "@/components/Chatbot/hooks/useChatActions";
 import InterfaceGrid from "@/components/Grid/Grid";
 import { Anchor, Code } from "@/components/Interface-Chatbot/Interface-Markdown/MarkdownUtitily";
 import { supportsLookbehind } from "@/utils/appUtility";
@@ -86,6 +86,7 @@ const AssistantMessageCard = React.memo(
         isError = false,
     }: any) => {
         const [isCopied, setIsCopied] = React.useState(false);
+        const sendMessage = useSendMessage({});
         const handleCopy = () => {
             copy(message?.chatbot_message || message?.content);
             setIsCopied(true);
@@ -272,9 +273,7 @@ const AssistantMessageCard = React.memo(
                                                             node={finalContent}
                                                             onAction={(action: any) => {
                                                                 if (action?.type === "reply" && action?.text) {
-                                                                    if (typeof window !== "undefined") {
-                                                                        window.postMessage({ type: "askAi", data: action.text }, "*");
-                                                                    }
+                                                                    sendMessage({ message: action.text });
                                                                 }
                                                             }}
                                                         />
@@ -299,9 +298,7 @@ const AssistantMessageCard = React.memo(
                                                             node={finalContent}
                                                             onAction={(action: any) => {
                                                                 if (action?.type === "reply" && action?.text) {
-                                                                    if (typeof window !== "undefined") {
-                                                                        window.postMessage({ type: "askAi", data: action.text }, "*");
-                                                                    }
+                                                                    sendMessage({ message: action.text });
                                                                 }
                                                             }}
                                                         />
