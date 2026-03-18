@@ -18,7 +18,6 @@ import ImageWithFallback from "./ImageWithFallback";
 import "./Message.css";
 import RenderNode from "../../richUI/RenderNode";
 import { componentRegistry } from "../../richUI/componentRegistry";
-import { resolveNode } from "../../../utils/templateEngine";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 function FeedBackButtons({ msgId }: { msgId: string }) {
@@ -91,38 +90,6 @@ const AssistantMessageCard = React.memo(
 
         const toolsData = Object.keys(message?.tools_data || {});
 
-        // Handler for rich UI actions (button clicks with data-action)
-        const handleRichUIActions = (event: React.MouseEvent) => {
-            // Event delegation: find closest element with data-action
-            const target = (event.target as HTMLElement).closest("[data-action]");
-            if (!target) return;
-
-            event.preventDefault();
-
-            const actionDataStr = target.getAttribute("data-action");
-            const elementId = target.getAttribute("id");
-
-            try {
-                const actionPayload = JSON.parse(actionDataStr || "{}");
-
-                // 1. Show loading state
-                target.classList.add("loading", "loading-spinner", "btn-disabled"); // DaisyUI classes
-
-                // 2. Send to parent
-                if (typeof window !== "undefined") {
-                    window.parent.postMessage(
-                        {
-                            type: "CHATBOT_ACTION",
-                            payload: actionPayload,
-                            elementId: elementId,
-                        },
-                        "*"
-                    );
-                }
-            } catch (e) {
-                console.error("Failed to parse action data", e);
-            }
-        };
 
         return (
             <div className="flex w-full pb-1">
@@ -254,13 +221,10 @@ const AssistantMessageCard = React.memo(
                                                 parsedContent.type &&
                                                 componentRegistry[parsedContent.type]
                                             ) {
-                                                const finalContent = message?.ai_response
-                                                    ? resolveNode(parsedContent, message.ai_response)
-                                                    : parsedContent;
                                                 return (
                                                     <div className="mt-4 richui-container w-full">
                                                         <RenderNode
-                                                            node={finalContent}
+                                                            node={parsedContent}
                                                             onAction={(action: any) => {
                                                                 if (action?.type === "reply" && action?.text) {
                                                                     sendMessage({ message: action.text });
@@ -279,13 +243,10 @@ const AssistantMessageCard = React.memo(
                                                 parsedContent[0].type &&
                                                 componentRegistry[parsedContent[0].type]
                                             ) {
-                                                const finalContent = message?.ai_response
-                                                    ? resolveNode(parsedContent, message.ai_response)
-                                                    : parsedContent;
                                                 return (
                                                     <div className="mt-4 richui-container w-full">
                                                         <RenderNode
-                                                            node={finalContent}
+                                                            node={parsedContent}
                                                             onAction={(action: any) => {
                                                                 if (action?.type === "reply" && action?.text) {
                                                                     sendMessage({ message: action.text });
