@@ -1,7 +1,7 @@
 'use client';
 import { ChatbotContext } from "@/components/context";
 import { setDataInDraftReducer } from "@/store/draftData/draftDataSlice";
-import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
+import { SetSessionStorage } from "@/utils/ChatbotUtility";
 import { EmbedVerificationStatus } from "@/utils/enums";
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
@@ -16,12 +16,8 @@ export default function InterfaceEmbed() {
 
     useEffect(() => {
 
-        let tabSessionId = GetSessionStorageData('tab_session_id');
-
-        if (!tabSessionId) {
-            tabSessionId = Date.now().toString();
-            SetSessionStorage('tab_session_id', tabSessionId);
-        }
+        const tabSessionId = Date.now().toString();
+        SetSessionStorage('tab_session_id', tabSessionId);
 
         dispatch(setDataInDraftReducer({ tabSessionId }))
 
