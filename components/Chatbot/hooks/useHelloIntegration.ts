@@ -247,6 +247,7 @@ export const useOnSendHello = () => {
           } : null,
           replied_msg_type: replyToMessage?.urls?.length ? MESSAGE_TYPES.ATTACHMENT : undefined,
           replied_msg_sender_id: replyToMessage ? (replyToMessage.is_auto_response || !replyToMessage.from_name ? 'bot' : replyToMessage.sender_id || replyToMessage.from_name) : null,
+          replied_from_name: replyToMessage ? replyToMessage.from_name : null,
         } : newMessage;
         addHelloMessage(messageWithReply, workingChannelId);
       }

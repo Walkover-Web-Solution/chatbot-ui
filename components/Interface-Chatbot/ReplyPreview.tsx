@@ -32,7 +32,7 @@ const ReplyPreview: React.FC<ReplyPreviewProps> = ({ replyToMessage, onCloseRepl
   };
 
   const getSenderName = (): string => {
-    if (replyToMessage.is_auto_response || !replyToMessage.from_name) return '';
+    if (!replyToMessage.from_name) return '';
     return replyToMessage.from_name === 'User' ? 'You' : replyToMessage.from_name || 'User';
   };
 
