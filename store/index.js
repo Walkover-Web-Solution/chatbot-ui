@@ -63,7 +63,7 @@ const rootPersistConfig = {
   key: "root",
   storage: storage,
   version: 1,
-  blacklist: ["appInfo", "draftData", "Chat","Interface"],
+  blacklist: ["appInfo", "draftData", "Chat"],
 };
 
 const persistedReducer = persistReducer(rootPersistConfig, rootReducer);
