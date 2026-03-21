@@ -15,16 +15,37 @@ export default function InterfaceEmbed() {
     const dispatch = useDispatch();
 
     useEffect(() => {
-
-        let tabSessionId = GetSessionStorageData('tab_session_id');
-
-        if (!tabSessionId) {
-            tabSessionId = Date.now().toString();
-            SetSessionStorage('tab_session_id', tabSessionId);
+        const CHANNEL_NAME = 'tab_session_sync';
+        const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CHANNEL_NAME) : null;
+        const generateId = () => `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+        const existingId = GetSessionStorageData('tab_session_id');
+        let tabSessionId = existingId || generateId();
+        const isRefresh = !!existingId;
+        const applyId = (id: string) => {
+            tabSessionId = id;
+            SetSessionStorage('tab_session_id', id);
+            dispatch(setDataInDraftReducer({ tabSessionId: id }));
+        };
+        if (channel) {
+            // Set up listener BEFORE broadcasting to avoid missing collision responses
+            channel.onmessage = (event) => {
+                const { type, id } = event.data || {};
+                if (type === 'claim' && id === tabSessionId) {
+                    // Collision: another tab claimed our ID, take a new one and re-announce
+                    const newId = generateId();
+                    applyId(newId);
+                    channel.postMessage({ type: 'claim', id: newId });
+                }
+            };
+            // On refresh, don't re-broadcast — the ID is already established and unique
+            if (!isRefresh) {
+                channel.postMessage({ type: 'claim', id: tabSessionId });
+            }
         }
-
-        dispatch(setDataInDraftReducer({ tabSessionId }))
-
+        applyId(tabSessionId);
+        return () => {
+            channel?.close();
+        };
     }, [])
 
     useEffect(() => {
