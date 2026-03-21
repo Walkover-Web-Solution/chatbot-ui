@@ -2,8 +2,9 @@ import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { addDefaultContext, setDataInInterfaceRedux, setEventsSubsribedByParent, setHeaderActionButtons, setModalConfig } from "@/store/interface/interfaceSlice";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
-import { useEffect } from "react";
 import { useDispatch } from "react-redux";
+import { useCustomSelector } from "@/utils/deepCheckSelector";
+import { useEffect } from "react";
 
 interface InterfaceData {
   threadId?: string | null;
@@ -27,7 +28,8 @@ interface InterfaceData {
 
 const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
   const dispatch = useDispatch();
-  
+  const tabSessionId = useCustomSelector((state) => `${state.draftData.chatSessionId}_${state.draftData.tabSessionId}`);
+
   const handleInterfaceData = (event: MessageEvent) => {
     
     const receivedData: InterfaceData = event.data.data;
@@ -113,6 +115,7 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
       dispatch(setDataInAppInfoReducer({ hideFullScreenButton: receivedData.hideFullScreenButton }));
     }
   }
+ 
 
   useEffect(() => {
     eventHandler.addEventHandler('interfaceData', handleInterfaceData)

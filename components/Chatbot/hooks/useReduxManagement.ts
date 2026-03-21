@@ -34,7 +34,7 @@ export const useReduxStateManagement = ({
     currentTeamId,
     isDefaultNavigateToChatScreen
   } = useCustomSelector((state) => ({
-    interfaceContextData: state.Interface?.[chatSessionId]?.interfaceContext?.variables,
+    interfaceContextData: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.interfaceContext?.variables,
     isHelloUser: state.draftData?.isHelloUser || false,
     uuid: state.Hello?.[chatSessionId]?.channelListData?.uuid,
     unique_id: state.Hello?.[chatSessionId]?.channelListData?.unique_id,
@@ -44,7 +44,7 @@ export const useReduxStateManagement = ({
     chat_id: state.Hello?.[chatSessionId]?.Channel?.id,
     channelId: state.Hello?.[chatSessionId]?.Channel?.channel || null,
     mode: state.Hello?.[chatSessionId]?.mode || [],
-    selectedAiServiceAndModal: state.Interface?.[chatSessionId]?.selectedAiServiceAndModal || null,
+    selectedAiServiceAndModal: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.selectedAiServiceAndModal || null,
     unique_id_hello: state?.Hello?.[chatSessionId]?.helloConfig?.unique_id,
     widgetToken: state?.Hello?.[chatSessionId]?.helloConfig?.widgetToken,
     currentChatId: state?.appInfo?.[tabSessionId]?.currentChatId,

@@ -154,11 +154,11 @@ const renderIconsByType = (item: { type: string }, iconColor: string) => {
 }
 
 
-const AiServicesToSwitch = ({ chatSessionId }: { chatSessionId: string }) => {
+const AiServicesToSwitch = ({ chatSessionId, tabSessionId }: { chatSessionId: string; tabSessionId: string }) => {
   const { currentSelectedModal, aiServiceAndModalOptions, defaultModal } = useCustomSelector((state: $ReduxCoreType) => {
-    const selectedAiServiceAndModal = state.Interface?.[chatSessionId]?.selectedAiServiceAndModal || {};
-    const modalConfig = state.Interface?.[chatSessionId]?.modalConfig || {};
-    const availableAiServicesToSwitch = state.Interface?.[chatSessionId]?.availableAiServicesToSwitch || [];
+    const selectedAiServiceAndModal = state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.selectedAiServiceAndModal || {};
+    const modalConfig = state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.modalConfig || {};
+    const availableAiServicesToSwitch = state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.availableAiServicesToSwitch || [];
     const { defaultSelected = {}, aiServices = [] } = modalConfig;
 
     const filteredUserRequestedOptions = aiServices.filter((item: any) =>
@@ -292,7 +292,6 @@ interface ChatbotHeaderProps {
 }
 
 const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSessionId, tabSessionId, currentTeamId = "", currentChannelId = "", threadId = "", bridgeName = "" }) => {
-  console.log('header')
   const dispatch = useDispatch();
   const theme = useTheme();
   const iconColor = theme.palette.text.primary;
@@ -361,7 +360,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
       allowBridgeSwitchViaProp: state?.Interface?.[chatSessionId]?.allowBridgeSwitch,
       teams: state.Hello?.[chatSessionId]?.widgetInfo?.teams || [],
       agentTeamName: getAgentTeamName(state, chatSessionId, currentChannelId),
-      subThreadList: state.Interface?.[chatSessionId]?.interfaceContext?.[bridgeName]?.threadList?.[threadId] || [],
+      subThreadList: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.interfaceContext?.[bridgeName]?.threadList?.[threadId] || [],
       isHelloUser: state.draftData?.isHelloUser || false,
       voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false
     })
@@ -645,7 +644,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
             />
           )}
 
-          {allowModalSwitch && <AiServicesToSwitch chatSessionId={chatSessionId} />}
+          {allowModalSwitch && <AiServicesToSwitch chatSessionId={chatSessionId} tabSessionId={tabSessionId} />}
 
           {headerButtons?.map((item, index) => (
             <React.Fragment key={`header-button-${index}`}>

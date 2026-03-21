@@ -44,7 +44,6 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
     userData: state.Hello?.[chatSessionId]?.clientInfo
   }));
   const scriptParams = JSON.parse(GetSessionStorageData('helloConfig') || '{}')
-  console.log('form')
   const { isSmallScreen } = useScreenSize();
   const [formData, setFormData] = useState<FormData>({
     name: userData?.Name || "",
