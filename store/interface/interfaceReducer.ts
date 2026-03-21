@@ -73,7 +73,7 @@ export const reducers: ValidateSliceCaseReducers<
   addDefaultContext(state, action: actionType<any>) {
     const { chatSessionId ,tabSessionId:urlTabSessionId, bridgeName : currentBridgeName } = action.urlData || {};
     if (!chatSessionId) return;
-     const key = urlTabSessionId || chatSessionId;
+     const key = `${chatSessionId}_${urlTabSessionId}`;
 
     const bridgeName = action.payload?.bridgeName || currentBridgeName || "root";
     const variables = action.payload?.variables;
