@@ -1,5 +1,5 @@
 import { ChatbotContext } from '@/components/context';
-import { setHelloEventMessage, setLoading, setOptions, updateLastAssistantMessage } from '@/store/chat/chatSlice';
+import { setHelloEventMessage, setLoading, setOptions, updateLastAssistantMessage, appendLastAssistantMessageChunk } from '@/store/chat/chatSlice';
 import { setThreads } from '@/store/interface/interfaceSlice';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
@@ -52,6 +52,30 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
       return;
     }
 
+    if (parsedMessage?.event) {
+      if (parsedMessage.event === "start") {
+        dispatch(updateLastAssistantMessage({ 
+          role: "assistant", 
+          wait: false, 
+          isStreaming: true,
+          content: "", 
+          id: parsedMessage.message_id || generateNewId() 
+        }));
+        return;
+      } else if (parsedMessage.event === "delta") {
+        dispatch(appendLastAssistantMessageChunk({ chunk: parsedMessage.content || "" }));
+        return;
+      } else if (parsedMessage.event === "error") {
+        const errorMsg = parsedMessage.error || parsedMessage.fallback_error || "An error occurred while talking to AI";
+        emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', errorMsg);
+        dispatch(updateLastAssistantMessage({ role: "assistant", content: errorMsg, id: parsedMessage.message_id || generateNewId() }));
+        dispatch(setLoading(false));
+        if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+        return;
+      }
+      // For 'done' event, let it fall through to process parsedMessage.response.data normally.
+    }
+
     // Determine the type of response
     const { function_call, message: responseMessage, data, error } = parsedMessage?.response || {};
     switch (true) {
@@ -94,7 +118,14 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
       // Case: Response data is present
       case !!data:
         emitEventToParent('MESSAGE_RECEIVED', parsedMessage.response.data?.content || {});
-        dispatch(updateLastAssistantMessage({ role: parsedMessage?.response?.data?.role || "assistant", ...(parsedMessage.response.data || {}) }));
+        
+        const messageId = parsedMessage.response.data?.id || parsedMessage.message_id || generateNewId();
+        
+        dispatch(updateLastAssistantMessage({ 
+          role: parsedMessage?.response?.data?.role || "assistant", 
+          ...(parsedMessage.response.data || {}),
+          id: messageId
+        }));
         dispatch(setLoading(false));
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
         break;

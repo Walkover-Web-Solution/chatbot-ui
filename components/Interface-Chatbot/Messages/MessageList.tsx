@@ -89,6 +89,23 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
     }
   }, [newMessage, moveToDown, setNewMessage]);
 
+  const latestMessage = useMemo(() => {
+    if (messageIds.length > 0) {
+      return msgIdAndDataMap[messageIds[0]];
+    }
+    return null;
+  }, [messageIds, msgIdAndDataMap]);
+
+  // Handle auto-scrolling during continuous streaming without stuttering smooth-scroll
+  useEffect(() => {
+    if (latestMessage?.isStreaming && !showScrollButton && scrollableDivRef.current) {
+      scrollableDivRef.current.scrollTo({
+        top: scrollableDivRef.current.scrollHeight,
+        behavior: 'auto'
+      });
+    }
+  }, [latestMessage?.content, latestMessage?.isStreaming, showScrollButton]);
+
   // this is the greeting message that is shown when the user first opens the chat
   const renderGreetingMessage = useMemo(() => {
     if (!isHelloUser || !greetingMessage ||

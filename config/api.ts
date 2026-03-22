@@ -174,11 +174,11 @@ export async function sendDataToAction(data: any): Promise<any> {
             data: error?.response?.data
         };
         emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', sanitizedError);
-        
+
         const errorMessage = error?.response?.data?.detail?.error ||
             error?.response?.data?.detail ||
             "Something went wrong!";
-            
+
         return { success: false, error: errorMessage };
     }
 }

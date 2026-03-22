@@ -9,6 +9,7 @@ const chatSlice = createSlice({
 
 export const {
     updateLastAssistantMessage,
+    appendLastAssistantMessageChunk,
     removeMessages,
     setLoading,
     setChatsLoading,

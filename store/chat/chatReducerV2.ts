@@ -102,6 +102,17 @@ export const chatReducerV2 = {
         }
     },
 
+    appendLastAssistantMessageChunk: (state, action: PayloadAction<{ chunk: string }>) => {
+        const subThreadId = state.subThreadId;
+        if (subThreadId && state.messageIds[subThreadId]?.length > 0) {
+            const lastMessageId = state.messageIds[subThreadId][0]; // Newest is at index 0
+            if (state.msgIdAndDataMap[subThreadId] && state.msgIdAndDataMap[subThreadId][lastMessageId]) {
+                const existingContent = state.msgIdAndDataMap[subThreadId][lastMessageId].content || "";
+                state.msgIdAndDataMap[subThreadId][lastMessageId].content = existingContent + action.payload.chunk;
+            }
+        }
+    },
+
     removeMessages: (state, { payload: { numberOfMessages = 1 } }: PayloadAction<{ numberOfMessages?: number }>) => {
         const subThreadId = state.subThreadId;
         if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
