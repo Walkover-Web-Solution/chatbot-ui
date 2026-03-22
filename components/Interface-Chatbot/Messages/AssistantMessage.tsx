@@ -162,7 +162,13 @@ const AssistantMessageCard = React.memo(
                                                 </Box>
                                             )
                                         }
-                                        {(() => {
+                                        {message?.isStreaming && !message?.content ? (
+                                            <div className="loading-indicator" style={themePalette}>
+                                                <div className="loading-bar"></div>
+                                                <div className="loading-bar"></div>
+                                                <div className="loading-bar"></div>
+                                            </div>
+                                        ) : (() => {
                                             const rawContent = isError
                                                 ? message?.error
                                                 : message?.chatbot_message || message?.content;
