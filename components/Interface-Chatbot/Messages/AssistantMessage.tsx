@@ -284,7 +284,7 @@ const AssistantMessageCard = React.memo(
 
 
                     <div className="flex items-center gap-2">
-                        {!message?.wait && !message?.timeOut && !message?.error && (
+                        {!message?.wait && !message?.isStreaming && !message?.timeOut && !message?.error && (
                             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                                 {(() => {
                                     const parsedContent = isJSONString(message?.content) ? JSON.parse(message?.content) : null
