@@ -1,8 +1,8 @@
 import { ChatContext } from '@/components/Chatbot-Wrapper/ChatbotWrapper';
 import { errorToast } from '@/components/customToast';
 import { MessageContext } from '@/components/Interface-Chatbot/InterfaceChatbot';
-import { getAllThreadsApi, getPreviousMessage, sendDataToAction, sendFeedbackAction } from '@/config/api';
-import { removeMessages, setChatsLoading, setData, setError, setHelloEventMessage, setImages, setInitialMessages, setIsFetching, setLoading, setNewMessage, setOptions, setPaginateMessages, setStarterQuestions, setToggleDrawer, updateLastAssistantMessage, updateSingleMessage } from '@/store/chat/chatSlice';
+import { getAllThreadsApi, getPreviousMessage, streamDataToAction, sendFeedbackAction } from '@/config/api';
+import { appendLastAssistantMessageChunk, appendToolCall, removeMessages, setChatsLoading, setData, setError, setHelloEventMessage, setImages, setInitialMessages, setIsFetching, setLoading, setNewMessage, setOptions, setPaginateMessages, setStarterQuestions, setToggleDrawer, updateLastAssistantMessage, updateSingleMessage, updateToolResult } from '@/store/chat/chatSlice';
 import { setThreads } from '@/store/interface/interfaceSlice';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { PAGE_SIZE } from '@/utils/enums';
@@ -199,6 +199,8 @@ export const useSendMessage = ({
             images: imageUrls,
             files,
             userId,
+            flag: true,
+            stream:true,
             interfaceContextData: { ...variables, ...customVariables } || {},
             threadId: customThreadId || threadId,
             subThreadId: subThreadId,
@@ -212,12 +214,69 @@ export const useSendMessage = ({
             } : {})
         };
         emitEventToParent('MESSAGE_SENT', payload.message);
-        const response = await sendDataToAction(payload);
-        if (!response?.success) {
+
+        const abortController = new AbortController();
+        const response = await streamDataToAction(
+            payload,
+            (event) => {
+                switch (event.event) {
+                    case "start":
+                        if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+                        globalDispatch(updateLastAssistantMessage({
+                            role: "assistant",
+                            wait: false,
+                            isStreaming: true,
+                            content: "",
+                            id: event.message_id,
+                        }));
+                        break;
+                    case "tool_call":
+                        globalDispatch(appendToolCall({
+                            call_id: event.call_id,
+                            name: event.name,
+                            args: event.args || {},
+                        }));
+                        break;
+                    case "tool_result":
+                        globalDispatch(updateToolResult({
+                            call_id: event.call_id,
+                            content: event.content,
+                        }));
+                        break;
+                    case "delta":
+                        globalDispatch(appendLastAssistantMessageChunk({ chunk: event.content || "" }));
+                        break;
+                    case "done":
+                        globalDispatch(updateLastAssistantMessage({
+                            role: "assistant",
+                            isStreaming: false,
+                            id: event.message_id,
+                            finish_reason: event.finish_reason,
+                            message_id: event.message_id,
+                        }));
+                        emitEventToParent('MESSAGE_RECEIVED', event.message_id);
+                        globalDispatch(setLoading(false));
+                        if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+                        break;
+                    case "error": {
+                        const errMsg = event.error || "An error occurred while talking to AI";
+                        emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', errMsg);
+                        globalDispatch(updateLastAssistantMessage({ role: "assistant", content: errMsg, id: event.message_id }));
+                        globalDispatch(setLoading(false));
+                        if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            },
+            abortController.signal
+        );
+
+        if (!response?.success && response?.error !== "aborted") {
             globalDispatch(setLoading(false));
             globalDispatch(removeMessages({ numberOfMessages: 2 }));
             globalDispatch(setError(response?.error || "Failed to send message. Please try again."));
-            return;
         }
     }, [
         threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal,

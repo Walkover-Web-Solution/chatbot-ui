@@ -5,12 +5,9 @@ import { Anchor, Code } from "@/components/Interface-Chatbot/Interface-Markdown/
 import { supportsLookbehind } from "@/utils/appUtility";
 import { isJSONString } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
-import {
-    Box,
-    lighten
-} from "@mui/material";
+import { lighten } from "@mui/material";
 import copy from "copy-to-clipboard";
-import { AlertCircle, Check, CircleCheckBig, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
+import { AlertCircle, Check, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
 import dynamic from 'next/dynamic';
 import React from "react";
 import ReactMarkdown from "react-markdown";
@@ -18,6 +15,7 @@ import ImageWithFallback from "./ImageWithFallback";
 import "./Message.css";
 import RenderNode from "../../richUI/RenderNode";
 import { componentRegistry } from "../../richUI/componentRegistry";
+import ToolCallAccordion from "./ToolCallAccordion";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
 function FeedBackButtons({ msgId }: { msgId: string }) {
@@ -88,7 +86,7 @@ const AssistantMessageCard = React.memo(
             "--primary-main": lighten(backgroundColor, 0.4),
         };
 
-        const toolsData = Object.keys(message?.tools_data || {});
+        const toolsData = message?.tools_data || {};
 
 
         return (
@@ -152,16 +150,7 @@ const AssistantMessageCard = React.memo(
                                     ))
                                 ) : (
                                     <div className="prose dark:prose-invert break-words">
-                                        {toolsData?.length > 0 &&
-                                            (
-                                                <Box className="flex items-center gap-2 mb-2">
-                                                    <CircleCheckBig color="green" size={18} className="font-bold" strokeWidth={3} />
-                                                    <p className="text-green-800 font-semibold">
-                                                        {toolsData?.length}  {toolsData?.length === 1 ? "Function" : "Functions"} executed
-                                                    </p>
-                                                </Box>
-                                            )
-                                        }
+                                        <ToolCallAccordion toolsData={toolsData} />
                                         {message?.isStreaming && !message?.content ? (
                                             <div className="loading-indicator" style={themePalette}>
                                                 <div className="loading-bar"></div>
