@@ -200,7 +200,6 @@ export const useSendMessage = ({
             files,
             userId,
             flag: true,
-            stream:true,
             interfaceContextData: { ...variables, ...customVariables } || {},
             threadId: customThreadId || threadId,
             subThreadId: subThreadId,
