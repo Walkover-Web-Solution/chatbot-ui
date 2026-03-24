@@ -155,6 +155,63 @@ export async function getPreviousMessage(
     }
 }
 
+export async function streamDataToAction(
+    data: any,
+    onEvent: (event: Record<string, any>) => void,
+    signal?: AbortSignal
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        if (!data.threadId) data.threadId = "";
+        const token = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("interfaceToken") : null;
+        const response = await fetch(`${PYTHON_URL}/chatbot/${data.chatBotId}/sendMessage`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: token } : {}),
+            },
+            body: JSON.stringify(data),
+            signal,
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            const errorMessage =
+                errData?.detail?.error || errData?.detail || "Something went wrong!";
+            emitEventToParent("MESSAGE_RECEIVED_WITH_ERROR", { status: response.status });
+            return { success: false, error: errorMessage };
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) return { success: false, error: "No response body" };
+
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() ?? "";
+            for (const line of lines) {
+                if (line.startsWith("data: ")) {
+                    const jsonStr = line.slice(6).trim();
+                    if (!jsonStr) continue;
+                    try {
+                        onEvent(JSON.parse(jsonStr));
+                    } catch { /* ignore malformed lines */ }
+                }
+            }
+        }
+        return { success: true };
+    } catch (error: any) {
+        if (error?.name === "AbortError") return { success: false, error: "aborted" };
+        emitEventToParent("MESSAGE_RECEIVED_WITH_ERROR", { message: error?.message });
+        const errorMessage = error?.message || "Streaming failed";
+        return { success: false, error: errorMessage };
+    }
+}
+
 export async function sendDataToAction(data: any): Promise<any> {
     try {
         if (!data.threadId) data.threadId = "";
@@ -174,11 +231,11 @@ export async function sendDataToAction(data: any): Promise<any> {
             data: error?.response?.data
         };
         emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', sanitizedError);
-        
+
         const errorMessage = error?.response?.data?.detail?.error ||
             error?.response?.data?.detail ||
             "Something went wrong!";
-            
+
         return { success: false, error: errorMessage };
     }
 }
