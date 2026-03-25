@@ -6,7 +6,7 @@ import { appendLastAssistantMessageChunk, appendToolCall, removeMessages, setCha
 import { setThreads } from '@/store/interface/interfaceSlice';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { PAGE_SIZE } from '@/utils/enums';
-import React, { useCallback, useContext, useMemo } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { SendMessagePayloadType } from './chatTypes';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
@@ -144,7 +144,7 @@ export const useSendMessage = ({
     const messageRef = propMessageRef ?? context.messageRef;
     const timeoutIdRef = propTimeoutIdRef ?? context.timeoutIdRef;
     const { tabSessionId, chatSessionId } = useChatContext();
-    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, helloMode } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
@@ -152,12 +152,21 @@ export const useSendMessage = ({
         variables: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.interfaceContext?.[state?.appInfo?.[tabSessionId]?.bridgeName]?.variables,
         selectedAiServiceAndModal: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.selectedAiServiceAndModal || null,
         userId: state.appInfo?.[tabSessionId]?.userId || null,
-        threadList: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId]
+        threadList: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId],
+        helloMode: state.Hello?.[chatSessionId]?.mode || []
     }));
 
     const { images } = useCustomSelector((state) => ({
         images: state.Chat.images || [],
     }));
+
+    const abortControllerRef = useRef<AbortController | null>(null);
+
+    useEffect(() => {
+        return () => {
+            abortControllerRef.current?.abort();
+        };
+    }, []);
 
     const startTimeoutTimer = useCallback(() => {
         timeoutIdRef.current = setTimeout(() => {
@@ -199,7 +208,7 @@ export const useSendMessage = ({
             images: imageUrls,
             files,
             userId,
-            flag: true,
+            flag: helloMode?.includes("stream") ? true : false,
             interfaceContextData: { ...variables, ...customVariables } || {},
             threadId: customThreadId || threadId,
             subThreadId: subThreadId,
@@ -214,7 +223,8 @@ export const useSendMessage = ({
         };
         emitEventToParent('MESSAGE_SENT', payload.message);
 
-        const abortController = new AbortController();
+        abortControllerRef.current?.abort();
+        abortControllerRef.current = new AbortController();
         const response = await streamDataToAction(
             payload,
             (event) => {
@@ -269,7 +279,7 @@ export const useSendMessage = ({
                         break;
                 }
             },
-            abortController.signal
+            abortControllerRef.current.signal
         );
 
         if (!response?.success && response?.error !== "aborted") {
@@ -280,7 +290,7 @@ export const useSendMessage = ({
     }, [
         threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal,
         userId, threadList, versionId, images, messageRef, globalDispatch,
-        startTimeoutTimer, chatSessionId
+        startTimeoutTimer, chatSessionId, helloMode, timeoutIdRef
     ]);
 };
 
