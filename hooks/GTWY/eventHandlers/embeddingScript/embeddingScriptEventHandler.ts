@@ -24,6 +24,7 @@ interface InterfaceData {
   [key: string]: any; // Allow for other properties
   modelChanged?: string;
   serviceChanged?: string;
+  stream?: string;
 }
 
 const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
@@ -63,6 +64,12 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
     // Process gtwy model change
     if (receivedData.modelChanged) {
       dispatch(setDataInAppInfoReducer({ modelChanged: receivedData.modelChanged }))
+    }
+
+    //process stream change
+    if(receivedData?.stream){
+      console.log(receivedData)
+      dispatch(setDataInAppInfoReducer({stream:receivedData?.stream}))
     }
 
     // Process gtwy service change
