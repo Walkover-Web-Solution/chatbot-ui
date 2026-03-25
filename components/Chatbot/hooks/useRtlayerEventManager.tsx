@@ -15,13 +15,10 @@ function useWebSocketClient(isHelloUser: boolean) {
   // Only create the WebSocket client when needed
   React.useEffect(() => {
     if (!isHelloUser) {
-      // Only initialize the client when it's not a human
       const newClient = WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
-      setClient(newClient)
+      setClient(newClient);
 
-      // Clean up the WebSocket connection when the component unmounts
       return () => {
-        // Add any cleanup code for your WebSocket client if needed
         if (newClient && typeof newClient.close === 'function') {
           newClient.close();
         }

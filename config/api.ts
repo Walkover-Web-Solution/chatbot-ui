@@ -155,9 +155,17 @@ export async function getPreviousMessage(
     }
 }
 
+export type StreamEvent =
+    | { event: "start"; message_id: string; model?: string; service?: string }
+    | { event: "delta"; content: string }
+    | { event: "tool_call"; call_id: string; name: string; args: Record<string, any> }
+    | { event: "tool_result"; call_id: string; content: any }
+    | { event: "done"; message_id: string; finish_reason: string; usage?: Record<string, any> }
+    | { event: "error"; error: string; message_id?: string };
+
 export async function streamDataToAction(
     data: any,
-    onEvent: (event: Record<string, any>) => void,
+    onEvent: (event: StreamEvent) => void,
     signal?: AbortSignal
 ): Promise<{ success: boolean; error?: string }> {
     try {
@@ -199,7 +207,9 @@ export async function streamDataToAction(
                     if (!jsonStr) continue;
                     try {
                         onEvent(JSON.parse(jsonStr));
-                    } catch { /* ignore malformed lines */ }
+                    } catch (err) {
+                        console.error("Failed to parse SSE event:", err);
+                    }
                 }
             }
         }
