@@ -68,7 +68,6 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
 
     //process stream change
     if(receivedData?.stream){
-      console.log(receivedData)
       dispatch(setDataInAppInfoReducer({stream:receivedData?.stream}))
     }
 
