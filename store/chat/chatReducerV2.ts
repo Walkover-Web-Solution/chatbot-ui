@@ -116,6 +116,17 @@ export const chatReducerV2 = {
         }
     },
 
+    appendReasoningChunk: (state, action: PayloadAction<{ chunk: string }>) => {
+        const subThreadId = state.subThreadId;
+        if (subThreadId && state.messageIds[subThreadId]?.length > 0) {
+            const lastMessageId = state.messageIds[subThreadId][0];
+            if (state.msgIdAndDataMap[subThreadId]?.[lastMessageId]) {
+                const existing = state.msgIdAndDataMap[subThreadId][lastMessageId].reasoning || "";
+                state.msgIdAndDataMap[subThreadId][lastMessageId].reasoning = existing + action.payload.chunk;
+            }
+        }
+    },
+
     appendToolCall: (state, action: PayloadAction<{ call_id: string; name: string; args: Record<string, any> }>) => {
         const subThreadId = state.subThreadId;
         if (subThreadId && state.messageIds[subThreadId]?.length > 0) {

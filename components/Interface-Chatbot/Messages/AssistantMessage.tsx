@@ -15,6 +15,7 @@ import ImageWithFallback from "./ImageWithFallback";
 import "./Message.css";
 import RenderNode from "../../richUI/RenderNode";
 import { componentRegistry } from "../../richUI/componentRegistry";
+import ReasoningAccordion from "./ReasoningAccordion";
 import ToolCallAccordion from "./ToolCallAccordion";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
 
@@ -87,6 +88,7 @@ const AssistantMessageCard = React.memo(
         };
 
         const toolsData = message?.tools_data || {};
+        const reasoning = message?.reasoning || "";
 
 
         return (
@@ -150,6 +152,7 @@ const AssistantMessageCard = React.memo(
                                     ))
                                 ) : (
                                     <div className="prose dark:prose-invert break-words">
+                                        <ReasoningAccordion reasoning={reasoning} isStreaming={message?.isStreaming} hasContent={!!message?.content} />
                                         <ToolCallAccordion toolsData={toolsData} />
                                         {message?.isStreaming && !message?.content ? (
                                             <div className="loading-indicator" style={themePalette}>
