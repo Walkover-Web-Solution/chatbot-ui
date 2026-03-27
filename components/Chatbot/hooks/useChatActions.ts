@@ -2,11 +2,11 @@ import { ChatContext } from '@/components/Chatbot-Wrapper/ChatbotWrapper';
 import { errorToast } from '@/components/customToast';
 import { MessageContext } from '@/components/Interface-Chatbot/InterfaceChatbot';
 import { getAllThreadsApi, getPreviousMessage, streamDataToAction, sendFeedbackAction } from '@/config/api';
-import { appendLastAssistantMessageChunk, appendToolCall, removeMessages, setChatsLoading, setData, setError, setHelloEventMessage, setImages, setInitialMessages, setIsFetching, setLoading, setNewMessage, setOptions, setPaginateMessages, setStarterQuestions, setToggleDrawer, updateLastAssistantMessage, updateSingleMessage, updateToolResult } from '@/store/chat/chatSlice';
+import { appendLastAssistantMessageChunk, appendReasoningChunk, appendToolCall, removeMessages, setChatsLoading, setData, setError, setHelloEventMessage, setImages, setInitialMessages, setIsFetching, setLoading, setNewMessage, setOptions, setPaginateMessages, setStarterQuestions, setToggleDrawer, updateLastAssistantMessage, updateSingleMessage, updateToolResult } from '@/store/chat/chatSlice';
 import { setThreads } from '@/store/interface/interfaceSlice';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { PAGE_SIZE } from '@/utils/enums';
-import React, { useCallback, useContext, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useContext, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { SendMessagePayloadType } from './chatTypes';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
@@ -160,14 +160,6 @@ export const useSendMessage = ({
         images: state.Chat.images || [],
     }));
 
-    const abortControllerRef = useRef<AbortController | null>(null);
-
-    useEffect(() => {
-        return () => {
-            abortControllerRef.current?.abort();
-        };
-    }, []);
-
     const startTimeoutTimer = useCallback(() => {
         timeoutIdRef.current = setTimeout(() => {
             globalDispatch(updateLastAssistantMessage({ role: "assistant", wait: false, timeOut: true }));
@@ -222,8 +214,6 @@ export const useSendMessage = ({
         };
         emitEventToParent('MESSAGE_SENT', payload.message);
 
-        abortControllerRef.current?.abort();
-        abortControllerRef.current = new AbortController();
         const response = await streamDataToAction(
             payload,
             (event) => {
@@ -237,6 +227,9 @@ export const useSendMessage = ({
                             content: "",
                             id: event.message_id,
                         }));
+                        break;
+                    case "reasoning":
+                        globalDispatch(appendReasoningChunk({ chunk: event.content || "" }));
                         break;
                     case "tool_call":
                         globalDispatch(appendToolCall({
@@ -278,7 +271,6 @@ export const useSendMessage = ({
                         break;
                 }
             },
-            abortControllerRef.current.signal
         );
 
         if (!response?.success && response?.error !== "aborted") {
