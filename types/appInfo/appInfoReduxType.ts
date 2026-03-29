@@ -17,5 +17,7 @@ export interface $AppInfoReduxType {
         serviceChanged: string, //name of the service
         modelChanged: string, //name of the model
         stream: string, //weather to set the flag true or false in the sendmessaage api
+        widget: string, //weather to set the flag true or false in the sendmessaage api
+        image_model: string, //weather to set the flag true or false in the sendmessaage api
     }
 }
