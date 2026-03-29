@@ -199,7 +199,7 @@ export const useSendMessage = ({
             images: imageUrls,
             files,
             userId,
-            flag: helloMode?.includes("stream") ? true : false,
+            flag: Boolean(helloMode?.includes("stream") && !(helloMode?.includes("widget") || helloMode?.includes("image_model"))),
             interfaceContextData: { ...variables, ...customVariables } || {},
             threadId: customThreadId || threadId,
             subThreadId: subThreadId,
