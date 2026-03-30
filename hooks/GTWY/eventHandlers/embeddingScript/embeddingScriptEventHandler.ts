@@ -32,7 +32,7 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
   const tabSessionId = useCustomSelector((state) => `${state.draftData.chatSessionId}_${state.draftData.tabSessionId}`);
 
   const handleInterfaceData = (event: MessageEvent) => {
-    
+
     const receivedData: InterfaceData = event.data.data;
     if (Object.keys(receivedData || {}).length === 0) return;
     // Process thread-related data
@@ -67,8 +67,17 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
     }
 
     //process stream change
-    if(receivedData?.stream){
-      dispatch(setDataInAppInfoReducer({stream:receivedData?.stream}))
+    if (receivedData?.stream !== undefined) {
+      dispatch(setDataInAppInfoReducer({ stream: receivedData?.stream }))
+    }
+    
+    //process image_model change
+    if (receivedData?.image_model !== undefined) {
+      dispatch(setDataInAppInfoReducer({ image_model: receivedData?.image_model }))
+    }
+    //process widget change
+    if (receivedData?.widget !== undefined) {
+      dispatch(setDataInAppInfoReducer({ widget: receivedData?.widget }))
     }
 
     // Process gtwy service change
@@ -121,7 +130,7 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
       dispatch(setDataInAppInfoReducer({ hideFullScreenButton: receivedData.hideFullScreenButton }));
     }
   }
- 
+
 
   useEffect(() => {
     eventHandler.addEventHandler('interfaceData', handleInterfaceData)

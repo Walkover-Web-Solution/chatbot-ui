@@ -10,7 +10,7 @@ export const useChatEffects = ({ chatSessionId, tabSessionId, messageRef, timeou
     const fetchAllThreads = useFetchAllThreads()
     const getIntialChatHistory = useGetInitialChatHistory()
     const sendMessage = useSendMessage({ messageRef, timeoutIdRef });
-    const { threadId, subThreadId, bridgeName, isHelloUser, threadList, versionId, loading, serviceChanged, modelChanged, stream } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, isHelloUser, threadList, versionId, loading, serviceChanged, modelChanged, stream, widget, image_model } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
@@ -21,12 +21,14 @@ export const useChatEffects = ({ chatSessionId, tabSessionId, messageRef, timeou
         serviceChanged: state.appInfo?.[tabSessionId]?.serviceChanged || false,
         modelChanged: state.appInfo?.[tabSessionId]?.modelChanged || false,
         stream: state.appInfo?.[tabSessionId]?.stream || false,
+        widget: state.appInfo?.[tabSessionId]?.widget || false,
+        image_model: state.appInfo?.[tabSessionId]?.image_model || false,
     }))
     useEffect(() => {
         if (bridgeName) {
             globalDispatch(getHelloDetailsStart({ slugName: bridgeName, versionId }));
         }
-    }, [bridgeName, chatSessionId, serviceChanged, modelChanged, versionId, stream])
+    }, [bridgeName, chatSessionId, serviceChanged, modelChanged, versionId, stream, widget, image_model])
 
     useEffect(() => {
         threadId && bridgeName && fetchAllThreads()
