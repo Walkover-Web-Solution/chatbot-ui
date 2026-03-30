@@ -315,9 +315,9 @@ export async function getHelloDetailsApi({
     const data: any = {
         slugName,
     };
-    if (threadId !== null) data.threadId = threadId;
-    if (helloId !== null) data.helloId = helloId;
-    if (versionId !== null) data.versionId = versionId;
+    if (threadId !== null && threadId !== "null") data.threadId = threadId;
+    if (helloId !== null && helloId !== "null") data.helloId = helloId;
+    if (versionId !== "null" && versionId !== null) data.versionId = versionId;
     try {
         const response = await axios.post(`${URL}/api/chatbot/subscribe`, data);
         return response?.data;
