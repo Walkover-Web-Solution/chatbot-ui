@@ -70,7 +70,7 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
     if (receivedData?.stream !== undefined) {
       dispatch(setDataInAppInfoReducer({ stream: receivedData?.stream }))
     }
-    console.log("receivedData?.image_model", receivedData)
+    
     //process image_model change
     if (receivedData?.image_model !== undefined) {
       dispatch(setDataInAppInfoReducer({ image_model: receivedData?.image_model }))
