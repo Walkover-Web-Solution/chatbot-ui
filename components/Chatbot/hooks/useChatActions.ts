@@ -2,7 +2,7 @@ import { ChatContext } from '@/components/Chatbot-Wrapper/ChatbotWrapper';
 import { errorToast } from '@/components/customToast';
 import { MessageContext } from '@/components/Interface-Chatbot/InterfaceChatbot';
 import { getAllThreadsApi, getPreviousMessage, streamDataToAction, sendFeedbackAction } from '@/config/api';
-import { appendLastAssistantMessageChunk, appendReasoningChunk, appendToolCall, removeMessages, setChatsLoading, setData, setError, setHelloEventMessage, setImages, setInitialMessages, setIsFetching, setLoading, setNewMessage, setOptions, setPaginateMessages, setStarterQuestions, setToggleDrawer, updateLastAssistantMessage, updateSingleMessage, updateToolResult } from '@/store/chat/chatSlice';
+import { appendLastAssistantMessageChunk, appendReasoningChunk, appendToolCall, removeMessages, setChatsLoading, setData, setHelloEventMessage, setImages, setInitialMessages, setIsFetching, setLoading, setNewMessage, setOptions, setPaginateMessages, setStarterQuestions, setToggleDrawer, updateLastAssistantMessage, updateSingleMessage, updateToolResult } from '@/store/chat/chatSlice';
 import { setThreads } from '@/store/interface/interfaceSlice';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { PAGE_SIZE } from '@/utils/enums';
@@ -276,7 +276,7 @@ export const useSendMessage = ({
         if (!response?.success && response?.error !== "aborted") {
             globalDispatch(setLoading(false));
             globalDispatch(removeMessages({ numberOfMessages: 2 }));
-            globalDispatch(setError(response?.error || "Failed to send message. Please try again."));
+            errorToast(response?.error || "Failed to send message. Please try again.");
             return;
         }
     }, [
