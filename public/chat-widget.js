@@ -1426,6 +1426,9 @@
                 sendMessageToChatbot({ type: "GET_TICKET_UNREAD_COUNT", data: { id } });
             });
         },
+        shutdown() {
+            sendMessageToChatbot({ type: "SHUTDOWN_CHATBOT" })
+        }
     };
 
     helloChatbotManager.initializeChatbot();

@@ -11,7 +11,7 @@ import { setDataInInterfaceRedux } from "@/store/interface/interfaceSlice";
 import { GetSessionStorageData, SetSessionStorage } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
-import { cleanObject, removeFromLocalStorage, setLocalStorage } from "@/utils/utilities";
+import { cleanObject, getLocalStorage, removeFromLocalStorage, setLocalStorage } from "@/utils/utilities";
 import isPlainObject from "lodash.isplainobject";
 import { useContext, useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
@@ -123,8 +123,9 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
             dispatch(setDataInAppInfoReducer({ subThreadId: '', currentChannelId: '', currentChatId: '', currentTeamId: '' }));
         };
 
-        // Reset if widget token changed
-        if (fullWidgetToken !== prevWidgetId) {
+        const isWidgetTokenChanged = fullWidgetToken !== prevWidgetId;
+        // Reset if widget token changed (clears OLD tabSessionId's state)
+        if (isWidgetTokenChanged) {
             resetKeys();
         }
 
@@ -153,6 +154,13 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
             widgetToken: fullWidgetToken,
             isHelloUser: true,
         }));
+
+        // After updating chatSessionId (which changes the tabSessionId key used by appInfo),
+        // reset appInfo again for the NEW tabSessionId to clear any stale data
+        // from previous sessions that reused the same key (e.g., anon → known → anon)
+        if (isWidgetTokenChanged) {
+            resetKeys();
+        }
 
         SetSessionStorage('helloConfig', JSON.stringify(event.data.data));
         dispatch(setHelloConfig(event.data.data));
@@ -254,6 +262,33 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         }
     }
 
+    function handleShutdownChatbot() {
+        const widgetId = getLocalStorage('WidgetId');
+        if (widgetId) {
+            const lastUniqueIdKey = `${widgetId}_last_unique_id`;
+            const lastUniqueId = localStorage.getItem(lastUniqueIdKey);
+
+            // Clear the last_unique_id so anon users won't be treated as known
+            localStorage.removeItem(lastUniqueIdKey);
+
+            // Clear per-user client ID mappings
+            if (lastUniqueId) {
+                localStorage.removeItem(`${widgetId}_${lastUniqueId}_k_clientId`);
+            }
+
+            // Clear widget-level client ID mappings
+            localStorage.removeItem(`${widgetId}_k_clientId`);
+            localStorage.removeItem(`${widgetId}_a_clientId`);
+        }
+
+        // Clear session client IDs
+        removeFromLocalStorage('k_clientId');
+        removeFromLocalStorage('a_clientId');
+
+        // Reset appInfo state to clear stale channel data
+        dispatch(setDataInAppInfoReducer({ subThreadId: '', currentChannelId: '', currentChatId: '', currentTeamId: '' }));
+    }
+
     useEffect(() => {
 
         eventHandler.addEventHandler('parent-route-changed', handleParentRouteChanged)
@@ -279,6 +314,8 @@ const useHandleHelloEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventR
         eventHandler.addEventHandler('SHOW_TICKET', handleShowTicket)
 
         eventHandler.addEventHandler('GET_TICKET_UNREAD_COUNT', handleGetTicketUnreadCount)
+
+        eventHandler.addEventHandler('SHUTDOWN_CHATBOT', handleShutdownChatbot)
 
     }, [])
 
