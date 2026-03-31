@@ -92,8 +92,66 @@ export const chatReducerV2 = {
             if (!state.msgIdAndDataMap[subThreadId]) {
                 state.msgIdAndDataMap[subThreadId] = {};
             }
-            state.msgIdAndDataMap[subThreadId][action.payload.id] = action.payload;
+            state.msgIdAndDataMap[subThreadId][action.payload.id] = {
+                ...(state.msgIdAndDataMap[subThreadId][action.payload.id] || {}),
+                ...action.payload,
+            };
         }
+    },
+
+    appendLastAssistantMessageChunk: (state, action: PayloadAction<{ chunk: string }>) => {
+        const subThreadId = state.subThreadId;
+        if (subThreadId && state.messageIds[subThreadId]?.length > 0) {
+            const lastMessageId = state.messageIds[subThreadId][0]; // Newest is at index 0
+            if (state.msgIdAndDataMap[subThreadId] && state.msgIdAndDataMap[subThreadId][lastMessageId]) {
+                const existingContent = state.msgIdAndDataMap[subThreadId][lastMessageId].content || "";
+                state.msgIdAndDataMap[subThreadId][lastMessageId].content = existingContent + action.payload.chunk;
+            }
+        }
+    },
+
+    appendReasoningChunk: (state, action: PayloadAction<{ chunk: string }>) => {
+        const subThreadId = state.subThreadId;
+        if (subThreadId && state.messageIds[subThreadId]?.length > 0) {
+            const lastMessageId = state.messageIds[subThreadId][0];
+            if (state.msgIdAndDataMap[subThreadId]?.[lastMessageId]) {
+                const existing = state.msgIdAndDataMap[subThreadId][lastMessageId].reasoning || "";
+                state.msgIdAndDataMap[subThreadId][lastMessageId].reasoning = existing + action.payload.chunk;
+            }
+        }
+    },
+
+    appendToolCall: (state, action: PayloadAction<{ call_id: string; name: string; args: Record<string, any> }>) => {
+        const subThreadId = state.subThreadId;
+        if (subThreadId && state.messageIds[subThreadId]?.length > 0) {
+            const lastMessageId = state.messageIds[subThreadId][0];
+            if (state.msgIdAndDataMap[subThreadId]?.[lastMessageId]) {
+                const msg = state.msgIdAndDataMap[subThreadId][lastMessageId];
+                if (!msg.tools_data) msg.tools_data = {};
+                msg.tools_data[action.payload.call_id] = {
+                    name: action.payload.name,
+                    args: action.payload.args,
+                    status: "calling",
+                    result: null,
+                };
+            }
+        }
+    },
+
+    updateToolResult: (state, action: PayloadAction<{ call_id: string; content: any }>) => {
+        const subThreadId = state.subThreadId;
+        if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
+        const lastMessageId = state.messageIds[subThreadId][0];
+        const msg = state.msgIdAndDataMap[subThreadId]?.[lastMessageId];
+        if (!msg?.tools_data) return;
+        const exactKey = action.payload.call_id && msg.tools_data[action.payload.call_id]
+            ? action.payload.call_id
+            : Object.keys(msg.tools_data).find((k) => msg.tools_data[k].status === "calling");
+        if (!exactKey) return;
+        msg.tools_data[exactKey].status = "done";
+        msg.tools_data[exactKey].result = typeof action.payload.content === "string"
+            ? action.payload.content
+            : JSON.stringify(action.payload.content);
     },
 
     removeMessages: (state, { payload: { numberOfMessages = 1 } }: PayloadAction<{ numberOfMessages?: number }>) => {

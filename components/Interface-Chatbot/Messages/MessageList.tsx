@@ -19,7 +19,7 @@ import MoveToDownButton from "../MoveToDownButton";
 import Message from "./Message";
 
 // Constants
-const SCROLL_BUFFER = -500;
+const NEAR_BOTTOM_THRESHOLD = 80;
 
 /**
  * A component that displays a list of messages.
@@ -41,6 +41,7 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
   }))
 
   const scrollableDivRef = useRef<HTMLDivElement>(null);
+  const isAtBottomRef = useRef(true);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
   const { isHelloUser, assigned_type, greetingMessage } = useCustomSelector((state) => ({
@@ -71,13 +72,10 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
   }, []);
 
   const handleScroll = useCallback((e) => {
-    const { scrollTop } = e.target;
-
-    // In inverse scroll, scrollTop === 0 means you're at the bottom
-    // scrollTop becomes more negative as you scroll up
-
-    const isNearBottom = scrollTop > SCROLL_BUFFER;
-
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    const isNearBottom = distanceFromBottom < NEAR_BOTTOM_THRESHOLD;
+    isAtBottomRef.current = isNearBottom;
     setShowScrollButton(!isNearBottom);
   }, []);
 
@@ -88,6 +86,23 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
       setTimeout(moveToDown, 100);
     }
   }, [newMessage, moveToDown, setNewMessage]);
+
+  const latestMessage = useMemo(() => {
+    if (messageIds.length > 0) {
+      return msgIdAndDataMap[messageIds[0]];
+    }
+    return null;
+  }, [messageIds, msgIdAndDataMap]);
+
+  // Handle auto-scrolling during continuous streaming without stuttering smooth-scroll
+  useEffect(() => {
+    if (latestMessage?.isStreaming && isAtBottomRef.current && scrollableDivRef.current) {
+      scrollableDivRef.current.scrollTo({
+        top: scrollableDivRef.current.scrollHeight,
+        behavior: 'auto'
+      });
+    }
+  }, [latestMessage?.content, latestMessage?.tools_data, latestMessage?.isStreaming]);
 
   // this is the greeting message that is shown when the user first opens the chat
   const renderGreetingMessage = useMemo(() => {

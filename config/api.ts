@@ -155,6 +155,74 @@ export async function getPreviousMessage(
     }
 }
 
+export type StreamEvent =
+    | { event: "start"; message_id: string; model?: string; service?: string }
+    | { event: "reasoning"; content: string }
+    | { event: "delta"; content: string }
+    | { event: "tool_call"; call_id: string; name: string; args: Record<string, any> }
+    | { event: "tool_result"; call_id: string; content: any }
+    | { event: "done"; message_id: string; finish_reason: string; usage?: Record<string, any> }
+    | { event: "error"; error: string; message_id?: string };
+
+export async function streamDataToAction(
+    data: any,
+    onEvent: (event: StreamEvent) => void,
+    signal?: AbortSignal
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        if (!data.threadId) data.threadId = "";
+        const token = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("interfaceToken") : null;
+        const response = await fetch(`${PYTHON_URL}/chatbot/${data.chatBotId}/sendMessage`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: token } : {}),
+            },
+            body: JSON.stringify(data),
+            signal,
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            const errorMessage =
+                errData?.detail?.error || errData?.detail || "Something went wrong!";
+            emitEventToParent("MESSAGE_RECEIVED_WITH_ERROR", { status: response.status });
+            return { success: false, error: errorMessage };
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) return { success: false, error: "No response body" };
+
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() ?? "";
+            for (const line of lines) {
+                if (line.startsWith("data: ")) {
+                    const jsonStr = line.slice(6).trim();
+                    if (!jsonStr) continue;
+                    try {
+                        onEvent(JSON.parse(jsonStr));
+                    } catch (err) {
+                        console.error("Failed to parse SSE event:", err);
+                    }
+                }
+            }
+        }
+        return { success: true };
+    } catch (error: any) {
+        if (error?.name === "AbortError") return { success: false, error: "aborted" };
+        emitEventToParent("MESSAGE_RECEIVED_WITH_ERROR", { message: error?.message });
+        const errorMessage = error?.message || "Streaming failed";
+        return { success: false, error: errorMessage };
+    }
+}
+
 export async function sendDataToAction(data: any): Promise<any> {
     try {
         if (!data.threadId) data.threadId = "";
@@ -166,14 +234,20 @@ export async function sendDataToAction(data: any): Promise<any> {
             }
         );
         return { success: true, data: response?.data?.data };
-    } catch (error) {
-        emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', error);
-        errorToast(
-            error?.response?.data?.detail?.error ||
+    } catch (error: any) {
+        const sanitizedError = {
+            message: error?.message || "API call failed",
+            status: error?.response?.status,
+            statusText: error?.response?.statusText,
+            data: error?.response?.data
+        };
+        emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', sanitizedError);
+
+        const errorMessage = error?.response?.data?.detail?.error ||
             error?.response?.data?.detail ||
-            "Something went wrong!"
-        );
-        return { success: false };
+            "Something went wrong!";
+
+        return { success: false, error: errorMessage };
     }
 }
 
@@ -241,9 +315,9 @@ export async function getHelloDetailsApi({
     const data: any = {
         slugName,
     };
-    if (threadId !== null) data.threadId = threadId;
-    if (helloId !== null) data.helloId = helloId;
-    if (versionId !== null) data.versionId = versionId;
+    if (threadId !== null && threadId !== "null") data.threadId = threadId;
+    if (helloId !== null && helloId !== "null") data.helloId = helloId;
+    if (versionId !== "null" && versionId !== null) data.versionId = versionId;
     try {
         const response = await axios.post(`${URL}/api/chatbot/subscribe`, data);
         return response?.data;
