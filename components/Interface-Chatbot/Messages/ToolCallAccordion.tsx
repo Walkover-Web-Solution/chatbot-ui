@@ -13,9 +13,9 @@ interface ToolCallAccordionProps {
     toolsData: Record<string, ToolCall>;
 }
 
-function ToolCallItem({ toolCall }: { toolCall: ToolCall }) {
+function ToolCallItem({ toolCall, name }: { toolCall: ToolCall; name: string }) {
     const [open, setOpen] = useState(false);
-
+    console.log(toolCall,"helo")
     let parsedResult: any = null;
     if (toolCall.result) {
         try {
@@ -33,22 +33,22 @@ function ToolCallItem({ toolCall }: { toolCall: ToolCall }) {
                 onClick={() => toolCall.status === "done" && setOpen((v) => !v)}
                 disabled={toolCall.status === "calling"}
             >
-                {toolCall.status === "calling" ? (
+                {toolCall?.status === "calling" ? (
                     <Loader2 className="w-4 h-4 animate-spin text-primary shrink-0" />
                 ) : (
                     <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
                 )}
-                <span className="flex-1 font-mono font-medium truncate">{toolCall.name}</span>
-                {toolCall.status === "calling" ? (
+                <span className="flex-1 font-mono font-medium truncate">{toolCall?.name || name}</span>
+                {toolCall?.status === "calling" ? (
                     <span className="text-xs opacity-50">Running…</span>
-                ) : open ? (
+                ) : toolCall?.status && (open ? (
                     <ChevronDown className="w-4 h-4 opacity-50 shrink-0" />
                 ) : (
                     <ChevronRight className="w-4 h-4 opacity-50 shrink-0" />
-                )}
+                ))}
             </button>
 
-            {toolCall.status === "done" && open && (
+            {toolCall?.status === "done" && open && (
                 <div className="px-3 py-2 bg-base-100 border-t border-base-300 space-y-2">
                     {Object.keys(toolCall.args || {}).length > 0 && (
                         <div>
@@ -82,7 +82,7 @@ export default function ToolCallAccordion({ toolsData }: ToolCallAccordionProps)
     return (
         <div className="mb-3 w-full">
             {calls.map(([callId, toolCall]) => (
-                <ToolCallItem key={callId} toolCall={toolCall} />
+                <ToolCallItem key={callId} toolCall={toolCall} name={callId} />
             ))}
         </div>
     );
