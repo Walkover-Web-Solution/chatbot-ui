@@ -76,7 +76,7 @@
                 'onOpen', 'onClose', 'iconColor', 'className', 'style', 'environment',
                 'fullScreen', 'hideCloseButton', 'hideIcon', 'parentId', 'config',
                 'headerButtons', 'eventsToSubscribe', 'modalConfig', 'allowModalSwitch',
-                'chatTitle', 'chatIcon', 'hideFullScreenButton', 'defaultOpen'
+                'chatTitle', 'chatIcon', 'hideFullScreenButton', 'defaultOpen', 'theme'
             ];
 
             return attributes.reduce((props, attr) => {
@@ -276,7 +276,7 @@
             const { chatBotIcon, imgElement, textElement } = this.createChatbotIcon();
             document.body.appendChild(chatBotIcon);
             document.head.appendChild(this.createStyleLink()); // load the External Css for script
-
+            
             this.extractScriptProps();
             this.attachIconEvents(chatBotIcon);
             this.createIframeContainer();
