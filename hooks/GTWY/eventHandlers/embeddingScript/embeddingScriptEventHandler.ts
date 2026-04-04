@@ -1,10 +1,12 @@
+import { ThemeContext } from "@/components/AppWrapper";
 import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { addDefaultContext, setDataInInterfaceRedux, setEventsSubsribedByParent, setHeaderActionButtons, setModalConfig } from "@/store/interface/interfaceSlice";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
+import { SetSessionStorage } from "@/utils/ChatbotUtility";
+import { useContext, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
-import { useEffect } from "react";
 
 interface InterfaceData {
   threadId?: string | null;
@@ -25,16 +27,30 @@ interface InterfaceData {
   modelChanged?: string;
   serviceChanged?: string;
   stream?: string;
+  theme?: "light" | "dark" | "system";
 }
 
 const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
   const dispatch = useDispatch();
+  const { handleColorSchemeChange } = useContext(ThemeContext);
   const tabSessionId = useCustomSelector((state) => `${state.draftData.chatSessionId}_${state.draftData.tabSessionId}`);
 
   const handleInterfaceData = (event: MessageEvent) => {
 
     const receivedData: InterfaceData = event.data.data;
     if (Object.keys(receivedData || {}).length === 0) return;
+
+    // If theme attribute is present → store in session and apply
+    // If theme attribute is absent → clear session so config/system theme takes over
+    if ('theme' in receivedData) {
+      if (receivedData.theme === "light" || receivedData.theme === "dark" || receivedData.theme === "system") {
+        SetSessionStorage('chatbotTheme', receivedData.theme);
+        handleColorSchemeChange(receivedData.theme);
+      }
+    } else {
+      sessionStorage.removeItem('chatbotTheme');
+    }
+
     // Process thread-related data
     if (receivedData.threadId) {
       dispatch(setDataInAppInfoReducer({ threadId: receivedData.threadId }))

@@ -3,6 +3,7 @@ import { ThemeContext } from '@/components/AppWrapper';
 import { ChatbotContext } from '@/components/context';
 import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
+import { GetSessionStorageData } from '@/utils/ChatbotUtility';
 import { useSearchParams } from 'next/navigation';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -10,7 +11,7 @@ import { useDispatch } from 'react-redux';
 function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode, chatSessionId: string }) {
     const search = useSearchParams();
     const [chatbotConfig, setChatbotConfig] = useState({});
-    const { themeColor, handleThemeChange } = useContext(ThemeContext);
+    const { themeColor, handleThemeChange, handleColorSchemeChange } = useContext(ThemeContext);
     const dispatch = useDispatch();
     // Use useMemo to parse interfaceDetails once and avoid repeated parsing
     const { chatbot_id, userId, token, config, isHelloUser = false } = useMemo(() => {
@@ -63,6 +64,10 @@ function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode,
     const onConfigChange = useCallback((config: any) => {
         if (!config) return;
         handleThemeChange(config.themeColor || "#000000");
+        // Session theme takes priority — only apply config theme if no session theme
+        if (!GetSessionStorageData('chatbotTheme') && (config.theme === "light" || config.theme === "dark" || config.theme === "system")) {
+            handleColorSchemeChange(config.theme);
+        }
         setChatbotConfig(prev => {
             // Avoid unnecessary string conversion for deep comparison
             const configChanged = JSON.stringify(prev) !== JSON.stringify(config);
@@ -75,11 +80,19 @@ function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode,
             }
             return prev;
         });
-    }, [handleThemeChange]);
+    }, [handleThemeChange, handleColorSchemeChange]);
 
     useEffect(() => {
         if (config) onConfigChange(config);
-    }, [config, onConfigChange]); 
+    }, [config, onConfigChange]);
+
+    // On mount, session theme always takes priority over everything
+    useEffect(() => {
+        const sessionTheme = GetSessionStorageData('chatbotTheme') as "light" | "dark" | "system" | null;
+        if (sessionTheme === "light" || sessionTheme === "dark" || sessionTheme === "system") {
+            handleColorSchemeChange(sessionTheme);
+        }
+    }, []);
 
     const toggleHideCloseButton = useCallback(() => {
         setChatbotConfig(prev => ({
