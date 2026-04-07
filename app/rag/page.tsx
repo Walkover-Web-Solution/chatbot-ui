@@ -53,6 +53,48 @@ const VALID_FILE_TYPES = [
     "text/plain"
 ] as const;
 
+const formatRagError = (errorData: any): string => {
+    if (!errorData) return "Something went wrong";
+
+    if (typeof errorData === "string") {
+        return errorData;
+    }
+
+    if (Array.isArray(errorData)) {
+        return errorData
+            .map((item) => formatRagError(item))
+            .filter(Boolean)
+            .join("\n");
+    }
+
+    if (typeof errorData === "object") {
+        if (errorData?.message) {
+            return formatRagError(errorData.message);
+        }
+
+        if (errorData?.error) {
+            return formatRagError(errorData.error);
+        }
+
+        if (errorData?.errors) {
+            return formatRagError(errorData.errors);
+        }
+
+        const joinedValues = Object.values(errorData)
+            .map((value) => formatRagError(value))
+            .filter(Boolean)
+            .join("\n");
+
+        if (joinedValues) {
+            return joinedValues;
+        }
+
+        return JSON.stringify(errorData);
+    }
+
+    return String(errorData);
+};
+
 function RagComponent() {
 
     // State management
@@ -136,8 +178,9 @@ function RagComponent() {
                 handleClose();
             }
         } catch (error: any) {
+            const formattedError = formatRagError(error?.response?.data || error?.message || { id });
             window.parent.postMessage(
-                { type: "iframe-message-rag", status: "delete", error: error?.response?.data || { id } },
+                { type: "iframe-message-rag", status: "delete", error: formattedError },
                 "*"
             );
         }
@@ -297,6 +340,12 @@ function RagComponent() {
                 collection_details: collection_details,
             };
 
+            if (!payload.description) {
+                errorToast("Description is required");
+                setIsLoading(false);
+                return;
+            }
+
             if (content && content !== resourceUrl && content.trim() !== "") {
                 payload.content = content;
             } else {
@@ -354,8 +403,9 @@ function RagComponent() {
             }
         } catch (error: any) {
             console.error("Error saving:", error);
+            const formattedError = formatRagError(error?.response?.data || error?.message || { id: "error" });
             window.parent.postMessage(
-                { type: "iframe-message-rag", status: "create", error: error?.response?.data || { id: "error" } },
+                { type: "iframe-message-rag", status: "create", error: formattedError },
                 "*"
             );
         } finally {
@@ -518,7 +568,7 @@ function RagComponent() {
                     {/* Description Field */}
                     <div className="form-control">
                         <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
-                            Description
+                            Description <span className={`${theme === 'dark' ? 'text-red-400' : 'text-red-500'}`}>*</span>
                         </label>
                         <textarea
                             ref={descriptionInputRef}
@@ -527,6 +577,7 @@ function RagComponent() {
                             className={getInputClassName(aiGenerationEnabled)}
                             placeholder="Enter a description for this knowledge base entry"
                             defaultValue={editingKnowledgeBase?.description || ""}
+                            required
                             disabled={aiGenerationEnabled}
                         />
                     </div>

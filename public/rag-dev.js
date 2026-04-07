@@ -731,6 +731,48 @@
             this.initialiseMessageListeners();
         }
 
+        formatErrorMessage(errorData) {
+            if (!errorData) return 'Something went wrong';
+
+            if (typeof errorData === 'string') {
+                return errorData;
+            }
+
+            if (Array.isArray(errorData)) {
+                return errorData
+                    .map(item => this.formatErrorMessage(item))
+                    .filter(Boolean)
+                    .join('\n');
+            }
+
+            if (typeof errorData === 'object') {
+                if (errorData.message) {
+                    return this.formatErrorMessage(errorData.message);
+                }
+
+                if (errorData.error) {
+                    return this.formatErrorMessage(errorData.error);
+                }
+
+                if (errorData.errors) {
+                    return this.formatErrorMessage(errorData.errors);
+                }
+
+                const values = Object.values(errorData)
+                    .map(value => this.formatErrorMessage(value))
+                    .filter(Boolean)
+                    .join('\n');
+
+                if (values) {
+                    return values;
+                }
+
+                return JSON.stringify(errorData);
+            }
+
+            return String(errorData);
+        }
+
         initialiseMessageListeners() {
             window.addEventListener('message', (event) => {
                 // Optionally validate event.origin for security
@@ -757,7 +799,8 @@
                         }
                     }
                     if (error) {
-                        this.showMessage(this.state.messageType.error, error);
+                        const formattedError = this.formatErrorMessage(error);
+                        this.showMessage(this.state.messageType.error, formattedError);
                     }
                 } else {
                     console.log('Unknown message type:', message.type);
@@ -1341,6 +1384,7 @@
         showMessage(type, message) {
             const errorDiv = document.createElement('div');
             errorDiv.className = type;
+            errorDiv.style.whiteSpace = 'pre-wrap';
             errorDiv.textContent = message;
 
             document.body.appendChild(errorDiv);

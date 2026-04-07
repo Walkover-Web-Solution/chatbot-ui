@@ -476,11 +476,19 @@
 
 .rag-document-date-info {
     position: absolute;
-    top: 0;
-    right: 4px;
+  top: 8px;
+  right: 12px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.65);
     font-size: 0.75rem;
     color: #6b7280;
     white-space: nowrap;
+}
+
+.rag-theme-dark .rag-document-date-info {
+  background: rgba(17, 24, 39, 0.55);
+  color: #d1d5db;
 }
 
 /* Error Message Toast Styles */
@@ -614,8 +622,8 @@
 /* Dropdown menu */
 .ellipsis-menu {
   position: absolute;
-  top: 100%;
-  right: 0;
+  top: 50%;
+  right: calc(100% + 8px);
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -625,7 +633,7 @@
   min-width: 140px;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-10px) scale(0.95);
+  transform: translateY(-50%) translateX(8px) scale(0.95);
   transition: all 0.2s ease;
   overflow: hidden;
 }
@@ -633,7 +641,7 @@
 .ellipsis-menu.show {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0) scale(1);
+  transform: translateY(-50%) translateX(0) scale(1);
 }
 /* 
 /* Menu items (Edit/Delete buttons) */
@@ -695,6 +703,7 @@
 @media (max-width: 768px) {  
   .ellipsis-menu {
       min-width: 120px;
+      right: calc(100% + 6px);
   }
   
   .menu-item {
@@ -705,7 +714,7 @@
 
 @media (max-width: 640px) {  
   .ellipsis-menu {
-      right: 0;
+      right: calc(100% + 6px);
       left: auto;
   }
 }
@@ -786,6 +795,6 @@
   .menu-item,
   
   .ellipsis-menu.show {
-      transform: translateY(0);
+      transform: translateY(-50%) translateX(0);
   }
 }
