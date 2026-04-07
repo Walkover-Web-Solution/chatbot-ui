@@ -13,6 +13,7 @@ function InterfaceMarkdown({ props }: any) {
         code: Code,
         a: Anchor,
       }}
+      data-testid="chatbot-interface-markdown"
     >
       {props?.children ||
         props?.text ||

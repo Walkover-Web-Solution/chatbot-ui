@@ -46,6 +46,7 @@ function CallButton({ chatSessionId, currentChannelId }: CallButtonProps) {
                 }`}
             style={{ backgroundColor: lighten(backgroundColor, 0.8) }}
             onClick={() => { if (!isCallDisabled) handleVoiceCall() }}
+            data-testid="chatbot-call-button"
         >
             <Phone className={`w-4 h-4 md:w-4 md:h-4`} style={{ color: darken(backgroundColor, 0.2) }} />
         </div>

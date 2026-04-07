@@ -27,7 +27,7 @@ export const Code = ({
   };
   const match = /language-(\w+)/.exec(className || "");
   return !inline && match ? (
-    <div className="py-4">
+    <div className="py-4" data-testid="chatbot-interface-markdown-code">
       <div
         className="flex justify-between items-center cursor-pointer py-2 px-3"
         style={{
@@ -83,7 +83,7 @@ export const Code = ({
       </CodeBlock>
     </div>
   ) : (
-    <code className={className} {...props}>
+    <code className={className} {...props} data-testid="chatbot-interface-markdown-inline-code">
       {children}
     </code>
   );
@@ -91,7 +91,7 @@ export const Code = ({
 
 export const Anchor = ({ href, children, ...props }) => {
   return (
-    <a href={href} target="_blank" rel="noreferrer" {...props} className="link link-primary">
+    <a href={href} target="_blank" rel="noreferrer" {...props} className="link link-primary" data-testid="chatbot-interface-markdown-anchor">
       {children}
     </a>
   );

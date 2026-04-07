@@ -2,7 +2,7 @@ import React from 'react'
 
 function ThreadSidebar() {
   return (
-    <div>ThreadSidebar</div>
+    <div data-testid="chatbot-interface-thread-sidebar">ThreadSidebar</div>
   )
 }
 

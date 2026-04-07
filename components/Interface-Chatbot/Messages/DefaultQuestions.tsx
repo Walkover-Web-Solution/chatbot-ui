@@ -7,7 +7,7 @@ function DefaultQuestions({ defaultQuestion, messageRef, onSend }) {
   return (
     <Grid container spacing={2} sx={{ marginTop: 2 }}>
       {defaultQuestion.map((response: string, index: number) => (
-        <Grid item xs={6} sm={6} key={`${resposne?.length}${index}`}>
+        <Grid item xs={6} sm={6} key={`${resposne?.length}${index}`} data-testid="chatbot-interface-default-question-item">
           <Box
             sx={{
               borderRadius: "5px",

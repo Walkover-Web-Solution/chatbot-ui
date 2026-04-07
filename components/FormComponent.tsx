@@ -133,6 +133,7 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
     <div
       className={`bg-base-100 dark:bg-slate-800 p-2 px-4 cursor-pointer z-[9999] hover:shadow-md transition-all mx-auto rounded-br-md rounded-bl-md ${isSmallScreen ? 'w-full' : 'w-1/2 max-w-lg'}`}
       onClick={() => setOpen(true)}
+      data-testid="chatbot-form-open-trigger"
       style={{
         background: `linear-gradient(to right, ${backgroundColor}, ${backgroundColor}CC)`,
         color: textColor
@@ -270,6 +271,7 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
               type="button"
               className="btn btn-outline flex-1"
               onClick={() => setOpen(false)}
+              data-testid="chatbot-form-skip-button"
             >
               Skip
             </button>
@@ -277,6 +279,7 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
               disabled={isLoading}
               type="submit"
               className="btn flex-1"
+              data-testid="chatbot-form-submit-button"
               style={{
                 opacity: isLoading ? 0.5 : 1,
                 backgroundColor: backgroundColor,

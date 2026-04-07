@@ -28,7 +28,7 @@ function InterfaceRadio({ props, gridId, componentId }: InterfaeRadioProps) {
   return (
     <Box className='w-100 h-100 flex-center-center p-2 box-sizing-border-box'>
       <FormControl fullWidth>
-        <RadioGroup {...props} defaultValue={props?.options[0] || ''} onChange={handleChange}>
+        <RadioGroup {...props} defaultValue={props?.options[0] || ''} onChange={handleChange} data-testid={`chatbot-interface-radio-${componentId || 'default'}`}>
           {props?.options.map((option: any) => (
             <FormControlLabel key={option} value={option} control={<Radio onMouseDown={(e) => e.stopPropagation()} />} label={option} />
           ))}

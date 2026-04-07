@@ -35,6 +35,7 @@ function InterfaceButton({ props, action, componentId }: InterfaceButtonProps): 
       className="w-100 h-100 mb-1"
       {...props}
       onClick={handleOnClick}
+      data-testid={`chatbot-interface-button-${componentId?.id || 'default'}`}
     >
       {props?.label ||
         props?.children ||

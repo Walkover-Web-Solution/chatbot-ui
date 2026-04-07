@@ -187,6 +187,7 @@ function InterfaceTable({ props, meta, propsPath }: InterfaceTableProps) {
               : "previous";
           setPaginationModel({ ...model, eventType });
         }}
+        data-testid="chatbot-interface-table"
       />
     </div>
   );

@@ -25,9 +25,9 @@ const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatS
         }
     }
     return (
-        <div className="flex flex-col items-end w-full pb-3 animate-slide-left" onClick={handleMessageClick}>
+        <div className="flex flex-col items-end w-full pb-3 animate-slide-left" onClick={handleMessageClick} data-testid="chatbot-user-message">
             {Array.isArray(message?.urls) && message.urls.length > 0 && (
-                <div className="flex flex-row-reverse flex-wrap gap-2.5 w-full" onClick={() => setShowSenderTime(!showSenderTime)}>
+                <div className="flex flex-row-reverse flex-wrap gap-2.5 w-full" onClick={() => setShowSenderTime(!showSenderTime)} data-testid="chatbot-user-message-images">
                     {message.urls.map((url: any, index: number) => {
                         const imageUrl = typeof url === 'object' ? url?.url : url;
 
@@ -56,6 +56,7 @@ const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatS
                         color: textColor
                     }}
                     onClick={() => setShowSenderTime(!showSenderTime)}
+                    data-testid="chatbot-user-message-content"
                 >
                     <div className="card-body p-0">
                         <p className="whitespace-pre-wrap text-sm md:text-base">

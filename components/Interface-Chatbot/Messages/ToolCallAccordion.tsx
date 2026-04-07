@@ -26,7 +26,7 @@ function ToolCallItem({ toolCall, name }: { toolCall: ToolCall; name: string }) 
     }
 
     return (
-        <div className="rounded-lg border border-base-300 overflow-hidden text-sm mb-1">
+        <div className="rounded-lg border border-base-300 overflow-hidden text-sm mb-1" data-testid={`chatbot-interface-tool-call-item-${toolCall?.name || name}`}>
             <button
                 type="button"
                 className="w-full flex items-center gap-2 px-3 py-2 bg-base-200 hover:bg-base-300 transition-colors text-left"
@@ -80,7 +80,7 @@ export default function ToolCallAccordion({ toolsData }: ToolCallAccordionProps)
     const calls = Object.entries(toolsData);
 
     return (
-        <div className="mb-3 w-full">
+        <div className="mb-3 w-full" data-testid="chatbot-interface-tool-call-accordion">
             {calls.map(([callId, toolCall]) => (
                 <ToolCallItem key={callId} toolCall={toolCall} name={callId} />
             ))}

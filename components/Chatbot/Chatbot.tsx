@@ -41,7 +41,7 @@ interface ChatbotProps {
 
 // Memoized components
 const EmptyChatView = React.memo(() => (
-  <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-84px] p-5">
+  <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-84px] p-5" data-testid="chatbot-empty-view">
     <div className="flex flex-col items-center w-full">
       <Image
         src={ChatBotGif}
@@ -50,8 +50,9 @@ const EmptyChatView = React.memo(() => (
         width={100}
         height={100}
         priority
+        data-testid="chatbot-empty-gif"
       />
-      <h2 className="text-xl font-bold text-base-content">
+      <h2 className="text-xl font-bold text-base-content" data-testid="chatbot-empty-title">
         What can I help with?
       </h2>
     </div>
@@ -63,11 +64,11 @@ const EmptyChatView = React.memo(() => (
 ));
 
 const ActiveChatView = React.memo(() => (
-  <div className="flex flex-col h-full overflow-auto" style={{ height: '100vh' }}>
-    <div className="flex-1 overflow-y-auto max-w-5xl mx-auto w-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+  <div className="flex flex-col h-full overflow-auto" style={{ height: '100vh' }} data-testid="chatbot-active-view">
+    <div className="flex-1 overflow-y-auto max-w-5xl mx-auto w-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent" data-testid="chatbot-messages-container">
       <MessageList />
     </div>
-    <div className="max-w-5xl mx-auto p-3 pb-3 w-full">
+    <div className="max-w-5xl mx-auto p-3 pb-3 w-full" data-testid="chatbot-input-section">
       <ChatbotTextField />
     </div>
   </div>
@@ -143,9 +144,9 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
 
   return (
     <MessageContext.Provider value={contextValue}>
-      <div className="flex h-screen w-full overflow-hidden relative">
+      <div className="flex h-screen w-full overflow-hidden relative" data-testid="chatbot-main-container">
         {/* Sidebar - visible on large screens */}
-        <div className={`bg-base-100 overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer && !isSmallScreen ? 'w-96 max-w-[286px]' : 'w-0'}`}>
+        <div className={`bg-base-100 overflow-y-auto transition-all duration-300 ease-in-out ${isToggledrawer && !isSmallScreen ? 'w-96 max-w-[286px]' : 'w-0'}`} data-testid="chatbot-sidebar">
           <ChatbotDrawer
             setToggleDrawer={(data: boolean) => { dispatch(setToggleDrawer(data)) }}
             isToggledrawer={isToggledrawer}
@@ -153,13 +154,13 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
         </div>
 
         {/* Main content area */}
-        <div className="flex flex-col w-full">
+        <div className="flex flex-col w-full" data-testid="chatbot-main-content">
           {/* Mobile header */}
           <ChatbotHeader />
 
           {/* Loading indicator */}
           {chatsLoading && (
-            <div className="w-full">
+            <div className="w-full" data-testid="chatbot-loading-indicator">
               <LinearProgress
                 color="inherit"
                 style={{ color: backgroundColor }}

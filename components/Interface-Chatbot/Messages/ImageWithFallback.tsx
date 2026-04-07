@@ -26,11 +26,11 @@ const FALLBACK_ICON = "https://cdn1.iconfinder.com/data/icons/leto-files/64/leto
 // Memoized utility function
 const getFileType = (url: string): string => {
   if (!url) return "other"; // e.g. null, undefined, empty string
-  
+
   // Remove query parameters first, then extract extension
   const urlWithoutQuery = url.split("?")[0];
   const extension = urlWithoutQuery.split(".").pop()?.toLowerCase() || "";
-  
+
   if (["jpg", "jpeg", "png", "gif", "webp", "bmp"].includes(extension)) return "image";
   if (["mp4", "webm", "ogg"].includes(extension)) return "video";
   if (["mp3", "wav", "aac", "flac"].includes(extension)) return "audio";
@@ -69,6 +69,7 @@ const DownloadButton = ({ onClick }: { onClick: () => void }) => (
   <button
     onClick={onClick}
     className="absolute top-2 right-2 px-2 pt-1 ml-2 bg-gray-200 shadow-md rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+    data-testid="chatbot-image-download-button"
   >
     <div className="tooltip tooltip-left" data-tip="Download">
       <Download size={18} />
@@ -152,6 +153,7 @@ const ImageWithFallback = ({
             onError={handleError}
             onClick={handleClick}
             style={style}
+            data-testid="chatbot-message-image"
           />
         );
 
@@ -161,6 +163,7 @@ const ImageWithFallback = ({
             className="max-w-full rounded-md relative"
             style={style}
             onClick={handleClick}
+            data-testid="chatbot-message-video-preview"
           >
             <video
               className="w-full h-full object-cover rounded-md"
@@ -180,6 +183,7 @@ const ImageWithFallback = ({
             className="max-w-full rounded-md"
             onError={handleError}
             style={style}
+            data-testid="chatbot-message-video"
           >
             <source src={currentSrc} type={videoType} />
             Your browser does not support the video tag.
@@ -188,11 +192,12 @@ const ImageWithFallback = ({
 
       case "audio":
         return (
-          <div className="w-full min-w-[300px] pr-10 relative">
+          <div className="w-full min-w-[300px] pr-10 relative" data-testid="chatbot-message-audio-container">
             <audio
               controls
               onError={handleError}
               className="w-full"
+              data-testid="chatbot-message-audio"
             >
               <source src={currentSrc} type={audioType} />
             </audio>
@@ -208,6 +213,7 @@ const ImageWithFallback = ({
             height={100}
             onClick={handleClick}
             style={style}
+            data-testid="chatbot-message-pdf"
           />
         );
 
@@ -219,13 +225,14 @@ const ImageWithFallback = ({
             onError={handleError}
             onClick={handleClick}
             style={style}
+            data-testid="chatbot-message-file"
           />
         );
     }
   }, [error, fileType, currentSrc, alt, style, preview, handleError, handleClick, videoType, audioType]);
 
   return (
-    <div className={containerClasses}>
+    <div className={containerClasses} data-testid="chatbot-image-container">
       {renderContent()}
       {!error && canDownload && <DownloadButton onClick={downloadFile} />}
     </div>

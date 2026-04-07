@@ -25,7 +25,7 @@ function RenderHelloVedioCallMessage({message}:any) {
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2" data-testid="chatbot-hello-video-call-message">
       <button 
         onClick={handleJoinCall}
         style={{ maxWidth: '220px' }}

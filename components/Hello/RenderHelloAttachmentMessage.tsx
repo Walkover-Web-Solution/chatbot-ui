@@ -20,7 +20,7 @@ function RenderHelloAttachmentMessage({ message }: { message: any }) {
   };
 
   return (
-    <div className="attachment-message w-full">
+    <div className="attachment-message w-full" data-testid="chatbot-hello-attachment-message">
       {message?.messageJson?.attachment?.map((item: any, index: number) => (
         <div key={index} className="w-full">
           {renderAttachment(item)}
