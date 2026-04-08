@@ -47,7 +47,9 @@ export default function ButtonComponent({
     neutral: "btn-neutral",
   };
 
-  const handleClick = async () => {
+  const handleClick = async (e) => {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
     if (disabled || loading || isReplyBlocked) return;
     // ── Declarative actionRef path ───────────────────────────────────────
     if (actionRef) {
@@ -62,19 +64,22 @@ export default function ButtonComponent({
           onAction?.({ type: "reply", text: resolved.text ?? resolved.value ?? label, data: resolved.data });
           return;
 
-        case "event":
+        case "event": {
+          const evPayload = resolved.payload ?? {};
+          const emitData = evPayload?.action_data?.data ?? evPayload?.action_data ?? {
+            name: resolved.name,
+            target: resolved.target,
+            payload: evPayload,
+          };
+          emitEventToParent("FRONT_END_ACTION", emitData);
           onAction?.({
             type: "event",
             name: resolved.name,
             target: resolved.target,
-            payload: resolved.payload ?? {},
-          });
-          emitEventToParent("FRONT_END_ACTION", {
-            name: resolved.name,
-            target: resolved.target,
-            payload: resolved.payload ?? {},
+            payload: evPayload,
           });
           return;
+        }
 
         default:
           if (resolvedType) {
@@ -106,10 +111,13 @@ export default function ButtonComponent({
 
       case "senddatatofrontend":
       // treat "submit" as an alias for sendDataToFrontend
-      case "submit":
-        emitEventToParent("FRONT_END_ACTION", { payload: payload ?? actionPayload });
-        onAction?.({ type: "sendDataToFrontend", payload: payload ?? actionPayload });
+      case "submit": {
+        const finalPayload = payload ?? actionPayload;
+        const emitData = finalPayload?.action_data?.data ?? finalPayload?.action_data ?? finalPayload;
+        emitEventToParent("FRONT_END_ACTION", emitData);
+        onAction?.({ type: "sendDataToFrontend", payload: finalPayload });
         break;
+      }
 
       default:
         if (actionType) {
