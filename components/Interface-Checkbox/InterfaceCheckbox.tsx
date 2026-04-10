@@ -30,7 +30,7 @@ function InterfaceCheckbox({ props, gridId, componentId }: InterfaceCheckboxProp
   return (
     <Box className='w-100 h-100 flex-start-center'>
       <FormControlLabel
-        control={<Checkbox {...props} onMouseDown={(e) => e.stopPropagation()} onChange={handleChange} />}
+        control={<Checkbox {...props} onMouseDown={(e) => e.stopPropagation()} onChange={handleChange} data-testid={`chatbot-interface-checkbox-${componentId || 'default'}`} />}
         label={props?.label || 'Checkbox'}
         labelPlacement='end'
       />

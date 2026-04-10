@@ -136,7 +136,7 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
   }, [isHelloUser, greetingMessage]);
 
   const ThinkingIndicator = React.memo(({ themePalette }: { themePalette: any }) => (
-    <div className="w-full">
+    <div className="w-full" data-testid="chatbot-thinking-indicator">
       <div className="flex flex-wrap gap-2 items-center">
         <p className="text-sm">Thinking...</p>
       </div>
@@ -171,6 +171,7 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
       return (
         <Message
           key={`${msgId}`}
+          data-testid={`chatbot-message-${msgId}`}
           message={message}
           prevTime={prevTime}
           isLastMessage={index === lastHumanOrBotIndex}
@@ -180,7 +181,7 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
   }, [messageIds, msgIdAndDataMap]);
 
   const Loader = React.memo(() => (
-    <div className="flex justify-center p-4">
+    <div className="flex justify-center p-4" data-testid="chatbot-message-loader">
       <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
     </div>
   ));
@@ -191,6 +192,7 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
       ref={scrollableDivRef}
       onScroll={handleScroll}
       className="w-full h-full flex-1 overflow-auto px-3 sm:p-4"
+      data-testid="chatbot-messages-scroll-container"
       style={{
         display: 'flex',
         flexDirection: 'column-reverse',

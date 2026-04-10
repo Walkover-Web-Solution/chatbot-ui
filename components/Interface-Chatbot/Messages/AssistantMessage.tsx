@@ -42,9 +42,10 @@ function FeedBackButtons({ msgId }: { msgId: string }) {
                 handleMessageFeedback({
                     msgId: cleanMessageId(msgIdAndDataMap?.[msgId]?.message_id),
                     reduxMsgId: msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
-                    feedback: 1,
+                    feedback: 1
                 })
             }
+            data-testid="chatbot-message-feedback-thumbs-up"
         >
             <ThumbsUp className="w-4 h-4" />
         </button>
@@ -58,9 +59,9 @@ function FeedBackButtons({ msgId }: { msgId: string }) {
                     msgId: cleanMessageId(msgIdAndDataMap?.[msgId]?.message_id),
                     reduxMsgId: msgIdAndDataMap?.[msgId]?.Id || msgIdAndDataMap?.[msgId]?.id,
                     feedback: 2
-                }
-                )
+                })
             }
+            data-testid="chatbot-message-feedback-thumbs-down"
         >
             <ThumbsDown className="w-4 h-4" />
         </button>
@@ -286,6 +287,7 @@ const AssistantMessageCard = React.memo(
                                             className="btn btn-ghost btn-xs tooltip tooltip-right"
                                             data-tip={isCopied ? "Copied!" : "Copy"}
                                             onClick={handleCopy}
+                                            data-testid="chatbot-message-copy-button"
                                         >
                                             {isCopied ? (
                                                 <Check className="w-4 h-4 text-success" />

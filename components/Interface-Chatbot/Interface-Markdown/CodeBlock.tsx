@@ -47,7 +47,7 @@ export function CodeBlock({
   const codeStyle = vscDarkPlus;
 
   return !inline ? (
-    <div className="text-sm m-0 w-full">
+    <div className="text-sm m-0 w-full" data-testid="chatbot-interface-codeblock">
       <SyntaxHighlighter
         style={codeStyle}
         customStyle={{
@@ -87,6 +87,7 @@ export function CodeBlock({
         borderColor: "#333",
       }}
       {...props}
+      data-testid="chatbot-interface-inline-code"
     >
       {children}
     </code>

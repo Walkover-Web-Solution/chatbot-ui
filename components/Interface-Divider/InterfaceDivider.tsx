@@ -6,7 +6,7 @@ interface InterfaceDividerProps {
 }
 
 function InterfaceDivider({ props }: InterfaceDividerProps) {
-  return <Divider {...props} variant='fullWidth' orientation={props?.type || 'horizontal'} className='h-100' />
+  return <Divider {...props} variant='fullWidth' orientation={props?.type || 'horizontal'} className='h-100' data-testid="chatbot-interface-divider" />
 }
 
 export default InterfaceDivider

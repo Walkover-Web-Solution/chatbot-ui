@@ -16,7 +16,7 @@ function MessageTime({ message, tooltipPosition = 'tooltip-top' }: { message: an
     }
 
     return (
-        <div className={`tooltip ${tooltipPosition}`} data-tip={formatTime(message.time, 'shortTime') || ''}>
+        <div className={`tooltip ${tooltipPosition}`} data-tip={formatTime(message.time, 'shortTime') || ''} data-testid="chatbot-interface-message-time">
             <p className="text-xs text-gray-500">{formattedTime}</p>
         </div>
     )

@@ -57,6 +57,7 @@ const SendEventOnComponentPress = ({ item, iconColor, children }: { item: { type
     className="p-2 rounded-full transition-colors hover:bg-base-200 dark:hover:bg-slate-700"
     style={{ color: iconColor }}
     onClick={() => emitEventToParent("HEADER_BUTTON_PRESS", item)}
+    data-testid={`chatbot-header-button-${item.type}`}
   >
     {children}
   </button>
@@ -103,6 +104,7 @@ const renderIconsByType = (item: { type: string }, iconColor: string) => {
               aria-haspopup="true"
               onClick={() => setDropdownIsOpen(!dropdownIsOpen)}
               style={{ color: iconColor }}
+              data-testid="chatbot-header-dropdown-button"
             >
               <span className={selectedOption?.value ? "font-bold" : ""}>{selectedOption?.value || "Select"}</span>
               <ChevronDown className="w-4 h-4 ml-2" color={iconColor} />
@@ -135,6 +137,7 @@ const renderIconsByType = (item: { type: string }, iconColor: string) => {
                               setSelectedOption({ value: optionValue, section: item?.section });
                               setDropdownIsOpen(false);
                             }}
+                            data-testid={`chatbot-header-dropdown-option-${sectionIndex}-${optionIndex}`}
                           >
                             {optionValue}
                           </a>
@@ -433,6 +436,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
       <button
         className="p-2 hover:bg-base-200 dark:hover:bg-slate-700 rounded-full transition-colors"
         onClick={() => setToggleDrawer(!isToggledrawer)}
+        data-testid="chatbot-drawer-toggle-button"
       >
         {isToggledrawer ? null : <AlignLeft size={22} color={iconColor} />}
       </button>
@@ -448,6 +452,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
         <button
           className="p-2 hover:bg-base-200 dark:hover:bg-slate-700 rounded-full transition-colors"
           onClick={handleCreateNewSubThread}
+          data-testid="chatbot-create-thread-button"
         >
           <SquarePen size={22} color={iconColor} />
         </button>
@@ -556,6 +561,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
       <div
         className="cursor-pointer p-2 rounded-full hover:bg-base-200 dark:hover:bg-slate-700 transition-colors"
         onClick={() => toggleFullScreen(false)}
+        data-testid="chatbot-minimize-button"
       >
         {/* <PictureInPicture2 size={22} color="#555555" /> */}
         <Minimize2 size={22} color={iconColor} style={{ transform: 'rotate(90deg)' }} />
@@ -564,6 +570,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
       <div
         className="cursor-pointer p-2 rounded-full transition-colors hover:bg-base-200 dark:hover:bg-slate-700"
         onClick={() => toggleFullScreen(true)}
+        data-testid="chatbot-maximize-button"
       >
         {/* <Maximize size={22} color="#555555" /> */}
         <Maximize2 size={22} color={iconColor} style={{ transform: 'rotate(90deg)' }} />
@@ -579,6 +586,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
       <div
         className="cursor-pointer p-2 py-2 rounded-full hover:bg-base-200 dark:hover:bg-slate-700 transition-colors"
         onClick={handleCloseChatbot}
+        data-testid="chatbot-close-button"
       >
         <X size={22} color={iconColor} />
       </div>
@@ -603,6 +611,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
       <div
         className="cursor-pointer p-2 py-2 rounded-full hover:bg-base-200 dark:hover:bg-slate-700 transition-colors"
         onClick={handleToggleMinimize}
+        data-testid="chatbot-minimize-toggle-button"
       >
         {isChatbotMinimized ? <Maximize2 size={22} color={iconColor} style={{ transform: 'rotate(90deg)' }} /> : <Minus size={22} color={iconColor} />}
       </div>

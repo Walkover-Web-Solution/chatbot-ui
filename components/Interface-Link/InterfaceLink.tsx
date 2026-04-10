@@ -6,7 +6,7 @@ interface InterfaceLinkProps {
 }
 
 function InterfaceLink({ props }: InterfaceLinkProps) {
-  return <Link {...props} />
+  return <Link {...props} data-testid="chatbot-interface-link" />
 }
 
 export default InterfaceLink

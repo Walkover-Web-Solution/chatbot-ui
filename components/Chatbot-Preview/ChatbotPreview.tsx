@@ -30,6 +30,7 @@ function ChatbotPreview({ onThemeChange }) {
         position: "relative",
         // backgroundColor: theme.palette.background.default,
       }}
+      data-testid="chatbot-preview-box"
     >
       <ChatbotHeaderPreview
         title="Chatbot Header"

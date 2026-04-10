@@ -8,7 +8,7 @@ interface InterfaceBoxProps {
 
 function InterfaceBox({ props, componentId = '', dragRef = { current: '' }, ingrid = false }: InterfaceBoxProps) {
   return (
-    <Box {...props} className='border-1 p-2   h-100 w-100 box-sizing-border-box '>
+    <Box {...props} className='border-1 p-2   h-100 w-100 box-sizing-border-box ' data-testid={`chatbot-interface-box-${componentId || 'default'}`}>
       <form
         className='nested_grid'
         onSubmit={(e) => {

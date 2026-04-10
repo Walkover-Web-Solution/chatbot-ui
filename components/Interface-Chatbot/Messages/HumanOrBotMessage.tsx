@@ -244,10 +244,10 @@ MessageContent.displayName = 'MessageContent';
 const HumanOrBotMessageCard = React.memo(({ message, isBot = false, isLastMessage = false }: MessageCardProps) => {
     const [showSenderTime, setShowSenderTime] = useState(isLastMessage);
     return (
-        <div className="w-full pb-3 animate-fade-in animate-slide-left">
+        <div className="w-full pb-3 animate-fade-in animate-slide-left" data-testid="chatbot-human-bot-message">
             <div className="flex items-start gap-2 max-w-[90%]">
                 {/* <Avatar message={message} isBot={isBot} /> */}
-                <div className="w-fit whitespace-pre-wrap break-words" onClick={() => setShowSenderTime(!showSenderTime)}>
+                <div className="w-fit whitespace-pre-wrap break-words" onClick={() => setShowSenderTime(!showSenderTime)} data-testid="chatbot-human-bot-message-content">
                     <div className="p-1 whitespace-pre-wrap w-full break-words message-card-backround">
                         <MessageContent message={message} />
                     </div>

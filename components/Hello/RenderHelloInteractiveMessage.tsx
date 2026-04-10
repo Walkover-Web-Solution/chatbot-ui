@@ -60,6 +60,7 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
                     key={index}
                     className="btn btn-sm btn-outline w-full max-w-md rounded-md normal-case justify-start px-4 font-medium"
                     onClick={() => sendMessageToHello?.(button?.reply?.title)}
+                    data-testid={`chatbot-hello-interactive-button-${index}`}
                   >
                     {button.reply?.title}
                   </button>

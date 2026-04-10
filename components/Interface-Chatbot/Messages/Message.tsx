@@ -121,7 +121,7 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
   }, [message, textColor, backgroundColor, addMessage]);
 
   return (
-    <div className="w-full">
+    <div className="w-full" data-testid="chatbot-interface-message-group">
       {message?.time && (
         <DateGroup
           prevTime={prevTime}

@@ -9,7 +9,7 @@ function Viewonlygrid({ dragRef }) {
   const components = responseTypeJson?.components || responseTypeJson;
 
   return (
-    <Box className="w-full">
+    <Box className="w-full" data-testid="chatbot-interface-view-only-grid">
       {(Array.isArray(components) ? components : [])?.map((component: { type: string }, index: number) => {
         return (
           <div key={component?.id || index}>

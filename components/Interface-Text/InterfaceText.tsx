@@ -18,7 +18,7 @@ function InterfaceText({ props }: InterfaceTextProps) {
   // }, [responseJson, responseJson?.msgId]);
 
   return (
-    <Typography key={props?.key} {...props}>
+    <Typography key={props?.key} {...props} data-testid="chatbot-interface-text">
       {props?.children || `I'm a text component.`}
     </Typography>
   );

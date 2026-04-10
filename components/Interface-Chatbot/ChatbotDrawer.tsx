@@ -192,6 +192,7 @@ const ChatbotDrawer = ({
               <a
                 className={`${thread?.sub_thread_id === subThreadId ? 'active' : ''}`}
                 onClick={() => handleChangeSubThread(thread?.sub_thread_id)}
+                data-testid={`chatbot-drawer-thread-${thread?.sub_thread_id}`}
               >
                 {thread?.display_name || thread?.sub_thread_id}
               </a>
@@ -221,6 +222,7 @@ const ChatbotDrawer = ({
                     borderColor: channel?.id === currentChatId ? backgroundColor : ''
                   }}
                   onClick={() => handleChangeChannel(channel?.channel, channel?.id, channel?.team_id)}
+                  data-testid={`chatbot-drawer-channel-${channel?.id}`}
                 >
                   <div className="w-9 h-9 flex items-center justify-center text-xs font-bold rounded-full mr-3" style={{ background: lighten(backgroundColor, 0.8), color: "#606060" }}>
                     {(() => {
@@ -309,7 +311,7 @@ const ChatbotDrawer = ({
         <div className="teams-list space-y-0">
           {teamsList.length === 0 ? (
             <div className="flex">
-              <button className="btn w-full" style={{ backgroundColor: backgroundColor, color: textColor }} onClick={handleSendMessageWithNoTeam}>Send us a message</button>
+              <button className="btn w-full" style={{ backgroundColor: backgroundColor, color: textColor }} onClick={handleSendMessageWithNoTeam} data-testid="chatbot-drawer-send-message-no-team">Send us a message</button>
             </div>
           ) : (
             <div className="flex flex-col gap-1">
@@ -318,6 +320,7 @@ const ChatbotDrawer = ({
                   key={`${team?.id}-${index}`}
                   className={`team-card p-3 bg-base-100 dark:bg-slate-800 shadow-sm hover:shadow-md transition-all cursor-pointer rounded-lg flex items-center justify-between border border-base-200 dark:border-slate-700`}
                   onClick={() => handleChangeTeam(team?.id)}
+                  data-testid={`chatbot-drawer-team-${team?.id}`}
                 >
                   <div className="flex items-center overflow-hidden">
                     <div className="team-avatar mr-3 bg-primary/10 p-2 rounded-md flex-shrink-0">
@@ -344,6 +347,7 @@ const ChatbotDrawer = ({
           className={`mt-2 text-xs py-1 px-3 rounded-md transition-colors ${callState !== "idle" ? "bg-gray-400 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/80"}`}
           onClick={handleVoiceCall}
           disabled={callState !== "idle"}
+          data-testid="chatbot-drawer-voice-call-button"
         >
           Call Us
         </button>
@@ -377,6 +381,7 @@ const ChatbotDrawer = ({
       <div
         className="cursor-pointer p-2 hover:bg-gray-200 rounded-full transition-colors"
         onClick={handleCloseChatbot}
+        data-testid="chatbot-drawer-close-button"
       >
         <X size={22} color={iconColor} />
       </div>
@@ -398,6 +403,7 @@ const ChatbotDrawer = ({
         <div
           className="fixed inset-0 bg-black/30 backdrop-blur-sm lg:hidden"
           onClick={() => closeToggleDrawer(false)}
+          data-testid="chatbot-drawer-backdrop"
         />
       )}
 
@@ -411,6 +417,7 @@ const ChatbotDrawer = ({
                   <button
                     className="p-2 hover:bg-gray-200 rounded-full transition-colors"
                     onClick={() => closeToggleDrawer(!isToggledrawer)}
+                    data-testid="chatbot-drawer-toggle-button"
                   >
                     <AlignLeft size={22} color={iconColor} />
                   </button>
@@ -435,6 +442,7 @@ const ChatbotDrawer = ({
                     <button
                       className="p-2 hover:bg-gray-200 rounded-full transition-colors"
                       onClick={handleCreateNewSubThread}
+                      data-testid="chatbot-drawer-new-chat-button"
                     >
                       <SquarePen size={22} color={iconColor} />
                     </button>

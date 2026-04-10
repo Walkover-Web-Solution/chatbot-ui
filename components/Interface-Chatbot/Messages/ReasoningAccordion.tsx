@@ -32,7 +32,7 @@ export default function ReasoningAccordion({ reasoning, isStreaming, hasContent 
     if (!reasoning) return null;
 
     return (
-        <div className="rounded-lg border border-base-300 overflow-hidden text-sm mb-2">
+        <div className="rounded-lg border border-base-300 overflow-hidden text-sm mb-2" data-testid="chatbot-interface-reasoning-accordion">
             <button
                 type="button"
                 className="w-full flex items-center gap-2 px-3 py-2 bg-base-200 hover:bg-base-300 transition-colors text-left"

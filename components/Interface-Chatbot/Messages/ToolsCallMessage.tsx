@@ -16,7 +16,7 @@ const ToolsCallMessage = React.memo(({ message }: { message: any }) => {
     if (!functionCount) return null;
 
     return (
-        <div className="flex gap-2 pl-3 items-center">
+        <div className="flex gap-2 pl-3 items-center" data-testid="chatbot-interface-tools-call-message">
             <div className="collapse collapse-arrow w-full">
                 <input type="checkbox" />
                 <div className="collapse-title flex flex-row items-center w-full max-w-64">

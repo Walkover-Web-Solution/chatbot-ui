@@ -34,6 +34,7 @@ function ChatbotHeaderTab({ chatSessionId }: { chatSessionId: string }) {
           : 'hover:bg-base-300'
           }`}
         onClick={() => handleTabClick(type === 'Human')}
+        data-testid={`chatbot-header-tab-${type.toLowerCase()}`}
       >
         {isActive ? (
           <span className="font-medium">{label}</span>
@@ -55,7 +56,7 @@ function ChatbotHeaderTab({ chatSessionId }: { chatSessionId: string }) {
   };
 
   return (
-    <div className="tabs tabs-boxed bg-base-200 p-1 rounded-lg mx-auto max-w-xs shadow-md">
+    <div className="tabs tabs-boxed bg-base-200 p-1 rounded-lg mx-auto max-w-xs shadow-md" data-testid="chatbot-header-tabs">
       <TabButton
         type="AI"
         icon={AiIcon}

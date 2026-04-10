@@ -9,6 +9,7 @@ function MoveToDownButton({ movetoDown, showScrollButton, backgroundColor, textC
     <IconButton
       onClick={movetoDown}
       className="move-to-down-button"
+      data-testid="chatbot-scroll-to-bottom-button"
       sx={{
         backgroundColor: backgroundColor || "#333",
         color: textColor || "white",

@@ -226,6 +226,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           {options.slice(0, 3).map((option, index) => (
             <button
               key={index}
+              data-testid={`chatbot-suggestion-option-${index}`}
               onClick={() => handleSendMessage({ message: option })}
               className="flex-shrink-0 px-4 py-2 text-sm rounded-lg shadow-sm border transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-[#242424]"
               style={suggestionButtonStyles}
@@ -268,6 +269,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             </div>
             <button
               onClick={() => handleRemoveImage(index)}
+              data-testid={`chatbot-remove-image-${index}`}
               className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
               aria-label="Remove image"
             >
@@ -341,10 +343,11 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           onChange={handleImageUpload}
           className="hidden"
           id="upload-image"
+          data-testid="chatbot-file-upload-input"
           multiple
           ref={fileInputRef}
         />
-        <label htmlFor="upload-image" className="cursor-pointer">
+        <label htmlFor="upload-image" className="cursor-pointer" data-testid="chatbot-file-upload-label">
           <div className="flex px-2 py-1.5 w-8 h-8 items-center group">
             {isUploading ? (
               <div className="flex items-center gap-1.5">
@@ -352,7 +355,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                 <span className="text-[10px] font-medium text-gray-600 dark:text-slate-300">Uploading...</span>
               </div>
             ) : (
-            <Paperclip className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600 dark:text-slate-300" />
+              <Paperclip className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600 dark:text-slate-300" />
             )}
           </div>
         </label>
@@ -382,13 +385,13 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }
 
   return (
-    <div className={`relative w-full shadow-sm ${className}`}>
+    <div className={`relative w-full shadow-sm ${className}`} data-testid="chatbot-text-field">
       {optionButtons}
       {imagePreviewsSection}
-      
+
       {/* Error message display - above input field */}
       {error && (
-        <div className="px-2 pb-2">
+        <div className="px-2 pb-2" data-testid="chatbot-error-message">
           <div className="text-red-500 text-sm flex items-center gap-2">
             <TriangleAlert className="w-4 h-4 text-error" />
             {error}
@@ -405,6 +408,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
         <div
           className="relative flex-col h-full items-center justify-between gap-2 p-2 rounded-xl border focus-within:outline focus-within:outline-2 focus-within:outline-offset-0"
           style={containerStyles}
+          data-testid="chatbot-input-container"
         >
           <TextField
             key={subThreadId || currentTeamId}
@@ -420,6 +424,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             autoFocus
             inputMode="text"
             type="text"
+            inputProps={{ 'data-testid': 'chatbot-message-input' }}
           />
 
           <div className="flex justify-between items-center w-full">
@@ -430,8 +435,9 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                 onClick={(e) => { e.stopPropagation(); e.preventDefault(); setShowEmojiPicker(!showEmojiPicker) }}
                 className="group flex items-center justify-center w-8 h-8 cursor-pointer"
                 aria-label="Add emoji"
+                data-testid="chatbot-emoji-button"
               >
-            <Smile className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600 dark:text-slate-300" />
+                <Smile className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600 dark:text-slate-300" />
               </div>
               {uploadButton}
             </div>
@@ -442,6 +448,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
               {show_send_button && (
                 <button
                   onClick={() => !buttonDisabled && handleSendMessage()}
+                  data-testid="chatbot-send-button"
                   className="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:scale-105 transition-transform duration-200"
                   disabled={buttonDisabled}
                   style={{
