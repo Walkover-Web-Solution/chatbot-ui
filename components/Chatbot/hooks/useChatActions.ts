@@ -213,7 +213,6 @@ export const useSendMessage = ({
                 service: selectedAiServiceAndModal?.service
             } : {})
         };
-        console.log("Payload ", payload)
         emitEventToParent('MESSAGE_SENT', payload.message);
 
         const response = await streamDataToAction(
