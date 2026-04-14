@@ -241,7 +241,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
 
                                                 {task.human_query && !isExecuting && (
                                                     <div className="mt-2 space-y-1.5">
-                                                        <div className="flex items-start gap-1.5 text-[11px] text-warning">
+                                                        <div className="flex items-start gap-1.5 text-[11px] text-indigo-600 dark:text-indigo-400">
                                                             <span className="font-semibold shrink-0">?</span>
                                                             <span>{task.human_query}</span>
                                                         </div>

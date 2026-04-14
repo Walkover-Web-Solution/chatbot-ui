@@ -46,7 +46,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const fileInputRef = useRef<HTMLInputElement>(null);
   const emitTypingStatus = useTypingStatus({ chatSessionId, tabSessionId });
 
-  const { isHelloUser, mode, inbox_id, show_send_button, assigned_type } = useCustomSelector((state) => ({
+  const { isHelloUser, mode, inbox_id, show_send_button, assigned_type, isStream } = useCustomSelector((state) => ({
     isHelloUser: state.draftData?.isHelloUser || false,
     mode: state.Hello?.[chatSessionId]?.mode || [],
     inbox_id: state.Hello?.[chatSessionId]?.widgetInfo?.inbox_id,
@@ -54,6 +54,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
       (channel: any) => channel?.channel === currentChannelId
     )?.assigned_type || '',
+    isStream: (state.Hello?.[chatSessionId]?.mode || []).includes('stream'),
   }));
 
   const { messageRef } = useContext(MessageContext);
@@ -97,7 +98,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
       sendMessageToHello?.();
       emitTypingStatus("not-typing");
     } else {
-      const planningPayload = conversationMode === "planning" ? { mode: "plan" } : {};
+      const planningPayload = (isStream && conversationMode === "planning") ? { mode: "plan" } : {};
       sendMessage({ ...messageObj, ...planningPayload });
     }
   }, [isHelloUser, sendMessage, sendMessageToHello, conversationMode]);
@@ -445,7 +446,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
               </div>
               {uploadButton}
 
-              {!isHelloUser && (
+              {!isHelloUser && isStream && (
                 <div className="relative" ref={modeMenuRef}>
                   <button
                     type="button"
