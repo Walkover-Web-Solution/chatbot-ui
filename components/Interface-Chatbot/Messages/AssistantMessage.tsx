@@ -1,5 +1,6 @@
 /* eslint-disable */
 import { useMessageFeedback, useSendMessage } from "@/components/Chatbot/hooks/useChatActions";
+import { MessageContext } from "@/components/Interface-Chatbot/InterfaceChatbot";
 import InterfaceGrid from "@/components/Grid/Grid";
 import { Anchor, Code } from "@/components/Interface-Chatbot/Interface-Markdown/MarkdownUtitily";
 import { supportsLookbehind } from "@/utils/appUtility";
@@ -9,12 +10,13 @@ import { lighten } from "@mui/material";
 import copy from "copy-to-clipboard";
 import { AlertCircle, Check, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
 import dynamic from 'next/dynamic';
-import React from "react";
+import React, { useContext, useMemo, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import ImageWithFallback from "./ImageWithFallback";
 import "./Message.css";
 import RenderNode from "../../richUI/RenderNode";
 import { componentRegistry } from "../../richUI/componentRegistry";
+import PlanningTasksCard from "./PlanningTasksCard";
 import ReasoningAccordion from "./ReasoningAccordion";
 import ToolCallAccordion from "./ToolCallAccordion";
 const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
@@ -76,6 +78,7 @@ const AssistantMessageCard = React.memo(
     }: any) => {
         const [isCopied, setIsCopied] = React.useState(false);
         const sendMessage = useSendMessage({});
+        const { messageRef } = useContext(MessageContext);
         const handleCopy = () => {
             copy(message?.chatbot_message || message?.content);
             setIsCopied(true);
@@ -90,6 +93,44 @@ const AssistantMessageCard = React.memo(
 
         const toolsData = message?.tools_data || {};
         const reasoning = message?.reasoning || "";
+        const planning = message?.planning;
+
+        const handlePlanningAction = useCallback((action: "proceed" | "respond" | "revise", payload: { parsedPlan: any; rawPlan: string; taskQueries?: Record<string, string>; queryMessage?: string; humanQueryAnswers?: Record<string, string>; humanQueryMessage?: string; resolvedAfter?: boolean }) => {
+            if (action === "respond") {
+                const humanAnswerEntries = Object.entries(payload.humanQueryAnswers || {});
+                const [firstTaskId, firstAnswer] = humanAnswerEntries[0] || [];
+                sendMessage({
+                    message: firstAnswer || "",
+                    action: "respond",
+                    mode: "plan",
+                    skipUserEcho: true,
+                    silent: true,
+                    task_id: firstTaskId,
+                    customVariables: payload.resolvedAfter ? { __autoApprove: true } : {},
+                });
+            } else if (action === "proceed") {
+                sendMessage({
+                    message: "Please execute this plan",
+                    action: "approve",
+                    mode: "plan",
+                    skipUserEcho: true,
+                    silent: true,
+                });
+            } else {
+                if (payload?.queryMessage?.trim()) {
+                    sendMessage({
+                        message: payload.queryMessage,
+                        mode: "plan",
+                        skipUserEcho: true,
+                        silent: true,
+                    });
+                } else if (messageRef?.current) {
+                    const node = messageRef.current as HTMLTextAreaElement | HTMLInputElement;
+                    node.focus();
+                    node.scrollIntoView?.({ behavior: "smooth", block: "center" });
+                }
+            }
+        }, [messageRef, sendMessage]);
 
 
         return (
@@ -153,6 +194,7 @@ const AssistantMessageCard = React.memo(
                                     ))
                                 ) : (
                                     <div className="prose dark:prose-invert break-words">
+                                        {planning && <PlanningTasksCard plan={planning} isStreaming={message?.isStreaming} onAction={handlePlanningAction} />}
                                         <ReasoningAccordion reasoning={reasoning} isStreaming={message?.isStreaming} hasContent={!!message?.content} />
                                         <ToolCallAccordion toolsData={toolsData} />
                                         {message?.isStreaming && !message?.content ? (

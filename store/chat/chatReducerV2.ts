@@ -127,6 +127,55 @@ export const chatReducerV2 = {
         }
     },
 
+    setPlanningData: (state, action: PayloadAction<{ plan?: any; rawPlan?: string }>) => {
+        const subThreadId = state.subThreadId;
+        if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
+        const lastMessageId = state.messageIds[subThreadId][0];
+        if (!state.msgIdAndDataMap[subThreadId]) {
+            state.msgIdAndDataMap[subThreadId] = {};
+        }
+        if (!state.msgIdAndDataMap[subThreadId][lastMessageId]) {
+            state.msgIdAndDataMap[subThreadId][lastMessageId] = {} as any;
+        }
+        const existingMessage = state.msgIdAndDataMap[subThreadId][lastMessageId];
+        const existingPlanning = typeof existingMessage.planning === "object" ? existingMessage.planning : {};
+        existingMessage.planning = {
+            ...existingPlanning,
+            ...action.payload,
+            execution: existingPlanning.execution || { state: "pending", tasks: {} },
+        };
+    },
+
+    updatePlanningExecutionState: (state, action: PayloadAction<{ executionState?: string; taskUpdate?: { id: string; title?: string; status?: string; result?: string; error?: string } }>) => {
+        const subThreadId = state.subThreadId;
+        if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
+        const lastMessageId = state.messageIds[subThreadId][0];
+        const message = state.msgIdAndDataMap[subThreadId]?.[lastMessageId];
+        if (!message) return;
+
+        if (typeof message.planning !== "object" || message.planning === null || !(message.planning.plan || message.planning.rawPlan)) return;
+
+        if (!message.planning.execution) {
+            message.planning.execution = { state: "idle", tasks: {} };
+        }
+
+        if (action.payload.executionState) {
+            message.planning.execution.state = action.payload.executionState;
+        }
+
+        if (action.payload.taskUpdate?.id) {
+            if (!message.planning.execution.tasks) {
+                message.planning.execution.tasks = {};
+            }
+            const taskId = action.payload.taskUpdate.id;
+            const existingTask = message.planning.execution.tasks[taskId] || {};
+            message.planning.execution.tasks[taskId] = {
+                ...existingTask,
+                ...action.payload.taskUpdate,
+            };
+        }
+    },
+
     appendToolCall: (state, action: PayloadAction<{ call_id: string; name: string; args: Record<string, any> }>) => {
         const subThreadId = state.subThreadId;
         if (subThreadId && state.messageIds[subThreadId]?.length > 0) {

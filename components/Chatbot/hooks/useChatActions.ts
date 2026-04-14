@@ -2,11 +2,11 @@ import { ChatContext } from '@/components/Chatbot-Wrapper/ChatbotWrapper';
 import { errorToast } from '@/components/customToast';
 import { MessageContext } from '@/components/Interface-Chatbot/InterfaceChatbot';
 import { getAllThreadsApi, getPreviousMessage, streamDataToAction, sendFeedbackAction } from '@/config/api';
-import { appendLastAssistantMessageChunk, appendReasoningChunk, appendToolCall, removeMessages, setChatsLoading, setData, setError, setHelloEventMessage, setImages, setInitialMessages, setIsFetching, setLoading, setNewMessage, setOptions, setPaginateMessages, setStarterQuestions, setToggleDrawer, updateLastAssistantMessage, updateSingleMessage, updateToolResult } from '@/store/chat/chatSlice';
+import { appendLastAssistantMessageChunk, appendReasoningChunk, appendToolCall, removeMessages, setChatsLoading, setData, setError, setHelloEventMessage, setImages, setInitialMessages, setIsFetching, setLoading, setNewMessage, setOptions, setPaginateMessages, setPlanningData, setStarterQuestions, setToggleDrawer, updateLastAssistantMessage, updatePlanningExecutionState, updateSingleMessage, updateToolResult } from '@/store/chat/chatSlice';
 import { setThreads } from '@/store/interface/interfaceSlice';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { PAGE_SIZE } from '@/utils/enums';
-import React, { useCallback, useContext, useMemo } from 'react';
+import React, { useCallback, useContext, useMemo, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { SendMessagePayloadType } from './chatTypes';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
@@ -144,7 +144,7 @@ export const useSendMessage = ({
     const messageRef = propMessageRef ?? context.messageRef;
     const timeoutIdRef = propTimeoutIdRef ?? context.timeoutIdRef;
     const { tabSessionId, chatSessionId } = useChatContext();
-    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, helloMode } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, helloMode, latestMessageId } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
@@ -153,12 +153,15 @@ export const useSendMessage = ({
         selectedAiServiceAndModal: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.selectedAiServiceAndModal || null,
         userId: state.appInfo?.[tabSessionId]?.userId || null,
         threadList: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId],
-        helloMode: state.Hello?.[chatSessionId]?.mode || []
+        helloMode: state.Hello?.[chatSessionId]?.mode || [],
+        latestMessageId: state.Chat?.messageIds?.[state.appInfo?.[tabSessionId]?.subThreadId]?.[0],
     }));
 
     const { images } = useCustomSelector((state) => ({
         images: state.Chat.images || [],
     }));
+
+    const sendMessageRef = useRef<((payload: SendMessagePayloadType) => Promise<void>) | null>(null);
 
     const startTimeoutTimer = useCallback(() => {
         timeoutIdRef.current = setTimeout(() => {
@@ -167,7 +170,21 @@ export const useSendMessage = ({
         }, 240000);
     }, [globalDispatch, timeoutIdRef]);
 
-    return useCallback(async ({ message = '', customVariables = {}, customThreadId = '', customBridgeSlug = '', apiCall = true }: SendMessagePayloadType) => {
+    const sendMessage = useCallback(async ({
+        message = '',
+        customVariables = {},
+        customThreadId = '',
+        customBridgeSlug = '',
+        apiCall = true,
+        action,
+        mode,
+        silent,
+        skipUserEcho,
+        task_id,
+    }: SendMessagePayloadType) => {
+        const isPlanExecutionRequest = mode === "plan" && (action === "approve" || action === "execute" || action === "respond");
+        const isPlanUpdateRequest = mode === "plan" && !action && skipUserEcho === true;
+        const isInlinePlanRequest = isPlanExecutionRequest || isPlanUpdateRequest;
         globalDispatch(setNewMessage(true));
         globalDispatch(setError(null)); // Clear any previous errors
         const textMessage = message || (messageRef?.current as HTMLInputElement)?.value;
@@ -192,8 +209,12 @@ export const useSendMessage = ({
             images: [],
         }));
 
-        globalDispatch(setHelloEventMessage({ message: { role: "user", content: textMessage, urls: images } }));
-        globalDispatch(setHelloEventMessage({ message: { role: "assistant", content: "", wait: true } }));
+        if (!skipUserEcho && !isInlinePlanRequest) {
+            globalDispatch(setHelloEventMessage({ message: { role: "user", content: textMessage, urls: images } }));
+        }
+        if (!isInlinePlanRequest) {
+            globalDispatch(setHelloEventMessage({ message: { role: "assistant", content: "", wait: true } }));
+        }
 
         const payload = {
             message: textMessage,
@@ -211,15 +232,132 @@ export const useSendMessage = ({
             ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {
                 configuration: { model: selectedAiServiceAndModal?.modal },
                 service: selectedAiServiceAndModal?.service
-            } : {})
+            } : {}),
+            ...(action ? { action } : {}),
+            ...(mode ? { mode } : {}),
+            ...(silent ? { silent } : {}),
+            ...(action === "respond" && task_id ? { task_id } : {}),
         };
         emitEventToParent('MESSAGE_SENT', payload.message);
+
+        let planningStreamBuffer = "";
+        let isPlanningStreamActive = false;
+        let isExecutionStreamActive = isPlanExecutionRequest;
+
+        const pushPlanningUpdate = (incoming: any, resetBuffer = false) => {
+            if (resetBuffer) {
+                planningStreamBuffer = "";
+            }
+            if (incoming === undefined || incoming === null) return;
+
+            if (typeof incoming === "string") {
+                planningStreamBuffer += incoming;
+                try {
+                    const parsed = JSON.parse(planningStreamBuffer);
+                    globalDispatch(setPlanningData({ plan: parsed }));
+                } catch (error) {
+                    globalDispatch(setPlanningData({ rawPlan: planningStreamBuffer }));
+                }
+            } else {
+                planningStreamBuffer = JSON.stringify(incoming);
+                globalDispatch(setPlanningData({ plan: incoming }));
+            }
+        };
+
+        const handleExecutionDelta = (raw: string) => {
+            if (!raw) return false;
+            try {
+                const parsed = JSON.parse(raw);
+                if (!parsed?.event) return false;
+
+                if (parsed.event === "execution_started") {
+                    isExecutionStreamActive = true;
+                    globalDispatch(updatePlanningExecutionState({ executionState: parsed.state || "executing" }));
+                    return true;
+                }
+
+                if (parsed.event === "task_started") {
+                    isExecutionStreamActive = true;
+                    globalDispatch(updatePlanningExecutionState({
+                        executionState: "executing",
+                        taskUpdate: {
+                            id: parsed.task_id,
+                            title: parsed.title,
+                            status: "in_progress",
+                        },
+                    }));
+                    return true;
+                }
+
+                if (parsed.event === "task_completed") {
+                    isExecutionStreamActive = true;
+                    globalDispatch(updatePlanningExecutionState({
+                        executionState: "executing",
+                        taskUpdate: {
+                            id: parsed.task_id,
+                            title: parsed.title,
+                            status: "done",
+                            result: parsed.result,
+                        },
+                    }));
+                    return true;
+                }
+
+                if (parsed.event === "task_failed") {
+                    isExecutionStreamActive = true;
+                    globalDispatch(updatePlanningExecutionState({
+                        executionState: "executing",
+                        taskUpdate: {
+                            id: parsed.task_id,
+                            title: parsed.title,
+                            status: "error",
+                            error: parsed.error || parsed.result,
+                        },
+                    }));
+                    return true;
+                }
+            } catch (error) {
+                const normalized = raw.trim().toLowerCase();
+                if (normalized === "running") {
+                    isExecutionStreamActive = true;
+                    globalDispatch(updatePlanningExecutionState({ executionState: "running" }));
+                    return true;
+                }
+                return false;
+            }
+            return false;
+        };
+
+        const resetPlanningStream = () => {
+            planningStreamBuffer = "";
+            isPlanningStreamActive = false;
+        };
+
+        const finalizePlanningStream = () => {
+            if (!isPlanningStreamActive) return;
+            if (planningStreamBuffer) {
+                try {
+                    const parsed = JSON.parse(planningStreamBuffer);
+                    globalDispatch(setPlanningData({ plan: parsed }));
+                } catch (error) {
+                    globalDispatch(setPlanningData({ rawPlan: planningStreamBuffer }));
+                }
+            }
+            resetPlanningStream();
+        };
 
         const response = await streamDataToAction(
             payload,
             (event) => {
                 switch (event.event) {
                     case "start":
+                        if (action === "respond") {
+                            break;
+                        }
+                        if (isInlinePlanRequest) {
+                            globalDispatch(updatePlanningExecutionState({ executionState: isPlanExecutionRequest ? "running" : "updating" }));
+                            break;
+                        }
                         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
                         globalDispatch(updateLastAssistantMessage({
                             role: "assistant",
@@ -231,6 +369,16 @@ export const useSendMessage = ({
                         break;
                     case "reasoning":
                         globalDispatch(appendReasoningChunk({ chunk: event.content || "" }));
+                        break;
+                    case "planning": {
+                        isPlanningStreamActive = true;
+                        const planningPayload = event.plan ?? event.content;
+                        pushPlanningUpdate(planningPayload, true);
+                        break;
+                    }
+                    case "execution":
+                        isExecutionStreamActive = true;
+                        globalDispatch(updatePlanningExecutionState({ executionState: event.state || "running" }));
                         break;
                     case "tool_call":
                         globalDispatch(appendToolCall({
@@ -246,16 +394,62 @@ export const useSendMessage = ({
                         }));
                         break;
                     case "delta":
-                        globalDispatch(appendLastAssistantMessageChunk({ chunk: event.content || "" }));
+                        if (isPlanningStreamActive) {
+                            pushPlanningUpdate(event.content || "");
+                        } else if (isExecutionStreamActive) {
+                            handleExecutionDelta(event.content || "");
+                            break;
+                        } else if (isPlanUpdateRequest) {
+                            break;
+                        } else {
+                            globalDispatch(appendLastAssistantMessageChunk({ chunk: event.content || "" }));
+                        }
                         break;
                     case "done":
-                        globalDispatch(updateLastAssistantMessage({
-                            role: "assistant",
-                            isStreaming: false,
-                            id: event.message_id,
-                            finish_reason: event.finish_reason,
-                            message_id: event.message_id,
-                        }));
+                        finalizePlanningStream();
+                        if (action === "respond") {
+                            globalDispatch(updatePlanningExecutionState({ executionState: "pending" }));
+                            globalDispatch(setLoading(false));
+                            if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+                            if (customVariables?.__autoApprove && sendMessageRef.current) {
+                                sendMessageRef.current({
+                                    message: "Please execute this plan",
+                                    action: "approve",
+                                    mode: "plan",
+                                    skipUserEcho: true,
+                                    silent: true,
+                                });
+                            }
+                            break;
+                        }
+                        if (isExecutionStreamActive) {
+                            const finalExecutionContent = event?.response?.data?.content;
+                            globalDispatch(updatePlanningExecutionState({
+                                executionState: "completed",
+                            }));
+                            if (typeof finalExecutionContent === "string" && latestMessageId) {
+                                globalDispatch(updateSingleMessage({
+                                    messageId: latestMessageId,
+                                    data: {
+                                        content: finalExecutionContent,
+                                        isStreaming: false,
+                                        wait: false,
+                                        message_id: event.message_id,
+                                        finish_reason: event.finish_reason,
+                                    },
+                                }));
+                            }
+                        } else if (isPlanUpdateRequest) {
+                            globalDispatch(updatePlanningExecutionState({ executionState: "updated" }));
+                        } else {
+                            globalDispatch(updateLastAssistantMessage({
+                                role: "assistant",
+                                isStreaming: false,
+                                id: event.message_id,
+                                finish_reason: event.finish_reason,
+                                message_id: event.message_id,
+                            }));
+                        }
                         emitEventToParent('MESSAGE_RECEIVED', event.message_id);
                         globalDispatch(setLoading(false));
                         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
@@ -263,8 +457,13 @@ export const useSendMessage = ({
                     case "error": {
                         const errMsg = event.error || "An error occurred while talking to AI";
                         emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', errMsg);
-                        globalDispatch(updateLastAssistantMessage({ role: "assistant", content: errMsg, id: event.message_id }));
+                        if (isExecutionStreamActive || isPlanUpdateRequest) {
+                            globalDispatch(updatePlanningExecutionState({ executionState: "error" }));
+                        } else {
+                            globalDispatch(updateLastAssistantMessage({ role: "assistant", content: errMsg, id: event.message_id }));
+                        }
                         globalDispatch(setLoading(false));
+                        finalizePlanningStream();
                         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
                         break;
                     }
@@ -276,14 +475,20 @@ export const useSendMessage = ({
 
         if (!response?.success && response?.error !== "aborted") {
             globalDispatch(setLoading(false));
-            globalDispatch(removeMessages({ numberOfMessages: 2 }));
+            if (!isInlinePlanRequest) {
+                globalDispatch(removeMessages({ numberOfMessages: 2 }));
+            }
             globalDispatch(setError(response?.error || "Failed to send message. Please try again."));
         }
     }, [
         threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal,
         userId, threadList, versionId, images, messageRef, globalDispatch,
-        startTimeoutTimer, chatSessionId, helloMode, timeoutIdRef
+        startTimeoutTimer, chatSessionId, helloMode, timeoutIdRef, latestMessageId
     ]);
+
+    sendMessageRef.current = sendMessage;
+
+    return sendMessage;
 };
 
 export const useMessageFeedback = () => {
