@@ -167,7 +167,7 @@ export const useSendMessage = ({
         timeoutIdRef.current = setTimeout(() => {
             globalDispatch(updateLastAssistantMessage({ role: "assistant", wait: false, timeOut: true }));
             globalDispatch(setLoading(false));
-        }, 240000);
+        }, 600000);
     }, [globalDispatch, timeoutIdRef]);
 
     const sendMessage = useCallback(async ({
@@ -202,7 +202,9 @@ export const useSendMessage = ({
         }
         globalDispatch(setLoading(true));
         globalDispatch(setOptions([]));
-        startTimeoutTimer();
+        if (!isInlinePlanRequest) {
+            startTimeoutTimer();
+        }
 
         globalDispatch(setData({
             options: [],
@@ -352,6 +354,7 @@ export const useSendMessage = ({
                 switch (event.event) {
                     case "start":
                         if (action === "respond") {
+                            globalDispatch(updatePlanningExecutionState({ executionState: "running" }));
                             break;
                         }
                         if (isInlinePlanRequest) {
@@ -407,21 +410,6 @@ export const useSendMessage = ({
                         break;
                     case "done":
                         finalizePlanningStream();
-                        if (action === "respond") {
-                            globalDispatch(updatePlanningExecutionState({ executionState: "pending" }));
-                            globalDispatch(setLoading(false));
-                            if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
-                            if (customVariables?.__autoApprove && sendMessageRef.current) {
-                                sendMessageRef.current({
-                                    message: "Please execute this plan",
-                                    action: "approve",
-                                    mode: "plan",
-                                    skipUserEcho: true,
-                                    silent: true,
-                                });
-                            }
-                            break;
-                        }
                         if (isExecutionStreamActive) {
                             const finalExecutionContent = event?.response?.data?.content;
                             globalDispatch(updatePlanningExecutionState({

@@ -35,7 +35,10 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [conversationMode, setConversationMode] = useState<"planning" | "fast">("fast");
+  const [conversationMode, setConversationMode] = useState<"planning" | "fast">(() => {
+    const saved = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("conversationMode") : null;
+    return (saved === "planning" || saved === "fast") ? saved : "fast";
+  });
   const [showModeMenu, setShowModeMenu] = useState(false);
   const modeMenuRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
@@ -59,21 +62,27 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const { setImages } = useChatActions();
   const sendMessage = useSendMessage({});
 
-  const { images = [], options = [], loading, error } = useCustomSelector((state) => ({
-    images: state.Chat.images || [],
-    loading: state.Chat.loading,
-    options: state.Chat.options || [],
-    error: state.Chat.error,
-  }))
+  const { images = [], options = [], loading, error, isPlanExecuting } = useCustomSelector((state) => {
+    const subThreadId = state.appInfo?.[tabSessionId]?.subThreadId;
+    const lastMessageId = subThreadId ? state.Chat?.messageIds?.[subThreadId]?.[0] : null;
+    const planningExecState = lastMessageId ? state.Chat?.msgIdAndDataMap?.[subThreadId]?.[lastMessageId]?.planning?.execution?.state : null;
+    return {
+      images: state.Chat.images || [],
+      loading: state.Chat.loading,
+      options: state.Chat.options || [],
+      error: state.Chat.error,
+      isPlanExecuting: planningExecState === "executing" || planningExecState === "running" || planningExecState === "queued",
+    };
+  })
 
   const buttonDisabled = useMemo(() => {
     if (isHelloUser) {
       return ((isHelloUser && (assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0)
     } else {
-      return loading || isUploading || (!inputValue.trim() && images.length === 0) ||
+      return isPlanExecuting || loading || isUploading || (!inputValue.trim() && images.length === 0) ||
         (images.some((imageUrl) => imageUrl?.toLowerCase()?.includes('.pdf')) && !inputValue.trim());
     }
-  }, [loading, isUploading, inputValue, images, assigned_type, isHelloUser]);
+  }, [loading, isUploading, inputValue, images, assigned_type, isHelloUser, isPlanExecuting]);
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey && !buttonDisabled) {
@@ -431,7 +440,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             multiline
             fullWidth
             onKeyDown={handleKeyDown}
-            placeholder="Message AI Assistant..."
+            placeholder={isPlanExecuting ? "Plan is executing..." : "Message AI Assistant..."}
+            disabled={isPlanExecuting}
             className="h-full min-h-[10px] max-h-[400px] bg-transparent focus:outline-none disabled:cursor-not-allowed"
             maxRows={6}
             sx={textFieldStyles}
@@ -484,7 +494,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                             ? "bg-base-200/70"
                             : "hover:bg-base-200/40"
                         }`}
-                        onClick={() => { setConversationMode("planning"); setShowModeMenu(false); }}
+                        onClick={() => { setConversationMode("planning"); sessionStorage.setItem("conversationMode", "planning"); setShowModeMenu(false); }}
                       >
                         <p className="text-sm font-semibold" style={{ color: theme.palette.text.primary }}>Planning</p>
                         <p className="text-[11px] opacity-50 mt-0.5 leading-snug">Agent can plan before executing tasks. Use for deep research, complex tasks, or collaborative work</p>
@@ -496,7 +506,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                             ? "bg-base-200/70"
                             : "hover:bg-base-200/40"
                         }`}
-                        onClick={() => { setConversationMode("fast"); setShowModeMenu(false); }}
+                        onClick={() => { setConversationMode("fast"); sessionStorage.setItem("conversationMode", "fast"); setShowModeMenu(false); }}
                       >
                         <p className="text-sm font-semibold" style={{ color: theme.palette.text.primary }}>Fast</p>
                         <p className="text-[11px] opacity-50 mt-0.5 leading-snug">Agent will execute tasks directly. Use for simple tasks that can be completed faster</p>
