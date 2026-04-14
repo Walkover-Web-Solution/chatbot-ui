@@ -410,15 +410,6 @@ export const useSendMessage = ({
                             globalDispatch(updatePlanningExecutionState({ executionState: "pending" }));
                             globalDispatch(setLoading(false));
                             if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
-                            if (customVariables?.__autoApprove && sendMessageRef.current) {
-                                sendMessageRef.current({
-                                    message: "Please execute this plan",
-                                    action: "approve",
-                                    mode: "plan",
-                                    skipUserEcho: true,
-                                    silent: true,
-                                });
-                            }
                             break;
                         }
                         if (isExecutionStreamActive) {

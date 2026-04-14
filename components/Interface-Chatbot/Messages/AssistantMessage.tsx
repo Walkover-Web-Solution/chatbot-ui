@@ -105,7 +105,6 @@ const AssistantMessageCard = React.memo(
                     skipUserEcho: true,
                     silent: true,
                     task_id: firstTaskId,
-                    customVariables: payload.resolvedAfter ? { __autoApprove: true } : {},
                 });
             } else if (action === "proceed") {
                 sendMessage({
