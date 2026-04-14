@@ -10,7 +10,7 @@ import { ParamsEnums } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import { TextField, useTheme } from "@mui/material";
 import debounce from "lodash.debounce";
-import { ChevronDown, Paperclip, Send, Smile, TriangleAlert, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Paperclip, Send, Smile, TriangleAlert, X, Zap, BrainCircuit } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
@@ -35,6 +35,9 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [conversationMode, setConversationMode] = useState<"planning" | "fast">("fast");
+  const [showModeMenu, setShowModeMenu] = useState(false);
+  const modeMenuRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
   const isLight = isColorLight(theme.palette.primary.main);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -85,9 +88,20 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
       sendMessageToHello?.();
       emitTypingStatus("not-typing");
     } else {
-      sendMessage(messageObj);
+      const planningPayload = conversationMode === "planning" ? { mode: "plan" } : {};
+      sendMessage({ ...messageObj, ...planningPayload });
     }
-  }, [isHelloUser, sendMessage, sendMessageToHello]);
+  }, [isHelloUser, sendMessage, sendMessageToHello, conversationMode]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (modeMenuRef.current && !modeMenuRef.current.contains(e.target as Node)) {
+        setShowModeMenu(false);
+      }
+    };
+    if (showModeMenu) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showModeMenu]);
 
   const handleMessage = useCallback((event: MessageEvent) => {
     if (event?.data?.type === "open") {
@@ -428,8 +442,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           />
 
           <div className="flex justify-between items-center w-full">
-            {/* Left section: Upload, Emoji and AI icon */}
-            <div className="flex items-center">
+            {/* Left section: Upload, Emoji, mode picker */}
+            <div className="flex items-center gap-1">
               {/* {aiIconElement} */}
               <div
                 onClick={(e) => { e.stopPropagation(); e.preventDefault(); setShowEmojiPicker(!showEmojiPicker) }}
@@ -440,6 +454,57 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                 <Smile className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600 dark:text-slate-300" />
               </div>
               {uploadButton}
+
+              {!isHelloUser && (
+                <div className="relative" ref={modeMenuRef}>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setShowModeMenu((v) => !v); }}
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-colors hover:bg-base-200/60 text-gray-500 dark:text-slate-400"
+                  >
+                    {conversationMode === "planning"
+                      ? <BrainCircuit className="w-3.5 h-3.5" />
+                      : <Zap className="w-3.5 h-3.5" />}
+                    <span>{conversationMode === "planning" ? "Planning" : "Fast"}</span>
+                    {showModeMenu ? <ChevronUp className="w-3 h-3 opacity-60" /> : <ChevronDown className="w-3 h-3 opacity-60" />}
+                  </button>
+
+                  {showModeMenu && (
+                    <div
+                      className="absolute bottom-full mb-2 left-0 z-50 w-64 rounded-xl border border-base-300 shadow-xl overflow-hidden"
+                      style={{ backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#ffffff' }}
+                    >
+                      <div className="px-3 py-2 border-b border-base-300">
+                        <p className="text-[10px] uppercase tracking-widest opacity-50 font-semibold">Conversation mode</p>
+                      </div>
+                      <button
+                        type="button"
+                        className={`w-full text-left px-3 py-2.5 transition-colors ${
+                          conversationMode === "planning"
+                            ? "bg-base-200/70"
+                            : "hover:bg-base-200/40"
+                        }`}
+                        onClick={() => { setConversationMode("planning"); setShowModeMenu(false); }}
+                      >
+                        <p className="text-sm font-semibold" style={{ color: theme.palette.text.primary }}>Planning</p>
+                        <p className="text-[11px] opacity-50 mt-0.5 leading-snug">Agent can plan before executing tasks. Use for deep research, complex tasks, or collaborative work</p>
+                      </button>
+                      <button
+                        type="button"
+                        className={`w-full text-left px-3 py-2.5 transition-colors ${
+                          conversationMode === "fast"
+                            ? "bg-base-200/70"
+                            : "hover:bg-base-200/40"
+                        }`}
+                        onClick={() => { setConversationMode("fast"); setShowModeMenu(false); }}
+                      >
+                        <p className="text-sm font-semibold" style={{ color: theme.palette.text.primary }}>Fast</p>
+                        <p className="text-[11px] opacity-50 mt-0.5 leading-snug">Agent will execute tasks directly. Use for simple tasks that can be completed faster</p>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Right section: Call + Send button side by side */}
