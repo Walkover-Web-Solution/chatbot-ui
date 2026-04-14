@@ -429,6 +429,23 @@ export const useSendMessage = ({
                         } else if (isPlanUpdateRequest) {
                             globalDispatch(updatePlanningExecutionState({ executionState: "updated" }));
                         } else {
+                            const doneContent = event?.response?.data?.content;
+                            if (typeof doneContent === "string") {
+                                try {
+                                    const parsed = JSON.parse(doneContent);
+                                    if (parsed?.state === "planning" && parsed?.tasks) {
+                                        globalDispatch(setPlanningData({ plan: parsed }));
+                                        globalDispatch(updateLastAssistantMessage({
+                                            role: "assistant",
+                                            isStreaming: false,
+                                            id: event.message_id,
+                                            finish_reason: event.finish_reason,
+                                            message_id: event.message_id,
+                                        }));
+                                        break;
+                                    }
+                                } catch (_) {}
+                            }
                             globalDispatch(updateLastAssistantMessage({
                                 role: "assistant",
                                 isStreaming: false,
