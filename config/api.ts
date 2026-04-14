@@ -228,7 +228,6 @@ export async function streamDataToAction(
 export async function sendDataToAction(data: any): Promise<any> {
     try {
         if (!data.threadId) data.threadId = "";
-        data.mode = "plan"
 
         const response = await axios.post(
             `${PYTHON_URL}/chatbot/${data.chatBotId}/sendMessage`,
