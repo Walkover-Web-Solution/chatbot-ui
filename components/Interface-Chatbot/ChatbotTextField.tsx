@@ -35,7 +35,10 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [conversationMode, setConversationMode] = useState<"planning" | "fast">("fast");
+  const [conversationMode, setConversationMode] = useState<"planning" | "fast">(() => {
+    const saved = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("conversationMode") : null;
+    return (saved === "planning" || saved === "fast") ? saved : "fast";
+  });
   const [showModeMenu, setShowModeMenu] = useState(false);
   const modeMenuRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
@@ -484,7 +487,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                             ? "bg-base-200/70"
                             : "hover:bg-base-200/40"
                         }`}
-                        onClick={() => { setConversationMode("planning"); setShowModeMenu(false); }}
+                        onClick={() => { setConversationMode("planning"); sessionStorage.setItem("conversationMode", "planning"); setShowModeMenu(false); }}
                       >
                         <p className="text-sm font-semibold" style={{ color: theme.palette.text.primary }}>Planning</p>
                         <p className="text-[11px] opacity-50 mt-0.5 leading-snug">Agent can plan before executing tasks. Use for deep research, complex tasks, or collaborative work</p>
@@ -496,7 +499,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                             ? "bg-base-200/70"
                             : "hover:bg-base-200/40"
                         }`}
-                        onClick={() => { setConversationMode("fast"); setShowModeMenu(false); }}
+                        onClick={() => { setConversationMode("fast"); sessionStorage.setItem("conversationMode", "fast"); setShowModeMenu(false); }}
                       >
                         <p className="text-sm font-semibold" style={{ color: theme.palette.text.primary }}>Fast</p>
                         <p className="text-[11px] opacity-50 mt-0.5 leading-snug">Agent will execute tasks directly. Use for simple tasks that can be completed faster</p>
