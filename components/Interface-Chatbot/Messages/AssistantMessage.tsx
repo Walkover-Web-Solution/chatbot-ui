@@ -6,7 +6,7 @@ import { Anchor, Code } from "@/components/Interface-Chatbot/Interface-Markdown/
 import { supportsLookbehind } from "@/utils/appUtility";
 import { isJSONString } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
-import { lighten } from "@mui/material";
+import { lighten, useTheme } from "@mui/material";
 import copy from "copy-to-clipboard";
 import { AlertCircle, Check, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
 import dynamic from 'next/dynamic';
@@ -87,6 +87,7 @@ const AssistantMessageCard = React.memo(
             }, 1500);
         };
 
+        const theme = useTheme();
         const themePalette = {
             "--primary-main": lighten(backgroundColor, 0.4),
         };
@@ -193,7 +194,7 @@ const AssistantMessageCard = React.memo(
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="prose dark:prose-invert break-words">
+                                    <div className="prose dark:prose-invert break-words" style={{ color: theme.palette.text.primary }}>
                                         {planning && <PlanningTasksCard plan={planning} isStreaming={message?.isStreaming} onAction={handlePlanningAction} />}
                                         <ReasoningAccordion reasoning={reasoning} isStreaming={message?.isStreaming} hasContent={!!message?.content} />
                                         <ToolCallAccordion toolsData={toolsData} />
