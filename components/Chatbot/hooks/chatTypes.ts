@@ -144,4 +144,15 @@ export interface ChatContextType extends ChatState {
   fetchMoreData: () => Promise<void>;
 }
 
-export interface SendMessagePayloadType { message?: string, customVariables?: Record<string, unknown>, customThreadId?: string, customBridgeSlug?: string, apiCall?: boolean }
+export interface SendMessagePayloadType {
+  message?: string;
+  customVariables?: Record<string, unknown>;
+  customThreadId?: string;
+  customBridgeSlug?: string;
+  apiCall?: boolean;
+  action?: string;
+  mode?: string;
+  silent?: boolean;
+  skipUserEcho?: boolean;
+  task_id?: string;
+}

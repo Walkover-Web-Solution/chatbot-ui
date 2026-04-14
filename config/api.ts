@@ -158,6 +158,8 @@ export async function getPreviousMessage(
 export type StreamEvent =
     | { event: "start"; message_id: string; model?: string; service?: string }
     | { event: "reasoning"; content: string }
+    | { event: "planning"; content?: string; plan?: any }
+    | { event: "execution"; state?: string }
     | { event: "delta"; content: string }
     | { event: "tool_call"; call_id: string; name: string; args: Record<string, any> }
     | { event: "tool_result"; call_id: string; content: any }
@@ -226,6 +228,7 @@ export async function streamDataToAction(
 export async function sendDataToAction(data: any): Promise<any> {
     try {
         if (!data.threadId) data.threadId = "";
+        data.mode = "plan"
 
         const response = await axios.post(
             `${PYTHON_URL}/chatbot/${data.chatBotId}/sendMessage`,
