@@ -62,19 +62,27 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const { setImages } = useChatActions();
   const sendMessage = useSendMessage({});
 
-  const { images = [], options = [], loading } = useCustomSelector((state) => ({
-    images: state.Chat.images || [],
-    loading: state.Chat.loading,
-    options: state.Chat.options || [],
-  }))
+  const { images = [], options = [], loading, error, isPlanExecuting } = useCustomSelector((state) => {
+    const subThreadId = state.appInfo?.[tabSessionId]?.subThreadId;
+    const lastMessageId = subThreadId ? state.Chat?.messageIds?.[subThreadId]?.[0] : null;
+    const planningExecState = lastMessageId ? state.Chat?.msgIdAndDataMap?.[subThreadId]?.[lastMessageId]?.planning?.execution?.state : null;
+    return {
+      images: state.Chat.images || [],
+      loading: state.Chat.loading,
+      options: state.Chat.options || [],
+      error: state.Chat.error,
+      isPlanExecuting: planningExecState === "executing" || planningExecState === "running" || planningExecState === "queued",
+    };
+  })
 
-  const buttonDisabled = useMemo(() =>
-    ((isHelloUser && (assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) ||
-    isUploading ||
-    (!inputValue.trim() && images.length === 0) ||
-    (images.some((imageUrl) => imageUrl.toLowerCase().includes('.pdf')) && !inputValue.trim()),
-    [loading, isUploading, inputValue, images, assigned_type, isHelloUser]
-  );
+  const buttonDisabled = useMemo(() => {
+    if (isHelloUser) {
+      return ((isHelloUser && (assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0)
+    } else {
+      return isPlanExecuting || loading || isUploading || (!inputValue.trim() && images.length === 0) ||
+        (images.some((imageUrl) => imageUrl?.toLowerCase()?.includes('.pdf')) && !inputValue.trim());
+    }
+  }, [loading, isUploading, inputValue, images, assigned_type, isHelloUser, isPlanExecuting]);
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey && !buttonDisabled) {
@@ -414,7 +422,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             multiline
             fullWidth
             onKeyDown={handleKeyDown}
-            placeholder="Message AI Assistant..."
+            placeholder={isPlanExecuting ? "Plan is executing..." : "Message AI Assistant..."}
+            disabled={isPlanExecuting}
             className="h-full min-h-[10px] max-h-[400px] bg-transparent focus:outline-none disabled:cursor-not-allowed"
             maxRows={6}
             sx={textFieldStyles}
