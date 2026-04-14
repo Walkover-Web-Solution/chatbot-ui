@@ -1,31 +1,27 @@
 /* eslint-disable */
-import { supportsLookbehind } from "@/utils/appUtility.js";
+import { supportsLookbehind } from "@/utils/appUtility";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Anchor, Code } from "./MarkdownUtitily.tsx";
+import { Anchor, Code } from "./MarkdownUtitily";
 
-function InterfaceMarkdown({ props }: any) {
+interface InterfaceMarkdownProps {
+  children: string;
+  className?: string;
+}
+
+function InterfaceMarkdown({ children, className }: InterfaceMarkdownProps) {
   return (
-    <ReactMarkdown
-      // remarkPlugins={[remarkGfm]}
-      {...(!supportsLookbehind() ? {} : { remarkPlugins: [remarkGfm] })}
-      components={{
-        code: Code,
-        a: Anchor,
-      }}
-    >
-      {props?.children ||
-        props?.text ||
-        (typeof props?.content === 'object'
-          ? (props?.content?.content
-            ? (typeof props?.content?.content === 'object'
-              ? JSON.stringify(props?.content?.content)
-              : props?.content?.content)
-            : JSON.stringify(props?.content))
-          : props?.content) ||
-        (typeof props?.data === 'object' ? JSON.stringify(props?.data) : props?.data) ||
-        `I'm a markdown component.`}
-    </ReactMarkdown>
+    <div className={`prose prose-sm md:prose-base max-w-none text-inherit dark:prose-invert${className ? ` ${className}` : ""}`}>
+      <ReactMarkdown
+        {...(!supportsLookbehind() ? {} : { remarkPlugins: [remarkGfm] })}
+        components={{
+          code: Code,
+          a: Anchor,
+        }}
+      >
+        {children}
+      </ReactMarkdown>
+    </div>
   );
 }
 

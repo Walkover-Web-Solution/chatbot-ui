@@ -4,19 +4,12 @@ import DoneIcon from "@mui/icons-material/Done";
 import { Typography } from "@mui/material";
 import copy from "copy-to-clipboard";
 import React, { useState } from "react";
+import { Components } from "react-markdown";
 import { CodeBlock } from "./CodeBlock";
 
-export const Code = ({
-  inline,
-  className,
-  children,
-  ...props
-}: {
-  inline?: boolean;
-  className?: string;
-  children: React.ReactNode;
-}) => {
+export const Code: Components["code"] = ({ className, children, ...props }) => {
   const [tipForCopy, setTipForCopy] = useState(false);
+  const inline = !className?.startsWith("language-");
 
   const handlecopyfunction = (text: any) => {
     copy(text);
@@ -25,7 +18,9 @@ export const Code = ({
       setTipForCopy(false);
     }, 1500);
   };
+
   const match = /language-(\w+)/.exec(className || "");
+
   return !inline && match ? (
     <div className="py-4">
       <div
@@ -60,25 +55,18 @@ export const Code = ({
         >
           {!tipForCopy ? (
             <>
-              <ContentCopyIcon
-                fontSize="inherit"
-                sx={{ height: 16, width: 16 }}
-              />
+              <ContentCopyIcon fontSize="inherit" sx={{ height: 16, width: 16 }} />
               <Typography variant="caption" sx={{ fontWeight: 500 }}>Copy code</Typography>
             </>
           ) : (
             <>
-              <DoneIcon
-                fontSize="inherit"
-                sx={{ height: 16, width: 16 }}
-                color="success"
-              />
+              <DoneIcon fontSize="inherit" sx={{ height: 16, width: 16 }} color="success" />
               <Typography variant="caption" sx={{ fontWeight: 500 }}>Copied!</Typography>
             </>
           )}
         </button>
       </div>
-      <CodeBlock inline={inline} className={className} {...props}>
+      <CodeBlock className={className} {...props}>
         {children}
       </CodeBlock>
     </div>
@@ -89,7 +77,7 @@ export const Code = ({
   );
 };
 
-export const Anchor = ({ href, children, ...props }) => {
+export const Anchor: Components["a"] = ({ href, children, ...props }) => {
   return (
     <a href={href} target="_blank" rel="noreferrer" {...props} className="link link-primary">
       {children}
