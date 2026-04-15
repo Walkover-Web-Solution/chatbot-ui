@@ -24,15 +24,10 @@ export default function ReasoningAccordion({ reasoning, isStreaming, hasContent 
     }, [reasoning, isStreaming, open]);
 
     useEffect(() => {
-        // Open when reasoning is streaming
-        if (isStreaming && reasoning) {
-            setOpen(true);
-        }
-        // Close when streaming is done and there's content
-        if (!isStreaming && hasContent) {
+        if (hasContent || !isStreaming) {
             setOpen(false);
         }
-    }, [hasContent, isStreaming, reasoning]);
+    }, [hasContent, isStreaming]);
 
     if (!reasoning) return null;
 
