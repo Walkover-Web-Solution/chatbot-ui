@@ -501,6 +501,7 @@ export const useSendMessage = ({
                                 role: "assistant",
                                 isStreaming: false,
                                 wait: false,
+                                id: streamMessageId || event.message_id,
                                 message_id: event.message_id,
                                 finish_reason: event.finish_reason,
                             }));
