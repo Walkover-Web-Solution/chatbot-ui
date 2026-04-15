@@ -10,12 +10,16 @@ interface PlanningTasksCardProps {
 
 export default function PlanningTasksCard({ plan, isStreaming = false, onAction }: PlanningTasksCardProps) {
     const taskRefs = useRef<Record<string, HTMLDivElement | null>>({});
+    const taskResultRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const [showQueryInputs, setShowQueryInputs] = useState(false);
     const [taskQueries, setTaskQueries] = useState<Record<string, string>>({});
     const [humanQueryAnswers, setHumanQueryAnswers] = useState<Record<string, string>>({});
     const [resolvedHumanQueryIds, setResolvedHumanQueryIds] = useState<Set<string>>(new Set());
     const [openTaskId, setOpenTaskId] = useState("");
+    const [queryHistoryPerTask, setQueryHistoryPerTask] = useState<Record<string, Array<{ query: string; answer: string | null }>>>({});
+    const [isActionLoading, setIsActionLoading] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
+    const prevHumanQueriesRef = useRef<Record<string, string>>({});
 
     const { parsedPlan, rawPlan, execution } = useMemo(() => {
         if (plan === null || plan === undefined) {
@@ -54,10 +58,20 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
 
     const humanQueryTasks = useMemo(() => tasks.filter((t) => t.human_query), [tasks]);
 
-    const allHumanQueriesAnswered = useMemo(
-        () => humanQueryTasks.length === 0 || humanQueryTasks.every((t) => humanQueryAnswers[t.id]?.trim().length > 0),
-        [humanQueryTasks, humanQueryAnswers],
-    );
+    const humanQueriesKey = useMemo(() => {
+        return JSON.stringify(humanQueryTasks.map(t => ({ id: t.id, query: t.human_query })));
+    }, [humanQueryTasks]);
+
+    const allHumanQueriesAnswered = useMemo(() => {
+        if (humanQueryTasks.length === 0) return true;
+        return humanQueryTasks.every((t) => {
+            const history = queryHistoryPerTask[t.id] || [];
+            return history.every((queryItem, idx) => {
+                if (queryItem.answer !== null) return true;
+                return humanQueryAnswers[`${t.id}_${idx}`]?.trim().length > 0;
+            });
+        });
+    }, [humanQueryTasks, humanQueryAnswers, queryHistoryPerTask]);
 
     const humanQueryMessage = useMemo(() => {
         return humanQueryTasks
@@ -85,7 +99,9 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
     const isUpdatingPlan = execution?.state === "updating";
     const isExecutionCompleted = execution?.state === "completed";
     const isExecutionLockedToActiveTask = isExecuting && Boolean(activeTaskId);
-    const showUpdateButton = hasTaskQueryValues || isUpdatingPlan;
+    const hasHumanQueries = humanQueryTasks.length > 0;
+    const showProceedButton = !hasHumanQueries && !hasTaskQueryValues && !isExecuting && !isActionLoading && !isStreaming;
+    const showUpdateButton = (hasHumanQueries || hasTaskQueryValues) && !isExecuting && !isStreaming;
 
     const doneCount = useMemo(() => {
         if (!execution?.tasks) return 0;
@@ -124,45 +140,119 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
         });
     }, [tasks]);
 
+    useEffect(() => {
+        // Clear loading state when streaming starts or execution state changes
+        if (isStreaming || isExecuting || isUpdatingPlan) {
+            setIsActionLoading(false);
+        }
+    }, [isStreaming, isExecuting, isUpdatingPlan]);
+
+    useEffect(() => {
+        // Auto-scroll task result containers to bottom when new data arrives
+        if (execution?.tasks) {
+            Object.keys(execution.tasks).forEach((taskId) => {
+                const task = execution.tasks[taskId];
+                if (task?.status === "running" && task?.result) {
+                    const resultContainer = taskResultRefs.current[taskId];
+                    if (resultContainer) {
+                        resultContainer.scrollTop = resultContainer.scrollHeight;
+                    }
+                }
+            });
+        }
+    }, [execution?.tasks]);
+
+    useEffect(() => {
+        const currentHumanQueries: Record<string, string> = {};
+        humanQueryTasks.forEach((t) => {
+            currentHumanQueries[t.id] = t.human_query || "";
+        });
+
+        setQueryHistoryPerTask((prevHistory) => {
+            const newHistory = { ...prevHistory };
+            
+            humanQueryTasks.forEach((t) => {
+                const currentQuery = t.human_query || "";
+                const prevQuery = prevHumanQueriesRef.current[t.id];
+                
+                if (!newHistory[t.id]) {
+                    newHistory[t.id] = [];
+                }
+                
+                if (currentQuery) {
+                    const existingIndex = newHistory[t.id].findIndex(h => h.query === currentQuery);
+                    if (existingIndex === -1) {
+                        newHistory[t.id].push({ query: currentQuery, answer: null });
+                    }
+                }
+            });
+            
+            return newHistory;
+        });
+
+        prevHumanQueriesRef.current = currentHumanQueries;
+    }, [humanQueriesKey, humanQueryTasks]);
+
     if (!parsedPlan && !rawPlan) return null;
 
-    const handleAction = (action: "proceed" | "revise") => {
-        const pendingHumanQueryTasks = humanQueryTasks.filter((t) => !resolvedHumanQueryIds.has(t.id));
-        const hasHumanQueries = pendingHumanQueryTasks.length > 0;
-        const resolvedAction = action === "proceed" && hasHumanQueries ? "respond" : action;
-
-        if (resolvedAction === "respond") {
-            const answeredPendingIds = pendingHumanQueryTasks
-                .filter((t) => humanQueryAnswers[t.id]?.trim())
-                .map((t) => t.id);
-            const remainingAfterResolve = pendingHumanQueryTasks.length - answeredPendingIds.length;
-            setResolvedHumanQueryIds((prev) => new Set([...prev, ...answeredPendingIds]));
+    const handleAction = (action: "proceed" | "update") => {
+        setIsActionLoading(true);
+        
+        if (action === "proceed") {
+            // No human_query case - execute the plan
             const payload = {
                 parsedPlan,
                 rawPlan,
-                humanQueryAnswers,
-                humanQueryMessage,
-                resolvedAfter: remainingAfterResolve === 0,
             };
             if (onAction) {
-                onAction("respond", payload);
+                onAction("proceed", payload);
             } else {
-                emitEventToParent("PLANNING_ACTION", { action: "respond", plan: parsedPlan || rawPlan, ...payload });
+                emitEventToParent("PLANNING_ACTION", { action: "execute", plan: parsedPlan || rawPlan, ...payload });
             }
             return;
         }
 
-        const payload = {
-            parsedPlan,
-            rawPlan,
-            ...(action === "revise" ? { taskQueries, queryMessage } : {}),
-        };
-        if (onAction) {
-            onAction(action, payload);
-        } else {
-            emitEventToParent("PLANNING_ACTION", { action, plan: parsedPlan || rawPlan, ...payload });
-        }
-        if (action === "revise") {
+        if (action === "update") {
+            // Collect answers for human queries and user suggestions
+            const messages: string[] = [];
+            
+            // Collect answers for human queries
+            humanQueryTasks.forEach((t) => {
+                const history = queryHistoryPerTask[t.id] || [];
+                history.forEach((queryItem, idx) => {
+                    if (queryItem.answer === null) {
+                        const answer = humanQueryAnswers[`${t.id}_${idx}`]?.trim();
+                        if (answer) {
+                            messages.push(`task_id:${t.id}, answer:${answer}`);
+                            queryItem.answer = answer;
+                        }
+                    }
+                });
+            });
+            
+            // Collect user suggestions/queries for all tasks
+            tasks.forEach((t) => {
+                const query = taskQueries[t.id]?.trim();
+                if (query) {
+                    messages.push(`task_id:${t.id}, query:${query}`);
+                }
+            });
+            
+            setQueryHistoryPerTask({ ...queryHistoryPerTask });
+            
+            const message = messages.join("\n");
+            const payload = {
+                parsedPlan,
+                rawPlan,
+                updateMessage: message,
+            };
+            
+            if (onAction) {
+                onAction("revise", payload);
+            } else {
+                emitEventToParent("PLANNING_ACTION", { action: "update", plan: parsedPlan || rawPlan, message, ...payload });
+            }
+            
             setTaskQueries({});
             setShowQueryInputs(false);
         }
@@ -239,29 +329,33 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                     </div>
                                                 </button>
 
-                                                {task.human_query && !isExecuting && (
-                                                    <div className="mt-2 space-y-1.5">
-                                                        <div className="flex items-start gap-1.5 text-[11px] text-indigo-600 dark:text-indigo-400">
-                                                            <span className="font-semibold shrink-0">?</span>
-                                                            <span>{task.human_query}</span>
-                                                        </div>
-                                                        {resolvedHumanQueryIds.has(task.id) ? (
-                                                            <div className="flex items-center gap-1.5 text-[11px] text-success">
-                                                                <CheckCircle2 className="w-3 h-3" />
-                                                                <span className="opacity-80">Answered</span>
+                                                {queryHistoryPerTask[task.id]?.length > 0 && !isExecuting && (
+                                                    <div className="mt-2 space-y-2">
+                                                        {queryHistoryPerTask[task.id].map((queryItem, idx) => (
+                                                            <div key={idx} className="space-y-1.5">
+                                                                <div className="flex items-start gap-1.5 text-[11px] text-indigo-600 dark:text-indigo-400">
+                                                                    <span className="font-semibold shrink-0">?</span>
+                                                                    <span>{queryItem.query}</span>
+                                                                </div>
+                                                                {queryItem.answer !== null ? (
+                                                                    <div className="flex items-start gap-1.5 text-[11px] text-success">
+                                                                        <CheckCircle2 className="w-3 h-3 shrink-0 mt-0.5" />
+                                                                        <span className="opacity-80">{queryItem.answer}</span>
+                                                                    </div>
+                                                                ) : (
+                                                                    <input
+                                                                        type="text"
+                                                                        className="input input-bordered input-xs w-full text-xs"
+                                                                        placeholder="Your answer..."
+                                                                        value={humanQueryAnswers[`${task.id}_${idx}`] || ""}
+                                                                        onChange={(e) => {
+                                                                            const value = e.target.value;
+                                                                            setHumanQueryAnswers((prev) => ({ ...prev, [`${task.id}_${idx}`]: value }));
+                                                                        }}
+                                                                    />
+                                                                )}
                                                             </div>
-                                                        ) : (
-                                                            <input
-                                                                type="text"
-                                                                className="input input-bordered input-xs w-full text-xs"
-                                                                placeholder="Your answer..."
-                                                                value={humanQueryAnswers[task.id] || ""}
-                                                                onChange={(e) => {
-                                                                    const value = e.target.value;
-                                                                    setHumanQueryAnswers((prev) => ({ ...prev, [task.id]: value }));
-                                                                }}
-                                                            />
-                                                        )}
+                                                        ))}
                                                     </div>
                                                 )}
 
@@ -288,7 +382,20 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                             />
                                                         )}
                                                         {executionTask?.result && (
-                                                            <div className="text-[11px] bg-success/8 border border-success/20 rounded p-2 max-h-32 overflow-auto whitespace-pre-wrap opacity-80">
+                                                            <div 
+                                                                ref={(el) => { taskResultRefs.current[task.id] = el; }}
+                                                                className={`text-[11px] rounded p-2 max-h-32 overflow-auto whitespace-pre-wrap ${
+                                                                    executionTask.status === "running" 
+                                                                        ? "bg-blue-500/8 border border-blue-500/20 opacity-90" 
+                                                                        : "bg-success/8 border border-success/20 opacity-80"
+                                                                }`}
+                                                            >
+                                                                {executionTask.status === "running" && (
+                                                                    <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400 mb-1">
+                                                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                                                        <span className="text-[10px] font-semibold">Running...</span>
+                                                                    </div>
+                                                                )}
                                                                 {typeof executionTask.result === "string" ? executionTask.result : JSON.stringify(executionTask.result)}
                                                             </div>
                                                         )}
@@ -322,32 +429,32 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
 
                     {!isExecutionCompleted && !isStreaming && (
                         <div className="flex items-center gap-2 mt-4">
-                            {!showUpdateButton && (
+                            {showProceedButton && (
                                 <button
                                     type="button"
                                     className="btn btn-sm btn-primary"
-                                    disabled={isExecuting || isUpdatingPlan || !allHumanQueriesAnswered || (parsedPlan && tasks.length === 0)}
-                                    title={!allHumanQueriesAnswered ? "Answer all required questions first" : (parsedPlan && tasks.length === 0) ? "Waiting for tasks to be generated" : undefined}
+                                    disabled={isActionLoading || (parsedPlan && tasks.length === 0)}
+                                    title={(parsedPlan && tasks.length === 0) ? "Waiting for tasks to be generated" : undefined}
                                     onClick={() => handleAction("proceed")}
                                 >
-                                    {isExecuting
-                                        ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Proceeding</>
+                                    {isActionLoading 
+                                        ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</>
                                         : <><PlayCircle className="w-3.5 h-3.5" /> Proceed</>}
                                 </button>
                             )}
-                            {!isExecuting && showUpdateButton && (
+                            {showUpdateButton && (
                                 <button
                                     type="button"
                                     className="btn btn-sm btn-primary"
-                                    disabled={isUpdatingPlan || !queryMessage}
-                                    onClick={() => handleAction("revise")}
+                                    disabled={isActionLoading || isUpdatingPlan || (!allHumanQueriesAnswered && !hasTaskQueryValues)}
+                                    onClick={() => handleAction("update")}
                                 >
-                                    {isUpdatingPlan
+                                    {isActionLoading || isUpdatingPlan
                                         ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Updating</>
-                                        : <><MessageSquare className="w-3.5 h-3.5" /> Update plan</>}
+                                        : <><MessageSquare className="w-3.5 h-3.5" /> Update</>}
                                 </button>
                             )}
-                            {!isExecuting && !showUpdateButton && (
+                            {showProceedButton && (
                                 <button
                                     type="button"
                                     className="btn btn-sm btn-ghost opacity-60 hover:opacity-100"
