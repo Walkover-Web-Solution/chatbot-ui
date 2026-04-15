@@ -95,8 +95,10 @@ const AssistantMessageCard = React.memo(
         const toolsData = message?.tools_data || {};
         const reasoning = message?.reasoning || "";
         const planning = message?.planning;
+        const isPlanningCompleted = planning?.execution?.state === "completed";
+        const suppressContent = planning && !isPlanningCompleted;
 
-        const handlePlanningAction = useCallback((action: "proceed" | "respond" | "revise", payload: { parsedPlan: any; rawPlan: string; taskQueries?: Record<string, string>; queryMessage?: string; humanQueryAnswers?: Record<string, string>; humanQueryMessage?: string; resolvedAfter?: boolean }) => {
+        const handlePlanningAction = useCallback((action: "proceed" | "respond" | "revise", payload: { parsedPlan: any; rawPlan: string; taskQueries?: Record<string, string>; queryMessage?: string; humanQueryAnswers?: Record<string, string>; humanQueryMessage?: string; resolvedAfter?: boolean; humanQueryAnswersMessage?: string; updateMessage?: string }) => {
             if (action === "respond") {
                 const humanAnswerEntries = Object.entries(payload.humanQueryAnswers || {});
                 const [firstTaskId, firstAnswer] = humanAnswerEntries[0] || [];
@@ -116,10 +118,11 @@ const AssistantMessageCard = React.memo(
                     skipUserEcho: true,
                     silent: true,
                 });
-            } else {
-                if (payload?.queryMessage?.trim()) {
+            } else if (action === "revise") {
+                const message = payload.updateMessage || payload.queryMessage || "";
+                if (message.trim()) {
                     sendMessage({
-                        message: payload.queryMessage,
+                        message,
                         mode: "plan",
                         skipUserEcho: true,
                         silent: true,
@@ -194,16 +197,17 @@ const AssistantMessageCard = React.memo(
                                     ))
                                 ) : (
                                     <div className="prose dark:prose-invert break-words" style={{ color: theme.palette.text.primary }}>
-                                        {planning && <PlanningTasksCard plan={planning} isStreaming={message?.isStreaming} onAction={handlePlanningAction} />}
                                         <ReasoningAccordion reasoning={reasoning} isStreaming={message?.isStreaming} hasContent={!!message?.content} />
+                                        {planning && <PlanningTasksCard plan={planning} isStreaming={message?.isStreaming} onAction={handlePlanningAction} />}
                                         <ToolCallAccordion toolsData={toolsData} />
-                                        {message?.isStreaming && !message?.content ? (
+                                        {message?.isStreaming && !message?.content && !suppressContent ? (
                                             <div className="loading-indicator" style={themePalette}>
                                                 <div className="loading-bar"></div>
                                                 <div className="loading-bar"></div>
                                                 <div className="loading-bar"></div>
                                             </div>
                                         ) : (() => {
+                                            if (suppressContent) return null;
                                             const rawContent = isError
                                                 ? message?.error
                                                 : message?.chatbot_message || message?.content;

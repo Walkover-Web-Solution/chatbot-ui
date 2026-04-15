@@ -146,7 +146,7 @@ export const chatReducerV2 = {
         };
     },
 
-    updatePlanningExecutionState: (state, action: PayloadAction<{ executionState?: string; taskUpdate?: { id: string; title?: string; status?: string; result?: string; error?: string } }>) => {
+    updatePlanningExecutionState: (state, action: PayloadAction<{ executionState?: string; taskUpdate?: { id: string; title?: string; status?: string; result?: string; error?: string }; taskId?: string; taskDelta?: string }>) => {
         const subThreadId = state.subThreadId;
         if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
         const lastMessageId = state.messageIds[subThreadId][0];
@@ -172,6 +172,21 @@ export const chatReducerV2 = {
             message.planning.execution.tasks[taskId] = {
                 ...existingTask,
                 ...action.payload.taskUpdate,
+            };
+        }
+
+        // Handle streaming task delta
+        if (action.payload.taskId && action.payload.taskDelta) {
+            if (!message.planning.execution.tasks) {
+                message.planning.execution.tasks = {};
+            }
+            const taskId = action.payload.taskId;
+            const existingTask = message.planning.execution.tasks[taskId] || {};
+            const currentResult = existingTask.result || "";
+            message.planning.execution.tasks[taskId] = {
+                ...existingTask,
+                result: currentResult + action.payload.taskDelta,
+                status: "running",
             };
         }
     },

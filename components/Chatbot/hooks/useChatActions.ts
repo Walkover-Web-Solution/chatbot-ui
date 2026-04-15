@@ -182,9 +182,9 @@ export const useSendMessage = ({
         skipUserEcho,
         task_id,
     }: SendMessagePayloadType) => {
-        const isPlanExecutionRequest = mode === "plan" && (action === "approve" || action === "execute" || action === "respond");
+        const isPlanExecutionRequest = mode === "plan" && (action === "approve" || action === "execute");
         const isPlanUpdateRequest = mode === "plan" && !action && skipUserEcho === true;
-        const isInlinePlanRequest = isPlanExecutionRequest || isPlanUpdateRequest;
+        const isInlinePlanRequest = isPlanExecutionRequest || isPlanUpdateRequest || (mode === "plan" && action === "respond");
         globalDispatch(setNewMessage(true));
         globalDispatch(setError(null)); // Clear any previous errors
         const textMessage = message || (messageRef?.current as HTMLInputElement)?.value;
@@ -245,6 +245,7 @@ export const useSendMessage = ({
         let planningStreamBuffer = "";
         let isPlanningStreamActive = false;
         let isExecutionStreamActive = isPlanExecutionRequest;
+        let streamMessageId: string | null = null;
 
         const pushPlanningUpdate = (incoming: any, resetBuffer = false) => {
             if (resetBuffer) {
@@ -354,13 +355,14 @@ export const useSendMessage = ({
                 switch (event.event) {
                     case "start":
                         if (action === "respond") {
-                            globalDispatch(updatePlanningExecutionState({ executionState: "running" }));
+                            globalDispatch(updatePlanningExecutionState({ executionState: "updating" }));
                             break;
                         }
                         if (isInlinePlanRequest) {
                             globalDispatch(updatePlanningExecutionState({ executionState: isPlanExecutionRequest ? "running" : "updating" }));
                             break;
                         }
+                        streamMessageId = event.message_id || null;
                         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
                         globalDispatch(updateLastAssistantMessage({
                             role: "assistant",
@@ -383,6 +385,14 @@ export const useSendMessage = ({
                         isExecutionStreamActive = true;
                         globalDispatch(updatePlanningExecutionState({ executionState: event.state || "running" }));
                         break;
+                    case "task_delta":
+                        if (event.task_id && event.content) {
+                            globalDispatch(updatePlanningExecutionState({ 
+                                taskId: event.task_id,
+                                taskDelta: event.content 
+                            }));
+                        }
+                        break;
                     case "tool_call":
                         globalDispatch(appendToolCall({
                             call_id: event.call_id,
@@ -397,24 +407,58 @@ export const useSendMessage = ({
                         }));
                         break;
                     case "delta":
-                        if (isPlanningStreamActive) {
-                            pushPlanningUpdate(event.content || "");
-                        } else if (isExecutionStreamActive) {
+                        if (isExecutionStreamActive) {
                             handleExecutionDelta(event.content || "");
-                            break;
-                        } else if (isPlanUpdateRequest) {
+                        } else if (isPlanningStreamActive || mode === "plan") {
+                            isPlanningStreamActive = true;
+                            pushPlanningUpdate(event.content || "");
+                        } else if (action === "respond") {
                             break;
                         } else {
-                            globalDispatch(appendLastAssistantMessageChunk({ chunk: event.content || "" }));
+                            // Auto-detect planning data in delta content
+                            const deltaContent = event.content || "";
+                            const looksLikePlanData = deltaContent.includes('"state"') && 
+                                                     (deltaContent.includes('"planning"') || deltaContent.includes('"tasks"'));
+                            
+                            if (looksLikePlanData) {
+                                isPlanningStreamActive = true;
+                                pushPlanningUpdate(deltaContent);
+                            } else {
+                                globalDispatch(appendLastAssistantMessageChunk({ chunk: deltaContent }));
+                            }
                         }
                         break;
-                    case "done":
+                    case "done": {
+                        const wasPlanningStream = isPlanningStreamActive;
                         finalizePlanningStream();
+                        if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+
+                        if (action === "respond") {
+                            if (isExecutionStreamActive) {
+                                const finalExecutionContent = event?.response?.data?.content;
+                                globalDispatch(updatePlanningExecutionState({ executionState: "completed" }));
+                                if (typeof finalExecutionContent === "string" && latestMessageId) {
+                                    globalDispatch(updateSingleMessage({
+                                        messageId: latestMessageId,
+                                        data: {
+                                            content: finalExecutionContent,
+                                            isStreaming: false,
+                                            wait: false,
+                                            message_id: event.message_id,
+                                            finish_reason: event.finish_reason,
+                                        },
+                                    }));
+                                }
+                            } else {
+                                globalDispatch(updatePlanningExecutionState({ executionState: "pending" }));
+                            }
+                            globalDispatch(setLoading(false));
+                            break;
+                        }
+
                         if (isExecutionStreamActive) {
                             const finalExecutionContent = event?.response?.data?.content;
-                            globalDispatch(updatePlanningExecutionState({
-                                executionState: "completed",
-                            }));
+                            globalDispatch(updatePlanningExecutionState({ executionState: "completed" }));
                             if (typeof finalExecutionContent === "string" && latestMessageId) {
                                 globalDispatch(updateSingleMessage({
                                     messageId: latestMessageId,
@@ -427,49 +471,42 @@ export const useSendMessage = ({
                                     },
                                 }));
                             }
-                        } else if (isPlanUpdateRequest) {
-                            globalDispatch(updatePlanningExecutionState({ executionState: "updated" }));
-                        } else {
+                        } else if (wasPlanningStream) {
                             const doneContent = event?.response?.data?.content;
-                            if (typeof doneContent === "string") {
+                            if (doneContent) {
                                 try {
                                     const parsed = JSON.parse(doneContent);
                                     if (parsed?.state === "planning" && parsed?.tasks) {
                                         globalDispatch(setPlanningData({ plan: parsed }));
-                                        globalDispatch(updateLastAssistantMessage({
-                                            role: "assistant",
-                                            isStreaming: false,
-                                            id: event.message_id,
-                                            finish_reason: event.finish_reason,
-                                            message_id: event.message_id,
-                                        }));
-                                        break;
                                     }
                                 } catch (_) {}
                             }
+                            // Clear updating state when planning stream completes
+                            globalDispatch(updatePlanningExecutionState({ executionState: "pending" }));
+                            const targetId = streamMessageId || latestMessageId;
+                            if (targetId) {
+                                globalDispatch(updateSingleMessage({
+                                    messageId: targetId,
+                                    data: {
+                                        isStreaming: false,
+                                        wait: false,
+                                        content: "",
+                                        finish_reason: event.finish_reason,
+                                    },
+                                }));
+                            }
+                        } else if (isPlanUpdateRequest) {
+                            globalDispatch(updatePlanningExecutionState({ executionState: "updated" }));
+                        } else {
                             globalDispatch(updateLastAssistantMessage({
                                 role: "assistant",
                                 isStreaming: false,
-                                id: event.message_id,
-                                finish_reason: event.finish_reason,
+                                wait: false,
                                 message_id: event.message_id,
+                                finish_reason: event.finish_reason,
                             }));
                         }
-                        emitEventToParent('MESSAGE_RECEIVED', event.message_id);
                         globalDispatch(setLoading(false));
-                        if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
-                        break;
-                    case "error": {
-                        const errMsg = event.error || "An error occurred while talking to AI";
-                        emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', errMsg);
-                        if (isExecutionStreamActive || isPlanUpdateRequest) {
-                            globalDispatch(updatePlanningExecutionState({ executionState: "error" }));
-                        } else {
-                            globalDispatch(updateLastAssistantMessage({ role: "assistant", content: errMsg, id: event.message_id }));
-                        }
-                        globalDispatch(setLoading(false));
-                        finalizePlanningStream();
-                        if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
                         break;
                     }
                     default:
