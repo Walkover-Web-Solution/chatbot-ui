@@ -17,6 +17,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
     const [resolvedHumanQueryIds, setResolvedHumanQueryIds] = useState<Set<string>>(new Set());
     const [openTaskId, setOpenTaskId] = useState("");
     const [queryHistoryPerTask, setQueryHistoryPerTask] = useState<Record<string, Array<{ query: string; answer: string | null }>>>({});
+    const [useCustomAnswerPerQuery, setUseCustomAnswerPerQuery] = useState<Record<string, boolean>>({});
     const [isActionLoading, setIsActionLoading] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
     const prevHumanQueriesRef = useRef<Record<string, string>>({});
@@ -343,16 +344,64 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                         <span className="opacity-80">{queryItem.answer}</span>
                                                                     </div>
                                                                 ) : (
-                                                                    <input
-                                                                        type="text"
-                                                                        className="input input-bordered input-xs w-full text-xs"
-                                                                        placeholder="Your answer..."
-                                                                        value={humanQueryAnswers[`${task.id}_${idx}`] || ""}
-                                                                        onChange={(e) => {
-                                                                            const value = e.target.value;
-                                                                            setHumanQueryAnswers((prev) => ({ ...prev, [`${task.id}_${idx}`]: value }));
-                                                                        }}
-                                                                    />
+                                                                    (() => {
+                                                                        const answerKey = `${task.id}_${idx}`;
+                                                                        const options = Array.isArray(task.human_options) ? task.human_options.filter(Boolean) : [];
+                                                                        const showCustomChoice = Boolean(task.allow_custom_response);
+                                                                        const useCustomAnswer = Boolean(useCustomAnswerPerQuery[answerKey]);
+                                                                        return (
+                                                                            <div className="space-y-2">
+                                                                                {options.length > 0 && (
+                                                                                    <div className="space-y-1.5">
+                                                                                        <p className="text-[10px] uppercase tracking-wide opacity-50">These are options from AI</p>
+                                                                                        <div className="flex flex-wrap gap-1.5">
+                                                                                            {options.map((opt: string, optIndex: number) => {
+                                                                                                const isSelected = humanQueryAnswers[answerKey] === opt && !useCustomAnswer;
+                                                                                                return (
+                                                                                                    <button
+                                                                                                        key={`${answerKey}_opt_${optIndex}`}
+                                                                                                        type="button"
+                                                                                                        className={`btn btn-xs ${isSelected ? "btn-primary" : "btn-outline"}`}
+                                                                                                        onClick={() => {
+                                                                                                            setUseCustomAnswerPerQuery((prev) => ({ ...prev, [answerKey]: false }));
+                                                                                                            setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: opt }));
+                                                                                                        }}
+                                                                                                    >
+                                                                                                        {opt}
+                                                                                                    </button>
+                                                                                                );
+                                                                                            })}
+                                                                                            {showCustomChoice && (
+                                                                                                <button
+                                                                                                    type="button"
+                                                                                                    className={`btn btn-xs ${useCustomAnswer ? "btn-primary" : "btn-outline"}`}
+                                                                                                    onClick={() => {
+                                                                                                        setUseCustomAnswerPerQuery((prev) => ({ ...prev, [answerKey]: true }));
+                                                                                                        setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: prev[answerKey] || "" }));
+                                                                                                    }}
+                                                                                                >
+                                                                                                    Custom
+                                                                                                </button>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                )}
+
+                                                                                {(options.length === 0 || useCustomAnswer) && (
+                                                                                    <input
+                                                                                        type="text"
+                                                                                        className="input input-bordered input-xs w-full text-xs"
+                                                                                        placeholder={options.length > 0 ? "Enter custom response..." : "Your answer..."}
+                                                                                        value={humanQueryAnswers[answerKey] || ""}
+                                                                                        onChange={(e) => {
+                                                                                            const value = e.target.value;
+                                                                                            setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: value }));
+                                                                                        }}
+                                                                                    />
+                                                                                )}
+                                                                            </div>
+                                                                        );
+                                                                    })()
                                                                 )}
                                                             </div>
                                                         ))}

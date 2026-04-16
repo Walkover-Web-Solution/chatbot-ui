@@ -16,10 +16,13 @@ interface ReasoningAccordionProps {
 export default function ReasoningAccordion({ reasoning, isStreaming, hasContent }: ReasoningAccordionProps) {
     const [open, setOpen] = useState(true);
     const contentRef = useRef<HTMLDivElement>(null);
+    const bottomRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (isStreaming && open && contentRef.current) {
-            contentRef.current.scrollTop = contentRef.current.scrollHeight;
+            requestAnimationFrame(() => {
+                bottomRef.current?.scrollIntoView({ block: "end" });
+            });
         }
     }, [reasoning, isStreaming, open]);
 
@@ -64,6 +67,7 @@ export default function ReasoningAccordion({ reasoning, isStreaming, hasContent 
                             {reasoning}
                         </ReactMarkdown>
                     </div>
+                    <div ref={bottomRef} />
                 </div>
             )}
         </div>

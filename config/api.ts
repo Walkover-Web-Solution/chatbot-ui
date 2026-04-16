@@ -160,6 +160,7 @@ export type StreamEvent =
     | { event: "reasoning"; content: string }
     | { event: "planning"; content?: string; plan?: any }
     | { event: "execution"; state?: string }
+    | { event: "task_delta"; task_id?: string; content?: string }
     | { event: "delta"; content: string }
     | { event: "tool_call"; call_id: string; name: string; args: Record<string, any> }
     | { event: "tool_result"; call_id: string; content: any }

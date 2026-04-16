@@ -440,6 +440,32 @@ export const useSendMessage = ({
                             }
                         }
                         break;
+                    case "error": {
+                        if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+                        const errorMessage = event.error || "Failed to send message. Please try again.";
+
+                        globalDispatch(setError(errorMessage));
+
+                        if (isExecutionStreamActive || isPlanningStreamActive || mode === "plan" || isInlinePlanRequest) {
+                            globalDispatch(updatePlanningExecutionState({ executionState: "error" }));
+                        }
+
+                        const targetId = event.message_id || streamMessageId || latestMessageId;
+                        if (targetId) {
+                            globalDispatch(updateSingleMessage({
+                                messageId: targetId,
+                                data: {
+                                    isStreaming: false,
+                                    wait: false,
+                                    error: errorMessage,
+                                    content: errorMessage,
+                                },
+                            }));
+                        }
+
+                        globalDispatch(setLoading(false));
+                        break;
+                    }
                     case "done": {
                         const wasPlanningStream = isPlanningStreamActive;
                         finalizePlanningStream();
