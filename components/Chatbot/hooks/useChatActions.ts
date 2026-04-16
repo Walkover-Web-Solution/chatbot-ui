@@ -222,7 +222,7 @@ export const useSendMessage = ({
             images: imageUrls,
             files,
             userId,
-            flag: Boolean(helloMode?.includes("stream") && !(helloMode?.includes("widget") || helloMode?.includes("image_model"))),
+            flag: Boolean(helloMode?.includes("stream") && !(helloMode?.includes("image_model"))),
             interfaceContextData: { ...variables, ...customVariables } || {},
             threadId: customThreadId || threadId,
             subThreadId: subThreadId,
@@ -392,6 +392,14 @@ export const useSendMessage = ({
                             }));
                         }
                         break;
+                    case "task_reasoning":
+                        if (event.task_id && event.content) {
+                            globalDispatch(updatePlanningExecutionState({
+                                taskId: event.task_id,
+                                taskReasoning: event.content,
+                            }));
+                        }
+                        break;
                     case "tool_call":
                         globalDispatch(appendToolCall({
                             call_id: event.call_id,
@@ -404,6 +412,19 @@ export const useSendMessage = ({
                             call_id: event.call_id,
                             content: event.content,
                         }));
+                        break;
+                    case "template_response":
+                        if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+                        globalDispatch(updateLastAssistantMessage({
+                            role: "assistant",
+                            wait: false,
+                            isStreaming: false,
+                            content: event.content,
+                            id: event.message_id,
+                            message_id: event.message_id,
+                            template_metadata: event.metadata || null,
+                        }));
+                        globalDispatch(setLoading(false));
                         break;
                     case "delta":
                         if (isExecutionStreamActive) {
@@ -427,6 +448,32 @@ export const useSendMessage = ({
                             }
                         }
                         break;
+                    case "error": {
+                        if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+                        const errorMessage = event.error || "Failed to send message. Please try again.";
+
+                        globalDispatch(setError(errorMessage));
+
+                        if (isExecutionStreamActive || isPlanningStreamActive || mode === "plan" || isInlinePlanRequest) {
+                            globalDispatch(updatePlanningExecutionState({ executionState: "error" }));
+                        }
+
+                        const targetId = event.message_id || streamMessageId || latestMessageId;
+                        if (targetId) {
+                            globalDispatch(updateSingleMessage({
+                                messageId: targetId,
+                                data: {
+                                    isStreaming: false,
+                                    wait: false,
+                                    error: errorMessage,
+                                    content: errorMessage,
+                                },
+                            }));
+                        }
+
+                        globalDispatch(setLoading(false));
+                        break;
+                    }
                     case "done": {
                         const wasPlanningStream = isPlanningStreamActive;
                         finalizePlanningStream();
