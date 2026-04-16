@@ -163,6 +163,7 @@ export type StreamEvent =
     | { event: "delta"; content: string }
     | { event: "tool_call"; call_id: string; name: string; args: Record<string, any> }
     | { event: "tool_result"; call_id: string; content: any }
+    | { event: "template_response"; message_id: string; content: any; metadata?: Record<string, any> }
     | { event: "done"; message_id: string; finish_reason: string; usage?: Record<string, any> }
     | { event: "error"; error: string; message_id?: string };
 
