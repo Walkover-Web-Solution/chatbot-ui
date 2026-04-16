@@ -1,9 +1,9 @@
 /* eslint-disable */
-import { Brain, ChevronDown, ChevronRight } from "lucide-react";
 import { supportsLookbehind } from "@/utils/appUtility";
 import dynamic from "next/dynamic";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { X } from "lucide-react";
 
 const remarkGfm = dynamic(() => import("remark-gfm"), { ssr: false }) as any;
 
@@ -11,63 +11,127 @@ interface ReasoningAccordionProps {
     reasoning: string;
     isStreaming?: boolean;
     hasContent?: boolean;
+    label?: string;
+    defaultOpen?: boolean;
 }
 
-export default function ReasoningAccordion({ reasoning, isStreaming, hasContent }: ReasoningAccordionProps) {
-    const [open, setOpen] = useState(true);
+export default function ReasoningAccordion({ reasoning, isStreaming, hasContent, label, defaultOpen }: ReasoningAccordionProps) {
+    const [expanded, setExpanded] = useState(defaultOpen ?? false);
+    const [animateIn, setAnimateIn] = useState(defaultOpen ?? false);
     const contentRef = useRef<HTMLDivElement>(null);
-    const bottomRef = useRef<HTMLDivElement>(null);
+    const isAtBottomRef = useRef(true);
+    const manuallyClosedRef = useRef(false);
 
-    useEffect(() => {
-        if (isStreaming && open && contentRef.current) {
-            requestAnimationFrame(() => {
-                bottomRef.current?.scrollIntoView({ block: "end" });
-            });
-        }
-    }, [reasoning, isStreaming, open]);
+    const handleScroll = () => {
+        const el = contentRef.current;
+        if (!el) return;
+        isAtBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight <= 60;
+    };
 
+    const openCard = (isAuto = false) => {
+        if (isAuto) manuallyClosedRef.current = false;
+        setExpanded(true);
+        // animateIn is set in useLayoutEffect after mount
+    };
+
+    const closeCard = (isManual = false) => {
+        if (isManual) manuallyClosedRef.current = true;
+        setAnimateIn(false);
+        setTimeout(() => setExpanded(false), 200);
+    };
+
+    // After card mounts (expanded=true), trigger the open animation
+    useLayoutEffect(() => {
+        if (expanded) {
+            requestAnimationFrame(() => setAnimateIn(true));
+        }
+    }, [expanded]);
+
+    // Auto-scroll as reasoning streams in
     useEffect(() => {
-        // Open when reasoning is streaming
-        if (isStreaming && reasoning) {
-            setOpen(true);
+        if (!animateIn) return;
+        if (isAtBottomRef.current && contentRef.current) {
+            contentRef.current.scrollTop = contentRef.current.scrollHeight;
         }
-        // Close when streaming is done and there's content
-        if (!isStreaming && hasContent) {
-            setOpen(false);
+    }, [reasoning, animateIn]);
+
+    // Auto-open when streaming starts (unless user manually closed)
+    useEffect(() => {
+        if (isStreaming && reasoning && !manuallyClosedRef.current && !expanded) {
+            openCard(true);
         }
-    }, [hasContent, isStreaming, reasoning]);
+    }, [isStreaming, reasoning]);
+
+    // Auto-close when streaming ends and content arrives
+    useEffect(() => {
+        if (!isStreaming && hasContent) closeCard();
+    }, [isStreaming, hasContent]);
 
     if (!reasoning) return null;
 
-    return (
-        <div className="rounded-lg border border-base-300 overflow-hidden text-sm mb-2">
-            <button
-                type="button"
-                className="w-full flex items-center gap-2 px-3 py-2 bg-base-200 hover:bg-base-300 transition-colors text-left"
-                onClick={() => setOpen((v) => !v)}
-            >
-                <Brain className="w-4 h-4 opacity-60 shrink-0" />
-                <span className="flex-1 font-medium opacity-70">
-                    {isStreaming && !hasContent ? "Thinking…" : "Reasoning"}
-                </span>
-                {open ? (
-                    <ChevronDown className="w-4 h-4 opacity-50 shrink-0" />
-                ) : (
-                    <ChevronRight className="w-4 h-4 opacity-50 shrink-0" />
-                )}
-            </button>
+    const title = label ?? "Reasoning";
+    const chipLabel = isStreaming ? "Thinking…" : title;
 
-            {open && (
+    return (
+        <div className="mb-2" data-testid="chatbot-interface-reasoning-accordion">
+            {/* Collapsed pill */}
+            {!expanded && (
+                <div className="flex items-center gap-4">
+                    <button
+                        type="button"
+                        onClick={() => openCard()}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-base-200/80 dark:bg-base-700/60 border border-base-300/60 dark:border-base-600/40 hover:bg-base-200 dark:hover:bg-base-700 transition-colors cursor-pointer"
+                    >
+                        {isStreaming ? (
+                            <span className="w-2 h-2 rounded-full bg-base-content/40 animate-pulse shrink-0" />
+                        ) : (
+                            <span className="w-2 h-2 rounded-full border border-base-content/30 shrink-0" />
+                        )}
+                        <span className="text-xs text-base-content/60 font-medium">{chipLabel}</span>
+                    </button>
+                    {!isStreaming && (
+                        <button
+                            type="button"
+                            onClick={() => openCard()}
+                            className="text-xs text-base-content/50 hover:text-base-content/80 transition-colors font-medium"
+                        >
+                            Show
+                        </button>
+                    )}
+                </div>
+            )}
+
+            {/* Expanded card */}
+            {expanded && (
                 <div
-                    ref={contentRef}
-                    className="px-3 py-2 bg-base-100 border-t border-base-300 text-xs max-h-48 overflow-y-auto opacity-70"
+                    className="rounded-2xl border border-base-200 dark:border-base-700 bg-base-50 dark:bg-base-800/60 shadow-sm overflow-hidden"
+                    style={{
+                        opacity: animateIn ? 1 : 0,
+                        transform: animateIn ? "translateY(0)" : "translateY(-6px)",
+                        transition: "opacity 180ms ease-out, transform 180ms ease-out",
+                    }}
                 >
-                    <div className="prose prose-xs dark:prose-invert break-words max-w-none">
-                        <ReactMarkdown {...(!supportsLookbehind() ? {} : { remarkPlugins: [remarkGfm] })}>
-                            {reasoning}
-                        </ReactMarkdown>
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-base-200 dark:border-base-700">
+                        <span className="text-sm font-semibold text-base-content/80">{title}</span>
+                        <button
+                            type="button"
+                            onClick={() => closeCard(true)}
+                            className="w-6 h-6 flex items-center justify-center rounded-full text-base-content/40 hover:text-base-content/70 hover:bg-base-200 dark:hover:bg-base-700 transition-colors"
+                        >
+                            <X className="w-3.5 h-3.5" />
+                        </button>
                     </div>
-                    <div ref={bottomRef} />
+                    <div
+                        ref={contentRef}
+                        onScroll={handleScroll}
+                        className="px-4 py-3 max-h-60 overflow-y-auto"
+                    >
+                        <div className="prose prose-sm dark:prose-invert break-words max-w-none text-[12px] leading-relaxed text-base-content/70">
+                            <ReactMarkdown {...(!supportsLookbehind() ? {} : { remarkPlugins: [remarkGfm] })}>
+                                {reasoning}
+                            </ReactMarkdown>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

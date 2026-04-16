@@ -392,6 +392,14 @@ export const useSendMessage = ({
                             }));
                         }
                         break;
+                    case "task_reasoning":
+                        if (event.task_id && event.content) {
+                            globalDispatch(updatePlanningExecutionState({
+                                taskId: event.task_id,
+                                taskReasoning: event.content,
+                            }));
+                        }
+                        break;
                     case "tool_call":
                         globalDispatch(appendToolCall({
                             call_id: event.call_id,
