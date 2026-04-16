@@ -223,7 +223,7 @@ export const useSendMessage = ({
             images: imageUrls,
             files,
             userId,
-            flag: Boolean(helloMode?.includes("stream") && !(helloMode?.includes("widget") || helloMode?.includes("image_model"))),
+            flag: Boolean(helloMode?.includes("stream") && !(helloMode?.includes("image_model"))),
             interfaceContextData: { ...variables, ...customVariables } || {},
             threadId: customThreadId || threadId,
             subThreadId: subThreadId,
@@ -405,6 +405,19 @@ export const useSendMessage = ({
                             call_id: event.call_id,
                             content: event.content,
                         }));
+                        break;
+                    case "template_response":
+                        if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+                        globalDispatch(updateLastAssistantMessage({
+                            role: "assistant",
+                            wait: false,
+                            isStreaming: false,
+                            content: event.content,
+                            id: event.message_id,
+                            message_id: event.message_id,
+                            template_metadata: event.metadata || null,
+                        }));
+                        globalDispatch(setLoading(false));
                         break;
                     case "delta":
                         if (isExecutionStreamActive) {
