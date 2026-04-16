@@ -7,6 +7,7 @@ import {
 } from "@/config/ragApi";
 import { SetSessionStorage } from "@/utils/ChatbotUtility";
 import { KNOWLEDGE_BASE_CUSTOM_SECTION } from "@/utils/enums";
+import { formatErrorMessage } from "@/utils/errorFormatter";
 import DriveIcon from "@/assests/DriveIcon";
 import { CircleX, Loader2, Settings, Upload, X } from "lucide-react";
 import * as React from "react";
@@ -52,48 +53,6 @@ const VALID_FILE_TYPES = [
     "text/csv",
     "text/plain"
 ] as const;
-
-const formatRagError = (errorData: any): string => {
-    if (!errorData) return "Something went wrong";
-
-    if (typeof errorData === "string") {
-        return errorData;
-    }
-
-    if (Array.isArray(errorData)) {
-        return errorData
-            .map((item) => formatRagError(item))
-            .filter(Boolean)
-            .join("\n");
-    }
-
-    if (typeof errorData === "object") {
-        if (errorData?.message) {
-            return formatRagError(errorData.message);
-        }
-
-        if (errorData?.error) {
-            return formatRagError(errorData.error);
-        }
-
-        if (errorData?.errors) {
-            return formatRagError(errorData.errors);
-        }
-
-        const joinedValues = Object.values(errorData)
-            .map((value) => formatRagError(value))
-            .filter(Boolean)
-            .join("\n");
-
-        if (joinedValues) {
-            return joinedValues;
-        }
-
-        return JSON.stringify(errorData);
-    }
-
-    return String(errorData);
-};
 
 function RagComponent() {
 
@@ -178,7 +137,7 @@ function RagComponent() {
                 handleClose();
             }
         } catch (error: any) {
-            const formattedError = formatRagError(error?.response?.data || error?.message || { id });
+            const formattedError = formatErrorMessage(error?.response?.data || error?.message || { id });
             window.parent.postMessage(
                 { type: "iframe-message-rag", status: "delete", error: formattedError },
                 "*"
@@ -403,7 +362,7 @@ function RagComponent() {
             }
         } catch (error: any) {
             console.error("Error saving:", error);
-            const formattedError = formatRagError(error?.response?.data || error?.message || { id: "error" });
+            const formattedError = formatErrorMessage(error?.response?.data || error?.message || { id: "error" });
             window.parent.postMessage(
                 { type: "iframe-message-rag", status: "create", error: formattedError },
                 "*"

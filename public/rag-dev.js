@@ -731,47 +731,6 @@
             this.initialiseMessageListeners();
         }
 
-        formatErrorMessage(errorData) {
-            if (!errorData) return 'Something went wrong';
-
-            if (typeof errorData === 'string') {
-                return errorData;
-            }
-
-            if (Array.isArray(errorData)) {
-                return errorData
-                    .map(item => this.formatErrorMessage(item))
-                    .filter(Boolean)
-                    .join('\n');
-            }
-
-            if (typeof errorData === 'object') {
-                if (errorData.message) {
-                    return this.formatErrorMessage(errorData.message);
-                }
-
-                if (errorData.error) {
-                    return this.formatErrorMessage(errorData.error);
-                }
-
-                if (errorData.errors) {
-                    return this.formatErrorMessage(errorData.errors);
-                }
-
-                const values = Object.values(errorData)
-                    .map(value => this.formatErrorMessage(value))
-                    .filter(Boolean)
-                    .join('\n');
-
-                if (values) {
-                    return values;
-                }
-
-                return JSON.stringify(errorData);
-            }
-
-            return String(errorData);
-        }
 
         initialiseMessageListeners() {
             window.addEventListener('message', (event) => {
@@ -799,7 +758,7 @@
                         }
                     }
                     if (error) {
-                        const formattedError = this.formatErrorMessage(error);
+                        const formattedError = window.formatErrorMessage(error);
                         this.showMessage(this.state.messageType.error, formattedError);
                     }
                 } else {
