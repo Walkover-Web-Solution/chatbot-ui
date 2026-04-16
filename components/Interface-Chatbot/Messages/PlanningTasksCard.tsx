@@ -289,7 +289,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                         if (isActive) {
                                             iconEl = <Loader2 className="w-3.5 h-3.5 text-base-content/70 animate-spin" />;
                                         } else if (isDone) {
-                                            iconEl = <CheckCircle2 className="w-3.5 h-3.5 text-base-content/60" />;
+                                            iconEl = <CheckCircle2 className="w-3.5 h-3.5 text-success" />;
                                         } else if (isError) {
                                             iconEl = <XCircle className="w-3.5 h-3.5 text-base-content/60" />;
                                         } else {
@@ -307,7 +307,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                 <div className="relative z-10 flex-shrink-0 w-7 flex items-start justify-center pt-[3px]">
                                                     <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
                                                         isActive ? "bg-base-200 dark:bg-base-700 ring-1 ring-base-300 dark:ring-base-600" :
-                                                        isDone ? "bg-base-200/60 dark:bg-base-700/40" :
+                                                        isDone ? "bg-base-200/60 dark:bg-base-700/40 text-base-success" :
                                                         isError ? "bg-base-200/60 dark:bg-base-700/40" :
                                                         "bg-base-200 dark:bg-base-800"
                                                     }`}>
