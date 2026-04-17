@@ -319,6 +319,20 @@ export const useSendMessage = ({
                     }));
                     return true;
                 }
+
+                if (parsed.event === "task_error") {
+                    isExecutionStreamActive = true;
+                    globalDispatch(updatePlanningExecutionState({
+                        executionState: "executing",
+                        taskUpdate: {
+                            id: parsed.task_id,
+                            title: parsed.title,
+                            status: parsed.retrying ? "in_progress" : "error",
+                            error: parsed.error || parsed.result,
+                        },
+                    }));
+                    return true;
+                }
             } catch (error) {
                 const normalized = raw.trim().toLowerCase();
                 if (normalized === "running") {
@@ -347,6 +361,21 @@ export const useSendMessage = ({
                 }
             }
             resetPlanningStream();
+        };
+
+        const shouldSuppressFinalExecutionContent = (content: unknown) => {
+            if (typeof content !== "string" || !content.trim()) return false;
+            try {
+                const parsed = JSON.parse(content);
+                const tasks = parsed?.tasks;
+                if (!tasks || typeof tasks !== "object") return false;
+                return Object.values(tasks).some((task: any) => {
+                    const status = String(task?.status || "").toLowerCase();
+                    return status === "failed" || status === "error" || task?.is_error === true || Boolean(task?.error);
+                });
+            } catch {
+                return false;
+            }
         };
 
         const response = await streamDataToAction(
@@ -483,12 +512,15 @@ export const useSendMessage = ({
                         if (action === "respond") {
                             if (isExecutionStreamActive) {
                                 const finalExecutionContent = event?.response?.data?.content;
+                                const suppressFinalContent = shouldSuppressFinalExecutionContent(finalExecutionContent);
                                 globalDispatch(updatePlanningExecutionState({ executionState: "completed" }));
-                                if (typeof finalExecutionContent === "string" && latestMessageId) {
+                                if (latestMessageId) {
                                     globalDispatch(updateSingleMessage({
                                         messageId: latestMessageId,
                                         data: {
-                                            content: finalExecutionContent,
+                                            content: suppressFinalContent && typeof finalExecutionContent === "string"
+                                                ? ""
+                                                : (typeof finalExecutionContent === "string" ? finalExecutionContent : ""),
                                             isStreaming: false,
                                             wait: false,
                                             message_id: event.message_id,
@@ -505,12 +537,15 @@ export const useSendMessage = ({
 
                         if (isExecutionStreamActive) {
                             const finalExecutionContent = event?.response?.data?.content;
+                            const suppressFinalContent = shouldSuppressFinalExecutionContent(finalExecutionContent);
                             globalDispatch(updatePlanningExecutionState({ executionState: "completed" }));
-                            if (typeof finalExecutionContent === "string" && latestMessageId) {
+                            if (latestMessageId) {
                                 globalDispatch(updateSingleMessage({
                                     messageId: latestMessageId,
                                     data: {
-                                        content: finalExecutionContent,
+                                        content: suppressFinalContent && typeof finalExecutionContent === "string"
+                                            ? ""
+                                            : (typeof finalExecutionContent === "string" ? finalExecutionContent : ""),
                                         isStreaming: false,
                                         wait: false,
                                         message_id: event.message_id,

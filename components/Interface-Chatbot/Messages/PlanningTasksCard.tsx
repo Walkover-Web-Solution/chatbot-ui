@@ -1,5 +1,5 @@
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
-import { CheckCircle2, ChevronDown, Circle, Loader2, MessageSquare, Pencil, PlayCircle, Sparkles, XCircle } from "lucide-react";
+import { CheckCircle2, ChevronDown, Circle, Loader2, MessageSquare, Pencil, PlayCircle, RotateCcw, Sparkles, XCircle } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReasoningAccordion from "./ReasoningAccordion";
 
@@ -102,13 +102,32 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
     const isExecutionCompleted = execution?.state === "completed";
     const isExecutionLockedToActiveTask = isExecuting && Boolean(activeTaskId);
     const hasHumanQueries = humanQueryTasks.length > 0;
-    const showProceedButton = !hasHumanQueries && !hasTaskQueryValues && !isExecuting && !isActionLoading && !isStreaming;
-    const showUpdateButton = (hasHumanQueries || hasTaskQueryValues) && !isExecuting && !isStreaming;
+    const showProceedButton = !hasHumanQueries && !hasTaskQueryValues && !isExecuting && !isActionLoading && !isUpdatingPlan && !isStreaming;
+    const showUpdateButton = (hasHumanQueries || hasTaskQueryValues || isActionLoading || isUpdatingPlan) && !isExecuting && !isStreaming;
 
     const doneCount = useMemo(() => {
         if (!execution?.tasks) return 0;
         return Object.values(execution.tasks).filter((t: any) => t?.status === "done").length;
     }, [execution]);
+
+    const hasFailedTasks = useMemo(() => {
+        const executionTasks = execution?.tasks;
+        if (executionTasks && typeof executionTasks === "object") {
+            return Object.values(executionTasks).some((t: any) => {
+                const status = String(t?.status || "").toLowerCase();
+                return status === "error" || status === "failed" || t?.is_error === true || Boolean(t?.error);
+            });
+        }
+
+        if (parsedPlan?.tasks && typeof parsedPlan.tasks === "object") {
+            return Object.values(parsedPlan.tasks).some((t: any) => {
+                const status = String(t?.status || "").toLowerCase();
+                return status === "error" || status === "failed" || t?.is_error === true || Boolean(t?.error);
+            });
+        }
+
+        return false;
+    }, [execution?.tasks, parsedPlan?.tasks]);
 
     useEffect(() => {
         if (!activeTaskId) return;
@@ -281,8 +300,8 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                         const isLast = idx === tasks.length - 1;
                                         const isTaskOpen = isExecutionLockedToActiveTask ? activeTaskId === task.id : (showQueryInputs ? true : openTaskId === task.id);
                                         const isActive = status === "in_progress";
-                                        const isDone = status === "done";
-                                        const isError = status === "error";
+                                        const isDone = status === "done" || status === "completed";
+                                        const isError = status === "error" || status === "failed";
                                         const isPending = !isActive && !isDone && !isError;
 
                                         let iconEl: React.ReactNode;
@@ -291,7 +310,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                         } else if (isDone) {
                                             iconEl = <CheckCircle2 className="w-3.5 h-3.5 text-success" />;
                                         } else if (isError) {
-                                            iconEl = <XCircle className="w-3.5 h-3.5 text-base-content/60" />;
+                                            iconEl = <XCircle className="w-3.5 h-3.5 text-error" />;
                                         } else {
                                             iconEl = <Circle className="w-3.5 h-3.5 text-base-content/20" />;
                                         }
@@ -308,7 +327,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                     <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
                                                         isActive ? "bg-base-200 dark:bg-base-700 ring-1 ring-base-300 dark:ring-base-600" :
                                                         isDone ? "bg-base-200/60 dark:bg-base-700/40 text-base-success" :
-                                                        isError ? "bg-base-200/60 dark:bg-base-700/40" :
+                                                        isError ? "bg-base-200/60 dark:bg-base-700/40 text-error" :
                                                         "bg-base-200 dark:bg-base-800"
                                                     }`}>
                                                         {iconEl}
@@ -460,9 +479,9 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                             {executionTask?.reasoning && (
                                                                 <ReasoningAccordion
                                                                     reasoning={executionTask.reasoning}
-                                                                    isStreaming={executionTask.status === "running"}
+                                                                    isStreaming={isActive || status === "running"}
                                                                     label="Task Reasoning"
-                                                                    defaultOpen={executionTask.status === "running"}
+                                                                    defaultOpen={isActive || status === "running"}
                                                                 />
                                                             )}
                                                             {executionTask?.result && (
@@ -559,6 +578,16 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                 >
                                     <Pencil className="w-3 h-3" />
                                     {showQueryInputs ? "Cancel" : "Suggest changes"}
+                                </button>
+                            )}
+                            {hasFailedTasks && !isActionLoading && !isUpdatingPlan && (
+                                <button
+                                    type="button"
+                                    onClick={() => handleAction("proceed")}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold border border-base-300 dark:border-base-600 text-base-content hover:bg-base-200/50 dark:hover:bg-base-700/40 transition-all"
+                                >
+                                    <RotateCcw className="w-3.5 h-3.5" />
+                                    Retry failed
                                 </button>
                             )}
                         </div>
