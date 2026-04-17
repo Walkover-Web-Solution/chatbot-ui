@@ -1,4 +1,46 @@
 (function () {
+    function formatErrorMessage(errorData) {
+        if (!errorData) return 'Something went wrong';
+
+        if (typeof errorData === 'string') {
+            return errorData;
+        }
+
+        if (Array.isArray(errorData)) {
+            return errorData
+                .map(item => formatErrorMessage(item))
+                .filter(Boolean)
+                .join('\n');
+        }
+
+        if (typeof errorData === 'object') {
+            if (errorData.message) {
+                return formatErrorMessage(errorData.message);
+            }
+
+            if (errorData.error) {
+                return formatErrorMessage(errorData.error);
+            }
+
+            if (errorData.errors) {
+                return formatErrorMessage(errorData.errors);
+            }
+
+            const values = Object.values(errorData)
+                .map(value => formatErrorMessage(value))
+                .filter(Boolean)
+                .join('\n');
+
+            if (values) {
+                return values;
+            }
+
+            return JSON.stringify(errorData);
+        }
+
+        return String(errorData);
+    }
+
     class RagEmbedManager {
         constructor() {
             this.props = {};
@@ -758,7 +800,7 @@
                         }
                     }
                     if (error) {
-                        const formattedError = window.formatErrorMessage(error);
+                        const formattedError = formatErrorMessage(error);
                         this.showMessage(this.state.messageType.error, formattedError);
                     }
                 } else {
