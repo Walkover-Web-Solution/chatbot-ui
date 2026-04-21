@@ -1,4 +1,47 @@
 (function () {
+    // Helper function to format error messages
+    function formatErrorMessage(errorData) {
+        if (!errorData) return 'Something went wrong';
+
+        if (typeof errorData === 'string') {
+            return errorData;
+        }
+
+        if (Array.isArray(errorData)) {
+            return errorData
+                .map(item => formatErrorMessage(item))
+                .filter(Boolean)
+                .join('\n');
+        }
+
+        if (typeof errorData === 'object') {
+            if (errorData.message) {
+                return formatErrorMessage(errorData.message);
+            }
+
+            if (errorData.error) {
+                return formatErrorMessage(errorData.error);
+            }
+
+            if (errorData.errors) {
+                return formatErrorMessage(errorData.errors);
+            }
+
+            const values = Object.values(errorData)
+                .map(value => formatErrorMessage(value))
+                .filter(Boolean)
+                .join('\n');
+
+            if (values) {
+                return values;
+            }
+
+            return JSON.stringify(errorData);
+        }
+
+        return String(errorData);
+    }
+
     class RagEmbedManager {
         constructor() {
             this.props = {};
@@ -731,6 +774,7 @@
             this.initialiseMessageListeners();
         }
 
+
         initialiseMessageListeners() {
             window.addEventListener('message', (event) => {
                 // Optionally validate event.origin for security
@@ -757,7 +801,8 @@
                         }
                     }
                     if (error) {
-                        this.showMessage(this.state.messageType.error, error);
+                        const formattedError = formatErrorMessage(error);
+                        this.showMessage(this.state.messageType.error, formattedError);
                     }
                 } else {
                     console.log('Unknown message type:', message.type);
@@ -1341,6 +1386,7 @@
         showMessage(type, message) {
             const errorDiv = document.createElement('div');
             errorDiv.className = type;
+            errorDiv.style.whiteSpace = 'pre-wrap';
             errorDiv.textContent = message;
 
             document.body.appendChild(errorDiv);

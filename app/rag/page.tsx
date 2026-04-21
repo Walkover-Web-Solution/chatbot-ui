@@ -7,6 +7,7 @@ import {
 } from "@/config/ragApi";
 import { SetSessionStorage } from "@/utils/ChatbotUtility";
 import { KNOWLEDGE_BASE_CUSTOM_SECTION } from "@/utils/enums";
+import { formatErrorMessage } from "@/utils/errorFormatter";
 import DriveIcon from "@/assests/DriveIcon";
 import { CircleX, Loader2, Settings, Upload, X } from "lucide-react";
 import * as React from "react";
@@ -136,8 +137,9 @@ function RagComponent() {
                 handleClose();
             }
         } catch (error: any) {
+            const formattedError = formatErrorMessage(error?.response?.data || error?.message || { id });
             window.parent.postMessage(
-                { type: "iframe-message-rag", status: "delete", error: error?.response?.data || { id } },
+                { type: "iframe-message-rag", status: "delete", error: formattedError },
                 "*"
             );
         }
@@ -297,6 +299,12 @@ function RagComponent() {
                 collection_details: collection_details,
             };
 
+            if (!payload.description) {
+                errorToast("Description is required");
+                setIsLoading(false);
+                return;
+            }
+
             if (content && content !== resourceUrl && content.trim() !== "") {
                 payload.content = content;
             } else {
@@ -354,8 +362,9 @@ function RagComponent() {
             }
         } catch (error: any) {
             console.error("Error saving:", error);
+            const formattedError = formatErrorMessage(error?.response?.data || error?.message || { id: "error" });
             window.parent.postMessage(
-                { type: "iframe-message-rag", status: "create", error: error?.response?.data || { id: "error" } },
+                { type: "iframe-message-rag", status: "create", error: formattedError },
                 "*"
             );
         } finally {
@@ -518,7 +527,7 @@ function RagComponent() {
                     {/* Description Field */}
                     <div className="form-control">
                         <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
-                            Description
+                            Description <span className={`${theme === 'dark' ? 'text-red-400' : 'text-red-500'}`}>*</span>
                         </label>
                         <textarea
                             ref={descriptionInputRef}
@@ -527,6 +536,7 @@ function RagComponent() {
                             className={getInputClassName(aiGenerationEnabled)}
                             placeholder="Enter a description for this knowledge base entry"
                             defaultValue={editingKnowledgeBase?.description || ""}
+                            required
                             disabled={aiGenerationEnabled}
                         />
                     </div>
