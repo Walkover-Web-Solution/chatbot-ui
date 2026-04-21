@@ -12,10 +12,11 @@
                 heightUnit: '%',
                 width: '480',
                 widthUnit: 'px',
-                buttonName: ''
+                buttonName: '',
+                side: 'right'
             };
             this.urls = {
-                chatbotUrl: 'http://localhost:3001/chatbot',
+                chatbotUrl: 'https://chatbot.gtwy.ai/chatbot',
                 styleSheet: 'https://chatbot.gtwy.ai/chatbot-style.css',
                 login: 'https://db.gtwy.ai/chatbot/loginuser'
             };
@@ -100,6 +101,25 @@
             this.observeScriptChanges();
             this.setupMessageListeners();
             this.setupResizeObserver();
+        }
+
+        getSide(config) {
+            const side = config?.side || this.config?.side || 'right';
+            return side === 'left' ? 'left' : 'right';
+        }
+
+        applyPositioning(config) {
+            if (!config.type || config.type !== 'popup') return;
+            const interfaceEmbedElement = document.getElementById('interfaceEmbed');
+            const iframeParentContainer = document.getElementById('iframe-parent-container');
+            if (!iframeParentContainer) return;
+            const side = this.getSide(config);
+            iframeParentContainer.style[side] = '10px';
+            iframeParentContainer.style[side === 'left' ? 'right' : 'left'] = '';
+            if (interfaceEmbedElement) {
+                interfaceEmbedElement.style[side] = '10px';
+                interfaceEmbedElement.style[side === 'left' ? 'right' : 'left'] = '';
+            }
         }
 
         observeScriptChanges() {
@@ -438,6 +458,7 @@
                 iframeParentContainer.style.height = `${config?.height}${config?.heightUnit || ''}` || '70vh';
                 iframeParentContainer.style.width = `${config?.width}${config?.widthUnit || ''}` || '40vw';
             }
+            this.applyPositioning(config);
         }
 
         updateProps(newProps) {
