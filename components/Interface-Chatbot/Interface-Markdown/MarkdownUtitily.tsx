@@ -29,19 +29,13 @@ export const Code = ({
   return !inline && match ? (
     <div className="py-4" data-testid="chatbot-interface-markdown-code">
       <div
-        className="flex justify-between items-center cursor-pointer py-2 px-3"
-        style={{
-          backgroundColor: "#e5e7eb",
-          borderTopRightRadius: 8,
-          borderTopLeftRadius: 8,
-          borderBottom: "1px solid #d1d5db"
-        }}
+        className="flex justify-between items-center cursor-pointer py-2 px-3 rounded-t-lg border-b border-base-300 dark:border-base-600 bg-base-200 dark:bg-base-700"
       >
         <Typography
           variant="caption"
           sx={{
             fontWeight: 500,
-            color: "#4b5563",
+            color: "var(--fallback-bc,oklch(var(--bc)/0.75))",
             textTransform: "uppercase",
             letterSpacing: "0.05em",
             fontSize: "0.7rem"
@@ -51,12 +45,11 @@ export const Code = ({
         </Typography>
         <button
           onClick={() => handlecopyfunction(children)}
-          className="flex items-center gap-1.5 text-xs font-medium transition-all duration-200 hover:opacity-80 rounded-md px-2.5 py-1"
-          style={{
-            backgroundColor: tipForCopy ? "rgba(34, 197, 94, 0.1)" : "rgba(75, 85, 99, 0.2)",
-            color: tipForCopy ? "#16a34a" : "#374151",
-            border: tipForCopy ? "1px solid rgba(34, 197, 94, 0.2)" : "1px solid rgba(75, 85, 99, 0.3)"
-          }}
+          className={`flex items-center gap-1.5 text-xs font-medium transition-all duration-200 hover:opacity-80 rounded-md px-2.5 py-1 border ${
+            tipForCopy
+              ? "bg-success/10 text-success border-success/30"
+              : "bg-base-100/70 dark:bg-base-800/70 text-base-content/75 border-base-300/70 dark:border-base-600/70"
+          }`}
         >
           {!tipForCopy ? (
             <>
@@ -89,7 +82,7 @@ export const Code = ({
   );
 };
 
-export const Anchor = ({ href, children, ...props }) => {
+export const Anchor = ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { children?: React.ReactNode }) => {
   return (
     <a href={href} target="_blank" rel="noreferrer" {...props} className="link link-primary" data-testid="chatbot-interface-markdown-anchor">
       {children}
