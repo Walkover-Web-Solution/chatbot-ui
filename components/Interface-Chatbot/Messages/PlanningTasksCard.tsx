@@ -1,5 +1,5 @@
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
-import { CheckCircle2, ChevronDown, Circle, Loader2, MessageSquare, Pencil, PlayCircle, Sparkles, XCircle } from "lucide-react";
+import { CheckCircle2, ChevronDown, Circle, Loader2, MessageSquare, PauseCircle, Pencil, PlayCircle, RotateCcw, Sparkles, XCircle } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReasoningAccordion from "./ReasoningAccordion";
 
@@ -23,20 +23,20 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
     const cardRef = useRef<HTMLDivElement>(null);
     const prevHumanQueriesRef = useRef<Record<string, string>>({});
 
-    const { parsedPlan, rawPlan, execution } = useMemo(() => {
+    const { parsedPlan, rawPlan, execution, planState } = useMemo(() => {
         if (plan === null || plan === undefined) {
-            return { parsedPlan: null, rawPlan: "", execution: null };
+            return { parsedPlan: null, rawPlan: "", execution: null, planState: null };
         }
         if (typeof plan === "string") {
             try {
                 const parsed = JSON.parse(plan);
-                return { parsedPlan: parsed, rawPlan: plan, execution: parsed?.execution || null };
+                return { parsedPlan: parsed, rawPlan: plan, execution: parsed?.execution || null, planState: parsed?.state || null };
             } catch {
-                return { parsedPlan: null, rawPlan: plan, execution: null };
+                return { parsedPlan: null, rawPlan: plan, execution: null, planState: null };
             }
         }
         const parsedPlan = plan?.plan || plan;
-        return { parsedPlan, rawPlan: JSON.stringify(parsedPlan, null, 2), execution: plan?.execution || null };
+        return { parsedPlan, rawPlan: JSON.stringify(parsedPlan, null, 2), execution: plan?.execution || null, planState: parsedPlan?.state || null };
     }, [plan]);
 
     const tasks = useMemo(() => {
@@ -58,22 +58,28 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
         [taskQueries],
     );
 
-    const humanQueryTasks = useMemo(() => tasks.filter((t) => t.human_query), [tasks]);
+    const humanQueryTasks = useMemo(() => tasks.filter((t) => t.status === "waiting_for_user" && t.human_query && !t.human_response), [tasks]);
 
     const humanQueriesKey = useMemo(() => {
         return JSON.stringify(humanQueryTasks.map(t => ({ id: t.id, query: t.human_query })));
     }, [humanQueryTasks]);
 
     const allHumanQueriesAnswered = useMemo(() => {
-        if (humanQueryTasks.length === 0) return true;
-        return humanQueryTasks.every((t) => {
-            const history = queryHistoryPerTask[t.id] || [];
-            return history.every((queryItem, idx) => {
-                if (queryItem.answer !== null) return true;
-                return humanQueryAnswers[`${t.id}_${idx}`]?.trim().length > 0;
+        // Check humanQueryTasks (from parsedPlan)
+        if (humanQueryTasks.length > 0) {
+            return humanQueryTasks.every((t) => {
+                return humanQueryAnswers[`${t.id}_0`]?.trim().length > 0;
             });
-        });
-    }, [humanQueryTasks, humanQueryAnswers, queryHistoryPerTask]);
+        }
+        // When paused via execution.tasks (e.g. task has human_response already set in parsedPlan but execution still tracks it)
+        if (execution?.state === "paused" && execution?.tasks) {
+            const waitingEntries = Object.entries(execution.tasks).filter(([, t]: [string, any]) => t?.status === "waiting_for_user");
+            if (waitingEntries.length > 0) {
+                return waitingEntries.every(([taskId]) => humanQueryAnswers[`${taskId}_0`]?.trim().length > 0);
+            }
+        }
+        return true;
+    }, [humanQueryTasks, humanQueryAnswers, execution]);
 
     const humanQueryMessage = useMemo(() => {
         return humanQueryTasks
@@ -97,13 +103,35 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
             .join("\n");
     }, [tasks, taskQueries]);
 
-    const isExecuting = execution?.state === "executing" || execution?.state === "running" || execution?.state === "queued";
+    const hasHumanQueries = humanQueryTasks.length > 0;
+    const isPaused = planState === "paused" || hasHumanQueries || execution?.state === "paused";
+    const isExecuting = !isPaused && (execution?.state === "executing" || execution?.state === "running" || execution?.state === "queued");
     const isUpdatingPlan = execution?.state === "updating";
     const isExecutionCompleted = execution?.state === "completed";
     const isExecutionLockedToActiveTask = isExecuting && Boolean(activeTaskId);
-    const hasHumanQueries = humanQueryTasks.length > 0;
-    const showProceedButton = !hasHumanQueries && !hasTaskQueryValues && !isExecuting && !isActionLoading && !isStreaming;
-    const showUpdateButton = (hasHumanQueries || hasTaskQueryValues) && !isExecuting && !isStreaming;
+    // True only when execution phase definitively started — execution/running/executing/queued/completed/error states
+    // OR when execution.tasks has any task with a non-pending status (including waiting_for_user set during execution)
+    // "paused" alone does NOT confirm execution started (it can be set during planning phase too)
+    const executionHasStarted = Boolean(
+        execution?.state === "executing" ||
+        execution?.state === "running" ||
+        execution?.state === "queued" ||
+        execution?.state === "completed" ||
+        execution?.state === "error" ||
+        (execution?.tasks && Object.values(execution.tasks).some((t: any) =>
+            t?.status === "done" || t?.status === "in_progress" || t?.status === "error" || t?.status === "waiting_for_user"
+        ))
+    );
+    const isExecutionPaused = executionHasStarted && (execution?.state === "paused" || isPaused);
+    // Paused because a task failed during EXECUTION (no human query pending) — needs retry, not respond
+    // Only true when execution has definitively started AND we have execution-level task failure evidence
+    const isPausedDueToError = isExecutionPaused && !hasHumanQueries && Boolean(
+        execution?.tasks && Object.values(execution.tasks).some((t: any) =>
+            t?.status === "error" || t?.status === "failed" || t?.is_error
+        )
+    );
+    const showProceedButton = !isPaused && !hasTaskQueryValues && !isExecuting && !isActionLoading && !isUpdatingPlan && !isStreaming;
+    const showUpdateButton = isPaused || hasHumanQueries;
 
     const doneCount = useMemo(() => {
         if (!execution?.tasks) return 0;
@@ -143,11 +171,18 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
     }, [tasks]);
 
     useEffect(() => {
-        // Clear loading state when streaming starts or execution state changes
-        if (isStreaming || isExecuting || isUpdatingPlan) {
+        // Clear stale answers only when execution phase starts (approve/execute), not on plan update
+        if (isExecuting) {
             setIsActionLoading(false);
+            setHumanQueryAnswers({});
+            setUseCustomAnswerPerQuery({});
         }
-    }, [isStreaming, isExecuting, isUpdatingPlan]);
+    }, [isExecuting]);
+
+    useEffect(() => {
+        // Clear loading state when a new plan arrives (e.g. done event response)
+        setIsActionLoading(false);
+    }, [parsedPlan]);
 
     useEffect(() => {
         // Auto-scroll task result containers to bottom when new data arrives
@@ -215,21 +250,51 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
         }
 
         if (action === "update") {
+            // If paused due to task error — retry execution
+            if (isPausedDueToError) {
+                const payload = { parsedPlan, rawPlan };
+                if (onAction) {
+                    onAction("proceed", payload);
+                } else {
+                    emitEventToParent("PLANNING_ACTION", { action: "execute", plan: parsedPlan || rawPlan, ...payload });
+                }
+                return;
+            }
+
+            // If plan is paused during execution, respond with the human answer
+            // Find waiting task from humanQueryTasks or execution.tasks
+            const executionWaitingTask = !humanQueryTasks.length && execution?.tasks
+                ? Object.entries(execution.tasks).find(([, t]: [string, any]) => t?.status === "waiting_for_user")
+                : null;
+            const pausedWaitingTask = humanQueryTasks.length > 0 ? humanQueryTasks[0] : null;
+            const waitingTaskId = pausedWaitingTask?.id || executionWaitingTask?.[0];
+            const waitingTaskData = pausedWaitingTask || (executionWaitingTask ? tasks.find(t => t.id === executionWaitingTask[0]) : null);
+
+            if (isExecutionPaused && waitingTaskId) {
+                const answer = humanQueryAnswers[`${waitingTaskId}_0`]?.trim() || "";
+                const humanQueryAnswersMap: Record<string, string> = { [waitingTaskId]: answer };
+                const payload = {
+                    parsedPlan,
+                    rawPlan,
+                    humanQueryAnswers: humanQueryAnswersMap,
+                };
+                if (onAction) {
+                    onAction("respond", payload);
+                } else {
+                    emitEventToParent("PLANNING_ACTION", { action: "respond", task_id: waitingTaskId, answer, ...payload });
+                }
+                return;
+            }
+
             // Collect answers for human queries and user suggestions
             const messages: string[] = [];
             
-            // Collect answers for human queries
+            // Collect answers for current waiting human query tasks
             humanQueryTasks.forEach((t) => {
-                const history = queryHistoryPerTask[t.id] || [];
-                history.forEach((queryItem, idx) => {
-                    if (queryItem.answer === null) {
-                        const answer = humanQueryAnswers[`${t.id}_${idx}`]?.trim();
-                        if (answer) {
-                            messages.push(`task_id:${t.id}, answer:${answer}`);
-                            queryItem.answer = answer;
-                        }
-                    }
-                });
+                const answer = humanQueryAnswers[`${t.id}_0`]?.trim();
+                if (answer) {
+                    messages.push(`task_id:${t.id}, answer:${answer}`);
+                }
             });
             
             // Collect user suggestions/queries for all tasks
@@ -239,8 +304,6 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                     messages.push(`task_id:${t.id}, query:${query}`);
                 }
             });
-            
-            setQueryHistoryPerTask({ ...queryHistoryPerTask });
             
             const message = messages.join("\n");
             const payload = {
@@ -281,9 +344,10 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                         const isLast = idx === tasks.length - 1;
                                         const isTaskOpen = isExecutionLockedToActiveTask ? activeTaskId === task.id : (showQueryInputs ? true : openTaskId === task.id);
                                         const isActive = status === "in_progress";
-                                        const isDone = status === "done";
-                                        const isError = status === "error";
-                                        const isPending = !isActive && !isDone && !isError;
+                                        const isDone = status === "done" || status === "completed";
+                                        const isError = status === "error" || status === "failed";
+                                        const isWaitingForUser = isPaused && status === "waiting_for_user";
+                                        const isPending = !isActive && !isDone && !isError && !isWaitingForUser;
 
                                         let iconEl: React.ReactNode;
                                         if (isActive) {
@@ -291,12 +355,15 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                         } else if (isDone) {
                                             iconEl = <CheckCircle2 className="w-3.5 h-3.5 text-success" />;
                                         } else if (isError) {
-                                            iconEl = <XCircle className="w-3.5 h-3.5 text-base-content/60" />;
+                                            iconEl = <XCircle className="w-3.5 h-3.5 text-error" />;
+                                        } else if (isWaitingForUser) {
+                                            iconEl = <PauseCircle className="w-3.5 h-3.5 text-warning" />;
                                         } else {
                                             iconEl = <Circle className="w-3.5 h-3.5 text-base-content/20" />;
                                         }
 
-                                        const canExpand = task.task_description || executionTask?.result || executionTask?.error || executionTask?.reasoning || (task.human_query && !isExecuting) || showQueryInputs;
+                                        const taskError = executionTask?.error || (task as any)?.error;
+                                        const canExpand = task.task_description || executionTask?.result || taskError || executionTask?.reasoning || (task.human_query && !isExecuting) || showQueryInputs;
 
                                         return (
                                             <div
@@ -308,7 +375,8 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                     <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
                                                         isActive ? "bg-base-200 dark:bg-base-700 ring-1 ring-base-300 dark:ring-base-600" :
                                                         isDone ? "bg-base-200/60 dark:bg-base-700/40 text-base-success" :
-                                                        isError ? "bg-base-200/60 dark:bg-base-700/40" :
+                                                        isError ? "bg-base-200/60 dark:bg-base-700/40 text-error" :
+                                                        isWaitingForUser ? "bg-warning/10 dark:bg-warning/15 ring-1 ring-warning/30" :
                                                         "bg-base-200 dark:bg-base-800"
                                                     }`}>
                                                         {iconEl}
@@ -333,8 +401,11 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                 }`}>
                                                                     {executionTask?.title || task.title || "Untitled task"}
                                                                 </p>
-                                                                {task.task_description && !isTaskOpen && (
+                                                                {task.task_description && !isTaskOpen && !isError && (
                                                                     <p className="text-[11px] opacity-55 truncate mt-0.5 font-normal">{task.task_description}</p>
+                                                                )}
+                                                                {isError && taskError && !isTaskOpen && (
+                                                                    <p className="text-[11px] text-error/80 truncate mt-0.5 font-normal">{taskError}</p>
                                                                 )}
                                                             </div>
                                                             {canExpand && (
@@ -343,7 +414,86 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                         </div>
                                                     </button>
 
-                                                    {queryHistoryPerTask[task.id]?.length > 0 && !isExecuting && (
+                                                    {isWaitingForUser && task.human_query && (
+                                                        <div className="mt-2 space-y-2">
+                                                            <div className="flex items-start gap-2 rounded-lg bg-warning/8 dark:bg-warning/10 border border-warning/25 px-3 py-2">
+                                                                <span className="text-warning font-bold text-xs shrink-0 mt-0.5">?</span>
+                                                                <span className="text-xs text-base-content/80 leading-relaxed">{task.human_query}</span>
+                                                            </div>
+                                                            {(() => {
+                                                                const answerKey = `${task.id}_0`;
+                                                                const options = Array.isArray(task.human_options) ? task.human_options.filter(Boolean) : [];
+                                                                const showCustomChoice = Boolean(task.allow_custom_response);
+                                                                const useCustomAnswer = Boolean(useCustomAnswerPerQuery[answerKey]);
+                                                                return (
+                                                                    <div className="space-y-2">
+                                                                        {options.length > 0 && (
+                                                                            <div className="flex flex-wrap gap-2">
+                                                                                {options.map((opt: string, optIndex: number) => {
+                                                                                    const isSelected = humanQueryAnswers[answerKey] === opt && !useCustomAnswer;
+                                                                                    return (
+                                                                                        <button
+                                                                                            key={`${answerKey}_opt_${optIndex}`}
+                                                                                            type="button"
+                                                                                            onClick={() => {
+                                                                                                setUseCustomAnswerPerQuery((prev) => ({ ...prev, [answerKey]: false }));
+                                                                                                setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: opt }));
+                                                                                                if (!queryHistoryPerTask[task.id]?.length) {
+                                                                                                    setQueryHistoryPerTask((prev) => ({ ...prev, [task.id]: [{ query: task.human_query, answer: null }] }));
+                                                                                                }
+                                                                                            }}
+                                                                                            className={`px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer select-none transition-colors ${
+                                                                                                isSelected
+                                                                                                    ? "border-2 border-base-content bg-base-content text-base-100"
+                                                                                                    : "border border-base-content/25 bg-transparent text-base-content hover:border-base-content/50 hover:bg-base-200/40"
+                                                                                            }`}
+                                                                                        >
+                                                                                            {opt}
+                                                                                        </button>
+                                                                                    );
+                                                                                })}
+                                                                                {showCustomChoice && (
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        onClick={() => {
+                                                                                            setUseCustomAnswerPerQuery((prev) => ({ ...prev, [answerKey]: true }));
+                                                                                            setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: prev[answerKey] || "" }));
+                                                                                        }}
+                                                                                        className={`px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer select-none transition-colors flex items-center gap-1.5 ${
+                                                                                            useCustomAnswer
+                                                                                                ? "border-2 border-base-content bg-base-content text-base-100"
+                                                                                                : "border border-base-content/25 bg-transparent text-base-content hover:border-base-content/50 hover:bg-base-200/40"
+                                                                                        }`}
+                                                                                    >
+                                                                                        <Pencil className="w-2.5 h-2.5" />
+                                                                                        Custom
+                                                                                    </button>
+                                                                                )}
+                                                                            </div>
+                                                                        )}
+                                                                        {(options.length === 0 || useCustomAnswer) && (
+                                                                            <input
+                                                                                type="text"
+                                                                                autoFocus={useCustomAnswer || options.length === 0}
+                                                                                className="w-full text-xs rounded-lg border border-base-300 dark:border-base-600 bg-base-100 dark:bg-base-800 px-3 py-2 outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/10 placeholder:text-base-content/30 transition-all"
+                                                                                placeholder={options.length > 0 ? "Type your custom response..." : "Your answer..."}
+                                                                                value={humanQueryAnswers[answerKey] || ""}
+                                                                                onChange={(e) => {
+                                                                                    const value = e.target.value;
+                                                                                    setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: value }));
+                                                                                    if (!queryHistoryPerTask[task.id]?.length) {
+                                                                                        setQueryHistoryPerTask((prev) => ({ ...prev, [task.id]: [{ query: task.human_query, answer: null }] }));
+                                                                                    }
+                                                                                }}
+                                                                            />
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })()}
+                                                        </div>
+                                                    )}
+
+                                                    {queryHistoryPerTask[task.id]?.length > 0 && !isExecuting && !isWaitingForUser && (
                                                         <div className="mt-2 space-y-3">
                                                             {queryHistoryPerTask[task.id].map((queryItem, idx) => (
                                                                 <div key={idx} className="space-y-2">
@@ -479,9 +629,10 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                     {typeof executionTask.result === "string" ? executionTask.result : JSON.stringify(executionTask.result)}
                                                                 </div>
                                                             )}
-                                                            {executionTask?.error && (
-                                                                <div className="text-[11.5px] bg-base-200/60 dark:bg-base-700/30 border border-base-300 dark:border-base-600 rounded-xl p-3 whitespace-pre-wrap text-base-content/75">
-                                                                    {executionTask.error}
+                                                            {taskError && (
+                                                                <div className="text-[11.5px] bg-error/8 dark:bg-error/10 border border-error/25 rounded-xl p-3 whitespace-pre-wrap text-error/90 flex items-start gap-2">
+                                                                    <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-error" />
+                                                                    <span>{taskError}</span>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -509,15 +660,15 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                         </div>
                     )}
 
-                    {!isExecutionCompleted && isStreaming && (
+                    {!isExecutionCompleted && isStreaming && !hasHumanQueries && !isExecutionPaused && (
                         <div className="flex items-center gap-2 px-4 py-3 border-t border-base-200 dark:border-base-700">
                             <Loader2 className="w-3.5 h-3.5 animate-spin text-base-content/60" />
                             <span className="text-xs text-base-content/65">Planning tasks...</span>
                         </div>
                     )}
 
-                    {!isExecutionCompleted && !isStreaming && (
-                        <div className="flex items-center gap-2 px-4 py-3 border-t border-base-200 dark:border-base-700 bg-base-50 dark:bg-base-800/50">
+                    {!isExecutionCompleted && (isStreaming ? (hasHumanQueries || isExecutionPaused) : true) && (
+                        <div className="flex items-center gap-2 px-4 py-3 border-t border-base-200 dark:border-base-700 bg-base-50 dark:bg-base-800/50 sticky bottom-0 z-10">
                             {showProceedButton && (
                                 <button
                                     type="button"
@@ -534,13 +685,17 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                             {showUpdateButton && (
                                 <button
                                     type="button"
-                                    disabled={isActionLoading || isUpdatingPlan || (!allHumanQueriesAnswered && !hasTaskQueryValues)}
+                                    disabled={isActionLoading || isUpdatingPlan || (isStreaming && !hasHumanQueries && !isExecutionPaused) || (!isPausedDueToError && !allHumanQueriesAnswered && !hasTaskQueryValues)}
                                     onClick={() => handleAction("update")}
                                     className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-content hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
                                 >
                                     {isActionLoading || isUpdatingPlan
-                                        ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Updating</>
-                                        : <><MessageSquare className="w-3.5 h-3.5" /> Update</>}
+                                        ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> {isPausedDueToError ? "Retrying..." : isExecutionPaused ? "Responding..." : "Updating"}</>
+                                        : isPausedDueToError
+                                            ? <><PlayCircle className="w-3.5 h-3.5" /> Retry</>
+                                            : isExecutionPaused
+                                                ? <><MessageSquare className="w-3.5 h-3.5" /> Respond</>
+                                                : <><MessageSquare className="w-3.5 h-3.5" /> Update</>}
                                 </button>
                             )}
                             {showProceedButton && (
