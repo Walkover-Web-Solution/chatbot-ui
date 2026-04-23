@@ -80,7 +80,7 @@ export default function ToolCallAccordion({ toolsData }: ToolCallAccordionProps)
     const calls = Object.entries(toolsData);
 
     return (
-        <div className="mb-3 w-full" data-testid="chatbot-interface-tool-call-accordion">
+        <div className="mb-3 w-full not-prose" data-testid="chatbot-interface-tool-call-accordion">
             {calls.map(([callId, toolCall]) => (
                 <ToolCallItem key={callId} toolCall={toolCall} name={callId} />
             ))}

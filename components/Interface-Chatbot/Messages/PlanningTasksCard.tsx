@@ -361,7 +361,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
     };
 
     return (
-        <div className="mb-3 w-full" ref={cardRef}>
+        <div className="mb-3 w-full not-prose" ref={cardRef}>
             {!parsedPlan && rawPlan && (
                 <pre className="text-xs bg-base-200/70 rounded-xl p-3 whitespace-pre-wrap break-words mb-2 border border-base-300">{rawPlan}</pre>
             )}
