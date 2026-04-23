@@ -3,6 +3,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DoneIcon from "@mui/icons-material/Done";
 import { Typography } from "@mui/material";
 import copy from "copy-to-clipboard";
+import { ExternalLink } from "lucide-react";
 import React, { useState } from "react";
 import { CodeBlock } from "./CodeBlock";
 
@@ -84,8 +85,28 @@ export const Code = ({
 
 export const Anchor = ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { children?: React.ReactNode }) => {
   return (
-    <a href={href} target="_blank" rel="noreferrer" {...props} className="link link-primary">
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      {...props}
+      className="inline-flex items-center gap-1 text-blue-500 font-medium underline underline-offset-2 decoration-blue-300 hover:text-blue-700 hover:decoration-blue-600 transition-colors duration-150"
+      data-testid="chatbot-interface-markdown-anchor"
+    >
       {children}
+      <ExternalLink className="w-3 h-3 shrink-0 opacity-70" aria-hidden="true" />
     </a>
   );
 };
+
+export const UnorderedList = ({ children, ...props }: React.HTMLAttributes<HTMLUListElement>) => (
+  <ul className="list-disc pl-6 my-2 space-y-1" {...props}>{children}</ul>
+);
+
+export const OrderedList = ({ children, ...props }: React.HTMLAttributes<HTMLOListElement>) => (
+  <ol className="list-decimal pl-6 my-2 space-y-1" {...props}>{children}</ol>
+);
+
+export const ListItem = ({ children, ...props }: React.HTMLAttributes<HTMLLIElement>) => (
+  <li className="leading-relaxed" {...props}>{children}</li>
+);

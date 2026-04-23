@@ -45,6 +45,7 @@
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.8",
     "@eslint/eslintrc": "^3",
+    "@tailwindcss/typography": "^0.5.19",
     "@types/lodash.debounce": "^4.0.9",
     "@types/lodash.isplainobject": "^4.0.9",
     "@types/node": "^20",
