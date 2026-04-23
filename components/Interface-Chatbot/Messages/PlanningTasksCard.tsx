@@ -15,7 +15,6 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
     const [showQueryInputs, setShowQueryInputs] = useState(false);
     const [taskQueries, setTaskQueries] = useState<Record<string, string>>({});
     const [humanQueryAnswers, setHumanQueryAnswers] = useState<Record<string, string>>({});
-    const [resolvedHumanQueryIds, setResolvedHumanQueryIds] = useState<Set<string>>(new Set());
     const [openTaskId, setOpenTaskId] = useState("");
     const [queryHistoryPerTask, setQueryHistoryPerTask] = useState<Record<string, Array<{ query: string; answer: string | null }>>>({});
     const [useCustomAnswerPerQuery, setUseCustomAnswerPerQuery] = useState<Record<string, boolean>>({});
@@ -186,6 +185,25 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
             const next: Record<string, string> = {};
             tasks.forEach((t) => { if (prev[t.id]) next[t.id] = prev[t.id]; });
             return next;
+        });
+    }, [tasks]);
+
+    // When a task's human_response is set (task completed after answering),
+    // fill in the queryHistoryPerTask answer so options don't stay interactive
+    useEffect(() => {
+        tasks.forEach((t) => {
+            if (t.human_response && t.human_query) {
+                setQueryHistoryPerTask((prev) => {
+                    const existing = prev[t.id];
+                    if (!existing || existing.length === 0) return prev;
+                    // Check if the last entry still has answer: null
+                    const lastIdx = existing.length - 1;
+                    if (existing[lastIdx].answer !== null) return prev;
+                    const updated = [...existing];
+                    updated[lastIdx] = { ...updated[lastIdx], answer: t.human_response };
+                    return { ...prev, [t.id]: updated };
+                });
+            }
         });
     }, [tasks]);
 
@@ -525,7 +543,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                             <CheckCircle2 className="w-3.5 h-3.5 text-base-content/60 shrink-0 mt-0.5" />
                                                                             <span className="text-xs text-base-content/75">{queryItem.answer}</span>
                                                                         </div>
-                                                                    ) : (
+                                                                    ) : !isWaitingForUser ? null : (
                                                                         (() => {
                                                                             const answerKey = `${task.id}_${idx}`;
                                                                             const options = Array.isArray(task.human_options) ? task.human_options.filter(Boolean) : [];

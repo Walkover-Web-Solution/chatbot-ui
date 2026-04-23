@@ -1,11 +1,9 @@
 /* eslint-disable */
 import { supportsLookbehind } from "@/utils/appUtility";
-import dynamic from "next/dynamic";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { X } from "lucide-react";
-
-const remarkGfm = dynamic(() => import("remark-gfm"), { ssr: false }) as any;
 
 interface ReasoningAccordionProps {
     reasoning: string;
