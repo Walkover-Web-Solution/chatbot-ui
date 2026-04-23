@@ -71,7 +71,7 @@ export default function ReasoningAccordion({ reasoning, isStreaming, hasContent,
     const chipLabel = isStreaming ? "Thinking…" : title;
 
     return (
-        <div className="mb-2" data-testid="chatbot-interface-reasoning-accordion">
+        <div className="mb-2 not-prose" data-testid="chatbot-interface-reasoning-accordion">
             {/* Collapsed pill */}
             {!expanded && (
                 <div className="flex items-center gap-4">
