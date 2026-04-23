@@ -1,11 +1,9 @@
 /* eslint-disable */
 import { supportsLookbehind } from "@/utils/appUtility";
-import dynamic from "next/dynamic";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { X } from "lucide-react";
-
-const remarkGfm = dynamic(() => import("remark-gfm"), { ssr: false }) as any;
 
 interface ReasoningAccordionProps {
     reasoning: string;
@@ -73,7 +71,7 @@ export default function ReasoningAccordion({ reasoning, isStreaming, hasContent,
     const chipLabel = isStreaming ? "Thinking…" : title;
 
     return (
-        <div className="mb-2" data-testid="chatbot-interface-reasoning-accordion">
+        <div className="mb-2 not-prose" data-testid="chatbot-interface-reasoning-accordion">
             {/* Collapsed pill */}
             {!expanded && (
                 <div className="flex items-center gap-4">
