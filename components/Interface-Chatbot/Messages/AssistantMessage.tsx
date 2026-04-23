@@ -2,14 +2,13 @@
 import { useMessageFeedback, useSendMessage } from "@/components/Chatbot/hooks/useChatActions";
 import { MessageContext } from "@/components/Interface-Chatbot/InterfaceChatbot";
 import InterfaceGrid from "@/components/Grid/Grid";
-import { Anchor, Code } from "@/components/Interface-Chatbot/Interface-Markdown/MarkdownUtitily";
+import { Anchor, Code, UnorderedList, OrderedList, ListItem } from "@/components/Interface-Chatbot/Interface-Markdown/MarkdownUtitily";
 import { supportsLookbehind } from "@/utils/appUtility";
 import { isJSONString } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { lighten, useTheme } from "@mui/material";
 import copy from "copy-to-clipboard";
 import { AlertCircle, Check, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
-import dynamic from 'next/dynamic';
 import React, { useContext, useMemo, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import ImageWithFallback from "./ImageWithFallback";
@@ -19,7 +18,7 @@ import { componentRegistry } from "../../richUI/componentRegistry";
 import PlanningTasksCard from "./PlanningTasksCard";
 import ReasoningAccordion from "./ReasoningAccordion";
 import ToolCallAccordion from "./ToolCallAccordion";
-const remarkGfm = dynamic(() => import('remark-gfm'), { ssr: false });
+import remarkGfm from 'remark-gfm';
 
 function FeedBackButtons({ msgId }: { msgId: string }) {
     const handleMessageFeedback = useMessageFeedback();
@@ -237,6 +236,9 @@ const AssistantMessageCard = React.memo(
                                                             components={{
                                                                 code: Code,
                                                                 a: Anchor,
+                                                                ul: UnorderedList,
+                                                                ol: OrderedList,
+                                                                li: ListItem,
                                                             }}
                                                         >
                                                             {parsedContent?.markdown ||
@@ -309,6 +311,9 @@ const AssistantMessageCard = React.memo(
                                                     components={{
                                                         code: Code,
                                                         a: Anchor,
+                                                        ul: UnorderedList,
+                                                        ol: OrderedList,
+                                                        li: ListItem,
                                                     }}
                                                 >
                                                     {typeof messageContent === "string" ? messageContent : JSON.stringify(messageContent)}
