@@ -90,11 +90,11 @@ export const Anchor = ({ href, children, ...props }: React.AnchorHTMLAttributes<
       target="_blank"
       rel="noreferrer"
       {...props}
-      className="inline-flex items-center gap-1 text-blue-500 font-medium underline underline-offset-2 decoration-blue-300 hover:text-blue-700 hover:decoration-blue-600 transition-colors duration-150"
+      className="inline text-blue-500 font-medium underline underline-offset-2 decoration-blue-300 hover:text-blue-700 hover:decoration-blue-600 transition-colors duration-150 break-words [overflow-wrap:anywhere]"
       data-testid="chatbot-interface-markdown-anchor"
     >
-      {children}
-      <ExternalLink className="w-3 h-3 shrink-0 opacity-70" aria-hidden="true" />
+      <span className="">{children}</span>
+      <ExternalLink className="inline-block w-3 h-3 ml-1 align-text-bottom opacity-70" aria-hidden="true" />
     </a>
   );
 };
