@@ -10,7 +10,7 @@ import { ParamsEnums } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import { TextField, useTheme } from "@mui/material";
 import debounce from "lodash.debounce";
-import { ChevronDown, ChevronUp, Paperclip, Send, Smile, TriangleAlert, X, Zap, BrainCircuit } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Paperclip, Send, Smile, TriangleAlert, X, Zap, BrainCircuit } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
@@ -63,16 +63,18 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const { setImages } = useChatActions();
   const sendMessage = useSendMessage({});
 
-  const { images = [], options = [], loading, error, isPlanExecuting } = useCustomSelector((state) => {
+  const { images = [], options = [], loading, error, isPlanExecuting, isReviewActive } = useCustomSelector((state) => {
     const subThreadId = state.appInfo?.[tabSessionId]?.subThreadId;
     const lastMessageId = subThreadId ? state.Chat?.messageIds?.[subThreadId]?.[0] : null;
     const planningExecState = lastMessageId ? state.Chat?.msgIdAndDataMap?.[subThreadId]?.[lastMessageId]?.planning?.execution?.state : null;
+    const reviewPhases = lastMessageId ? state.Chat?.msgIdAndDataMap?.[subThreadId]?.[lastMessageId]?.review_phases : null;
     return {
       images: state.Chat.images || [],
       loading: state.Chat.loading,
       options: state.Chat.options || [],
       error: state.Chat.error,
       isPlanExecuting: planningExecState === "executing" || planningExecState === "running" || planningExecState === "queued",
+      isReviewActive: Array.isArray(reviewPhases) && reviewPhases.length > 0 && reviewPhases[reviewPhases.length - 1]?.isStreaming === true,
     };
   })
 
@@ -498,8 +500,14 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
               )}
             </div>
 
-            {/* Right section: Call + Send button side by side */}
+            {/* Right section: under-review indicator + Call + Send button side by side */}
             <div className="flex items-center gap-2">
+              {isReviewActive && (
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg border" style={{ background: "oklch(var(--p) / 0.06)", borderColor: "oklch(var(--p) / 0.2)" }}>
+                  <Loader2 className="w-3 h-3 animate-spin shrink-0" style={{ color: "oklch(var(--p) / 0.7)" }} />
+                  <span className="text-[10px] font-medium" style={{ color: "oklch(var(--p) / 0.7)" }}>Under review…</span>
+                </div>
+              )}
               <CallButton />
               {show_send_button && (
                 <button
