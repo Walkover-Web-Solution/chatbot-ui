@@ -167,7 +167,8 @@ export type StreamEvent =
     | { event: "tool_result"; call_id: string; content: any }
     | { event: "template_response"; message_id: string; content: any; metadata?: Record<string, any> }
     | { event: "done"; message_id: string; finish_reason: string; usage?: Record<string, any> }
-    | { event: "error"; error: string; message_id?: string };
+    | { event: "error"; error: string; message_id?: string }
+    | { event: "review_phase"; phase: string; round?: number; passed?: boolean; reason?: string };
 
 export async function streamDataToAction(
     data: any,

@@ -2,7 +2,7 @@ import { ChatContext } from '@/components/Chatbot-Wrapper/ChatbotWrapper';
 import { errorToast } from '@/components/customToast';
 import { MessageContext } from '@/components/Interface-Chatbot/InterfaceChatbot';
 import { getAllThreadsApi, getPreviousMessage, streamDataToAction, sendFeedbackAction } from '@/config/api';
-import { appendLastAssistantMessageChunk, appendReasoningChunk, appendToolCall, removeMessages, setChatsLoading, setData, setError, setHelloEventMessage, setImages, setInitialMessages, setIsFetching, setLoading, setNewMessage, setOptions, setPaginateMessages, setPlanningData, setStarterQuestions, setToggleDrawer, updateLastAssistantMessage, updatePlanningExecutionState, updateSingleMessage, updateToolResult } from '@/store/chat/chatSlice';
+import { appendLastAssistantMessageChunk, appendReasoningChunk, appendReviewDelta, appendToolCall, removeMessages, setChatsLoading, setData, setError, setHelloEventMessage, setImages, setInitialMessages, setIsFetching, setLoading, setNewMessage, setOptions, setPaginateMessages, setPlanningData, setReviewData, setStarterQuestions, setToggleDrawer, updateLastAssistantMessage, updatePlanningExecutionState, updateSingleMessage, updateToolResult } from '@/store/chat/chatSlice';
 import { setThreads } from '@/store/interface/interfaceSlice';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { PAGE_SIZE } from '@/utils/enums';
@@ -247,6 +247,7 @@ export const useSendMessage = ({
         let isExecutionStreamActive = isPlanExecutionRequest;
         let isExecutionWaitingForUser = false;
         let streamMessageId: string | null = null;
+        let isReviewStreaming = false;
 
         const pushPlanningUpdate = (incoming: any, resetBuffer = false) => {
             if (resetBuffer) {
@@ -459,6 +460,23 @@ export const useSendMessage = ({
                             args: event.args || {},
                         }));
                         break;
+                    case "review_phase":
+                        if (event.phase) {
+                            if (event.phase === "reviewer_start") {
+                                isReviewStreaming = true;
+                            } else if (event.phase === "reviewer_done") {
+                                isReviewStreaming = false;
+                            } else if (event.phase === "main_rerun_start") {
+                                isReviewStreaming = false;
+                            }
+                            globalDispatch(setReviewData({
+                                phase: event.phase,
+                                round: event.round ?? 1,
+                                passed: event.passed,
+                                reason: event.reason || "",
+                            }));
+                        }
+                        break;
                     case "tool_result":
                         globalDispatch(updateToolResult({
                             call_id: event.call_id,
@@ -479,7 +497,9 @@ export const useSendMessage = ({
                         globalDispatch(setLoading(false));
                         break;
                     case "delta":
-                        if (isExecutionStreamActive) {
+                        if (isReviewStreaming) {
+                            globalDispatch(appendReviewDelta({ chunk: event.content || "" }));
+                        } else if (isExecutionStreamActive) {
                             handleExecutionDelta(event.content || "");
                         } else if (isPlanningStreamActive || mode === "plan") {
                             isPlanningStreamActive = true;

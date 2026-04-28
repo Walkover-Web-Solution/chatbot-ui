@@ -17,6 +17,7 @@ import RenderNode from "../../richUI/RenderNode";
 import { componentRegistry } from "../../richUI/componentRegistry";
 import PlanningTasksCard from "./PlanningTasksCard";
 import ReasoningAccordion from "./ReasoningAccordion";
+import ReviewPhaseAccordion from "./ReviewPhaseAccordion";
 import ToolCallAccordion from "./ToolCallAccordion";
 import remarkGfm from 'remark-gfm';
 
@@ -96,6 +97,7 @@ const AssistantMessageCard = React.memo(
         const planning = message?.planning;
         const isPlanningCompleted = planning?.execution?.state === "completed";
         const suppressContent = planning && !isPlanningCompleted;
+        const reviewPhases = Array.isArray(message?.review_phases) ? message.review_phases : [];
 
         const handlePlanningAction = useCallback((action: "proceed" | "respond" | "revise", payload: { parsedPlan: any; rawPlan: string; taskQueries?: Record<string, string>; queryMessage?: string; humanQueryAnswers?: Record<string, string>; humanQueryMessage?: string; resolvedAfter?: boolean; humanQueryAnswersMessage?: string; updateMessage?: string }) => {
             if (action === "respond") {
@@ -199,6 +201,7 @@ const AssistantMessageCard = React.memo(
                                         <ReasoningAccordion reasoning={reasoning} isStreaming={message?.isStreaming} hasContent={!!message?.content} />
                                         {planning && <PlanningTasksCard plan={planning} isStreaming={message?.isStreaming} onAction={handlePlanningAction} />}
                                         <ToolCallAccordion toolsData={toolsData} />
+                                        <ReviewPhaseAccordion reviewPhases={reviewPhases} />
                                         {message?.isStreaming && !message?.content && !suppressContent ? (
                                             <div className="loading-indicator" style={themePalette}>
                                                 <div className="loading-bar"></div>
