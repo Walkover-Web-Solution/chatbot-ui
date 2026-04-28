@@ -22,7 +22,6 @@ interface ReviewPhaseAccordionProps {
 function ReviewerEntry({ entry }: { entry: ReviewPhaseEntry }) {
     const [reviewOpen, setReviewOpen] = useState(false);
     const [snapshotOpen, setSnapshotOpen] = useState(false);
-
     const isStreaming = entry.isStreaming;
     const passed = entry.passed;
     const hasFailed = !isStreaming && passed === false;
@@ -154,7 +153,6 @@ function RerunSeparator({ round }: { round: number }) {
 
 export default function ReviewPhaseAccordion({ reviewPhases }: ReviewPhaseAccordionProps) {
     if (!reviewPhases || reviewPhases.length === 0) return null;
-
     return (
         <div className="mb-3 w-full not-prose space-y-1" data-testid="chatbot-interface-review-phase-accordion">
             {/* Top separator marking start of review */}
@@ -168,6 +166,7 @@ export default function ReviewPhaseAccordion({ reviewPhases }: ReviewPhaseAccord
             </div>
 
             {reviewPhases.map((entry, idx) => {
+                if (entry.phase === "reviewer_start") return null;
                 if (entry.phase === "main_rerun_start") {
                     return <RerunSeparator key={idx} round={entry.round} />;
                 }

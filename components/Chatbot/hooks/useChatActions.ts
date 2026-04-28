@@ -248,6 +248,7 @@ export const useSendMessage = ({
         let isExecutionWaitingForUser = false;
         let streamMessageId: string | null = null;
         let isReviewStreaming = false;
+        let hasReviewPhase = false;
 
         const pushPlanningUpdate = (incoming: any, resetBuffer = false) => {
             if (resetBuffer) {
@@ -462,6 +463,7 @@ export const useSendMessage = ({
                         break;
                     case "review_phase":
                         if (event.phase) {
+                            hasReviewPhase = true;
                             if (event.phase === "reviewer_start") {
                                 isReviewStreaming = true;
                             } else if (event.phase === "reviewer_done") {
@@ -530,6 +532,11 @@ export const useSendMessage = ({
                             globalDispatch(updatePlanningExecutionState({ executionState: "error" }));
                         }
 
+                        if (hasReviewPhase && isReviewStreaming) {
+                            globalDispatch(setReviewData({ phase: "reviewer_done", passed: false, reason: errorMessage }));
+                            isReviewStreaming = false;
+                        }
+
                         const targetId = event.message_id || streamMessageId || latestMessageId;
                         if (targetId) {
                             globalDispatch(updateSingleMessage({
@@ -537,8 +544,7 @@ export const useSendMessage = ({
                                 data: {
                                     isStreaming: false,
                                     wait: false,
-                                    error: errorMessage,
-                                    content: errorMessage,
+                                    ...(hasReviewPhase ? {} : { error: errorMessage, content: errorMessage }),
                                 },
                             }));
                         }
