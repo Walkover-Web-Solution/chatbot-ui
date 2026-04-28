@@ -43,7 +43,9 @@ export const {
     setPaginateMessages,
     setHelloEventMessage,
     setError,
-    resetState
+    resetState,
+    setReviewData,
+    appendReviewDelta
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

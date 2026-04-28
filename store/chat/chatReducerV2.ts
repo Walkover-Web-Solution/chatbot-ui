@@ -429,6 +429,62 @@ export const chatReducerV2 = {
         }
     },
 
+    setReviewData: (state, action: PayloadAction<{ phase: string; round?: number; passed?: boolean; reason?: string }>) => {
+        const subThreadId = state.subThreadId;
+        if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
+        const lastMessageId = state.messageIds[subThreadId][0];
+        if (!state.msgIdAndDataMap[subThreadId]?.[lastMessageId]) return;
+        const msg = state.msgIdAndDataMap[subThreadId][lastMessageId];
+        const existing: any[] = Array.isArray(msg.review_phases) ? msg.review_phases : [];
+        const { phase, round = 1, passed, reason } = action.payload;
+
+        if (phase === "reviewer_start") {
+            msg.review_phases = [...existing, { phase, round, isStreaming: true, reviewContent: "" }];
+
+        } else if (phase === "reviewer_done") {
+            const updated = [...existing];
+            const idx = updated.findLastIndex?.((r: any) => r.round === round);
+            const targetIdx = idx !== undefined && idx >= 0 ? idx : updated.length - 1;
+            if (updated[targetIdx]) {
+                // Strip any trailing JSON blob (e.g. {"passed":false,"reason":"..."}) from streamed reviewContent
+                let cleanedContent = updated[targetIdx].reviewContent || "";
+                cleanedContent = cleanedContent.replace(/\s*\{[^{}]*"passed"[^{}]*\}\s*$/s, "").trimEnd();
+                updated[targetIdx] = { ...updated[targetIdx], phase: "reviewer_done", passed, reason: reason || "", reviewContent: cleanedContent, isStreaming: false };
+            } else {
+                updated.push({ phase: "reviewer_done", round, passed, reason: reason || "", reviewContent: "", isStreaming: false });
+            }
+            msg.review_phases = updated;
+
+        } else if (phase === "main_rerun_start") {
+            // Snapshot the current content into the last failed review phase, then wipe it
+            const updated = [...existing];
+            const lastFailedIdx = updated.findLastIndex?.((r: any) => r.phase === "reviewer_done" && r.passed === false);
+            if (lastFailedIdx >= 0) {
+                updated[lastFailedIdx] = { ...updated[lastFailedIdx], snapshotContent: msg.content || "" };
+            }
+            msg.review_phases = [...updated, { phase: "main_rerun_start", round, isStreaming: true }];
+            msg.content = "";
+            msg.isOutdated = false;
+        }
+    },
+
+    appendReviewDelta: (state, action: PayloadAction<{ chunk: string }>) => {
+        const subThreadId = state.subThreadId;
+        if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
+        const lastMessageId = state.messageIds[subThreadId][0];
+        const msg = state.msgIdAndDataMap[subThreadId]?.[lastMessageId];
+        if (!msg) return;
+        const phases: any[] = Array.isArray(msg.review_phases) ? msg.review_phases : [];
+        if (phases.length === 0) return;
+        const lastIdx = phases.length - 1;
+        const last = phases[lastIdx];
+        if (last?.isStreaming) {
+            const updated = [...phases];
+            updated[lastIdx] = { ...last, reviewContent: (last.reviewContent || "") + action.payload.chunk };
+            msg.review_phases = updated;
+        }
+    },
+
     setError: (state, action: PayloadAction<string | null>) => {
         state.error = action.payload;
     },
