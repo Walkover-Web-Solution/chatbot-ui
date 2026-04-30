@@ -272,28 +272,37 @@ export const useSendMessage = ({
 
         const handleParsedPlanningResponse = (parsed: any) => {
             console.log("🔍 handleParsedPlanningResponse called with:", parsed);
-            
-            // Handle new response format with simple_response, plan, and questions
-            if (parsed.simple_response) {
-                console.log("📝 Simple response detected:", parsed.simple_response);
+
+            // Handle reply first if it exists
+            if (parsed.reply) {
+                console.log("📝 Simple response detected:", parsed.reply);
                 // Simple response without planning - display as regular message
-                globalDispatch(appendLastAssistantMessageChunk({ chunk: parsed.simple_response }));
-                return;
+                if (streamMessageId) {
+                    globalDispatch(appendLastAssistantMessageChunk({ chunk: parsed.reply }));
+                } else {
+                    // If no message exists, create one first
+                    globalDispatch(updateLastAssistantMessage({
+                        role: "assistant",
+                        wait: false,
+                        isStreaming: false,
+                        content: parsed.reply,
+                    }));
+                }
             }
 
             // Handle plan, questions, and display_response
             const planData: any = {};
-            
+
             if (parsed.display_response) {
-                console.log("� Display response detected:", parsed.display_response);
+                console.log("💬 Display response detected:", parsed.display_response);
                 planData.display_response = parsed.display_response;
             }
-            
+
             if (parsed.plan) {
-                console.log("�📋 Plan detected:", parsed.plan);
+                console.log("📋 Plan detected:", parsed.plan);
                 planData.plan = parsed.plan;
             }
-            
+
             if (parsed.questions) {
                 console.log("❓ Questions detected:", parsed.questions);
                 planData.questions = parsed.questions;
@@ -303,8 +312,8 @@ export const useSendMessage = ({
             if (Object.keys(planData).length > 0) {
                 console.log("✅ Dispatching planning data:", planData);
                 globalDispatch(setPlanningData(planData));
-            } else {
-                // Fallback to old format (direct plan object)
+            } else if (!parsed.reply) {
+                // Only fallback to old format if there's no reply and no other plan data
                 console.log("⚠️ Fallback to old format:", parsed);
                 globalDispatch(setPlanningData({ plan: parsed }));
             }
@@ -419,7 +428,7 @@ export const useSendMessage = ({
             if (planningStreamBuffer) {
                 try {
                     const parsed = JSON.parse(planningStreamBuffer);
-                    globalDispatch(setPlanningData({ plan: parsed }));
+                    handleParsedPlanningResponse(parsed);
                 } catch (error) {
                     globalDispatch(setPlanningData({ rawPlan: planningStreamBuffer }));
                 }
@@ -549,11 +558,10 @@ export const useSendMessage = ({
                         } else if (action === "respond") {
                             break;
                         } else {
-                            // Auto-detect planning data in delta content
                             const deltaContent = event.content || "";
-                            const looksLikePlanData = deltaContent.includes('"state"') && 
+                            const looksLikePlanData = deltaContent.includes('"state"') &&
                                                      (deltaContent.includes('"planning"') || deltaContent.includes('"tasks"'));
-                            
+
                             if (looksLikePlanData) {
                                 isPlanningStreamActive = true;
                                 pushPlanningUpdate(deltaContent);
@@ -692,16 +700,26 @@ export const useSendMessage = ({
                             }
                             // Clear updating state when planning stream completes
                             globalDispatch(updatePlanningExecutionState({ executionState: "pending" }));
-                            const targetId = streamMessageId || latestMessageId;
-                            if (targetId) {
+                            if (streamMessageId) {
                                 globalDispatch(updateSingleMessage({
-                                    messageId: targetId,
+                                    messageId: streamMessageId,
                                     data: {
                                         isStreaming: false,
                                         wait: false,
-                                        content: "",
+                                        content: parsedContent?.reply || "",
                                         finish_reason: event.finish_reason,
                                     },
+                                }));
+                            } else {
+                                // No streamMessageId means no "start" event was received (non-streaming backend).
+                                // Use updateLastAssistantMessage to find the waiting message by position, not ID.
+                                globalDispatch(updateLastAssistantMessage({
+                                    role: "assistant",
+                                    isStreaming: false,
+                                    wait: false,
+                                    content: parsedContent?.reply || "",
+                                    message_id: event.message_id,
+                                    finish_reason: event.finish_reason,
                                 }));
                             }
                         } else if (isPlanUpdateRequest) {

@@ -1,10 +1,15 @@
 import { emitEventToParent } from "./emitEventsToParent/emitEventsToParent";
 
 export const SetSessionStorage = (key: string, value: string) => {
-  sessionStorage.setItem(key, value);
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    sessionStorage.setItem(key, value);
+  }
 };
 
 export const GetSessionStorageData = (key: string): string | null => {
+  if (typeof window === 'undefined' || !window.sessionStorage) {
+    return null;
+  }
   try {
     return sessionStorage.getItem(key);
   } catch (error) {

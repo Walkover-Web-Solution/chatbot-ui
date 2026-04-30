@@ -96,7 +96,10 @@ const AssistantMessageCard = React.memo(
         const reasoning = message?.reasoning || "";
         const planning = message?.planning;
         const isPlanningCompleted = planning?.execution?.state === "completed";
-        const suppressContent = planning && !isPlanningCompleted;
+        const hasPlanTasks = planning?.plan?.tasks && (
+            Array.isArray(planning.plan.tasks) ? planning.plan.tasks.length > 0 : Object.keys(planning.plan.tasks).length > 0
+        );
+        const suppressContent = hasPlanTasks && !isPlanningCompleted;
         const reviewPhases = Array.isArray(message?.review_phases) ? message.review_phases : [];
 
         const handlePlanningAction = useCallback((action: "proceed" | "respond" | "revise", payload: { parsedPlan: any; rawPlan: string; taskQueries?: Record<string, string>; queryMessage?: string; humanQueryAnswers?: Record<string, string>; humanQueryMessage?: string; resolvedAfter?: boolean; humanQueryAnswersMessage?: string; updateMessage?: string }) => {

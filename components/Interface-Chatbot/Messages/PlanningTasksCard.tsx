@@ -55,6 +55,9 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
 
     const tasks = useMemo(() => {
         if (!parsedPlan?.tasks || typeof parsedPlan.tasks !== "object") return [];
+        if (Array.isArray(parsedPlan.tasks)) {
+            return parsedPlan.tasks.map((task: any) => ({ ...task }));
+        }
         return Object.entries(parsedPlan.tasks).map(([key, value]: [string, any]) => ({
             id: key,
             ...(value || {}),
@@ -144,7 +147,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
             t?.status === "error" || t?.status === "failed" || t?.is_error
         )
     );
-    const showProceedButton = !isPaused && !hasTaskQueryValues && !isExecuting && !isActionLoading && !isUpdatingPlan && !isStreaming;
+    const showProceedButton = !isPaused && !hasTaskQueryValues && !isExecuting && !isActionLoading && !isUpdatingPlan;
     const showUpdateButton = isPaused || hasHumanQueries;
 
     const doneCount = useMemo(() => {
@@ -417,7 +420,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                 <pre className="text-xs bg-base-200/70 rounded-xl p-3 whitespace-pre-wrap break-words mb-2 border border-base-300">{rawPlan}</pre>
             )}
 
-            {parsedPlan && (
+            {parsedPlan && tasks.length > 0 && (
                 <div className="rounded-2xl border border-base-200 dark:border-base-700 bg-base-100 dark:bg-base-900 shadow-sm overflow-hidden">
 
                     {tasks.length > 0 && (
@@ -748,20 +751,20 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                         </div>
                     )}
 
-                    {!isExecutionCompleted && isStreaming && !hasHumanQueries && !isExecutionPaused && (
+                    {!isExecutionCompleted && isStreaming && !hasHumanQueries && !isExecutionPaused && tasks.length === 0 && (
                         <div className="flex items-center gap-2 px-4 py-3 border-t border-base-200 dark:border-base-700">
                             <Loader2 className="w-3.5 h-3.5 animate-spin text-base-content/60" />
                             <span className="text-xs text-base-content/65">Planning tasks...</span>
                         </div>
                     )}
 
-                    {!isExecutionCompleted && (isStreaming ? (hasHumanQueries || isExecutionPaused) : true) && (
+                    {!isExecutionCompleted && (isStreaming ? (hasHumanQueries || isExecutionPaused || tasks.length > 0) : true) && (
                         <div className="flex items-center gap-2 px-4 py-3 border-t border-base-200 dark:border-base-700 bg-base-50 dark:bg-base-800/50 sticky bottom-0 z-10">
                             {showProceedButton && (
                                 <button
                                     type="button"
-                                    disabled={isActionLoading || (parsedPlan && tasks.length === 0)}
-                                    title={(parsedPlan && tasks.length === 0) ? "Waiting for tasks to be generated" : undefined}
+                                    disabled={isActionLoading || isStreaming || (parsedPlan && tasks.length === 0)}
+                                    title={isStreaming ? "Waiting for plan to finish..." : (parsedPlan && tasks.length === 0) ? "Waiting for tasks to be generated" : undefined}
                                     onClick={() => handleAction("proceed")}
                                     className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-content hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
                                 >
