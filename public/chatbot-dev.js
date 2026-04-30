@@ -16,7 +16,7 @@
                 side: 'right'
             };
             this.urls = {
-                chatbotUrl: 'https://dev-chatbot.gtwy.ai/chatbot',
+                chatbotUrl: 'http://localhost:3001/chatbot',
                 styleSheet: 'https://dev-chatbot.gtwy.ai/chatbot-style.css',
                 login: 'https://dev-db.gtwy.ai/api/chatbot/loginuser'
             };
@@ -159,6 +159,7 @@
             window.addEventListener('message', (event) => {
                 // Only process messages from trusted origins
                 const trustedOrigins = [
+                    'http://localhost:3001',
                     'http://localhost:3000',
                     'https://dev-chatbot.gtwy.ai',
                     window.location.origin

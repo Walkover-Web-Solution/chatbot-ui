@@ -127,10 +127,16 @@ export const chatReducerV2 = {
         }
     },
 
-    setPlanningData: (state, action: PayloadAction<{ plan?: any; rawPlan?: string }>) => {
+    setPlanningData: (state, action: PayloadAction<{ plan?: any; rawPlan?: string; questions?: any[] }>) => {
+        console.log("🔄 setPlanningData called with:", action.payload);
         const subThreadId = state.subThreadId;
-        if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
+        console.log("📍 subThreadId:", subThreadId);
+        if (!subThreadId || !state.messageIds[subThreadId]?.length) {
+            console.log("⚠️ No subThreadId or messageIds, returning");
+            return;
+        }
         const lastMessageId = state.messageIds[subThreadId][0];
+        console.log("📨 lastMessageId:", lastMessageId);
         if (!state.msgIdAndDataMap[subThreadId]) {
             state.msgIdAndDataMap[subThreadId] = {};
         }
@@ -144,6 +150,7 @@ export const chatReducerV2 = {
             ...action.payload,
             execution: existingPlanning.execution || { state: "pending", tasks: {} },
         };
+        console.log("✅ Planning data set:", existingMessage.planning);
     },
 
     updatePlanningExecutionState: (state, action: PayloadAction<{ executionState?: string; taskUpdate?: { id: string; title?: string; status?: string; result?: string; error?: string }; taskId?: string; taskDelta?: string; taskReasoning?: string }>) => {

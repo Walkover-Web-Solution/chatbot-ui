@@ -260,13 +260,53 @@ export const useSendMessage = ({
                 planningStreamBuffer += incoming;
                 try {
                     const parsed = JSON.parse(planningStreamBuffer);
-                    globalDispatch(setPlanningData({ plan: parsed }));
+                    handleParsedPlanningResponse(parsed);
                 } catch (error) {
                     globalDispatch(setPlanningData({ rawPlan: planningStreamBuffer }));
                 }
             } else {
                 planningStreamBuffer = JSON.stringify(incoming);
-                globalDispatch(setPlanningData({ plan: incoming }));
+                handleParsedPlanningResponse(incoming);
+            }
+        };
+
+        const handleParsedPlanningResponse = (parsed: any) => {
+            console.log("🔍 handleParsedPlanningResponse called with:", parsed);
+            
+            // Handle new response format with simple_response, plan, and questions
+            if (parsed.simple_response) {
+                console.log("📝 Simple response detected:", parsed.simple_response);
+                // Simple response without planning - display as regular message
+                globalDispatch(appendLastAssistantMessageChunk({ chunk: parsed.simple_response }));
+                return;
+            }
+
+            // Handle plan, questions, and display_response
+            const planData: any = {};
+            
+            if (parsed.display_response) {
+                console.log("� Display response detected:", parsed.display_response);
+                planData.display_response = parsed.display_response;
+            }
+            
+            if (parsed.plan) {
+                console.log("�📋 Plan detected:", parsed.plan);
+                planData.plan = parsed.plan;
+            }
+            
+            if (parsed.questions) {
+                console.log("❓ Questions detected:", parsed.questions);
+                planData.questions = parsed.questions;
+            }
+
+            // If we have plan, questions, or display_response, update planning data
+            if (Object.keys(planData).length > 0) {
+                console.log("✅ Dispatching planning data:", planData);
+                globalDispatch(setPlanningData(planData));
+            } else {
+                // Fallback to old format (direct plan object)
+                console.log("⚠️ Fallback to old format:", parsed);
+                globalDispatch(setPlanningData({ plan: parsed }));
             }
         };
 
@@ -553,32 +593,49 @@ export const useSendMessage = ({
                         break;
                     }
                     case "done": {
+                        console.log("🎯 DONE event received:", event);
                         const wasPlanningStream = isPlanningStreamActive;
                         finalizePlanningStream();
                         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
 
                         // Always check first: if done content has paused/waiting_for_user — hold UI regardless of stream type or action
                         const doneResponseContent = (event as any)?.response?.data?.content;
+                        console.log("📦 Done response content:", doneResponseContent);
+                        console.log("🔧 Mode:", mode, "wasPlanningStream:", wasPlanningStream);
+                        
+                        // Parse the content if it's a JSON string (new format)
+                        let parsedContent: any = null;
+                        if (typeof doneResponseContent === "string" && doneResponseContent.trim()) {
+                            try {
+                                parsedContent = JSON.parse(doneResponseContent);
+                                console.log("✅ Parsed content successfully:", parsedContent);
+                            } catch (e) {
+                                console.log("❌ Failed to parse content:", e);
+                            }
+                        }
+
                         const isPlanPausedInContent = (() => {
                             // Check 1: stream already signalled waiting_for_user via delta event
                             if (isExecutionWaitingForUser) return true;
                             // Check 2: done response content is a plan JSON with paused/waiting state
-                            if (typeof doneResponseContent !== "string" || !doneResponseContent.trim()) return false;
-                            try {
-                                const parsed = JSON.parse(doneResponseContent);
-                                return parsed?.state === "paused" ||
-                                    Object.values(parsed?.tasks || {}).some((t: any) => t?.status === "waiting_for_user");
-                            } catch (_) { return false; }
+                            if (!parsedContent) return false;
+                            
+                            // Check in new format (plan.tasks)
+                            if (parsedContent?.plan?.tasks) {
+                                return parsedContent.plan.state === "paused" ||
+                                    Object.values(parsedContent.plan.tasks).some((t: any) => t?.status === "waiting_for_user");
+                            }
+                            
+                            // Check in old format (direct tasks)
+                            return parsedContent?.state === "paused" ||
+                                Object.values(parsedContent?.tasks || {}).some((t: any) => t?.status === "waiting_for_user");
                         })();
 
                         if (isPlanPausedInContent) {
                             // Update the plan with the paused content if it's a valid plan JSON
-                            try {
-                                const parsedPausedPlan = JSON.parse(doneResponseContent);
-                                if (parsedPausedPlan?.tasks) {
-                                    globalDispatch(setPlanningData({ plan: parsedPausedPlan }));
-                                }
-                            } catch (_) {}
+                            if (parsedContent) {
+                                handleParsedPlanningResponse(parsedContent);
+                            }
                             globalDispatch(updatePlanningExecutionState({ executionState: "paused" }));
                             globalDispatch(setLoading(false));
                             break;
@@ -628,15 +685,10 @@ export const useSendMessage = ({
                                     },
                                 }));
                             }
-                        } else if (wasPlanningStream) {
-                            const doneContent = doneResponseContent;
-                            if (doneContent) {
-                                try {
-                                    const parsed = JSON.parse(doneContent);
-                                    if (parsed?.state === "planning" && parsed?.tasks) {
-                                        globalDispatch(setPlanningData({ plan: parsed }));
-                                    }
-                                } catch (_) {}
+                        } else if (wasPlanningStream || mode === "plan" || parsedContent) {
+                            // Handle planning mode response
+                            if (parsedContent) {
+                                handleParsedPlanningResponse(parsedContent);
                             }
                             // Clear updating state when planning stream completes
                             globalDispatch(updatePlanningExecutionState({ executionState: "pending" }));

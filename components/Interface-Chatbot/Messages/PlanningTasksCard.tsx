@@ -2,6 +2,7 @@ import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent
 import { CheckCircle2, ChevronDown, Circle, Loader2, MessageSquare, PauseCircle, Pencil, PlayCircle, RotateCcw, Sparkles, XCircle } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReasoningAccordion from "./ReasoningAccordion";
+import QuestionsCard from "./QuestionsCard";
 
 interface PlanningTasksCardProps {
     plan: any;
@@ -22,20 +23,34 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
     const cardRef = useRef<HTMLDivElement>(null);
     const prevHumanQueriesRef = useRef<Record<string, string>>({});
 
-    const { parsedPlan, rawPlan, execution, planState } = useMemo(() => {
+    const { parsedPlan, rawPlan, execution, planState, questions, displayResponse } = useMemo(() => {
         if (plan === null || plan === undefined) {
-            return { parsedPlan: null, rawPlan: "", execution: null, planState: null };
+            return { parsedPlan: null, rawPlan: "", execution: null, planState: null, questions: null, displayResponse: null };
         }
         if (typeof plan === "string") {
             try {
                 const parsed = JSON.parse(plan);
-                return { parsedPlan: parsed, rawPlan: plan, execution: parsed?.execution || null, planState: parsed?.state || null };
+                return { 
+                    parsedPlan: parsed?.plan || parsed, 
+                    rawPlan: plan, 
+                    execution: parsed?.execution || null, 
+                    planState: parsed?.plan?.state || parsed?.state || null,
+                    questions: parsed?.questions || null,
+                    displayResponse: parsed?.display_response || null
+                };
             } catch {
-                return { parsedPlan: null, rawPlan: plan, execution: null, planState: null };
+                return { parsedPlan: null, rawPlan: plan, execution: null, planState: null, questions: null, displayResponse: null };
             }
         }
         const parsedPlan = plan?.plan || plan;
-        return { parsedPlan, rawPlan: JSON.stringify(parsedPlan, null, 2), execution: plan?.execution || null, planState: parsedPlan?.state || null };
+        return { 
+            parsedPlan, 
+            rawPlan: JSON.stringify(parsedPlan, null, 2), 
+            execution: plan?.execution || null, 
+            planState: parsedPlan?.state || null,
+            questions: plan?.questions || null,
+            displayResponse: plan?.display_response || null
+        };
     }, [plan]);
 
     const tasks = useMemo(() => {
@@ -360,8 +375,44 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
         }
     };
 
+    const handleQuestionsSubmit = (answers: Record<string, string>) => {
+        setIsActionLoading(true);
+        const messages: string[] = [];
+        
+        Object.entries(answers).forEach(([qId, answer]) => {
+            messages.push(`question_id:${qId}, answer:${answer}`);
+        });
+        
+        const message = messages.join("\n");
+        const payload = {
+            parsedPlan,
+            rawPlan,
+            updateMessage: message,
+        };
+        
+        if (onAction) {
+            onAction("revise", payload);
+        } else {
+            emitEventToParent("PLANNING_ACTION", { action: "update", plan: parsedPlan || rawPlan, message, ...payload });
+        }
+    };
+
     return (
         <div className="mb-3 w-full not-prose" ref={cardRef}>
+            {displayResponse && (
+                <div className="mb-4 p-4 rounded-2xl border border-base-200 dark:border-base-700 bg-base-100 dark:bg-base-900 shadow-sm">
+                    <p className="text-sm text-base-content whitespace-pre-wrap">{displayResponse}</p>
+                </div>
+            )}
+
+            {questions && questions.length > 0 && (
+                <QuestionsCard 
+                    questions={questions} 
+                    onAnswersSubmit={handleQuestionsSubmit}
+                    isLoading={isActionLoading}
+                />
+            )}
+
             {!parsedPlan && rawPlan && (
                 <pre className="text-xs bg-base-200/70 rounded-xl p-3 whitespace-pre-wrap break-words mb-2 border border-base-300">{rawPlan}</pre>
             )}
