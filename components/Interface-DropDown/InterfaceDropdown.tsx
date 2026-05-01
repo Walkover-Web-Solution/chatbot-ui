@@ -28,7 +28,7 @@ function InterfaceDropdown({ props, gridId, componentId, inpreview }: InterfaceD
       <Select
         {...props}
         labelId='demo-simple-select-label'
-        defaultValue={props?.options[0] || 'Dropdown'}
+        defaultValue={typeof props?.options[0] === 'object' ? props?.options[0]?.value : props?.options[0] || 'Dropdown'}
         fullWidth
         className='h-100'
         onChange={handleChange}
@@ -36,11 +36,15 @@ function InterfaceDropdown({ props, gridId, componentId, inpreview }: InterfaceD
         data-testid={`chatbot-interface-dropdown-${componentId || 'default'}`}
       >
         {props?.options?.length > 0 ? (
-          props?.options?.map((option) => (
-            <MenuItem key={option} value={option}>
-              {option}
-            </MenuItem>
-          ))
+          props?.options?.map((option: any, index: number) => {
+            const optionValue = typeof option === 'object' && option !== null ? option.value : option
+            const optionLabel = typeof option === 'object' && option !== null ? option.label : option
+            return (
+              <MenuItem key={`${optionValue}-${index}`} value={optionValue}>
+                {optionLabel}
+              </MenuItem>
+            )
+          })
         ) : (
           <MenuItem key='Dropdown' value='Dropdown'>
             Dropdown

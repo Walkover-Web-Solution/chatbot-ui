@@ -125,26 +125,30 @@ export default function QuestionsCard({ questions, onAnswersSubmit, isLoading = 
                                 Select an option:
                             </p>
                             <div className="space-y-2">
-                                {currentQuestion.options.map((option) => (
-                                    <label
-                                        key={option}
-                                        className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all ${
-                                            selectedOption === option
-                                                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                                                : "border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10"
-                                        }`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name={currentQuestion.id}
-                                            value={option}
-                                            checked={selectedOption === option}
-                                            onChange={() => handleSelectOption(option)}
-                                            className="w-4 h-4 accent-blue-600"
-                                        />
-                                        <span className="text-sm text-slate-700 dark:text-slate-300">{option}</span>
-                                    </label>
-                                ))}
+                                {currentQuestion.options.map((option: any, optIndex: number) => {
+                                    const optionValue = typeof option === 'object' && option !== null ? option.value : option
+                                    const optionLabel = typeof option === 'object' && option !== null ? option.label : option
+                                    return (
+                                        <label
+                                            key={`${optionValue}-${optIndex}`}
+                                            className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all ${
+                                                selectedOption === optionValue
+                                                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                                                    : "border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10"
+                                            }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name={currentQuestion.id}
+                                                value={optionValue}
+                                                checked={selectedOption === optionValue}
+                                                onChange={() => handleSelectOption(optionValue)}
+                                                className="w-4 h-4 accent-blue-600"
+                                            />
+                                            <span className="text-sm text-slate-700 dark:text-slate-300">{optionLabel}</span>
+                                        </label>
+                                    )
+                                })}
                             </div>
                         </div>
                     )}

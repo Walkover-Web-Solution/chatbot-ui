@@ -300,17 +300,21 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
               display: none;
             }
           `}</style>
-          {options.slice(0, 3).map((option, index) => (
-            <button
-              key={index}
-              data-testid={`chatbot-suggestion-option-${index}`}
-              onClick={() => handleSendMessage({ message: option })}
-              className="flex-shrink-0 px-4 py-2 text-sm rounded-lg shadow-sm border transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-[#242424]"
-              style={suggestionButtonStyles}
-            >
-              {option}
-            </button>
-          ))}
+          {options.slice(0, 3).map((option, index) => {
+            const optionValue = typeof option === 'object' && option !== null ? (option as any).value : option
+            const optionLabel = typeof option === 'object' && option !== null ? (option as any).label : option
+            return (
+              <button
+                key={index}
+                data-testid={`chatbot-suggestion-option-${index}`}
+                onClick={() => handleSendMessage({ message: optionValue })}
+                className="flex-shrink-0 px-4 py-2 text-sm rounded-lg shadow-sm border transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-[#242424]"
+                style={suggestionButtonStyles}
+              >
+                {optionLabel}
+              </button>
+            )
+          })}
         </div>
         {options.length > 1 && (
           <button

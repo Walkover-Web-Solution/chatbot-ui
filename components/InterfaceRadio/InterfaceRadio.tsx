@@ -28,10 +28,14 @@ function InterfaceRadio({ props, gridId, componentId }: InterfaeRadioProps) {
   return (
     <Box className='w-100 h-100 flex-center-center p-2 box-sizing-border-box'>
       <FormControl fullWidth>
-        <RadioGroup {...props} defaultValue={props?.options[0] || ''} onChange={handleChange} data-testid={`chatbot-interface-radio-${componentId || 'default'}`}>
-          {props?.options.map((option: any) => (
-            <FormControlLabel key={option} value={option} control={<Radio onMouseDown={(e) => e.stopPropagation()} />} label={option} />
-          ))}
+        <RadioGroup {...props} defaultValue={typeof props?.options[0] === 'object' ? props?.options[0]?.value : props?.options[0] || ''} onChange={handleChange} data-testid={`chatbot-interface-radio-${componentId || 'default'}`}>
+          {props?.options.map((option: any, index: number) => {
+            const optionValue = typeof option === 'object' && option !== null ? option.value : option
+            const optionLabel = typeof option === 'object' && option !== null ? option.label : option
+            return (
+              <FormControlLabel key={`${optionValue}-${index}`} value={optionValue} control={<Radio onMouseDown={(e) => e.stopPropagation()} />} label={optionLabel} />
+            )
+          })}
         </RadioGroup>
       </FormControl>
     </Box>
