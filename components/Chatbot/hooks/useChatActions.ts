@@ -270,53 +270,48 @@ export const useSendMessage = ({
             }
         };
 
-        const handleParsedPlanningResponse = (parsed: any) => {
-            console.log("🔍 handleParsedPlanningResponse called with:", parsed);
+        // Pure parser: extracts the known fields from a planning response payload.
+        // Returns null when none of the expected fields are present so the caller
+        // can decide whether to fall back to legacy "whole body is the plan" handling.
+        const extractPlanningPayload = (raw: any): { plan?: any; questions?: any[]; display_response?: string; reply?: string } | null => {
+            if (!raw || typeof raw !== "object") return null;
+            const { plan, questions, display_response, reply } = raw;
+            const hasAny = plan != null || questions != null || display_response != null || reply != null;
+            return hasAny ? { plan, questions, display_response, reply } : null;
+        };
 
-            // Handle reply first if it exists
-            if (parsed.reply) {
-                console.log("📝 Simple response detected:", parsed.reply);
-                // Simple response without planning - display as regular message
+        // Routes a parsed planning payload to the correct dispatch:
+        //  - `reply` flows into the assistant message content (regular text)
+        //  - `plan` / `questions` / `display_response` flow into planning state
+        const applyPlanningPayload = (payload: ReturnType<typeof extractPlanningPayload>, rawForFallback: any) => {
+            if (!payload) {
+                if (rawForFallback && typeof rawForFallback === "object") {
+                    globalDispatch(setPlanningData({ plan: rawForFallback }));
+                }
+                return;
+            }
+
+            if (payload.reply) {
                 if (streamMessageId) {
-                    globalDispatch(appendLastAssistantMessageChunk({ chunk: parsed.reply }));
+                    globalDispatch(appendLastAssistantMessageChunk({ chunk: payload.reply }));
                 } else {
-                    // If no message exists, create one first
                     globalDispatch(updateLastAssistantMessage({
                         role: "assistant",
                         wait: false,
                         isStreaming: false,
-                        content: parsed.reply,
+                        content: payload.reply,
                     }));
                 }
             }
 
-            // Handle plan, questions, and display_response
-            const planData: any = {};
-
-            if (parsed.display_response) {
-                console.log("💬 Display response detected:", parsed.display_response);
-                planData.display_response = parsed.display_response;
+            const { plan, questions, display_response } = payload;
+            if (plan != null || questions != null || display_response != null) {
+                globalDispatch(setPlanningData({ plan, questions, display_response }));
             }
+        };
 
-            if (parsed.plan) {
-                console.log("📋 Plan detected:", parsed.plan);
-                planData.plan = parsed.plan;
-            }
-
-            if (parsed.questions) {
-                console.log("❓ Questions detected:", parsed.questions);
-                planData.questions = parsed.questions;
-            }
-
-            // If we have plan, questions, or display_response, update planning data
-            if (Object.keys(planData).length > 0) {
-                console.log("✅ Dispatching planning data:", planData);
-                globalDispatch(setPlanningData(planData));
-            } else if (!parsed.reply) {
-                // Only fallback to old format if there's no reply and no other plan data
-                console.log("⚠️ Fallback to old format:", parsed);
-                globalDispatch(setPlanningData({ plan: parsed }));
-            }
+        const handleParsedPlanningResponse = (parsed: any) => {
+            applyPlanningPayload(extractPlanningPayload(parsed), parsed);
         };
 
         const handleExecutionDelta = (raw: string) => {
@@ -606,35 +601,28 @@ export const useSendMessage = ({
                         finalizePlanningStream();
                         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
 
-                        // Always check first: if done content has paused/waiting_for_user — hold UI regardless of stream type or action
                         const doneResponseContent = (event as any)?.response?.data?.content;
-                        console.log("📦 Done response content:", doneResponseContent);
-                        console.log("🔧 Mode:", mode, "wasPlanningStream:", wasPlanningStream);
-                        
-                        // Parse the content if it's a JSON string (new format)
+                        const isPlanContext = wasPlanningStream || mode === "plan";
+
+                        // Only attempt to parse done content as a planning payload when we're in
+                        // a plan context. Parsing in other modes risks misinterpreting a regular
+                        // JSON-shaped reply as planning data.
                         let parsedContent: any = null;
-                        if (typeof doneResponseContent === "string" && doneResponseContent.trim()) {
+                        if (isPlanContext && typeof doneResponseContent === "string" && doneResponseContent.trim()) {
                             try {
                                 parsedContent = JSON.parse(doneResponseContent);
-                                console.log("✅ Parsed content successfully:", parsedContent);
-                            } catch (e) {
-                                console.log("❌ Failed to parse content:", e);
+                            } catch (_) {
+                                // not JSON — treat as plain text below
                             }
                         }
 
                         const isPlanPausedInContent = (() => {
-                            // Check 1: stream already signalled waiting_for_user via delta event
                             if (isExecutionWaitingForUser) return true;
-                            // Check 2: done response content is a plan JSON with paused/waiting state
                             if (!parsedContent) return false;
-                            
-                            // Check in new format (plan.tasks)
                             if (parsedContent?.plan?.tasks) {
                                 return parsedContent.plan.state === "paused" ||
                                     Object.values(parsedContent.plan.tasks).some((t: any) => t?.status === "waiting_for_user");
                             }
-                            
-                            // Check in old format (direct tasks)
                             return parsedContent?.state === "paused" ||
                                 Object.values(parsedContent?.tasks || {}).some((t: any) => t?.status === "waiting_for_user");
                         })();
@@ -693,31 +681,30 @@ export const useSendMessage = ({
                                     },
                                 }));
                             }
-                        } else if (wasPlanningStream || mode === "plan" || parsedContent) {
-                            // Handle planning mode response
+                        } else if (isPlanContext) {
                             if (parsedContent) {
                                 handleParsedPlanningResponse(parsedContent);
                             }
-                            // Clear updating state when planning stream completes
                             globalDispatch(updatePlanningExecutionState({ executionState: "pending" }));
+                            const finalContent = parsedContent?.reply || "";
                             if (streamMessageId) {
                                 globalDispatch(updateSingleMessage({
                                     messageId: streamMessageId,
                                     data: {
                                         isStreaming: false,
                                         wait: false,
-                                        content: parsedContent?.reply || "",
+                                        content: finalContent,
                                         finish_reason: event.finish_reason,
                                     },
                                 }));
                             } else {
                                 // No streamMessageId means no "start" event was received (non-streaming backend).
-                                // Use updateLastAssistantMessage to find the waiting message by position, not ID.
+                                // updateLastAssistantMessage finds the waiting message by position, not ID.
                                 globalDispatch(updateLastAssistantMessage({
                                     role: "assistant",
                                     isStreaming: false,
                                     wait: false,
-                                    content: parsedContent?.reply || "",
+                                    content: finalContent,
                                     message_id: event.message_id,
                                     finish_reason: event.finish_reason,
                                 }));

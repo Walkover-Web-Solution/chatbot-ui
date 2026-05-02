@@ -16,6 +16,7 @@ import "./Message.css";
 import RenderNode from "../../richUI/RenderNode";
 import { componentRegistry } from "../../richUI/componentRegistry";
 import PlanningTasksCard from "./PlanningTasksCard";
+import QuestionsCard from "./QuestionsCard";
 import ReasoningAccordion from "./ReasoningAccordion";
 import ReviewPhaseAccordion from "./ReviewPhaseAccordion";
 import ToolCallAccordion from "./ToolCallAccordion";
@@ -75,6 +76,7 @@ const AssistantMessageCard = React.memo(
         message,
         backgroundColor,
         isError = false,
+        isLatest = false,
     }: any) => {
         const [isCopied, setIsCopied] = React.useState(false);
         const sendMessage = useSendMessage({});
@@ -99,7 +101,20 @@ const AssistantMessageCard = React.memo(
         const hasPlanTasks = planning?.plan?.tasks && (
             Array.isArray(planning.plan.tasks) ? planning.plan.tasks.length > 0 : Object.keys(planning.plan.tasks).length > 0
         );
-        const suppressContent = hasPlanTasks && !isPlanningCompleted;
+        const pendingQuestions = useMemo<any[]>(() => {
+            const qs = planning?.questions;
+            if (!Array.isArray(qs)) return [];
+            return qs.filter((q: any) => q?.status !== "answered" && q?.status !== "skipped" && !q?.response);
+        }, [planning?.questions]);
+        const hasPendingQuestions = pendingQuestions.length > 0;
+        const displayResponse = typeof planning?.display_response === "string" ? planning.display_response : "";
+        const showPlanningTasksCard = hasPlanTasks || (!!message?.isStreaming && !hasPendingQuestions);
+        // Plan-mode UI freezes when this message is no longer the latest in the thread —
+        // user has moved on (sent a new message), so no further interaction allowed.
+        const isPlanFrozen = !isLatest;
+        // Suppress the streaming loader / fallback content area while plan-mode UI (tasks or
+        // pending questions) is driving the message — we don't want a duplicate spinner.
+        const suppressContent = (hasPlanTasks || hasPendingQuestions) && !isPlanningCompleted;
         const reviewPhases = Array.isArray(message?.review_phases) ? message.review_phases : [];
 
         const handlePlanningAction = useCallback((action: "proceed" | "respond" | "revise", payload: { parsedPlan: any; rawPlan: string; taskQueries?: Record<string, string>; queryMessage?: string; humanQueryAnswers?: Record<string, string>; humanQueryMessage?: string; resolvedAfter?: boolean; humanQueryAnswersMessage?: string; updateMessage?: string }) => {
@@ -138,6 +153,29 @@ const AssistantMessageCard = React.memo(
                 }
             }
         }, [messageRef, sendMessage]);
+
+        const handleQuestionsSubmit = useCallback((answers: Record<string, string>) => {
+            if (!pendingQuestions.length) return;
+            const formatted = pendingQuestions
+                .map((q: any) => {
+                    const answer = answers[q.id];
+                    if (!answer || !answer.trim()) return "";
+                    return `Q: ${q.question}\nA: ${answer.trim()}`;
+                })
+                .filter(Boolean)
+                .join("\n\n");
+            if (!formatted) return;
+            // Plan-mode question answers are a batch (multiple questions, possibly across
+            // different tasks), so we don't use `action: "respond"` — that's reserved for
+            // single-task human_query responses where task_id is mandatory. We send as a
+            // plain plan-mode follow-up; backend parses the Q/A format from the message body.
+            sendMessage({
+                message: formatted,
+                mode: "plan",
+                skipUserEcho: true,
+                silent: true,
+            });
+        }, [pendingQuestions, sendMessage]);
 
 
         return (
@@ -202,7 +240,31 @@ const AssistantMessageCard = React.memo(
                                 ) : (
                                     <div className="prose dark:prose-invert break-words" style={{ color: theme.palette.text.primary }}>
                                         <ReasoningAccordion reasoning={reasoning} isStreaming={message?.isStreaming} hasContent={!!message?.content} />
-                                        {planning && <PlanningTasksCard plan={planning} isStreaming={message?.isStreaming} onAction={handlePlanningAction} />}
+                                        {planning && (
+                                            <>
+                                                {displayResponse && (
+                                                    <p className="text-sm leading-relaxed mb-3 whitespace-pre-wrap not-prose">
+                                                        {displayResponse}
+                                                    </p>
+                                                )}
+                                                {hasPendingQuestions && (
+                                                    <QuestionsCard
+                                                        questions={pendingQuestions}
+                                                        onAnswersSubmit={handleQuestionsSubmit}
+                                                        isLoading={!!message?.isStreaming}
+                                                        disabled={isPlanFrozen}
+                                                    />
+                                                )}
+                                                {showPlanningTasksCard && (
+                                                    <PlanningTasksCard
+                                                        plan={planning}
+                                                        isStreaming={message?.isStreaming}
+                                                        onAction={handlePlanningAction}
+                                                        disabled={isPlanFrozen}
+                                                    />
+                                                )}
+                                            </>
+                                        )}
                                         <ToolCallAccordion toolsData={toolsData} />
                                         <ReviewPhaseAccordion reviewPhases={reviewPhases} />
                                         {message?.isStreaming && !message?.content && !suppressContent ? (

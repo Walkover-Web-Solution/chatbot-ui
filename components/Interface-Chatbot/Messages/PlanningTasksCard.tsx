@@ -8,9 +8,12 @@ interface PlanningTasksCardProps {
     plan: any;
     isStreaming?: boolean;
     onAction?: (action: "proceed" | "revise" | "respond", payload: { parsedPlan: any; rawPlan: string; taskQueries?: Record<string, string>; queryMessage?: string; humanQueryAnswers?: Record<string, string>; humanQueryMessage?: string; resolvedAfter?: boolean }) => void;
+    // When true, the card is rendered in a read-only / historical state — all
+    // proceed/update/respond/retry buttons and human-query inputs are hidden.
+    disabled?: boolean;
 }
 
-export default function PlanningTasksCard({ plan, isStreaming = false, onAction }: PlanningTasksCardProps) {
+export default function PlanningTasksCard({ plan, isStreaming = false, onAction, disabled = false }: PlanningTasksCardProps) {
     const taskRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const taskResultRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const [showQueryInputs, setShowQueryInputs] = useState(false);
@@ -147,8 +150,8 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
             t?.status === "error" || t?.status === "failed" || t?.is_error
         )
     );
-    const showProceedButton = !isPaused && !hasTaskQueryValues && !isExecuting && !isActionLoading && !isUpdatingPlan;
-    const showUpdateButton = isPaused || hasHumanQueries;
+    const showProceedButton = !disabled && !isPaused && !hasTaskQueryValues && !isExecuting && !isActionLoading && !isUpdatingPlan && !isStreaming;
+    const showUpdateButton = !disabled && (isPaused || hasHumanQueries);
 
     const doneCount = useMemo(() => {
         if (!execution?.tasks) return 0;
@@ -505,7 +508,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                         </div>
                                                     </button>
 
-                                                    {isWaitingForUser && task.human_query && (
+                                                    {!disabled && isWaitingForUser && task.human_query && (
                                                         <div className="mt-2 space-y-2">
                                                             <div className="flex items-start gap-2 rounded-lg bg-warning/8 dark:bg-warning/10 border border-warning/25 px-3 py-2">
                                                                 <span className="text-warning font-bold text-xs shrink-0 mt-0.5">?</span>
@@ -686,7 +689,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                     <span className="font-semibold">Depends on:</span> {task.dependencies.join(", ")}
                                                                 </p>
                                                             )}
-                                                            {!isExecuting && showQueryInputs && (
+                                                            {!disabled && !isExecuting && showQueryInputs && (
                                                                 <input
                                                                     type="text"
                                                                     className="w-full text-xs rounded-lg border border-base-300 dark:border-base-600 bg-base-100 dark:bg-base-800 px-3 py-2 outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/10 placeholder:text-base-content/30 transition-all"
@@ -758,7 +761,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                         </div>
                     )}
 
-                    {!isExecutionCompleted && (isStreaming ? (hasHumanQueries || isExecutionPaused || tasks.length > 0) : true) && (
+                    {!disabled && !isExecutionCompleted && (isStreaming ? (hasHumanQueries || isExecutionPaused) : true) && (
                         <div className="flex items-center gap-2 px-4 py-3 border-t border-base-200 dark:border-base-700 bg-base-50 dark:bg-base-800/50 sticky bottom-0 z-10">
                             {showProceedButton && (
                                 <button

@@ -127,8 +127,7 @@ export const chatReducerV2 = {
         }
     },
 
-    setPlanningData: (state, action: PayloadAction<{ plan?: any; rawPlan?: string; questions?: any[] }>) => {
-        console.log("🔄 setPlanningData called with:", action.payload);
+    setPlanningData: (state, action: PayloadAction<{ plan?: any; rawPlan?: string; questions?: any[]; display_response?: string }>) => {
         const subThreadId = state.subThreadId;
         console.log("📍 subThreadId:", subThreadId);
         if (!subThreadId || !state.messageIds[subThreadId]?.length) {
@@ -145,12 +144,14 @@ export const chatReducerV2 = {
         }
         const existingMessage = state.msgIdAndDataMap[subThreadId][lastMessageId];
         const existingPlanning = typeof existingMessage.planning === "object" ? existingMessage.planning : {};
-        existingMessage.planning = {
-            ...existingPlanning,
-            ...action.payload,
-            execution: existingPlanning.execution || { state: "pending", tasks: {} },
-        };
-        console.log("✅ Planning data set:", existingMessage.planning);
+        // Merge only the fields the caller actually provided so we don't blow away
+        // previously-streamed plan/questions/display_response when one chunk only contains a subset.
+        const merged: Record<string, any> = { ...existingPlanning };
+        for (const [key, value] of Object.entries(action.payload)) {
+            if (value !== undefined) merged[key] = value;
+        }
+        merged.execution = existingPlanning.execution || { state: "pending", tasks: {} };
+        existingMessage.planning = merged;
     },
 
     updatePlanningExecutionState: (state, action: PayloadAction<{ executionState?: string; taskUpdate?: { id: string; title?: string; status?: string; result?: string; error?: string }; taskId?: string; taskDelta?: string; taskReasoning?: string }>) => {

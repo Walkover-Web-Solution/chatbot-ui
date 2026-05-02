@@ -20,6 +20,10 @@ interface MessageProps {
   addMessage?: any;
   prevTime?: string | number | null;
   isLastMessage?: boolean;
+  // True when this message is the most recent one in the list. Plan-mode UI
+  // (QuestionsCard / PlanningTasksCard) uses this to switch to a frozen,
+  // read-only state for older messages.
+  isLatest?: boolean;
 }
 
 const ROLE_USER = "user";
@@ -29,7 +33,7 @@ const ROLE_BOT = "Bot";
 const ROLE_TOOLS_CALL = "tools_call";
 const ROLE_VOICE_CALL = "voice_call";
 
-function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps) {
+function Message({ message, addMessage, prevTime, isLastMessage, isLatest = false }: MessageProps) {
   const { backgroundColor, textColor } = useColor();
 
   /**
@@ -67,6 +71,7 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
               }}
               textColor={textColor}
               backgroundColor={backgroundColor}
+              isLatest={isLatest}
             />
           )}
         </>
@@ -89,6 +94,7 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
                 isError={true}
                 textColor={textColor}
                 backgroundColor={backgroundColor}
+                isLatest={isLatest}
               />
             )}
           </>
@@ -100,6 +106,7 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
             message={message}
             textColor={textColor}
             backgroundColor={backgroundColor}
+            isLatest={isLatest}
           />
         );
 
@@ -118,7 +125,7 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
       default:
         return null;
     }
-  }, [message, textColor, backgroundColor, addMessage]);
+  }, [message, textColor, backgroundColor, addMessage, isLastMessage, isLatest]);
 
   return (
     <div className="w-full" data-testid="chatbot-interface-message-group">

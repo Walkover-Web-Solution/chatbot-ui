@@ -175,6 +175,7 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
           message={message}
           prevTime={prevTime}
           isLastMessage={index === lastHumanOrBotIndex}
+          isLatest={index === 0}
         />
       );
     });
