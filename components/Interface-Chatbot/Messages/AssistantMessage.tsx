@@ -208,7 +208,7 @@ const AssistantMessageCard = React.memo(
                                         {planHistory.map((item, idx) => (
                                             <div key={idx}>
                                                 {item.message_to_user && (
-                                                    <p className="not-prose text-sm text-white leading-relaxed mb-1">{item.message_to_user}</p>
+                                                    <p className="not-prose text-sm leading-relaxed mb-1">{item.message_to_user}</p>
                                                 )}
                                                 {Array.isArray(item.questions) && item.questions.length > 0 && (
                                                     <PlanningQuestionsCard questions={item.questions} isHistorical />
@@ -216,7 +216,7 @@ const AssistantMessageCard = React.memo(
                                             </div>
                                         ))}
                                         {isNewPlanFormat && messageToUser && (
-                                            <p className="not-prose text-sm text-white leading-relaxed mb-1">{messageToUser}</p>
+                                            <p className="not-prose text-sm leading-relaxed mb-1">{messageToUser}</p>
                                         )}
                                         {isNewPlanFormat && planQuestions.length > 0 && !isPlanningCompleted && (
                                             <PlanningQuestionsCard
