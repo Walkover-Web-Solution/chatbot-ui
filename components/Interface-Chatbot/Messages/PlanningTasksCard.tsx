@@ -35,16 +35,24 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
             }
         }
         const parsedPlan = plan?.plan || plan;
-        return { parsedPlan, rawPlan: JSON.stringify(parsedPlan, null, 2), execution: plan?.execution || null, planState: parsedPlan?.state || null };
+        return { parsedPlan, rawPlan: JSON.stringify(parsedPlan, null, 2), execution: plan?.execution || null, planState: (plan?.plan || parsedPlan)?.state || null };
     }, [plan]);
 
+    // Detect new backend format: { message_to_user, plan, questions }
+    const isNewFormat = Boolean(parsedPlan && typeof parsedPlan === "object" && ("message_to_user" in parsedPlan || "questions" in parsedPlan));
+    // For new format the actual plan (with tasks) lives at parsedPlan.plan
+    const effectivePlan = isNewFormat ? parsedPlan?.plan : parsedPlan;
+
     const tasks = useMemo(() => {
-        if (!parsedPlan?.tasks || typeof parsedPlan.tasks !== "object") return [];
-        return Object.entries(parsedPlan.tasks).map(([key, value]: [string, any]) => ({
-            id: key,
-            ...(value || {}),
-        }));
-    }, [parsedPlan]);
+        const src = isNewFormat ? parsedPlan?.plan?.tasks : parsedPlan?.tasks;
+        if (!src) return [];
+        if (Array.isArray(src)) return src;
+        if (typeof src === "object") {
+            return Object.entries(src).map(([key, value]: [string, any]) => ({ id: key, ...(value || {}) }));
+        }
+        return [];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [parsedPlan, isNewFormat]);
 
     const activeTaskId = useMemo(() => {
         if (!execution?.tasks || typeof execution.tasks !== "object") return "";
@@ -267,6 +275,8 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
         prevHumanQueriesRef.current = currentHumanQueries;
     }, [humanQueriesKey, humanQueryTasks]);
 
+    // New format with no inner plan yet (questions-only phase) — AssistantMessage handles rendering
+    if (isNewFormat && !effectivePlan) return null;
     if (!parsedPlan && !rawPlan) return null;
 
     const handleAction = (action: "proceed" | "update") => {
@@ -400,7 +410,8 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                         }
 
                                         const taskError = executionTask?.error || (task as any)?.error;
-                                        const canExpand = task.task_description || executionTask?.result || taskError || executionTask?.reasoning || (task.human_query && !isExecuting) || showQueryInputs;
+                                        const taskDesc = task.task_description;
+                                        const canExpand = taskDesc || executionTask?.result || taskError || executionTask?.reasoning || (task.human_query && !isExecuting) || showQueryInputs;
 
                                         return (
                                             <div
@@ -438,8 +449,8 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                 }`}>
                                                                     {executionTask?.title || task.title || "Untitled task"}
                                                                 </p>
-                                                                {task.task_description && !isTaskOpen && !isError && (
-                                                                    <p className="text-[11px] opacity-55 truncate mt-0.5 font-normal">{task.task_description}</p>
+                                                                {taskDesc && !isTaskOpen && !isError && (
+                                                                    <p className="text-[11px] opacity-55 truncate mt-0.5 font-normal">{taskDesc}</p>
                                                                 )}
                                                                 {isError && taskError && !isTaskOpen && (
                                                                     <p className="text-[11px] text-error/80 truncate mt-0.5 font-normal">{taskError}</p>
@@ -624,8 +635,8 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                         isTaskOpen ? "max-h-[600px] opacity-100 mt-2" : "max-h-0 opacity-0 mt-0"
                                                     }`}>
                                                         <div className="space-y-2">
-                                                            {task.task_description && (
-                                                                <p className="text-[11.5px] leading-relaxed text-base-content/65">{task.task_description}</p>
+                                                            {taskDesc && (
+                                                                <p className="text-[11.5px] leading-relaxed text-base-content/65">{taskDesc}</p>
                                                             )}
                                                             {Array.isArray(task.dependencies) && task.dependencies.length > 0 && (
                                                                 <p className="text-[10px] text-base-content/50">
