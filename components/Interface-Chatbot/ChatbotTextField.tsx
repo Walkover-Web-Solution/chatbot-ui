@@ -10,7 +10,7 @@ import { ParamsEnums } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import { TextField, useTheme } from "@mui/material";
 import debounce from "lodash.debounce";
-import { ChevronDown, ChevronUp, Loader2, Paperclip, Send, Smile, TriangleAlert, X, Zap, BrainCircuit } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Paperclip, Send, Smile, X, Zap, BrainCircuit } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
@@ -73,7 +73,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const { setImages } = useChatActions();
   const sendMessage = useSendMessage({});
 
-  const { images = [], options = [], loading, error, isPlanExecuting, isReviewActive } = useCustomSelector((state) => {
+  const { images = [], options = [], loading, isPlanExecuting, isReviewActive } = useCustomSelector((state) => {
     const subThreadId = state.appInfo?.[tabSessionId]?.subThreadId;
     const lastMessageId = subThreadId ? state.Chat?.messageIds?.[subThreadId]?.[0] : null;
     const planningExecState = lastMessageId ? state.Chat?.msgIdAndDataMap?.[subThreadId]?.[lastMessageId]?.planning?.execution?.state : null;
@@ -82,7 +82,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
       images: state.Chat.images || [],
       loading: state.Chat.loading,
       options: state.Chat.options || [],
-      error: state.Chat.error,
       isPlanExecuting: planningExecState === "executing" || planningExecState === "running" || planningExecState === "queued",
       isReviewActive: Array.isArray(reviewPhases) && reviewPhases.length > 0 && reviewPhases[reviewPhases.length - 1]?.isStreaming === true,
     };
@@ -466,15 +465,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
       {optionButtons}
       {imagePreviewsSection}
 
-      {/* Error message display - above input field */}
-      {error && (
-        <div className="px-2 pb-2" data-testid="chatbot-error-message">
-          <div className="text-red-500 text-sm flex items-center gap-2">
-            <TriangleAlert className="w-4 h-4 text-error" />
-            {error}
-          </div>
-        </div>
-      )}
 
       <div className="w-full h-full cursor-text relative" onClick={focusTextField}>
         <EmojiSelector
