@@ -373,16 +373,16 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
     return (
         <div className="mb-3 w-full not-prose" ref={cardRef}>
             {!parsedPlan && rawPlan && (
-                <pre className="text-xs bg-base-200/70 rounded-xl p-3 whitespace-pre-wrap break-words mb-2 border border-base-300">{rawPlan}</pre>
+                <pre className="text-xs bg-base-200/70 dark:bg-base-800/80 rounded-xl p-3 whitespace-pre-wrap break-words mb-2 border border-base-300 dark:border-base-600 dark:text-base-content/80">{rawPlan}</pre>
             )}
 
             {parsedPlan && (
-                <div className="rounded-2xl border border-base-200 dark:border-base-700 bg-base-100 dark:bg-base-900 shadow-sm overflow-hidden">
+                <div className="rounded-2xl border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-800 shadow-sm overflow-hidden">
 
                     {tasks.length > 0 && (
                         <div className="px-4 pt-4 pb-2">
                             <div className="relative">
-                                <div className="absolute left-[13px] top-3 bottom-3 w-px bg-gradient-to-b from-base-300 via-base-300 to-transparent dark:from-base-600" />
+                                <div className="absolute left-[13px] top-3 bottom-3 w-px bg-gradient-to-b from-base-300 via-base-300 to-transparent dark:from-base-500 dark:via-base-500" />
 
                                 <div className="space-y-1">
                                     {tasks.map((task, idx) => {
@@ -406,7 +406,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                         } else if (isWaitingForUser) {
                                             iconEl = <PauseCircle className="w-3.5 h-3.5 text-warning" />;
                                         } else {
-                                            iconEl = <Circle className="w-3.5 h-3.5 text-base-content/20" />;
+                                            iconEl = <Circle className="w-3.5 h-3.5 text-base-content/25 dark:text-base-content/40" />;
                                         }
 
                                         const taskError = executionTask?.error || (task as any)?.error;
@@ -421,11 +421,11 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                             >
                                                 <div className="relative z-10 flex-shrink-0 w-7 flex items-start justify-center pt-[3px]">
                                                     <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
-                                                        isActive ? "bg-base-200 dark:bg-base-700 ring-1 ring-base-300 dark:ring-base-600" :
-                                                        isDone ? "bg-base-200/60 dark:bg-base-700/40 text-base-success" :
-                                                        isError ? "bg-base-200/60 dark:bg-base-700/40 text-error" :
-                                                        isWaitingForUser ? "bg-warning/10 dark:bg-warning/15 ring-1 ring-warning/30" :
-                                                        "bg-base-200 dark:bg-base-800"
+                                                        isActive ? "bg-base-200 dark:bg-base-600 ring-1 ring-base-300 dark:ring-base-500" :
+                                                        isDone ? "bg-base-200/60 dark:bg-base-600/60" :
+                                                        isError ? "bg-base-200/60 dark:bg-base-600/60 text-error" :
+                                                        isWaitingForUser ? "bg-warning/10 dark:bg-warning/20 ring-1 ring-warning/40" :
+                                                        "bg-base-200 dark:bg-base-700"
                                                     }`}>
                                                         {iconEl}
                                                     </div>
@@ -445,28 +445,28 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                         <div className="flex items-center justify-between gap-2 py-0.5">
                                                             <div className="min-w-0">
                                                                 <p className={`text-[13px] font-medium leading-snug truncate ${
-                                                                    isDone ? "opacity-60" : ""
+                                                                    isDone ? "opacity-60 dark:opacity-70" : "dark:text-base-content"
                                                                 }`}>
                                                                     {executionTask?.title || task.title || "Untitled task"}
                                                                 </p>
                                                                 {taskDesc && !isTaskOpen && !isError && (
-                                                                    <p className="text-[11px] opacity-55 truncate mt-0.5 font-normal">{taskDesc}</p>
+                                                                    <p className="text-[11px] text-base-content/55 dark:text-base-content/65 truncate mt-0.5 font-normal">{taskDesc}</p>
                                                                 )}
                                                                 {isError && taskError && !isTaskOpen && (
                                                                     <p className="text-[11px] text-error/80 truncate mt-0.5 font-normal">{taskError}</p>
                                                                 )}
                                                             </div>
                                                             {canExpand && (
-                                                                <ChevronDown className={`w-3.5 h-3.5 text-base-content/30 shrink-0 transition-transform duration-200 group-hover:text-base-content/60 ${isTaskOpen ? "rotate-180" : ""}`} />
+                                                                <ChevronDown className={`w-3.5 h-3.5 text-base-content/30 dark:text-base-content/50 shrink-0 transition-transform duration-200 group-hover:text-base-content/60 ${isTaskOpen ? "rotate-180" : ""}`} />
                                                             )}
                                                         </div>
                                                     </button>
 
                                                     {isWaitingForUser && task.human_query && (
                                                         <div className="mt-2 space-y-2">
-                                                            <div className="flex items-start gap-2 rounded-lg bg-warning/8 dark:bg-warning/10 border border-warning/25 px-3 py-2">
+                                                            <div className="flex items-start gap-2 rounded-lg bg-warning/8 dark:bg-warning/15 border border-warning/30 dark:border-warning/50 px-3 py-2">
                                                                 <span className="text-warning font-bold text-xs shrink-0 mt-0.5">?</span>
-                                                                <span className="text-xs text-base-content/80 leading-relaxed">{task.human_query}</span>
+                                                                <span className="text-xs text-base-content/80 dark:text-base-content/90 leading-relaxed">{task.human_query}</span>
                                                             </div>
                                                             {(() => {
                                                                 const answerKey = `${task.id}_0`;
@@ -493,7 +493,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                                             className={`px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer select-none transition-colors ${
                                                                                                 isSelected
                                                                                                     ? "border-2 border-base-content bg-base-content text-base-100"
-                                                                                                    : "border border-base-content/25 bg-transparent text-base-content hover:border-base-content/50 hover:bg-base-200/40"
+                                                                                                    : "border border-base-content/25 dark:border-base-content/40 bg-transparent dark:bg-base-700/50 text-base-content hover:border-base-content/50 hover:bg-base-200/40 dark:hover:bg-base-600/60"
                                                                                             }`}
                                                                                         >
                                                                                             {opt}
@@ -510,7 +510,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                                         className={`px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer select-none transition-colors flex items-center gap-1.5 ${
                                                                                             useCustomAnswer
                                                                                                 ? "border-2 border-base-content bg-base-content text-base-100"
-                                                                                                : "border border-base-content/25 bg-transparent text-base-content hover:border-base-content/50 hover:bg-base-200/40"
+                                                                                                : "border border-base-content/25 dark:border-base-content/40 bg-transparent dark:bg-base-700/50 text-base-content hover:border-base-content/50 hover:bg-base-200/40 dark:hover:bg-base-600/60"
                                                                                         }`}
                                                                                     >
                                                                                         <Pencil className="w-2.5 h-2.5" />
@@ -523,7 +523,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                             <input
                                                                                 type="text"
                                                                                 autoFocus={useCustomAnswer || options.length === 0}
-                                                                                className="w-full text-xs rounded-lg border border-base-300 dark:border-base-600 bg-base-100 dark:bg-base-800 px-3 py-2 outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/10 placeholder:text-base-content/30 transition-all"
+                                                                                className="w-full text-xs rounded-lg border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content dark:text-base-content px-3 py-2 outline-none focus:border-primary/60 dark:focus:border-base-400 focus:ring-2 focus:ring-primary/10 placeholder:text-base-content/35 dark:placeholder:text-base-content/40 transition-all"
                                                                                 placeholder={options.length > 0 ? "Type your custom response..." : "Your answer..."}
                                                                                 value={humanQueryAnswers[answerKey] || ""}
                                                                                 onChange={(e) => {
@@ -545,14 +545,14 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                         <div className="mt-2 space-y-3">
                                                             {queryHistoryPerTask[task.id].map((queryItem, idx) => (
                                                                 <div key={idx} className="space-y-2">
-                                                                    <div className="flex items-start gap-2 rounded-lg bg-base-200/70 dark:bg-base-700/40 border border-base-300/60 dark:border-base-600 px-3 py-2">
+                                                                    <div className="flex items-start gap-2 rounded-lg bg-base-200/70 dark:bg-base-700/60 border border-base-300/60 dark:border-base-500 px-3 py-2">
                                                                         <span className="text-base-content/60 font-bold text-xs shrink-0 mt-0.5">?</span>
-                                                                        <span className="text-xs text-base-content/80 leading-relaxed">{queryItem.query}</span>
+                                                                        <span className="text-xs text-base-content/80 dark:text-base-content/85 leading-relaxed">{queryItem.query}</span>
                                                                     </div>
                                                                     {queryItem.answer !== null ? (
-                                                                        <div className="flex items-start gap-2 rounded-lg bg-base-200/50 dark:bg-base-700/30 border border-base-300/50 dark:border-base-600 px-3 py-2">
+                                                                        <div className="flex items-start gap-2 rounded-lg bg-base-200/50 dark:bg-base-700/40 border border-base-300/50 dark:border-base-500 px-3 py-2">
                                                                             <CheckCircle2 className="w-3.5 h-3.5 text-base-content/60 shrink-0 mt-0.5" />
-                                                                            <span className="text-xs text-base-content/75">{queryItem.answer}</span>
+                                                                            <span className="text-xs text-base-content/80 dark:text-base-content/85">{queryItem.answer}</span>
                                                                         </div>
                                                                     ) : !isWaitingForUser ? null : (
                                                                         (() => {
@@ -565,8 +565,8 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                                     {options.length > 0 && (
                                                                                         <div className="space-y-1.5">
                                                                                             <div className="flex items-center gap-1.5">
-                                                                                                <Sparkles className="w-3 h-3 text-base-content/50" />
-                                                                                                <p className="text-[10px] font-semibold text-base-content/55 uppercase tracking-wider">Suggested options</p>
+                                                                                                <Sparkles className="w-3 h-3 text-base-content/50 dark:text-base-content/60" />
+                                                                                                <p className="text-[10px] font-semibold text-base-content/55 dark:text-base-content/65 uppercase tracking-wider">Suggested options</p>
                                                                                             </div>
                                                                                             <div className="flex flex-wrap gap-2">
                                                                                                 {options.map((opt: string, optIndex: number) => {
@@ -582,7 +582,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                                                             className={`px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer select-none transition-colors ${
                                                                                                                 isSelected
                                                                                                                     ? "border-2 border-base-content bg-base-content text-base-100"
-                                                                                                                    : "border border-base-content/25 bg-transparent text-base-content hover:border-base-content/50 hover:bg-base-200/40"
+                                                                                                                    : "border border-base-content/25 dark:border-base-content/40 bg-transparent dark:bg-base-700/50 text-base-content hover:border-base-content/50 hover:bg-base-200/40 dark:hover:bg-base-600/60"
                                                                                                             }`}
                                                                                                         >
                                                                                                             {opt}
@@ -599,7 +599,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                                                         className={`px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer select-none transition-colors flex items-center gap-1.5 ${
                                                                                                             useCustomAnswer
                                                                                                                 ? "border-2 border-base-content bg-base-content text-base-100"
-                                                                                                                : "border border-base-content/25 bg-transparent text-base-content hover:border-base-content/50 hover:bg-base-200/40"
+                                                                                                                : "border border-base-content/25 dark:border-base-content/40 bg-transparent dark:bg-base-700/50 text-base-content hover:border-base-content/50 hover:bg-base-200/40 dark:hover:bg-base-600/60"
                                                                                                         }`}
                                                                                                     >
                                                                                                         <Pencil className="w-2.5 h-2.5" />
@@ -613,7 +613,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                                         <input
                                                                                             type="text"
                                                                                             autoFocus={useCustomAnswer}
-                                                                                            className="w-full text-xs rounded-lg border border-base-300 dark:border-base-600 bg-base-100 dark:bg-base-800 px-3 py-2 outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/10 placeholder:text-base-content/30 transition-all"
+                                                                                            className="w-full text-xs rounded-lg border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content dark:text-base-content px-3 py-2 outline-none focus:border-primary/60 dark:focus:border-base-400 focus:ring-2 focus:ring-primary/10 placeholder:text-base-content/35 dark:placeholder:text-base-content/40 transition-all"
                                                                                             placeholder={options.length > 0 ? "Type your custom response..." : "Your answer..."}
                                                                                             value={humanQueryAnswers[answerKey] || ""}
                                                                                             onChange={(e) => {
@@ -636,17 +636,17 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                     }`}>
                                                         <div className="space-y-2">
                                                             {taskDesc && (
-                                                                <p className="text-[11.5px] leading-relaxed text-base-content/65">{taskDesc}</p>
+                                                                <p className="text-[11.5px] leading-relaxed text-base-content/65 dark:text-base-content/75">{taskDesc}</p>
                                                             )}
                                                             {Array.isArray(task.dependencies) && task.dependencies.length > 0 && (
-                                                                <p className="text-[10px] text-base-content/50">
+                                                                <p className="text-[10px] text-base-content/50 dark:text-base-content/60">
                                                                     <span className="font-semibold">Depends on:</span> {task.dependencies.join(", ")}
                                                                 </p>
                                                             )}
                                                             {!isExecuting && showQueryInputs && (
                                                                 <input
                                                                     type="text"
-                                                                    className="w-full text-xs rounded-lg border border-base-300 dark:border-base-600 bg-base-100 dark:bg-base-800 px-3 py-2 outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/10 placeholder:text-base-content/30 transition-all"
+                                                                    className="w-full text-xs rounded-lg border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content dark:text-base-content px-3 py-2 outline-none focus:border-primary/60 dark:focus:border-base-400 focus:ring-2 focus:ring-primary/10 placeholder:text-base-content/35 dark:placeholder:text-base-content/40 transition-all"
                                                                     placeholder={`Add a note for this task...`}
                                                                     value={taskQueries[task.id] || ""}
                                                                     onChange={(e) => {
@@ -666,7 +666,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                             {executionTask?.result && (
                                                                 <div
                                                                     ref={(el) => { taskResultRefs.current[task.id] = el; }}
-                                                                    className="text-[11.5px] rounded-xl p-3 max-h-36 overflow-auto whitespace-pre-wrap leading-relaxed border bg-base-200/60 dark:bg-base-700/30 border-base-300 dark:border-base-600 text-base-content/80"
+                                                                    className="text-[11.5px] rounded-xl p-3 max-h-36 overflow-auto whitespace-pre-wrap leading-relaxed border bg-base-200/60 dark:bg-base-700/60 border-base-300 dark:border-base-500 text-base-content/80 dark:text-base-content/85"
                                                                 >
                                                                     {isActive && (
                                                                         <div className="flex items-center gap-1.5 mb-1.5 text-base-content/60">
@@ -697,26 +697,26 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                     {isExecuting && tasks.length > 0 && (
                         <div className="px-4 pb-3">
                             <div className="flex items-center gap-2">
-                                <div className="flex-1 h-1 rounded-full bg-base-200 dark:bg-base-700 overflow-hidden">
+                                <div className="flex-1 h-1 rounded-full bg-base-200 dark:bg-base-600 overflow-hidden">
                                     <div
                                         className="h-full rounded-full bg-primary transition-all duration-700"
                                         style={{ width: `${tasks.length > 0 ? (doneCount / tasks.length) * 100 : 0}%` }}
                                     />
                                 </div>
-                                <span className="text-[10.5px] text-base-content/40 shrink-0">{doneCount}/{tasks.length}</span>
+                                <span className="text-[10.5px] text-base-content/50 dark:text-base-content/70 shrink-0">{doneCount}/{tasks.length}</span>
                             </div>
                         </div>
                     )}
 
                     {!isExecutionCompleted && isStreaming && !hasHumanQueries && !isExecutionPaused && (
-                        <div className="flex items-center gap-2 px-4 py-3 border-t border-base-200 dark:border-base-700">
-                            <Loader2 className="w-3.5 h-3.5 animate-spin text-base-content/60" />
-                            <span className="text-xs text-base-content/65">Planning tasks...</span>
+                        <div className="flex items-center gap-2 px-4 py-3 border-t border-base-200 dark:border-base-600">
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-base-content/60 dark:text-base-content/70" />
+                            <span className="text-xs text-base-content/65 dark:text-base-content/75">Planning tasks...</span>
                         </div>
                     )}
 
                     {!isExecutionCompleted && (isStreaming ? (hasHumanQueries || isExecutionPaused) : true) && (
-                        <div className="flex items-center gap-2 px-4 py-3 border-t border-base-200 dark:border-base-700 bg-base-50 dark:bg-base-800/50 sticky bottom-0 z-10">
+                        <div className="flex items-center gap-2 px-4 py-3 border-t border-base-200 dark:border-base-600 bg-base-50 dark:bg-base-700/80 sticky bottom-0 z-10">
                             {showProceedButton && (
                                 <button
                                     type="button"
@@ -756,8 +756,8 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                     }}
                                     className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium border transition-all ${
                                         showQueryInputs
-                                            ? "bg-base-200 dark:bg-base-700 border-base-300 dark:border-base-600 text-base-content/70"
-                                            : "bg-base-100 dark:bg-base-800 border-base-200 dark:border-base-700 text-base-content/50 hover:border-base-300 hover:text-base-content/80"
+                                            ? "bg-base-200 dark:bg-base-600 border-base-300 dark:border-base-500 text-base-content/80 dark:text-base-content/80"
+                                            : "bg-base-100 dark:bg-base-700 border-base-200 dark:border-base-600 text-base-content/60 dark:text-base-content/60 hover:border-base-300 dark:hover:border-base-500 hover:text-base-content/80"
                                     }`}
                                 >
                                     <Pencil className="w-3 h-3" />
@@ -768,7 +768,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                 <button
                                     type="button"
                                     onClick={() => handleAction("proceed")}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold border border-base-300 dark:border-base-600 text-base-content hover:bg-base-200/50 dark:hover:bg-base-700/40 transition-all"
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold border border-base-300 dark:border-base-500 text-base-content dark:text-base-content hover:bg-base-200/50 dark:hover:bg-base-600/50 transition-all"
                                 >
                                     <RotateCcw className="w-3.5 h-3.5" />
                                     Retry failed
