@@ -133,9 +133,26 @@ export const chatReducerV2 = {
         }
         const existingMessage = state.msgIdAndDataMap[subThreadId][lastMessageId];
         const existingPlanning = typeof existingMessage.planning === "object" ? existingMessage.planning : {};
+
+        // Archive the previous plan round into history before overwriting
+        const incomingPlan = action.payload.plan;
+        const previousPlan = existingPlanning.plan;
+        const previousIsNewFormat = previousPlan && typeof previousPlan === "object" && ("message_to_user" in previousPlan || "questions" in previousPlan);
+        const incomingIsNewFormat = incomingPlan && typeof incomingPlan === "object" && ("message_to_user" in incomingPlan || "questions" in incomingPlan);
+        let planHistory: any[] = Array.isArray(existingPlanning.planHistory) ? existingPlanning.planHistory : [];
+        if (previousIsNewFormat && incomingIsNewFormat) {
+            const prevJson = JSON.stringify(previousPlan);
+            const incomingJson = JSON.stringify(incomingPlan);
+            const lastHistoryJson = planHistory.length > 0 ? JSON.stringify(planHistory[planHistory.length - 1]) : null;
+            if (prevJson !== incomingJson && lastHistoryJson !== prevJson) {
+                planHistory = [...planHistory, previousPlan];
+            }
+        }
+
         existingMessage.planning = {
             ...existingPlanning,
             ...action.payload,
+            planHistory,
             execution: existingPlanning.execution || { state: "pending", tasks: {} },
         };
     },
