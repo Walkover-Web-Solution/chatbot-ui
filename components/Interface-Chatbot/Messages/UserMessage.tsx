@@ -48,7 +48,7 @@ const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatS
                 </div>
             )}
 
-            <div className="flex flex-col items-end w-full">
+            <div className="flex flex-col items-end w-full" onClick={() => setShowSenderTime(!showSenderTime)}>
                 {message?.content && <div
                     className="p-2.5 min-w-[40px] sm:max-w-[80%] max-w-[90%] rounded-[10px_10px_1px_10px] break-words"
                     style={{

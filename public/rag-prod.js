@@ -1060,7 +1060,7 @@
         // Consolidated modal opening method
         openModal(config = {}) {
             const {
-                height = '90vh',
+                height = '64vh',
                 isEditMode = false,
                 document: doc = null,
                 backgroundColor = null
@@ -1193,7 +1193,7 @@
         // Updated openRag method
         openRag() {
             this.openModal({
-                height: '90vh',
+                height: '64vh',
                 isEditMode: false,
                 backgroundColor: 'white'
             });
