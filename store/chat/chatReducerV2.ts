@@ -3,6 +3,48 @@ import actionType from "@/types/utility";
 import { convertChatHistoryToGenericFormat, convertEventMessageToGenericFormat } from "@/utils/dataConvertWrappers/makeGenericDataFormatUtility";
 import { PayloadAction } from "@reduxjs/toolkit";
 
+type TaskStatus = "pending" | "in_progress" | "running" | "done" | "error" | "failed" | "waiting_for_user";
+type ExecutionState = "idle" | "pending" | "queued" | "executing" | "running" | "paused" | "completed" | "error" | "updating";
+
+interface PlanTask {
+    id: string;
+    title?: string;
+    status?: TaskStatus;
+    result?: string;
+    error?: string;
+    reasoning?: string;
+}
+
+interface PlanExecution {
+    state: ExecutionState;
+    tasks: Record<string, PlanTask>;
+}
+
+interface PlanHistoryEntry {
+    message_to_user?: string;
+    questions: any[];
+    answers: Record<string, string>;
+    timestamp?: string;
+}
+
+interface PlanningData {
+    plan?: any;
+    rawPlan?: string;
+    execution: PlanExecution;
+    planHistory: PlanHistoryEntry[];
+    currentAnswers?: Record<string, string>;
+}
+
+interface ReviewPhase {
+    phase: "reviewer_start" | "reviewer_done" | "main_rerun_start";
+    round: number;
+    passed?: boolean;
+    reason?: string;
+    reviewContent?: string;
+    isStreaming?: boolean;
+    snapshotContent?: string;
+}
+
 interface ChatState {
     // Messages and Conversations
     messages: any[];
@@ -84,6 +126,40 @@ export const initialChatState: ChatState = {
     images: [],
 };
 
+const hasQuestions = (plan: any): boolean => {
+    return plan &&
+           typeof plan === 'object' &&
+           Array.isArray(plan.questions) &&
+           plan.questions.length > 0;
+};
+
+// Archive the previous plan's questions+answers into history once the user
+// has submitted answers and the next AI response begins to overwrite the plan.
+// Trigger: previousPlan has questions AND currentAnswers is populated.
+// After archiving, currentAnswers must be cleared so subsequent stream chunks
+// of the new response don't re-archive the same entry.
+const buildPlanHistory = (
+    existingHistory: any[] | undefined,
+    previousPlan: any,
+    currentAnswers: Record<string, string> | undefined
+): { history: any[]; archived: boolean } => {
+    const history = Array.isArray(existingHistory) ? [...existingHistory] : [];
+
+    const hasAnswers = currentAnswers && Object.keys(currentAnswers).length > 0;
+    if (!hasQuestions(previousPlan) || !hasAnswers) {
+        return { history, archived: false };
+    }
+
+    history.push({
+        message_to_user: previousPlan.message_to_user,
+        questions: previousPlan.questions,
+        answers: currentAnswers,
+        timestamp: new Date().toISOString()
+    });
+
+    return { history, archived: true };
+};
+
 export const chatReducerV2 = {
     updateLastAssistantMessage: (state, action: PayloadAction<{ id?: string;[key: string]: any }>) => {
         const subThreadId = state.subThreadId;
@@ -101,134 +177,143 @@ export const chatReducerV2 = {
 
     appendLastAssistantMessageChunk: (state, action: PayloadAction<{ chunk: string }>) => {
         const subThreadId = state.subThreadId;
-        if (subThreadId && state.messageIds[subThreadId]?.length > 0) {
-            const lastMessageId = state.messageIds[subThreadId][0]; // Newest is at index 0
-            if (state.msgIdAndDataMap[subThreadId] && state.msgIdAndDataMap[subThreadId][lastMessageId]) {
-                const existingContent = state.msgIdAndDataMap[subThreadId][lastMessageId].content || "";
-                state.msgIdAndDataMap[subThreadId][lastMessageId].content = existingContent + action.payload.chunk;
-            }
-        }
+        if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
+        
+        const lastMessageId = state.messageIds[subThreadId][0];
+        const message = state.msgIdAndDataMap[subThreadId]?.[lastMessageId];
+        if (!message) return;
+        
+        message.content = (message.content || "") + action.payload.chunk;
     },
 
     appendReasoningChunk: (state, action: PayloadAction<{ chunk: string }>) => {
         const subThreadId = state.subThreadId;
-        if (subThreadId && state.messageIds[subThreadId]?.length > 0) {
-            const lastMessageId = state.messageIds[subThreadId][0];
-            if (state.msgIdAndDataMap[subThreadId]?.[lastMessageId]) {
-                const existing = state.msgIdAndDataMap[subThreadId][lastMessageId].reasoning || "";
-                state.msgIdAndDataMap[subThreadId][lastMessageId].reasoning = existing + action.payload.chunk;
-            }
-        }
+        if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
+        
+        const lastMessageId = state.messageIds[subThreadId][0];
+        const message = state.msgIdAndDataMap[subThreadId]?.[lastMessageId];
+        if (!message) return;
+        
+        message.reasoning = (message.reasoning || "") + action.payload.chunk;
     },
 
     setPlanningData: (state, action: PayloadAction<{ plan?: any; rawPlan?: string }>) => {
         const subThreadId = state.subThreadId;
         if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
+        
         const lastMessageId = state.messageIds[subThreadId][0];
-        if (!state.msgIdAndDataMap[subThreadId]) {
-            state.msgIdAndDataMap[subThreadId] = {};
-        }
-        if (!state.msgIdAndDataMap[subThreadId][lastMessageId]) {
-            state.msgIdAndDataMap[subThreadId][lastMessageId] = {} as any;
-        }
-        const existingMessage = state.msgIdAndDataMap[subThreadId][lastMessageId];
-        const existingPlanning = typeof existingMessage.planning === "object" ? existingMessage.planning : {};
-        existingMessage.planning = {
-            ...existingPlanning,
-            ...action.payload,
+        const message = state.msgIdAndDataMap[subThreadId]?.[lastMessageId];
+        if (!message) return;
+
+        const existingPlanning = message.planning && typeof message.planning === "object" ? message.planning : {};
+        const { plan: incomingPlan, rawPlan } = action.payload;
+
+        const cleanedPlan = incomingPlan && typeof incomingPlan === 'object'
+            ? { ...incomingPlan, planHistory: undefined }
+            : incomingPlan;
+
+        const { history: planHistory, archived } = buildPlanHistory(
+            existingPlanning.planHistory,
+            existingPlanning.plan,
+            existingPlanning.currentAnswers
+        );
+
+        message.planning = {
+            plan: cleanedPlan,
+            rawPlan,
+            planHistory,
             execution: existingPlanning.execution || { state: "pending", tasks: {} },
+            currentAnswers: archived ? undefined : existingPlanning.currentAnswers
         };
+    },
+
+    savePlanningAnswers: (state, action: PayloadAction<{ answers: Record<string, string> }>) => {
+        const subThreadId = state.subThreadId;
+        if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
+        
+        const lastMessageId = state.messageIds[subThreadId][0];
+        const message = state.msgIdAndDataMap[subThreadId]?.[lastMessageId];
+        if (!message || !message.planning) return;
+
+        message.planning.currentAnswers = action.payload.answers;
     },
 
     updatePlanningExecutionState: (state, action: PayloadAction<{ executionState?: string; taskUpdate?: { id: string; title?: string; status?: string; result?: string; error?: string }; taskId?: string; taskDelta?: string; taskReasoning?: string }>) => {
         const subThreadId = state.subThreadId;
         if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
+        
         const lastMessageId = state.messageIds[subThreadId][0];
         const message = state.msgIdAndDataMap[subThreadId]?.[lastMessageId];
-        if (!message) return;
+        if (!message?.planning) return;
 
-        if (typeof message.planning !== "object" || message.planning === null || !(message.planning.plan || message.planning.rawPlan)) return;
-
-        if (!message.planning.execution) {
-            message.planning.execution = { state: "idle", tasks: {} };
-        }
+        const execution = message.planning.execution || { state: "idle", tasks: {} };
+        message.planning.execution = execution;
 
         if (action.payload.executionState) {
-            message.planning.execution.state = action.payload.executionState;
+            execution.state = action.payload.executionState;
         }
 
-        if (action.payload.taskUpdate?.id) {
-            if (!message.planning.execution.tasks) {
-                message.planning.execution.tasks = {};
-            }
-            const taskId = action.payload.taskUpdate.id;
-            const existingTask = message.planning.execution.tasks[taskId] || {};
-            message.planning.execution.tasks[taskId] = {
-                ...existingTask,
-                ...action.payload.taskUpdate,
+        const { taskUpdate, taskId, taskDelta, taskReasoning } = action.payload;
+        
+        if (taskUpdate?.id) {
+            execution.tasks = execution.tasks || {};
+            execution.tasks[taskUpdate.id] = {
+                ...execution.tasks[taskUpdate.id],
+                ...taskUpdate
             };
         }
 
-        // Handle streaming task delta
-        if (action.payload.taskId && action.payload.taskDelta) {
-            if (!message.planning.execution.tasks) {
-                message.planning.execution.tasks = {};
+        if (taskId && (taskDelta || taskReasoning)) {
+            execution.tasks = execution.tasks || {};
+            const task = execution.tasks[taskId] || {};
+            
+            if (taskDelta) {
+                task.result = (task.result || "") + taskDelta;
+                task.status = "running";
             }
-            const taskId = action.payload.taskId;
-            const existingTask = message.planning.execution.tasks[taskId] || {};
-            const currentResult = existingTask.result || "";
-            message.planning.execution.tasks[taskId] = {
-                ...existingTask,
-                result: currentResult + action.payload.taskDelta,
-                status: "running",
-            };
-        }
-
-        // Handle streaming task reasoning
-        if (action.payload.taskId && action.payload.taskReasoning) {
-            if (!message.planning.execution.tasks) {
-                message.planning.execution.tasks = {};
+            
+            if (taskReasoning) {
+                task.reasoning = (task.reasoning || "") + taskReasoning;
+                task.status = "running";
             }
-            const taskId = action.payload.taskId;
-            const existingTask = message.planning.execution.tasks[taskId] || {};
-            const currentReasoning = existingTask.reasoning || "";
-            message.planning.execution.tasks[taskId] = {
-                ...existingTask,
-                reasoning: currentReasoning + action.payload.taskReasoning,
-                status: "running",
-            };
+            
+            execution.tasks[taskId] = task;
         }
     },
 
     appendToolCall: (state, action: PayloadAction<{ call_id: string; name: string; args: Record<string, any> }>) => {
         const subThreadId = state.subThreadId;
-        if (subThreadId && state.messageIds[subThreadId]?.length > 0) {
-            const lastMessageId = state.messageIds[subThreadId][0];
-            if (state.msgIdAndDataMap[subThreadId]?.[lastMessageId]) {
-                const msg = state.msgIdAndDataMap[subThreadId][lastMessageId];
-                if (!msg.tools_data) msg.tools_data = {};
-                msg.tools_data[action.payload.call_id] = {
-                    name: action.payload.name,
-                    args: action.payload.args,
-                    status: "calling",
-                    result: null,
-                };
-            }
-        }
+        if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
+        
+        const lastMessageId = state.messageIds[subThreadId][0];
+        const message = state.msgIdAndDataMap[subThreadId]?.[lastMessageId];
+        if (!message) return;
+        
+        message.tools_data = message.tools_data || {};
+        message.tools_data[action.payload.call_id] = {
+            name: action.payload.name,
+            args: action.payload.args,
+            status: "calling",
+            result: null,
+        };
     },
 
     updateToolResult: (state, action: PayloadAction<{ call_id: string; content: any }>) => {
         const subThreadId = state.subThreadId;
         if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
+        
         const lastMessageId = state.messageIds[subThreadId][0];
-        const msg = state.msgIdAndDataMap[subThreadId]?.[lastMessageId];
-        if (!msg?.tools_data) return;
-        const exactKey = action.payload.call_id && msg.tools_data[action.payload.call_id]
+        const message = state.msgIdAndDataMap[subThreadId]?.[lastMessageId];
+        if (!message?.tools_data) return;
+        
+        const callId = action.payload.call_id && message.tools_data[action.payload.call_id]
             ? action.payload.call_id
-            : Object.keys(msg.tools_data).find((k) => msg.tools_data[k].status === "calling");
-        if (!exactKey) return;
-        msg.tools_data[exactKey].status = "done";
-        msg.tools_data[exactKey].result = typeof action.payload.content === "string"
+            : Object.keys(message.tools_data).find((k) => message.tools_data[k].status === "calling");
+            
+        if (!callId) return;
+        
+        message.tools_data[callId].status = "done";
+        message.tools_data[callId].result = typeof action.payload.content === "string"
             ? action.payload.content
             : JSON.stringify(action.payload.content);
     },
@@ -237,14 +322,8 @@ export const chatReducerV2 = {
         const subThreadId = state.subThreadId;
         if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
 
-        // Newest IDs are at the *front*, so trim from the start
-        const messageIdsToRemove = state.messageIds[subThreadId].slice(0, numberOfMessages);
-
-        messageIdsToRemove.forEach(id => {
-            delete state.msgIdAndDataMap[subThreadId]?.[id];
-        });
-
-        // Keep the remaining IDs (oldest → newest)
+        const idsToRemove = state.messageIds[subThreadId].slice(0, numberOfMessages);
+        idsToRemove.forEach(id => delete state.msgIdAndDataMap[subThreadId][id]);
         state.messageIds[subThreadId] = state.messageIds[subThreadId].slice(numberOfMessages);
     },
 
@@ -326,14 +405,6 @@ export const chatReducerV2 = {
         state.isTyping[subThreadId] = action.payload?.data;
     },
 
-    setMessageTimeout: (state) => {
-        state.messages = [
-            ...state.messages.slice(0, -1),
-            { role: "assistant", wait: false, timeOut: true }
-        ];
-        state.loading = false;
-    },
-
     setData: (state, action: PayloadAction<Partial<ChatState>>) => {
         Object.assign(state, action.payload);
     },
@@ -341,20 +412,11 @@ export const chatReducerV2 = {
     updateSingleMessage: (state, action: PayloadAction<{ messageId: string; data: any }>) => {
         const subThreadId = state.subThreadId;
         const { messageId, data } = action.payload;
-        if (subThreadId && state.msgIdAndDataMap[subThreadId] && state.msgIdAndDataMap[subThreadId][messageId]) {
-            // Create a new object reference to ensure Redux detects the change
-            state.msgIdAndDataMap = {
-                ...state.msgIdAndDataMap,
-                [subThreadId]: {
-                    ...state.msgIdAndDataMap[subThreadId],
-                    [messageId]: {
-                        ...state.msgIdAndDataMap[subThreadId][messageId],
-                        ...data
-                    }
-                }
-            };
-        }
-        return state; // Explicitly return the updated state
+        
+        const message = state.msgIdAndDataMap[subThreadId]?.[messageId];
+        if (!message) return;
+        
+        Object.assign(message, data);
     },
 
     setOpenHelloForm: (state, action: PayloadAction<boolean>) => {
@@ -426,56 +488,79 @@ export const chatReducerV2 = {
     setReviewData: (state, action: PayloadAction<{ phase: string; round?: number; passed?: boolean; reason?: string }>) => {
         const subThreadId = state.subThreadId;
         if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
+        
         const lastMessageId = state.messageIds[subThreadId][0];
-        if (!state.msgIdAndDataMap[subThreadId]?.[lastMessageId]) return;
-        const msg = state.msgIdAndDataMap[subThreadId][lastMessageId];
-        const existing: any[] = Array.isArray(msg.review_phases) ? msg.review_phases : [];
+        const message = state.msgIdAndDataMap[subThreadId]?.[lastMessageId];
+        if (!message) return;
+
+        const phases = Array.isArray(message.review_phases) ? message.review_phases : [];
         const { phase, round = 1, passed, reason } = action.payload;
 
         if (phase === "reviewer_start") {
-            msg.review_phases = [...existing, { phase, round, isStreaming: true, reviewContent: "" }];
-
-        } else if (phase === "reviewer_done") {
-            const updated = [...existing];
-            const idx = updated.findLastIndex?.((r: any) => r.round === round);
-            const targetIdx = idx !== undefined && idx >= 0 ? idx : updated.length - 1;
-            if (updated[targetIdx]) {
-                // Strip any trailing JSON blob (e.g. {"passed":false,"reason":"..."}) from streamed reviewContent
-                let cleanedContent = updated[targetIdx].reviewContent || "";
-                cleanedContent = cleanedContent.replace(/\s*\{[^{}]*"passed"[^{}]*\}\s*$/s, "").trimEnd();
-                updated[targetIdx] = { ...updated[targetIdx], phase: "reviewer_done", passed, reason: reason || "", reviewContent: cleanedContent, isStreaming: false };
+            message.review_phases = [...phases, { phase, round, isStreaming: true, reviewContent: "" }];
+        } 
+        else if (phase === "reviewer_done") {
+            const updatedPhases = [...phases];
+            const targetIdx = updatedPhases.findLastIndex((r: any) => r.round === round);
+            const idx = targetIdx >= 0 ? targetIdx : updatedPhases.length - 1;
+            
+            if (updatedPhases[idx]) {
+                const cleanContent = (updatedPhases[idx].reviewContent || "")
+                    .replace(/\s*\{[^{}]*"passed"[^{}]*\}\s*$/, "")
+                    .trimEnd();
+                    
+                updatedPhases[idx] = { 
+                    ...updatedPhases[idx], 
+                    phase: "reviewer_done", 
+                    passed, 
+                    reason: reason || "", 
+                    reviewContent: cleanContent, 
+                    isStreaming: false 
+                };
             } else {
-                updated.push({ phase: "reviewer_done", round, passed, reason: reason || "", reviewContent: "", isStreaming: false });
+                updatedPhases.push({ 
+                    phase: "reviewer_done", 
+                    round, 
+                    passed, 
+                    reason: reason || "", 
+                    reviewContent: "", 
+                    isStreaming: false 
+                });
             }
-            msg.review_phases = updated;
-
-        } else if (phase === "main_rerun_start") {
-            // Snapshot the current content into the last failed review phase, then wipe it
-            const updated = [...existing];
-            const lastFailedIdx = updated.findLastIndex?.((r: any) => r.phase === "reviewer_done" && r.passed === false);
+            message.review_phases = updatedPhases;
+        } 
+        else if (phase === "main_rerun_start") {
+            const updatedPhases = [...phases];
+            const lastFailedIdx = updatedPhases.findLastIndex((r: any) => 
+                r.phase === "reviewer_done" && r.passed === false
+            );
+            
             if (lastFailedIdx >= 0) {
-                updated[lastFailedIdx] = { ...updated[lastFailedIdx], snapshotContent: msg.content || "" };
+                updatedPhases[lastFailedIdx] = { 
+                    ...updatedPhases[lastFailedIdx], 
+                    snapshotContent: message.content || "" 
+                };
             }
-            msg.review_phases = [...updated, { phase: "main_rerun_start", round, isStreaming: true }];
-            msg.content = "";
-            msg.isOutdated = false;
+            
+            message.review_phases = [...updatedPhases, { phase: "main_rerun_start", round, isStreaming: true }];
+            message.content = "";
+            message.isOutdated = false;
         }
     },
 
     appendReviewDelta: (state, action: PayloadAction<{ chunk: string }>) => {
         const subThreadId = state.subThreadId;
         if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
+        
         const lastMessageId = state.messageIds[subThreadId][0];
-        const msg = state.msgIdAndDataMap[subThreadId]?.[lastMessageId];
-        if (!msg) return;
-        const phases: any[] = Array.isArray(msg.review_phases) ? msg.review_phases : [];
-        if (phases.length === 0) return;
-        const lastIdx = phases.length - 1;
-        const last = phases[lastIdx];
-        if (last?.isStreaming) {
-            const updated = [...phases];
-            updated[lastIdx] = { ...last, reviewContent: (last.reviewContent || "") + action.payload.chunk };
-            msg.review_phases = updated;
+        const message = state.msgIdAndDataMap[subThreadId]?.[lastMessageId];
+        if (!message?.review_phases?.length) return;
+        
+        const phases = message.review_phases;
+        const lastPhase = phases[phases.length - 1];
+        
+        if (lastPhase?.isStreaming) {
+            lastPhase.reviewContent = (lastPhase.reviewContent || "") + action.payload.chunk;
         }
     },
 
