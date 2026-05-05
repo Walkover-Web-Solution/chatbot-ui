@@ -5,7 +5,7 @@ import { addDefaultContext, setDataInInterfaceRedux, setEventsSubsribedByParent,
 import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
 import { SetSessionStorage } from "@/utils/ChatbotUtility";
 import { useContext, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useStore } from "react-redux";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 
 interface InterfaceData {
@@ -32,6 +32,7 @@ interface InterfaceData {
 
 const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
   const dispatch = useDispatch();
+  const store = useStore();
   const { handleColorSchemeChange } = useContext(ThemeContext);
   const tabSessionId = useCustomSelector((state) => `${state.draftData.chatSessionId}_${state.draftData.tabSessionId}`);
 
@@ -100,7 +101,11 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
     if (receivedData?.mode !== undefined) {
       const modeValue = receivedData?.mode;
       const normalizedMode = modeValue === true || modeValue === "true";
-      dispatch(setDataInAppInfoReducer({ mode: normalizedMode }))
+      const existingConfig = (store.getState() as any)?.appInfo?.[tabSessionId]?.config || {};
+      dispatch(setDataInAppInfoReducer({
+        mode: normalizedMode,
+        config: { ...existingConfig, mode: normalizedMode },
+      }))
     }
 
     // Process gtwy service change
