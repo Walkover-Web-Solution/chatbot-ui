@@ -46,7 +46,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const fileInputRef = useRef<HTMLInputElement>(null);
   const emitTypingStatus = useTypingStatus({ chatSessionId, tabSessionId });
 
-  const { isHelloUser, mode, inbox_id, show_send_button, assigned_type, isStream } = useCustomSelector((state) => ({
+  const { isHelloUser, mode, inbox_id, show_send_button, assigned_type, isStream, showModeDropdown } = useCustomSelector((state) => ({
     isHelloUser: state.draftData?.isHelloUser || false,
     mode: state.Hello?.[chatSessionId]?.mode || [],
     inbox_id: state.Hello?.[chatSessionId]?.widgetInfo?.inbox_id,
@@ -55,6 +55,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
       (channel: any) => channel?.channel === currentChannelId
     )?.assigned_type || '',
     isStream: (state.Hello?.[chatSessionId]?.mode || []).includes('stream'),
+    showModeDropdown: state.appInfo?.[tabSessionId]?.mode === true,
   }));
 
   const { messageRef } = useContext(MessageContext);
@@ -100,10 +101,10 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
       sendMessageToHello?.();
       emitTypingStatus("not-typing");
     } else {
-      const planningPayload = (isStream && conversationMode === "planning") ? { mode: "plan" } : {};
+      const planningPayload = (showModeDropdown && isStream && conversationMode === "planning") ? { mode: "plan" } : {};
       sendMessage({ ...messageObj, ...planningPayload });
     }
-  }, [isHelloUser, sendMessage, sendMessageToHello, conversationMode]);
+  }, [isHelloUser, sendMessage, sendMessageToHello, conversationMode, showModeDropdown, isStream]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -448,7 +449,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
               </div>
               {uploadButton}
 
-              {!isHelloUser && isStream && (
+              {!isHelloUser && isStream && showModeDropdown && (
                 <div className="relative" ref={modeMenuRef}>
                   <button
                     type="button"
