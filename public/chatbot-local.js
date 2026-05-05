@@ -77,7 +77,7 @@
                 'onOpen', 'onClose', 'iconColor', 'className', 'style', 'environment',
                 'fullScreen', 'hideCloseButton', 'hideIcon', 'parentId', 'config',
                 'headerButtons', 'eventsToSubscribe', 'modalConfig', 'allowModalSwitch',
-                'chatTitle', 'chatIcon', 'hideFullScreenButton', 'defaultOpen', 'theme'
+                'chatTitle', 'chatIcon', 'hideFullScreenButton', 'defaultOpen', 'theme', 'mode'
             ];
 
             return attributes.reduce((props, attr) => {
