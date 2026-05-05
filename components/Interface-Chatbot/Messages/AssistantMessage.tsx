@@ -15,6 +15,7 @@ import ImageWithFallback from "./ImageWithFallback";
 import "./Message.css";
 import RenderNode from "../../richUI/RenderNode";
 import { componentRegistry } from "../../richUI/componentRegistry";
+import PlanningQuestionsCard from "./PlanningQuestionsCard";
 import PlanningTasksCard from "./PlanningTasksCard";
 import ReasoningAccordion from "./ReasoningAccordion";
 import ReviewPhaseAccordion from "./ReviewPhaseAccordion";
@@ -95,6 +96,12 @@ const AssistantMessageCard = React.memo(
         const reasoning = message?.reasoning || "";
         const planning = message?.planning;
         const isPlanningCompleted = planning?.execution?.state === "completed";
+        // New backend format: { message_to_user, plan, questions }
+        const planData = planning?.plan;
+        const isNewPlanFormat = Boolean(planData && typeof planData === "object" && ("message_to_user" in planData || "questions" in planData));
+        const messageToUser: string = isNewPlanFormat ? (planData.message_to_user || "") : "";
+        const planQuestions: Array<{ id: string; question: string; options?: string[] }> = isNewPlanFormat ? (planData.questions || []) : [];
+        const planHistory: Array<{ message_to_user?: string; questions?: Array<{ id: string; question: string; options?: string[] }> }> = Array.isArray(planning?.planHistory) ? planning.planHistory : [];
         const suppressContent = planning && !isPlanningCompleted;
         const reviewPhases = Array.isArray(message?.review_phases) ? message.review_phases : [];
 
@@ -198,6 +205,26 @@ const AssistantMessageCard = React.memo(
                                 ) : (
                                     <div className="prose dark:prose-invert break-words" style={{ color: theme.palette.text.primary }}>
                                         <ReasoningAccordion reasoning={reasoning} isStreaming={message?.isStreaming} hasContent={!!message?.content} />
+                                        {planHistory.map((item, idx) => (
+                                            <div key={idx}>
+                                                {item.message_to_user && (
+                                                    <p className="not-prose text-sm text-white leading-relaxed mb-1">{item.message_to_user}</p>
+                                                )}
+                                                {Array.isArray(item.questions) && item.questions.length > 0 && (
+                                                    <PlanningQuestionsCard questions={item.questions} isHistorical />
+                                                )}
+                                            </div>
+                                        ))}
+                                        {isNewPlanFormat && messageToUser && (
+                                            <p className="not-prose text-sm text-white leading-relaxed mb-1">{messageToUser}</p>
+                                        )}
+                                        {isNewPlanFormat && planQuestions.length > 0 && !isPlanningCompleted && (
+                                            <PlanningQuestionsCard
+                                                questions={planQuestions}
+                                                isStreaming={message?.isStreaming}
+                                                onSubmit={(answersText) => sendMessage({ message: answersText, mode: "plan", skipUserEcho: true, silent: true })}
+                                            />
+                                        )}
                                         {planning && <PlanningTasksCard plan={planning} isStreaming={message?.isStreaming} onAction={handlePlanningAction} />}
                                         <ToolCallAccordion toolsData={toolsData} />
                                         <ReviewPhaseAccordion reviewPhases={reviewPhases} />
