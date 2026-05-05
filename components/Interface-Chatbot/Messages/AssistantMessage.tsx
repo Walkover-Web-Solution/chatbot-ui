@@ -8,7 +8,7 @@ import { isJSONString } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { lighten, useTheme } from "@mui/material";
 import copy from "copy-to-clipboard";
-import { AlertCircle, Check, Copy, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
+import { AlertCircle, Check, Copy, Loader2, Maximize2, ThumbsDown, ThumbsUp } from "lucide-react";
 import React, { useContext, useMemo, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import ImageWithFallback from "./ImageWithFallback";
@@ -20,6 +20,7 @@ import PlanningTasksCard from "./PlanningTasksCard";
 import ReasoningAccordion from "./ReasoningAccordion";
 import ReviewPhaseAccordion from "./ReviewPhaseAccordion";
 import ToolCallAccordion from "./ToolCallAccordion";
+import WorkingAccordion from "./WorkingAccordion";
 import remarkGfm from 'remark-gfm';
 
 function FeedBackButtons({ msgId }: { msgId: string }) {
@@ -101,7 +102,7 @@ const AssistantMessageCard = React.memo(
         const isNewPlanFormat = Boolean(planData && typeof planData === "object" && ("message_to_user" in planData || "questions" in planData));
         const messageToUser: string = isNewPlanFormat ? (planData.message_to_user || "") : "";
         const planQuestions: Array<{ id: string; question: string; options?: string[] }> = isNewPlanFormat ? (planData.questions || []) : [];
-        const planHistory: Array<{ message_to_user?: string; questions?: Array<{ id: string; question: string; options?: string[] }> }> = Array.isArray(planning?.planHistory) ? planning.planHistory : [];
+        const planHistory: Array<{ message_to_user?: string; questions?: Array<{ id: string; question: string; options?: string[] }>; answers?: Record<string, string> }> = Array.isArray(planning?.planHistory) ? planning.planHistory : [];
         const suppressContent = planning && !isPlanningCompleted;
         const reviewPhases = Array.isArray(message?.review_phases) ? message.review_phases : [];
 
@@ -204,14 +205,27 @@ const AssistantMessageCard = React.memo(
                                     ))
                                 ) : (
                                     <div className="prose dark:prose-invert break-words" style={{ color: theme.palette.text.primary }}>
-                                        <ReasoningAccordion reasoning={reasoning} isStreaming={message?.isStreaming} hasContent={!!message?.content} />
+                                        {planning ? (
+                                            <WorkingAccordion
+                                                reasoning={reasoning}
+                                                toolsData={toolsData}
+                                                isStreaming={message?.isStreaming}
+                                                hasContent={!!message?.content}
+                                            />
+                                        ) : (
+                                            <ReasoningAccordion reasoning={reasoning} isStreaming={message?.isStreaming} hasContent={!!message?.content} />
+                                        )}
                                         {planHistory.map((item, idx) => (
                                             <div key={idx}>
                                                 {item.message_to_user && (
                                                     <p className="not-prose text-sm leading-relaxed mb-1">{item.message_to_user}</p>
                                                 )}
                                                 {Array.isArray(item.questions) && item.questions.length > 0 && (
-                                                    <PlanningQuestionsCard questions={item.questions} isHistorical />
+                                                    <PlanningQuestionsCard 
+                                                        questions={item.questions} 
+                                                        isHistorical 
+                                                        answers={item.answers}
+                                                    />
                                                 )}
                                             </div>
                                         ))}
@@ -225,10 +239,16 @@ const AssistantMessageCard = React.memo(
                                                 onSubmit={(answersText) => sendMessage({ message: answersText, mode: "plan", skipUserEcho: true, silent: true })}
                                             />
                                         )}
+                                        {message?.isPlanningLoading && (
+                                            <div className="flex items-center gap-2 mt-3 mb-2 px-1">
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin text-base-content/50 dark:text-base-content/60 shrink-0" />
+                                                <span className="text-xs text-base-content/50 dark:text-base-content/60">Planning...</span>
+                                            </div>
+                                        )}
                                         {planning && <PlanningTasksCard plan={planning} isStreaming={message?.isStreaming} onAction={handlePlanningAction} />}
-                                        <ToolCallAccordion toolsData={toolsData} />
+                                        {!planning && <ToolCallAccordion toolsData={toolsData} />}
                                         <ReviewPhaseAccordion reviewPhases={reviewPhases} />
-                                        {message?.isStreaming && !message?.content && !suppressContent ? (
+                                        {message?.isStreaming && !message?.content && !suppressContent && !message?.isPlanningLoading ? (
                                             <div className="loading-indicator" style={themePalette}>
                                                 <div className="loading-bar"></div>
                                                 <div className="loading-bar"></div>
