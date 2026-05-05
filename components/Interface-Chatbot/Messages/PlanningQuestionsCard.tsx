@@ -1,5 +1,7 @@
 import { Loader2, Pencil, Send } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { savePlanningAnswers } from "@/store/chat/chatSlice";
 
 interface Question {
     id: string;
@@ -16,6 +18,7 @@ interface PlanningQuestionsCardProps {
 }
 
 export default function PlanningQuestionsCard({ questions, isStreaming = false, isHistorical = false, answers: savedAnswers, onSubmit }: PlanningQuestionsCardProps) {
+    const dispatch = useDispatch();
     const [answers, setAnswers] = useState<Record<string, string>>({});
     const [useCustom, setUseCustom] = useState<Record<string, boolean>>({});
     const [submitted, setSubmitted] = useState(false);
@@ -24,9 +27,26 @@ export default function PlanningQuestionsCard({ questions, isStreaming = false, 
     const allAnswered = questions.length > 0 && questions.every((q) => answers[q.id]?.trim().length > 0);
     const answeredCount = questions.filter((q) => answers[q.id]?.trim().length > 0).length;
 
+    // Reset submitted state when questions change (new questions arrived)
+    useEffect(() => {
+        setSubmitted(false);
+        setAnswers({});
+        setUseCustom({});
+    }, [JSON.stringify(questions.map(q => q.id))]);
+
+    useEffect(() => {
+        if (submitted && !isStreaming) {
+            setLoading(false);
+        }
+    }, [isStreaming, submitted]);
+
     const handleSubmit = () => {
         if (!allAnswered || loading || submitted) return;
         setLoading(true);
+        
+        // Save answers to Redux for history
+        dispatch(savePlanningAnswers({ answers }));
+        
         const text = questions
             .map((q) => `${q.id}: ${answers[q.id]?.trim()}`)
             .join("\n");
@@ -40,23 +60,20 @@ export default function PlanningQuestionsCard({ questions, isStreaming = false, 
             <div className="mt-3 mb-1 not-prose">
                 <div className="rounded-xl border border-base-300 dark:border-base-500 bg-base-200/60 dark:bg-base-700/60 overflow-hidden">
                     <div className="px-4 py-3 space-y-2.5">
-                        {questions.map((q) => (
-                            <div key={q.id} className="flex flex-col gap-0.5">
-                                <p className="text-[11px] text-base-content/60 dark:text-base-content/70 leading-snug">{q.question}</p>
-                                {displayAnswers[q.id]
-                                    ? <p className="text-[13px] text-base-content dark:text-base-content">{displayAnswers[q.id]}</p>
-                                    : <p className="text-[12px] text-base-content/40 dark:text-base-content/50 italic">—</p>
-                                }
-                            </div>
-                        ))}
+                        {questions.map((q) => {
+                            const answer = displayAnswers[q.id];
+                            return (
+                                <div key={q.id} className="flex flex-col gap-0.5">
+                                    <p className="text-[11px] text-base-content/60 dark:text-base-content/70 leading-snug">{q.question}</p>
+                                    {answer
+                                        ? <p className="text-[13px] text-base-content dark:text-base-content whitespace-pre-wrap break-words">{answer}</p>
+                                        : <p className="text-[12px] text-base-content/40 dark:text-base-content/50 italic">—</p>
+                                    }
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
-                {submitted && isStreaming && (
-                    <div className="flex items-center gap-2 mt-2 px-1">
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-base-content/50 dark:text-base-content/60 shrink-0" />
-                        <span className="text-xs text-base-content/50 dark:text-base-content/60">Planning...</span>
-                    </div>
-                )}
             </div>
         );
     }
@@ -68,6 +85,7 @@ export default function PlanningQuestionsCard({ questions, isStreaming = false, 
                     const opts = Array.isArray(q.options) ? q.options.filter(Boolean) : [];
                     const isCustom = Boolean(useCustom[q.id]);
                     const selected = answers[q.id] || "";
+                    const isManyOptions = opts.length > 4;
 
                     return (
                         <div key={q.id} className="px-4 py-3.5 space-y-2.5">
@@ -77,7 +95,13 @@ export default function PlanningQuestionsCard({ questions, isStreaming = false, 
                             </div>
 
                             {opts.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5 pl-6">
+                                <div
+                                    className={`flex flex-wrap gap-1.5 pl-6 ${
+                                        isManyOptions
+                                            ? "max-h-32 overflow-y-auto pr-1 [scrollbar-width:thin]"
+                                            : ""
+                                    }`}
+                                >
                                     {opts.map((opt, oIdx) => {
                                         const isSelected = selected === opt && !isCustom;
                                         return (
@@ -89,7 +113,7 @@ export default function PlanningQuestionsCard({ questions, isStreaming = false, 
                                                     setUseCustom((p) => ({ ...p, [q.id]: false }));
                                                     setAnswers((p) => ({ ...p, [q.id]: opt }));
                                                 }}
-                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all select-none cursor-pointer disabled:opacity-40 ${
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all select-none cursor-pointer disabled:opacity-40 whitespace-normal break-words leading-snug max-w-full ${
                                                     isSelected
                                                         ? "bg-base-content dark:bg-base-content text-base-100 dark:text-base-100"
                                                         : "border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-600 text-base-content dark:text-base-content hover:border-base-content/50 dark:hover:border-base-400 hover:bg-base-200 dark:hover:bg-base-500"
