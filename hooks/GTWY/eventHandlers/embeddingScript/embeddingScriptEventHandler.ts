@@ -96,6 +96,13 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
       dispatch(setDataInAppInfoReducer({ widget: receivedData?.widget }))
     }
 
+    //process mode (enables/disables Fast vs Planning dropdown)
+    if (receivedData?.mode !== undefined) {
+      const modeValue = receivedData?.mode;
+      const normalizedMode = modeValue === true || modeValue === "true";
+      dispatch(setDataInAppInfoReducer({ mode: normalizedMode }))
+    }
+
     // Process gtwy service change
     if (receivedData.serviceChanged) {
       dispatch(setDataInAppInfoReducer({ serviceChanged: receivedData.serviceChanged }))
