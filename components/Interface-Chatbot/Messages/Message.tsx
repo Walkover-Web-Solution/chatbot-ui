@@ -29,6 +29,13 @@ const ROLE_BOT = "Bot";
 const ROLE_TOOLS_CALL = "tools_call";
 const ROLE_VOICE_CALL = "voice_call";
 
+// Plan-mode user echoes look like "q1: Monday\nq2: Slack" — answers to the
+// previous assistant message's questions, already shown in its historical
+// Q&A card. Hoisted to module scope: a regex literal in the middle of a
+// multi-line `const` expression caused Turbopack to mis-emit `<invalid>`
+// in the Edge SSR bundle (parser confused `<` for JSX).
+const PLAN_ANSWER_PREFIX_RE = /^\s*q\d+\s*:/i;
+
 function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps) {
   const { backgroundColor, textColor } = useColor();
 
@@ -40,10 +47,13 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
 
     // Handle combined message format (new backend format with user and llm_message in same object)
     if (message?.user || message?.llm_message) {
+      const hasPlanning = Boolean(message?.planning);
+      const userText = typeof message?.user === "string" ? message.user : "";
+      const isPlanAnswerEcho = hasPlanning && userText !== "" && PLAN_ANSWER_PREFIX_RE.test(userText);
+      const showUser = Boolean(message?.user) && !isPlanAnswerEcho;
       return (
         <>
-          
-          {message?.user && (
+          {showUser && (
             <UserMessageCard
               message={{
                 ...message,
@@ -56,11 +66,11 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
               backgroundColor={backgroundColor}
             />
           )}
-          {(message?.llm_message || message?.error) && (
+          {(message?.llm_message || message?.error || hasPlanning) && (
             <AssistantMessageCard
               message={{
                 ...message,
-                content: message?.chatbot_message || message?.llm_message || message?.error,
+                content: hasPlanning ? "" : (message?.chatbot_message || message?.llm_message || message?.error),
                 role: 'assistant',
                 urls: message?.llm_urls || [],
                 image_urls: message?.llm_urls || [],

@@ -432,6 +432,13 @@ export const useSendMessage = ({
                         isPlanningStreamActive = true;
                         const planningPayload = event.plan ?? event.content;
                         pushPlanningUpdate(planningPayload, true);
+                        // Set planning loader flag
+                        if (streamMessageId || latestMessageId) {
+                            globalDispatch(updateSingleMessage({
+                                messageId: streamMessageId || latestMessageId,
+                                data: { isPlanningLoading: true }
+                            }));
+                        }
                         break;
                     }
                     case "execution":
@@ -556,6 +563,14 @@ export const useSendMessage = ({
                         const wasPlanningStream = isPlanningStreamActive;
                         finalizePlanningStream();
                         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+                        
+                        // Clear planning loader flag
+                        if (streamMessageId || latestMessageId) {
+                            globalDispatch(updateSingleMessage({
+                                messageId: streamMessageId || latestMessageId,
+                                data: { isPlanningLoading: false }
+                            }));
+                        }
 
                         // Always check first: if done content has paused/waiting_for_user — hold UI regardless of stream type or action
                         const doneResponseContent = (event as any)?.response?.data?.content;
