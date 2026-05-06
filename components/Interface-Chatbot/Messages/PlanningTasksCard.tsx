@@ -707,14 +707,6 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                             </div>
                         </div>
                     )}
-
-                    {!isExecutionCompleted && isStreaming && !hasHumanQueries && !isExecutionPaused && (
-                        <div className="flex items-center gap-2 px-4 py-3 border-t border-base-200 dark:border-base-600">
-                            <Loader2 className="w-3.5 h-3.5 animate-spin text-base-content/60 dark:text-base-content/70" />
-                            <span className="text-xs text-base-content/65 dark:text-base-content/75">Planning tasks...</span>
-                        </div>
-                    )}
-
                     {!isExecutionCompleted && (isStreaming ? (hasHumanQueries || isExecutionPaused) : true) && (
                         <div className="flex items-center gap-2 px-4 py-3 border-t border-base-200 dark:border-base-600 bg-base-50 dark:bg-base-700/80 sticky bottom-0 z-10">
                             {showProceedButton && (
