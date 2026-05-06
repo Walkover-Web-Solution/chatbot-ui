@@ -387,20 +387,6 @@ export const useSendMessage = ({
             resetPlanningStream();
         };
 
-        const shouldSuppressFinalExecutionContent = (content: unknown) => {
-            if (typeof content !== "string" || !content.trim()) return false;
-            try {
-                const parsed = JSON.parse(content);
-                const tasks = parsed?.tasks;
-                if (!tasks || typeof tasks !== "object") return false;
-                return Object.values(tasks).some((task: any) => {
-                    const status = String(task?.status || "").toLowerCase();
-                    return status === "failed" || status === "error" || task?.is_error === true || Boolean(task?.error);
-                });
-            } catch {
-                return false;
-            }
-        };
 
         const response = await streamDataToAction(
             payload,
@@ -572,28 +558,10 @@ export const useSendMessage = ({
                             }));
                         }
 
-                        // Always check first: if done content has paused/waiting_for_user — hold UI regardless of stream type or action
                         const doneResponseContent = (event as any)?.response?.data?.content;
-                        const isPlanPausedInContent = (() => {
-                            // Check 1: stream already signalled waiting_for_user via delta event
-                            if (isExecutionWaitingForUser) return true;
-                            // Check 2: done response content is a plan JSON with paused/waiting state
-                            if (typeof doneResponseContent !== "string" || !doneResponseContent.trim()) return false;
-                            try {
-                                const parsed = JSON.parse(doneResponseContent);
-                                return parsed?.state === "paused" ||
-                                    Object.values(parsed?.tasks || {}).some((t: any) => t?.status === "waiting_for_user");
-                            } catch (_) { return false; }
-                        })();
 
-                        if (isPlanPausedInContent) {
-                            // Update the plan with the paused content if it's a valid plan JSON
-                            try {
-                                const parsedPausedPlan = JSON.parse(doneResponseContent);
-                                if (parsedPausedPlan?.tasks) {
-                                    globalDispatch(setPlanningData({ plan: parsedPausedPlan }));
-                                }
-                            } catch (_) {}
+                        // If execution was waiting for user input, hold UI in paused state
+                        if (isExecutionWaitingForUser) {
                             globalDispatch(updatePlanningExecutionState({ executionState: "paused" }));
                             globalDispatch(setLoading(false));
                             break;
@@ -601,16 +569,12 @@ export const useSendMessage = ({
 
                         if (action === "respond") {
                             if (isExecutionStreamActive) {
-                                const finalExecutionContent = doneResponseContent;
-                                const suppressFinalContent = shouldSuppressFinalExecutionContent(finalExecutionContent);
                                 globalDispatch(updatePlanningExecutionState({ executionState: "completed" }));
                                 if (latestMessageId) {
                                     globalDispatch(updateSingleMessage({
                                         messageId: latestMessageId,
                                         data: {
-                                            content: suppressFinalContent && typeof finalExecutionContent === "string"
-                                                ? ""
-                                                : (typeof finalExecutionContent === "string" ? finalExecutionContent : ""),
+                                            content: typeof doneResponseContent === "string" ? doneResponseContent : "",
                                             isStreaming: false,
                                             wait: false,
                                             message_id: event.message_id,
@@ -626,16 +590,12 @@ export const useSendMessage = ({
                         }
 
                         if (isExecutionStreamActive) {
-                            const finalExecutionContent = doneResponseContent;
-                            const suppressFinalContent = shouldSuppressFinalExecutionContent(finalExecutionContent);
                             globalDispatch(updatePlanningExecutionState({ executionState: "completed" }));
                             if (latestMessageId) {
                                 globalDispatch(updateSingleMessage({
                                     messageId: latestMessageId,
                                     data: {
-                                        content: suppressFinalContent && typeof finalExecutionContent === "string"
-                                            ? ""
-                                            : (typeof finalExecutionContent === "string" ? finalExecutionContent : ""),
+                                        content: typeof doneResponseContent === "string" ? doneResponseContent : "",
                                         isStreaming: false,
                                         wait: false,
                                         message_id: event.message_id,

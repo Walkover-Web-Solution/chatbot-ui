@@ -27,12 +27,19 @@ interface PlanHistoryEntry {
     timestamp?: string;
 }
 
+interface ExecutionQuery {
+    questions: Array<{ id: string; question: string; options?: string[] }>;
+    task_id?: string;
+    message_to_user?: string;
+}
+
 interface PlanningData {
     plan?: any;
     rawPlan?: string;
     execution: PlanExecution;
     planHistory: PlanHistoryEntry[];
     currentAnswers?: Record<string, string>;
+    executionQuery?: ExecutionQuery;
 }
 
 interface ReviewPhase {
@@ -139,6 +146,16 @@ const hasQuestions = (plan: any): boolean => {
            plan.questions.length > 0;
 };
 
+// Questions-only format sent during execution pause — has questions but no task plan inside
+const isExecutionQueryPlan = (plan: any): boolean => {
+    return plan &&
+           typeof plan === 'object' &&
+           Array.isArray(plan.questions) &&
+           plan.questions.length > 0 &&
+           !plan.tasks &&
+           !plan.plan;
+};
+
 // Archive the previous plan's questions+answers into history once the user
 // has submitted answers and the next AI response begins to overwrite the plan.
 // Trigger: previousPlan has questions AND currentAnswers is populated.
@@ -206,7 +223,7 @@ export const chatReducerV2 = {
     setPlanningData: (state, action: PayloadAction<{ plan?: any; rawPlan?: string }>) => {
         const subThreadId = state.subThreadId;
         if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
-        
+
         const lastMessageId = state.messageIds[subThreadId][0];
         const message = state.msgIdAndDataMap[subThreadId]?.[lastMessageId];
         if (!message) return;
@@ -217,6 +234,30 @@ export const chatReducerV2 = {
         const cleanedPlan = incomingPlan && typeof incomingPlan === 'object'
             ? { ...incomingPlan, planHistory: undefined }
             : incomingPlan;
+
+        // Execution-time human query: questions sent outside the plan during a pause.
+        // Store separately so the original task plan is not overwritten.
+        if (isExecutionQueryPlan(cleanedPlan)) {
+            // Archive previous executionQuery+answers into history
+            const history = Array.isArray(existingPlanning.planHistory) ? [...existingPlanning.planHistory] : [];
+            const prevQuery = existingPlanning.executionQuery;
+            const hasAnswers = existingPlanning.currentAnswers && Object.keys(existingPlanning.currentAnswers).length > 0;
+            if (prevQuery && hasAnswers) {
+                history.push({
+                    message_to_user: prevQuery.message_to_user,
+                    questions: prevQuery.questions,
+                    answers: existingPlanning.currentAnswers,
+                    timestamp: new Date().toISOString(),
+                });
+            }
+            message.planning = {
+                ...existingPlanning,
+                executionQuery: cleanedPlan,
+                planHistory: history,
+                currentAnswers: undefined,
+            };
+            return;
+        }
 
         const { history: planHistory, archived } = buildPlanHistory(
             existingPlanning.planHistory,
@@ -229,7 +270,8 @@ export const chatReducerV2 = {
             rawPlan,
             planHistory,
             execution: existingPlanning.execution || { state: "pending", tasks: {} },
-            currentAnswers: archived ? undefined : existingPlanning.currentAnswers
+            currentAnswers: archived ? undefined : existingPlanning.currentAnswers,
+            executionQuery: undefined,
         };
     },
 
@@ -257,6 +299,11 @@ export const chatReducerV2 = {
 
         if (action.payload.executionState) {
             execution.state = action.payload.executionState;
+            // When execution resumes after a pause, clear the pending question card
+            const resumingStates = ["executing", "running", "queued", "completed"];
+            if (resumingStates.includes(action.payload.executionState) && message.planning.executionQuery) {
+                message.planning.executionQuery = undefined;
+            }
         }
 
         const { taskUpdate, taskId, taskDelta, taskReasoning } = action.payload;

@@ -105,21 +105,13 @@ const AssistantMessageCard = React.memo(
         const planQuestions: Array<{ id: string; question: string; options?: string[] }> = isNewPlanFormat ? (planData.questions || []) : [];
         const planHistory: Array<{ message_to_user?: string; questions?: Array<{ id: string; question: string; options?: string[] }>; answers?: Record<string, string> }> = Array.isArray(planning?.planHistory) ? planning.planHistory : [];
         const suppressContent = planning && !isPlanningCompleted;
+        // Execution-time human query — stored separately so the task plan is preserved
+        const executionQuery = planning?.executionQuery;
+        const executionQueryTaskId: string | undefined = executionQuery?.task_id || undefined;
         const reviewPhases = Array.isArray(message?.review_phases) ? message.review_phases : [];
 
-        const handlePlanningAction = useCallback((action: "proceed" | "respond" | "revise", payload: { parsedPlan: any; rawPlan: string; taskQueries?: Record<string, string>; queryMessage?: string; humanQueryAnswers?: Record<string, string>; humanQueryMessage?: string; resolvedAfter?: boolean; humanQueryAnswersMessage?: string; updateMessage?: string }) => {
-            if (action === "respond") {
-                const humanAnswerEntries = Object.entries(payload.humanQueryAnswers || {});
-                const [firstTaskId, firstAnswer] = humanAnswerEntries[0] || [];
-                sendMessage({
-                    message: firstAnswer || "",
-                    action: "respond",
-                    mode: "plan",
-                    skipUserEcho: true,
-                    silent: true,
-                    task_id: firstTaskId,
-                });
-            } else if (action === "proceed") {
+        const handlePlanningAction = useCallback((action: "proceed" | "revise", payload: { parsedPlan: any; rawPlan: string; updateMessage?: string; queryMessage?: string }) => {
+            if (action === "proceed") {
                 sendMessage({
                     message: "Please execute this plan",
                     action: "approve",
@@ -128,10 +120,10 @@ const AssistantMessageCard = React.memo(
                     silent: true,
                 });
             } else if (action === "revise") {
-                const message = payload.updateMessage || payload.queryMessage || "";
-                if (message.trim()) {
+                const msg = payload.updateMessage || payload.queryMessage || "";
+                if (msg.trim()) {
                     sendMessage({
-                        message,
+                        message: msg,
                         mode: "plan",
                         skipUserEcho: true,
                         silent: true,
@@ -237,7 +229,9 @@ const AssistantMessageCard = React.memo(
                                             <PlanningQuestionsCard
                                                 questions={planQuestions}
                                                 isStreaming={message?.isStreaming}
-                                                onSubmit={(answersText) => sendMessage({ message: answersText, mode: "plan", skipUserEcho: true, silent: true })}
+                                                onSubmit={(answersText) => {
+                                                    sendMessage({ message: answersText, mode: "plan", skipUserEcho: true, silent: true });
+                                                }}
                                             />
                                         )}
                                         {message?.isPlanningLoading && (
@@ -246,7 +240,19 @@ const AssistantMessageCard = React.memo(
                                                 <span className="text-xs text-base-content/50 dark:text-base-content/60">Planning...</span>
                                             </div>
                                         )}
-                                        {planning && <PlanningTasksCard plan={planning} isStreaming={message?.isStreaming} onAction={handlePlanningAction} />}
+                                        {planning && (planning.plan || planning.rawPlan) && <PlanningTasksCard plan={planning} isStreaming={message?.isStreaming} onAction={handlePlanningAction} />}
+                                        {executionQuery && Array.isArray(executionQuery.questions) && executionQuery.questions.length > 0 && (
+                                            <>
+                                                {executionQuery.message_to_user && (
+                                                    <p className="not-prose text-sm leading-relaxed mb-1">{executionQuery.message_to_user}</p>
+                                                )}
+                                                <PlanningQuestionsCard
+                                                    questions={executionQuery.questions}
+                                                    isStreaming={message?.isStreaming}
+                                                    onSubmit={(answersText) => sendMessage({ message: answersText, action: "respond", mode: "plan", task_id: executionQueryTaskId, skipUserEcho: true, silent: true })}
+                                                />
+                                            </>
+                                        )}
                                         {!planning && <ToolCallAccordion toolsData={toolsData} />}
                                         <ReviewPhaseAccordion reviewPhases={reviewPhases} />
                                         {message?.isStreaming && !message?.content && !suppressContent && !message?.isPlanningLoading ? (

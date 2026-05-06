@@ -1,12 +1,12 @@
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
-import { CheckCircle2, ChevronDown, Circle, Loader2, MessageSquare, PauseCircle, Pencil, PlayCircle, RotateCcw, Sparkles, XCircle } from "lucide-react";
+import { CheckCircle2, ChevronDown, Circle, Loader2, PauseCircle, Pencil, PlayCircle, RotateCcw, XCircle } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReasoningAccordion from "./ReasoningAccordion";
 
 interface PlanningTasksCardProps {
     plan: any;
     isStreaming?: boolean;
-    onAction?: (action: "proceed" | "revise" | "respond", payload: { parsedPlan: any; rawPlan: string; taskQueries?: Record<string, string>; queryMessage?: string; humanQueryAnswers?: Record<string, string>; humanQueryMessage?: string; resolvedAfter?: boolean }) => void;
+    onAction?: (action: "proceed" | "revise", payload: { parsedPlan: any; rawPlan: string; taskQueries?: Record<string, string>; queryMessage?: string; updateMessage?: string }) => void;
 }
 
 export default function PlanningTasksCard({ plan, isStreaming = false, onAction }: PlanningTasksCardProps) {
@@ -14,13 +14,9 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
     const taskResultRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const [showQueryInputs, setShowQueryInputs] = useState(false);
     const [taskQueries, setTaskQueries] = useState<Record<string, string>>({});
-    const [humanQueryAnswers, setHumanQueryAnswers] = useState<Record<string, string>>({});
     const [openTaskId, setOpenTaskId] = useState("");
-    const [queryHistoryPerTask, setQueryHistoryPerTask] = useState<Record<string, Array<{ query: string; answer: string | null }>>>({});
-    const [useCustomAnswerPerQuery, setUseCustomAnswerPerQuery] = useState<Record<string, boolean>>({});
     const [isActionLoading, setIsActionLoading] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
-    const prevHumanQueriesRef = useRef<Record<string, string>>({});
 
     const { parsedPlan, rawPlan, execution, planState } = useMemo(() => {
         if (plan === null || plan === undefined) {
@@ -65,60 +61,11 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
         [taskQueries],
     );
 
-    const humanQueryTasks = useMemo(() => tasks.filter((t) => t.status === "waiting_for_user" && t.human_query && !t.human_response), [tasks]);
-
-    const humanQueriesKey = useMemo(() => {
-        return JSON.stringify(humanQueryTasks.map(t => ({ id: t.id, query: t.human_query })));
-    }, [humanQueryTasks]);
-
-    const allHumanQueriesAnswered = useMemo(() => {
-        // Check humanQueryTasks (from parsedPlan)
-        if (humanQueryTasks.length > 0) {
-            return humanQueryTasks.every((t) => {
-                return humanQueryAnswers[`${t.id}_0`]?.trim().length > 0;
-            });
-        }
-        // When paused via execution.tasks (e.g. task has human_response already set in parsedPlan but execution still tracks it)
-        if (execution?.state === "paused" && execution?.tasks) {
-            const waitingEntries = Object.entries(execution.tasks).filter(([, t]: [string, any]) => t?.status === "waiting_for_user");
-            if (waitingEntries.length > 0) {
-                return waitingEntries.every(([taskId]) => humanQueryAnswers[`${taskId}_0`]?.trim().length > 0);
-            }
-        }
-        return true;
-    }, [humanQueryTasks, humanQueryAnswers, execution]);
-
-    const humanQueryMessage = useMemo(() => {
-        return humanQueryTasks
-            .map((t) => {
-                const answer = humanQueryAnswers[t.id]?.trim();
-                if (!answer) return "";
-                return `${t.id}(task_id): human_query:"${answer.replace(/"/g, '\\"')}"`;
-            })
-            .filter(Boolean)
-            .join("\n");
-    }, [humanQueryTasks, humanQueryAnswers]);
-
-    const queryMessage = useMemo(() => {
-        return tasks
-            .map((t) => {
-                const v = taskQueries[t.id]?.trim();
-                if (!v) return "";
-                return `${t.id}(task_id): query:"${v.replace(/"/g, '\\"')}"`;
-            })
-            .filter(Boolean)
-            .join("\n");
-    }, [tasks, taskQueries]);
-
-    const hasHumanQueries = humanQueryTasks.length > 0;
-    const isPaused = planState === "paused" || hasHumanQueries || execution?.state === "paused";
+    const isPaused = planState === "paused" || execution?.state === "paused";
     const isExecuting = !isPaused && (execution?.state === "executing" || execution?.state === "running" || execution?.state === "queued");
     const isUpdatingPlan = execution?.state === "updating";
     const isExecutionCompleted = execution?.state === "completed";
     const isExecutionLockedToActiveTask = isExecuting && Boolean(activeTaskId);
-    // True only when execution phase definitively started — execution/running/executing/queued/completed/error states
-    // OR when execution.tasks has any task with a non-pending status (including waiting_for_user set during execution)
-    // "paused" alone does NOT confirm execution started (it can be set during planning phase too)
     const executionHasStarted = Boolean(
         execution?.state === "executing" ||
         execution?.state === "running" ||
@@ -130,15 +77,16 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
         ))
     );
     const isExecutionPaused = executionHasStarted && (execution?.state === "paused" || isPaused);
-    // Paused because a task failed during EXECUTION (no human query pending) — needs retry, not respond
-    // Only true when execution has definitively started AND we have execution-level task failure evidence
-    const isPausedDueToError = isExecutionPaused && !hasHumanQueries && Boolean(
+    const isPausedDueToError = isExecutionPaused && Boolean(
         execution?.tasks && Object.values(execution.tasks).some((t: any) =>
             t?.status === "error" || t?.status === "failed" || t?.is_error
         )
     );
+    // When execution is paused waiting for human query, questions are shown via executionQuery card —
+    // hide the Update button here to avoid double-submit UI
+    const isWaitingForHumanQuery = isExecutionPaused && !isPausedDueToError;
     const showProceedButton = !isPaused && !hasTaskQueryValues && !isExecuting && !isActionLoading && !isUpdatingPlan && !isStreaming;
-    const showUpdateButton = isPaused || hasHumanQueries;
+    const showUpdateButton = (isPaused && !isWaitingForHumanQuery) || hasTaskQueryValues;
 
     const doneCount = useMemo(() => {
         if (!execution?.tasks) return 0;
@@ -153,14 +101,12 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                 return status === "error" || status === "failed" || t?.is_error === true || Boolean(t?.error);
             });
         }
-
         if (parsedPlan?.tasks && typeof parsedPlan.tasks === "object") {
             return Object.values(parsedPlan.tasks).some((t: any) => {
                 const status = String(t?.status || "").toLowerCase();
                 return status === "error" || status === "failed" || t?.is_error === true || Boolean(t?.error);
             });
         }
-
         return false;
     }, [execution?.tasks, parsedPlan?.tasks]);
 
@@ -196,41 +142,17 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
         });
     }, [tasks]);
 
-    // When a task's human_response is set (task completed after answering),
-    // fill in the queryHistoryPerTask answer so options don't stay interactive
     useEffect(() => {
-        tasks.forEach((t) => {
-            if (t.human_response && t.human_query) {
-                setQueryHistoryPerTask((prev) => {
-                    const existing = prev[t.id];
-                    if (!existing || existing.length === 0) return prev;
-                    // Check if the last entry still has answer: null
-                    const lastIdx = existing.length - 1;
-                    if (existing[lastIdx].answer !== null) return prev;
-                    const updated = [...existing];
-                    updated[lastIdx] = { ...updated[lastIdx], answer: t.human_response };
-                    return { ...prev, [t.id]: updated };
-                });
-            }
-        });
-    }, [tasks]);
-
-    useEffect(() => {
-        // Clear stale answers only when execution phase starts (approve/execute), not on plan update
         if (isExecuting) {
             setIsActionLoading(false);
-            setHumanQueryAnswers({});
-            setUseCustomAnswerPerQuery({});
         }
     }, [isExecuting]);
 
     useEffect(() => {
-        // Clear loading state when a new plan arrives (e.g. done event response)
         setIsActionLoading(false);
     }, [parsedPlan]);
 
     useEffect(() => {
-        // Auto-scroll task result containers to bottom when new data arrives
         if (execution?.tasks) {
             Object.keys(execution.tasks).forEach((taskId) => {
                 const task = execution.tasks[taskId];
@@ -244,50 +166,16 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
         }
     }, [execution?.tasks]);
 
-    useEffect(() => {
-        const currentHumanQueries: Record<string, string> = {};
-        humanQueryTasks.forEach((t) => {
-            currentHumanQueries[t.id] = t.human_query || "";
-        });
-
-        setQueryHistoryPerTask((prevHistory) => {
-            const newHistory = { ...prevHistory };
-            
-            humanQueryTasks.forEach((t) => {
-                const currentQuery = t.human_query || "";
-                const prevQuery = prevHumanQueriesRef.current[t.id];
-                
-                if (!newHistory[t.id]) {
-                    newHistory[t.id] = [];
-                }
-                
-                if (currentQuery) {
-                    const existingIndex = newHistory[t.id].findIndex(h => h.query === currentQuery);
-                    if (existingIndex === -1) {
-                        newHistory[t.id].push({ query: currentQuery, answer: null });
-                    }
-                }
-            });
-            
-            return newHistory;
-        });
-
-        prevHumanQueriesRef.current = currentHumanQueries;
-    }, [humanQueriesKey, humanQueryTasks]);
-
     // New format with no inner plan yet (questions-only phase) — AssistantMessage handles rendering
     if (isNewFormat && !effectivePlan) return null;
     if (!parsedPlan && !rawPlan) return null;
+    if (tasks.length === 0 && !rawPlan) return null;
 
     const handleAction = (action: "proceed" | "update") => {
         setIsActionLoading(true);
-        
+
         if (action === "proceed") {
-            // No human_query case - execute the plan
-            const payload = {
-                parsedPlan,
-                rawPlan,
-            };
+            const payload = { parsedPlan, rawPlan };
             if (onAction) {
                 onAction("proceed", payload);
             } else {
@@ -297,7 +185,6 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
         }
 
         if (action === "update") {
-            // If paused due to task error — retry execution
             if (isPausedDueToError) {
                 const payload = { parsedPlan, rawPlan };
                 if (onAction) {
@@ -308,63 +195,22 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                 return;
             }
 
-            // If plan is paused during execution, respond with the human answer
-            // Find waiting task from humanQueryTasks or execution.tasks
-            const executionWaitingTask = !humanQueryTasks.length && execution?.tasks
-                ? Object.entries(execution.tasks).find(([, t]: [string, any]) => t?.status === "waiting_for_user")
-                : null;
-            const pausedWaitingTask = humanQueryTasks.length > 0 ? humanQueryTasks[0] : null;
-            const waitingTaskId = pausedWaitingTask?.id || executionWaitingTask?.[0];
-            const waitingTaskData = pausedWaitingTask || (executionWaitingTask ? tasks.find(t => t.id === executionWaitingTask[0]) : null);
-
-            if (isExecutionPaused && waitingTaskId) {
-                const answer = humanQueryAnswers[`${waitingTaskId}_0`]?.trim() || "";
-                const humanQueryAnswersMap: Record<string, string> = { [waitingTaskId]: answer };
-                const payload = {
-                    parsedPlan,
-                    rawPlan,
-                    humanQueryAnswers: humanQueryAnswersMap,
-                };
-                if (onAction) {
-                    onAction("respond", payload);
-                } else {
-                    emitEventToParent("PLANNING_ACTION", { action: "respond", task_id: waitingTaskId, answer, ...payload });
-                }
-                return;
-            }
-
-            // Collect answers for human queries and user suggestions
             const messages: string[] = [];
-            
-            // Collect answers for current waiting human query tasks
-            humanQueryTasks.forEach((t) => {
-                const answer = humanQueryAnswers[`${t.id}_0`]?.trim();
-                if (answer) {
-                    messages.push(`task_id:${t.id}, answer:${answer}`);
-                }
-            });
-            
-            // Collect user suggestions/queries for all tasks
             tasks.forEach((t) => {
                 const query = taskQueries[t.id]?.trim();
                 if (query) {
                     messages.push(`task_id:${t.id}, query:${query}`);
                 }
             });
-            
             const message = messages.join("\n");
-            const payload = {
-                parsedPlan,
-                rawPlan,
-                updateMessage: message,
-            };
-            
+            const payload = { parsedPlan, rawPlan, updateMessage: message };
+
             if (onAction) {
                 onAction("revise", payload);
             } else {
                 emitEventToParent("PLANNING_ACTION", { action: "update", plan: parsedPlan || rawPlan, message, ...payload });
             }
-            
+
             setTaskQueries({});
             setShowQueryInputs(false);
         }
@@ -393,7 +239,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                         const isActive = status === "in_progress";
                                         const isDone = status === "done" || status === "completed";
                                         const isError = status === "error" || status === "failed";
-                                        const isWaitingForUser = isPaused && status === "waiting_for_user";
+                                        const isWaitingForUser = status === "waiting_for_user";
                                         const isPending = !isActive && !isDone && !isError && !isWaitingForUser;
 
                                         let iconEl: React.ReactNode;
@@ -411,7 +257,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
 
                                         const taskError = executionTask?.error || (task as any)?.error;
                                         const taskDesc = task.task_description;
-                                        const canExpand = taskDesc || executionTask?.result || taskError || executionTask?.reasoning || (task.human_query && !isExecuting) || showQueryInputs;
+                                        const canExpand = taskDesc || executionTask?.result || taskError || executionTask?.reasoning || showQueryInputs;
 
                                         return (
                                             <div
@@ -461,175 +307,6 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                             )}
                                                         </div>
                                                     </button>
-
-                                                    {isWaitingForUser && task.human_query && (
-                                                        <div className="mt-2 space-y-2">
-                                                            <div className="flex items-start gap-2 rounded-lg bg-warning/8 dark:bg-warning/15 border border-warning/30 dark:border-warning/50 px-3 py-2">
-                                                                <span className="text-warning font-bold text-xs shrink-0 mt-0.5">?</span>
-                                                                <span className="text-xs text-base-content/80 dark:text-base-content/90 leading-relaxed">{task.human_query}</span>
-                                                            </div>
-                                                            {(() => {
-                                                                const answerKey = `${task.id}_0`;
-                                                                const options = Array.isArray(task.human_options) ? task.human_options.filter(Boolean) : [];
-                                                                const showCustomChoice = Boolean(task.allow_custom_response);
-                                                                const useCustomAnswer = Boolean(useCustomAnswerPerQuery[answerKey]);
-                                                                return (
-                                                                    <div className="space-y-2">
-                                                                        {options.length > 0 && (
-                                                                            <div className="flex flex-wrap gap-2">
-                                                                                {options.map((opt: string, optIndex: number) => {
-                                                                                    const isSelected = humanQueryAnswers[answerKey] === opt && !useCustomAnswer;
-                                                                                    return (
-                                                                                        <button
-                                                                                            key={`${answerKey}_opt_${optIndex}`}
-                                                                                            type="button"
-                                                                                            onClick={() => {
-                                                                                                setUseCustomAnswerPerQuery((prev) => ({ ...prev, [answerKey]: false }));
-                                                                                                setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: opt }));
-                                                                                                if (!queryHistoryPerTask[task.id]?.length) {
-                                                                                                    setQueryHistoryPerTask((prev) => ({ ...prev, [task.id]: [{ query: task.human_query, answer: null }] }));
-                                                                                                }
-                                                                                            }}
-                                                                                            className={`px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer select-none transition-colors ${
-                                                                                                isSelected
-                                                                                                    ? "border-2 border-base-content bg-base-content text-base-100"
-                                                                                                    : "border border-base-content/25 dark:border-base-content/40 bg-transparent dark:bg-base-700/50 text-base-content hover:border-base-content/50 hover:bg-base-200/40 dark:hover:bg-base-600/60"
-                                                                                            }`}
-                                                                                        >
-                                                                                            {opt}
-                                                                                        </button>
-                                                                                    );
-                                                                                })}
-                                                                                {showCustomChoice && (
-                                                                                    <button
-                                                                                        type="button"
-                                                                                        onClick={() => {
-                                                                                            setUseCustomAnswerPerQuery((prev) => ({ ...prev, [answerKey]: true }));
-                                                                                            setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: prev[answerKey] || "" }));
-                                                                                        }}
-                                                                                        className={`px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer select-none transition-colors flex items-center gap-1.5 ${
-                                                                                            useCustomAnswer
-                                                                                                ? "border-2 border-base-content bg-base-content text-base-100"
-                                                                                                : "border border-base-content/25 dark:border-base-content/40 bg-transparent dark:bg-base-700/50 text-base-content hover:border-base-content/50 hover:bg-base-200/40 dark:hover:bg-base-600/60"
-                                                                                        }`}
-                                                                                    >
-                                                                                        <Pencil className="w-2.5 h-2.5" />
-                                                                                        Custom
-                                                                                    </button>
-                                                                                )}
-                                                                            </div>
-                                                                        )}
-                                                                        {(options.length === 0 || useCustomAnswer) && (
-                                                                            <input
-                                                                                type="text"
-                                                                                autoFocus={useCustomAnswer || options.length === 0}
-                                                                                className="w-full text-xs rounded-lg border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content dark:text-base-content px-3 py-2 outline-none focus:border-primary/60 dark:focus:border-base-400 focus:ring-2 focus:ring-primary/10 placeholder:text-base-content/35 dark:placeholder:text-base-content/40 transition-all"
-                                                                                placeholder={options.length > 0 ? "Type your custom response..." : "Your answer..."}
-                                                                                value={humanQueryAnswers[answerKey] || ""}
-                                                                                onChange={(e) => {
-                                                                                    const value = e.target.value;
-                                                                                    setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: value }));
-                                                                                    if (!queryHistoryPerTask[task.id]?.length) {
-                                                                                        setQueryHistoryPerTask((prev) => ({ ...prev, [task.id]: [{ query: task.human_query, answer: null }] }));
-                                                                                    }
-                                                                                }}
-                                                                            />
-                                                                        )}
-                                                                    </div>
-                                                                );
-                                                            })()}
-                                                        </div>
-                                                    )}
-
-                                                    {queryHistoryPerTask[task.id]?.length > 0 && !isExecuting && !isWaitingForUser && (
-                                                        <div className="mt-2 space-y-3">
-                                                            {queryHistoryPerTask[task.id].map((queryItem, idx) => (
-                                                                <div key={idx} className="space-y-2">
-                                                                    <div className="flex items-start gap-2 rounded-lg bg-base-200/70 dark:bg-base-700/60 border border-base-300/60 dark:border-base-500 px-3 py-2">
-                                                                        <span className="text-base-content/60 font-bold text-xs shrink-0 mt-0.5">?</span>
-                                                                        <span className="text-xs text-base-content/80 dark:text-base-content/85 leading-relaxed">{queryItem.query}</span>
-                                                                    </div>
-                                                                    {queryItem.answer !== null ? (
-                                                                        <div className="flex items-start gap-2 rounded-lg bg-base-200/50 dark:bg-base-700/40 border border-base-300/50 dark:border-base-500 px-3 py-2">
-                                                                            <CheckCircle2 className="w-3.5 h-3.5 text-base-content/60 shrink-0 mt-0.5" />
-                                                                            <span className="text-xs text-base-content/80 dark:text-base-content/85">{queryItem.answer}</span>
-                                                                        </div>
-                                                                    ) : !isWaitingForUser ? null : (
-                                                                        (() => {
-                                                                            const answerKey = `${task.id}_${idx}`;
-                                                                            const options = Array.isArray(task.human_options) ? task.human_options.filter(Boolean) : [];
-                                                                            const showCustomChoice = Boolean(task.allow_custom_response);
-                                                                            const useCustomAnswer = Boolean(useCustomAnswerPerQuery[answerKey]);
-                                                                            return (
-                                                                                <div className="space-y-2.5">
-                                                                                    {options.length > 0 && (
-                                                                                        <div className="space-y-1.5">
-                                                                                            <div className="flex items-center gap-1.5">
-                                                                                                <Sparkles className="w-3 h-3 text-base-content/50 dark:text-base-content/60" />
-                                                                                                <p className="text-[10px] font-semibold text-base-content/55 dark:text-base-content/65 uppercase tracking-wider">Suggested options</p>
-                                                                                            </div>
-                                                                                            <div className="flex flex-wrap gap-2">
-                                                                                                {options.map((opt: string, optIndex: number) => {
-                                                                                                    const isSelected = humanQueryAnswers[answerKey] === opt && !useCustomAnswer;
-                                                                                                    return (
-                                                                                                        <button
-                                                                                                            key={`${answerKey}_opt_${optIndex}`}
-                                                                                                            type="button"
-                                                                                                            onClick={() => {
-                                                                                                                setUseCustomAnswerPerQuery((prev) => ({ ...prev, [answerKey]: false }));
-                                                                                                                setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: opt }));
-                                                                                                            }}
-                                                                                                            className={`px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer select-none transition-colors ${
-                                                                                                                isSelected
-                                                                                                                    ? "border-2 border-base-content bg-base-content text-base-100"
-                                                                                                                    : "border border-base-content/25 dark:border-base-content/40 bg-transparent dark:bg-base-700/50 text-base-content hover:border-base-content/50 hover:bg-base-200/40 dark:hover:bg-base-600/60"
-                                                                                                            }`}
-                                                                                                        >
-                                                                                                            {opt}
-                                                                                                        </button>
-                                                                                                    );
-                                                                                                })}
-                                                                                                {showCustomChoice && (
-                                                                                                    <button
-                                                                                                        type="button"
-                                                                                                        onClick={() => {
-                                                                                                            setUseCustomAnswerPerQuery((prev) => ({ ...prev, [answerKey]: true }));
-                                                                                                            setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: prev[answerKey] || "" }));
-                                                                                                        }}
-                                                                                                        className={`px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer select-none transition-colors flex items-center gap-1.5 ${
-                                                                                                            useCustomAnswer
-                                                                                                                ? "border-2 border-base-content bg-base-content text-base-100"
-                                                                                                                : "border border-base-content/25 dark:border-base-content/40 bg-transparent dark:bg-base-700/50 text-base-content hover:border-base-content/50 hover:bg-base-200/40 dark:hover:bg-base-600/60"
-                                                                                                        }`}
-                                                                                                    >
-                                                                                                        <Pencil className="w-2.5 h-2.5" />
-                                                                                                        Custom
-                                                                                                    </button>
-                                                                                                )}
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    )}
-                                                                                    {(options.length === 0 || useCustomAnswer) && (
-                                                                                        <input
-                                                                                            type="text"
-                                                                                            autoFocus={useCustomAnswer}
-                                                                                            className="w-full text-xs rounded-lg border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content dark:text-base-content px-3 py-2 outline-none focus:border-primary/60 dark:focus:border-base-400 focus:ring-2 focus:ring-primary/10 placeholder:text-base-content/35 dark:placeholder:text-base-content/40 transition-all"
-                                                                                            placeholder={options.length > 0 ? "Type your custom response..." : "Your answer..."}
-                                                                                            value={humanQueryAnswers[answerKey] || ""}
-                                                                                            onChange={(e) => {
-                                                                                                const value = e.target.value;
-                                                                                                setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: value }));
-                                                                                            }}
-                                                                                        />
-                                                                                    )}
-                                                                                </div>
-                                                                            );
-                                                                        })()
-                                                                    )}
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
 
                                                     <div className={`overflow-hidden transition-all duration-200 ease-out ${
                                                         isTaskOpen ? "max-h-[600px] opacity-100 mt-2" : "max-h-0 opacity-0 mt-0"
@@ -707,7 +384,8 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                             </div>
                         </div>
                     )}
-                    {!isExecutionCompleted && (isStreaming ? (hasHumanQueries || isExecutionPaused) : true) && (
+
+                    {!isExecutionCompleted && (isStreaming ? isExecutionPaused : true) && (showProceedButton || showUpdateButton || hasFailedTasks) && (
                         <div className="flex items-center gap-2 px-4 py-3 border-t border-base-200 dark:border-base-600 bg-base-50 dark:bg-base-700/80 sticky bottom-0 z-10">
                             {showProceedButton && (
                                 <button
@@ -725,17 +403,15 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                             {showUpdateButton && (
                                 <button
                                     type="button"
-                                    disabled={isActionLoading || isUpdatingPlan || (isStreaming && !hasHumanQueries && !isExecutionPaused) || (!isPausedDueToError && !allHumanQueriesAnswered && !hasTaskQueryValues)}
+                                    disabled={isActionLoading || isUpdatingPlan || (isStreaming && !isExecutionPaused) || !hasTaskQueryValues}
                                     onClick={() => handleAction("update")}
                                     className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-content hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
                                 >
                                     {isActionLoading || isUpdatingPlan
-                                        ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> {isPausedDueToError ? "Retrying..." : isExecutionPaused ? "Responding..." : "Updating"}</>
+                                        ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> {isPausedDueToError ? "Retrying..." : "Updating..."}</>
                                         : isPausedDueToError
                                             ? <><PlayCircle className="w-3.5 h-3.5" /> Retry</>
-                                            : isExecutionPaused
-                                                ? <><MessageSquare className="w-3.5 h-3.5" /> Respond</>
-                                                : <><MessageSquare className="w-3.5 h-3.5" /> Update</>}
+                                            : <><Pencil className="w-3.5 h-3.5" /> Update</>}
                                 </button>
                             )}
                             {showProceedButton && (
