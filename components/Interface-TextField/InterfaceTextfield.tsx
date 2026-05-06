@@ -59,6 +59,7 @@ function InterfaceTextfield({
             color: "gray",
           },
         }}
+        data-testid={`chatbot-interface-textfield-${componentId || 'default'}`}
       />
     </Box>
   );

@@ -48,7 +48,7 @@ function ReactGridItemWrapper({ children, onResizeItem, keyName = "" }: any) {
   }, [keyName, dimensions]); // Ensure effect is re-run if keyName changes
 
   return (
-    <div ref={ref} key={keyName} style={{ height: "fit-content" }}>
+    <div ref={ref} key={keyName} style={{ height: "fit-content" }} data-testid={`chatbot-interface-grid-item-${keyName || 'default'}`}>
       {children}
     </div>
   );

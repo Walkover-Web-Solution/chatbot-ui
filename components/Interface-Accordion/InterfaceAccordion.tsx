@@ -30,7 +30,7 @@ function InterfaceAccordion({ props, gridId, componentId }: InterfaceAccordionPr
   }
 
   return (
-    <Accordion {...props} onChange={handleChange}>
+    <Accordion {...props} onChange={handleChange} data-testid={`chatbot-interface-accordion-${componentId || 'default'}`}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
         <Typography>{props?.title || 'Accordion'}</Typography>
       </AccordionSummary>

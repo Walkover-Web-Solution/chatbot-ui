@@ -4,7 +4,7 @@ import './InterfaceForm.css'
 
 export default function InterfaceForm({ props, componentId = '', dragRef = { current: '' }, ingrid = false }) {
   return (
-    <Box className={`${ingrid ? 'interface-chatbot' : ''} p-3 h-100 w-100 box-sizing-border-box interface-form `} {...props}>
+    <Box className={`${ingrid ? 'interface-chatbot' : ''} p-3 h-100 w-100 box-sizing-border-box interface-form `} {...props} data-testid={`chatbot-interface-form-${componentId || 'default'}`}>
       <form
         className='nested_grid'
         onSubmit={(e) => {

@@ -10,7 +10,7 @@ import { ParamsEnums } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import { TextField, useTheme } from "@mui/material";
 import debounce from "lodash.debounce";
-import { ChevronDown, ChevronUp, Loader2, Paperclip, Send, Smile, TriangleAlert, X, Zap, BrainCircuit } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Paperclip, Send, Smile, X, Zap, BrainCircuit } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
@@ -30,6 +30,7 @@ interface ChatbotTextFieldProps {
 }
 
 const MAX_IMAGES = 4;
+const MAX_UPLOAD_SIZE_MB = 10;
 
 const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "" }) => {
   const [isUploading, setIsUploading] = useState(false);
@@ -58,13 +59,22 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     showModeDropdown: state.appInfo?.[tabSessionId]?.mode === true,
   }));
 
+  const canUploadImages = useMemo(() => (isHelloUser ? true : mode?.includes("vision")), [isHelloUser, mode]);
+  const canUploadFiles = useMemo(() => (isHelloUser ? true : mode?.includes("files")), [isHelloUser, mode]);
+  const fileInputAccept = useMemo(() => {
+    if (canUploadImages && canUploadFiles) return "image/*,application/pdf";
+    if (canUploadImages) return "image/*";
+    if (canUploadFiles) return "application/pdf";
+    return "";
+  }, [canUploadImages, canUploadFiles]);
+
   const { messageRef } = useContext(MessageContext);
   const sendMessageToHello = useSendMessageToHello({ messageRef });
 
   const { setImages } = useChatActions();
   const sendMessage = useSendMessage({});
 
-  const { images = [], options = [], loading, error, isPlanExecuting, isReviewActive } = useCustomSelector((state) => {
+  const { images = [], options = [], loading, isPlanExecuting, isReviewActive } = useCustomSelector((state) => {
     const subThreadId = state.appInfo?.[tabSessionId]?.subThreadId;
     const lastMessageId = subThreadId ? state.Chat?.messageIds?.[subThreadId]?.[0] : null;
     const planningExecState = lastMessageId ? state.Chat?.msgIdAndDataMap?.[subThreadId]?.[lastMessageId]?.planning?.execution?.state : null;
@@ -73,7 +83,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
       images: state.Chat.images || [],
       loading: state.Chat.loading,
       options: state.Chat.options || [],
-      error: state.Chat.error,
       isPlanExecuting: planningExecState === "executing" || planningExecState === "running" || planningExecState === "queued",
       isReviewActive: Array.isArray(reviewPhases) && reviewPhases.length > 0 && reviewPhases[reviewPhases.length - 1]?.isStreaming === true,
     };
@@ -134,17 +143,58 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     if (!files || files.length === 0) return;
 
     const filesArray = Array.from(files);
-    const totalImagesAfterUpload = filesArray.length + images.length;
+    const tooLargeFiles = filesArray.filter((file) => file.size > MAX_UPLOAD_SIZE_MB * 1024 * 1024);
+    if (tooLargeFiles.length > 0) {
+      errorToast(`Each file should be less than ${MAX_UPLOAD_SIZE_MB}MB.`);
+      event.target.value = '';
+      return;
+    }
+
+    const blockedMediaFiles = filesArray.filter((file) => file.type.startsWith("video/") || file.type.startsWith("audio/"));
+    if (blockedMediaFiles.length > 0) {
+      errorToast("Video and audio uploads are not supported for chatbot.");
+      event.target.value = '';
+      return;
+    }
+
+    const allowedFiles = filesArray.filter((file) => {
+      const isImage = file.type.startsWith("image/");
+      const isPdf = file.type === "application/pdf";
+      if (isImage) return canUploadImages;
+      if (isPdf) return canUploadFiles;
+      return false;
+    });
+
+    if (allowedFiles.length === 0) {
+      if (canUploadImages && !canUploadFiles) {
+        errorToast("Only image uploads are allowed for this chatbot.");
+      } else if (!canUploadImages && canUploadFiles) {
+        errorToast("Only PDF uploads are allowed for this chatbot.");
+      } else {
+        errorToast("File uploads are not enabled for this chatbot.");
+      }
+      event.target.value = '';
+      return;
+    }
+
+    if (allowedFiles.length !== filesArray.length) {
+      errorToast("Some files were skipped because they are not allowed by this chatbot mode.");
+    }
+
+    const newImageFiles = allowedFiles.filter((file) => file.type.startsWith("image/"));
+    const existingImageCount = images.filter((imageUrl) => !imageUrl?.toLowerCase()?.includes('.pdf')).length;
+    const totalImagesAfterUpload = existingImageCount + newImageFiles.length;
 
     if (totalImagesAfterUpload > MAX_IMAGES) {
       errorToast(`You can only upload up to ${MAX_IMAGES} images.`);
+      event.target.value = '';
       return;
     }
 
     setIsUploading(true);
 
     try {
-      const uploadPromises = filesArray.map(async (file) => {
+      const uploadPromises = allowedFiles.map(async (file) => {
         if (isHelloUser) {
           const response = await uploadAttachmentToHello(file, inbox_id);
           if (!response) {
@@ -171,7 +221,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
         fileInputRef.current.value = '';
       }
     }
-  }, [images, setImages, isHelloUser, inbox_id]);
+  }, [images, setImages, isHelloUser, inbox_id, canUploadImages, canUploadFiles]);
 
   const handleRemoveImage = useCallback((index: number) => {
     setImages(images.filter((_, i) => i !== index));
@@ -253,6 +303,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           {options.slice(0, 3).map((option, index) => (
             <button
               key={index}
+              data-testid={`chatbot-suggestion-option-${index}`}
               onClick={() => handleSendMessage({ message: option })}
               className="flex-shrink-0 px-4 py-2 text-sm rounded-lg shadow-sm border transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-[#242424]"
               style={suggestionButtonStyles}
@@ -295,6 +346,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             </div>
             <button
               onClick={() => handleRemoveImage(index)}
+              data-testid={`chatbot-remove-image-${index}`}
               className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
               aria-label="Remove image"
             >
@@ -354,20 +406,25 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }, [isHelloUser]);
 
   const uploadButton = useMemo(() => {
-    if (!mode?.includes("vision") && !mode?.includes("files") || (isHelloUser && !subThreadId)) return null;
+    if (isHelloUser) {
+      if (!subThreadId) return null;
+    } else {
+      if (!canUploadImages && !canUploadFiles) return null;
+    }
 
     return (
       <>
         <input
           type="file"
-          accept="image/*,video/*,audio/*,application/pdf"
+          accept={fileInputAccept}
           onChange={handleImageUpload}
           className="hidden"
           id="upload-image"
+          data-testid="chatbot-file-upload-input"
           multiple
           ref={fileInputRef}
         />
-        <label htmlFor="upload-image" className="cursor-pointer">
+        <label htmlFor="upload-image" className="cursor-pointer" data-testid="chatbot-file-upload-label">
           <div className="flex px-2 py-1.5 w-8 h-8 items-center group">
             {isUploading ? (
               <div className="flex items-center gap-1.5">
@@ -375,13 +432,13 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                 <span className="text-[10px] font-medium text-gray-600 dark:text-slate-300">Uploading...</span>
               </div>
             ) : (
-            <Paperclip className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600 dark:text-slate-300" />
+              <Paperclip className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600 dark:text-slate-300" />
             )}
           </div>
         </label>
       </>
     );
-  }, [mode, isUploading, handleImageUpload, subThreadId]);
+  }, [isHelloUser, subThreadId, canUploadImages, canUploadFiles, fileInputAccept, isUploading, handleImageUpload]);
 
   const handleEmojiSelect = (data: { emoji: string }) => {
     if (messageRef?.current) {
@@ -405,9 +462,10 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }
 
   return (
-    <div className={`relative w-full shadow-sm ${className}`}>
+    <div className={`relative w-full shadow-sm ${className}`} data-testid="chatbot-text-field">
       {optionButtons}
       {imagePreviewsSection}
+
 
       <div className="w-full h-full cursor-text relative" onClick={focusTextField}>
         <EmojiSelector
@@ -418,6 +476,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
         <div
           className="relative flex-col h-full items-center justify-between gap-2 p-2 rounded-xl border focus-within:outline focus-within:outline-2 focus-within:outline-offset-0"
           style={containerStyles}
+          data-testid="chatbot-input-container"
         >
           <TextField
             key={subThreadId || currentTeamId}
@@ -434,6 +493,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             autoFocus
             inputMode="text"
             type="text"
+            inputProps={{ 'data-testid': 'chatbot-message-input' }}
           />
 
           <div className="flex justify-between items-center w-full">
@@ -444,8 +504,9 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                 onClick={(e) => { e.stopPropagation(); e.preventDefault(); setShowEmojiPicker(!showEmojiPicker) }}
                 className="group flex items-center justify-center w-8 h-8 cursor-pointer"
                 aria-label="Add emoji"
+                data-testid="chatbot-emoji-button"
               >
-            <Smile className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600 dark:text-slate-300" />
+                <Smile className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600 dark:text-slate-300" />
               </div>
               {uploadButton}
 
@@ -513,6 +574,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
               {show_send_button && (
                 <button
                   onClick={() => !buttonDisabled && handleSendMessage()}
+                  data-testid="chatbot-send-button"
                   className="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:scale-105 transition-transform duration-200"
                   disabled={buttonDisabled}
                   style={{

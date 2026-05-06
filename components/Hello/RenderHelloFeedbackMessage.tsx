@@ -58,7 +58,7 @@ function RenderHelloFeedbackMessage({message,chatSessionId}:{message:any,chatSes
   []);
 
   return (
-    <div className="p-3 bg-base-200 rounded-lg" style={{maxWidth: '400px'}}>
+    <div className="p-3 bg-base-200 rounded-lg" style={{maxWidth: '400px'}} data-testid="chatbot-hello-feedback-message">
       {widgetLogo && (
         <div className="flex justify-center mb-3">
           <img 

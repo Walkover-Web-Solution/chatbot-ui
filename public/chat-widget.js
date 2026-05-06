@@ -893,7 +893,6 @@
             }
         }
 
-
         showStarterQuestion() {
             const starterQuestionContainer = document.getElementById(this.elements.starterQuestionContainer);
             if (starterQuestionContainer) {

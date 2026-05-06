@@ -7,7 +7,9 @@ import {
 } from "@/config/ragApi";
 import { SetSessionStorage } from "@/utils/ChatbotUtility";
 import { KNOWLEDGE_BASE_CUSTOM_SECTION } from "@/utils/enums";
-import { CircleX, Loader2, Sparkles, Upload, X } from "lucide-react";
+import { formatErrorMessage } from "@/utils/errorFormatter";
+// import DriveIcon from "@/assests/DriveIcon";
+import { CircleX, Loader2, Settings, Upload, X } from "lucide-react";
 import * as React from "react";
 import { successToast, errorToast } from "@/components/customToast";
 
@@ -63,11 +65,11 @@ function RagComponent() {
     // State management
     const [configuration, setConfiguration] = React.useState<Configuration>({});
     const [aiGenerationEnabled, setAiGenerationEnabled] = React.useState(false);
-    const [isIntegrationsOpen, setIsIntegrationsOpen] = React.useState(false);
+    // const [isIntegrationsOpen, setIsIntegrationsOpen] = React.useState(false);
     const [chunkingType, setChunkingType] = React.useState<string>("auto");
     const [isLoading, setIsLoading] = React.useState(false);
     const [editingKnowledgeBase, setEditingKnowledgeBase] = React.useState<KnowledgeBaseType | null>(null);
-    const [emebedToken, setEmebedToken] = React.useState<string>("");
+    // const [emebedToken, setEmebedToken] = React.useState<string>("");
 
     // New State for UI alignment
     const [inputType, setInputType] = React.useState<'url' | 'file' | 'content'>('url');
@@ -141,8 +143,9 @@ function RagComponent() {
                 handleClose();
             }
         } catch (error: any) {
+            const formattedError = formatErrorMessage(error?.response?.data || error?.message || { id });
             window.parent.postMessage(
-                { type: "iframe-message-rag", status: "delete", error: error?.response?.data || { id } },
+                { type: "iframe-message-rag", status: "delete", error: formattedError },
                 "*"
             );
         }
@@ -219,7 +222,10 @@ function RagComponent() {
         try {
             const formData = new FormData();
             formData.append('file', file);
-            const response = await uploadImage({ formData, isVedioOrPdf: true });
+
+            // Determine if it's video or PDF based on file type
+            const isVedioOrPdf = file.type.startsWith('video/') || file.type === 'application/pdf';
+            const response = await uploadImage({ formData, isVedioOrPdf });
             // Adapt to response structure. KnowledgeBaseModal expects url or file_url or data.url
             const fileUrl = response.url || response.file_url || response.data?.url;
 
@@ -276,6 +282,9 @@ function RagComponent() {
                     resourceUrl = uploadedFile.url;
                     content = uploadedFile.url;
                 } else {
+                    // Unlike frontend, we enforce upload first for consistency in this implementation
+                    // unless we want to support direct file blob sending which is what the OLD page.tsx did.
+                    // The requirement is "acc to the frontend", so we use the URL flow.
                     if (!formData.get("file") && !uploadedFile) {
                         errorToast("Please upload a file");
                         setIsLoading(false);
@@ -295,6 +304,12 @@ function RagComponent() {
                 settings: settings,
                 collection_details: collection_details,
             };
+
+            if (!payload.description) {
+                errorToast("Description is required");
+                setIsLoading(false);
+                return;
+            }
 
             if (content && content !== resourceUrl && content.trim() !== "") {
                 payload.content = content;
@@ -329,6 +344,17 @@ function RagComponent() {
                     handleClose();
                 }
             } else {
+                // Create logic
+                // The existing createKnowledgeBaseEntry in chatbot-ui seemed to support FormData with 'file' blob.
+                // Now we are sending JSON payload mostly, as we have a URL.
+                // BUT current `createKnowledgeBaseEntry` in `ragApi.ts` takes `data` and sends it as BODY.
+                // It does NOT enforce FormData.
+                // However, the OLD page.tsx created FormData.
+                // If we send JSON object, `axios.post` handles it as JSON.
+
+                // Ensure `createKnowledgeBase ENTRY` can handle JSON.
+                // `ragApi.ts`: `axios.post(..., data)` -> Yes.
+
                 const response = await createKnowledgeBaseEntry(payload);
                 if (response?.data) {
                     window.parent.postMessage(
@@ -342,8 +368,9 @@ function RagComponent() {
             }
         } catch (error: any) {
             console.error("Error saving:", error);
+            const formattedError = formatErrorMessage(error?.response?.data || error?.message || { id: "error" });
             window.parent.postMessage(
-                { type: "iframe-message-rag", status: "create", error: error?.response?.data || { id: "error" } },
+                { type: "iframe-message-rag", status: "create", error: formattedError },
                 "*"
             );
         } finally {
@@ -508,7 +535,7 @@ function RagComponent() {
                     {/* Description Field */}
                     <div className="form-control">
                         <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
-                            Description
+                            Description <span className={`${theme === 'dark' ? 'text-red-400' : 'text-red-500'}`}>*</span>
                         </label>
                         <textarea
                             ref={descriptionInputRef}
@@ -517,6 +544,7 @@ function RagComponent() {
                             className={getInputClassName(aiGenerationEnabled)}
                             placeholder="Enter a description for this knowledge base entry"
                             defaultValue={editingKnowledgeBase?.description || ""}
+                            required
                             disabled={aiGenerationEnabled}
                         />
                     </div>
@@ -765,7 +793,7 @@ function RagComponent() {
 
                     {/* Query Settings Accordion */}
                     {!editingKnowledgeBase && (
-                        <div className={`collapse z-0 collapse-arrow border ${isDarkTheme ? 'border-gray-700' : 'border-gray-200'}`}>
+                        <div className={`collapse collapse-arrow border ${isDarkTheme ? 'border-gray-700' : 'border-gray-200'}`}>
                             <input
                                 type="checkbox"
                                 checked={showQuerySettings}
@@ -787,6 +815,7 @@ function RagComponent() {
                                                     name="queryAccessType"
                                                     value="fastest"
                                                     className={`radio radio-sm ${isDarkTheme ? 'border-gray-500' : 'radio-primary'}`}
+                                                    defaultChecked
                                                 />
                                                 <span className={`text-sm ${isDarkTheme ? 'text-gray-300' : ''}`}>Fastest</span>
                                             </label>
@@ -804,7 +833,6 @@ function RagComponent() {
                                                     type="radio"
                                                     name="queryAccessType"
                                                     value="high_accuracy"
-                                                    defaultChecked
                                                     className={`radio radio-sm ${isDarkTheme ? 'border-gray-500' : 'radio-primary'}`}
                                                 />
                                                 <span className={`text-sm ${isDarkTheme ? 'text-gray-300' : ''}`}>High Accuracy</span>

@@ -49,14 +49,14 @@ const EmojiSelector: React.FC<EmojiSelectorProps> = ({
     if (!isVisible) return null;
 
     return (
-        <div ref={emojiPickerRef} className="absolute bottom-full left-0 mb-2 z-50">
+        <div ref={emojiPickerRef} className="absolute bottom-full left-0 mb-2 z-50" data-testid="chatbot-emoji-picker">
             <EmojiPicker.Root onEmojiSelect={onEmojiSelect} className="isolate flex h-[368px] w-fit flex-col bg-base-100 dark:bg-slate-900 border border-base-200 dark:border-slate-700 rounded-lg shadow-xl">
-                <EmojiPicker.Search ref={emojiSearchRef} className="z-10 mx-2 mt-2 appearance-none rounded-md bg-neutral-100 dark:bg-slate-800 px-2.5 py-2 text-sm focus text-base-content dark:text-slate-100" />
+                <EmojiPicker.Search ref={emojiSearchRef} className="z-10 mx-2 mt-2 appearance-none rounded-md bg-neutral-100 dark:bg-slate-800 px-2.5 py-2 text-sm focus text-base-content dark:text-slate-100" data-testid="chatbot-emoji-search" />
                 <EmojiPicker.Viewport className="relative flex-1 outline-hidden">
-                    <EmojiPicker.Loading className="absolute inset-0 flex items-center justify-center text-neutral-400 text-sm">
+                    <EmojiPicker.Loading className="absolute inset-0 flex items-center justify-center text-neutral-400 text-sm" data-testid="chatbot-emoji-loading">
                         Loading…
                     </EmojiPicker.Loading>
-                    <EmojiPicker.Empty className="absolute inset-0 flex items-center justify-center text-neutral-400 text-sm">
+                    <EmojiPicker.Empty className="absolute inset-0 flex items-center justify-center text-neutral-400 text-sm" data-testid="chatbot-emoji-empty">
                         No emoji found.
                     </EmojiPicker.Empty>
                     <EmojiPicker.List
@@ -66,6 +66,7 @@ const EmojiSelector: React.FC<EmojiSelectorProps> = ({
                                 <div
                                     className="px-3 pt-3 pb-1.5 font-medium text-neutral-600 dark:text-slate-300 text-xs bg-base-100 dark:bg-slate-900"
                                     {...props}
+                                    data-testid={`chatbot-emoji-category-${category.label}`}
                                 >
                                     {category.label}
                                 </div>
@@ -79,6 +80,7 @@ const EmojiSelector: React.FC<EmojiSelectorProps> = ({
                                 <button
                                     className="flex size-10 items-center justify-center rounded-md text-2xl data-[active]:bg-neutral-100 dark:data-[active]:bg-slate-700"
                                     {...props}
+                                    data-testid={`chatbot-emoji-${emoji.emoji}`}
                                 >
                                     {emoji.emoji}
                                 </button>

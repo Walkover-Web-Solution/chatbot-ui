@@ -13,10 +13,13 @@ interface ToolCallAccordionProps {
     toolsData: Record<string, ToolCall>;
 }
 
-function ToolCallItem({ toolCall, name }: { toolCall: ToolCall; name: string }) {
+function ToolCallItem({ toolCall, name }: { toolCall: ToolCall | null; name: string }) {
     const [open, setOpen] = useState(false);
+    
+    if (!toolCall) return null;
+    
     let parsedResult: any = null;
-    if (toolCall.result) {
+    if (toolCall?.result) {
         try {
             parsedResult = JSON.parse(toolCall.result);
         } catch {
@@ -25,7 +28,7 @@ function ToolCallItem({ toolCall, name }: { toolCall: ToolCall; name: string }) 
     }
 
     return (
-        <div className="rounded-lg border border-base-300 overflow-hidden text-sm mb-1">
+        <div className="rounded-lg border border-base-300 overflow-hidden text-sm mb-1" data-testid={`chatbot-interface-tool-call-item-${toolCall?.name || name}`}>
             <button
                 type="button"
                 className="w-full flex items-center gap-2 px-3 py-2 bg-base-200 hover:bg-base-300 transition-colors text-left"

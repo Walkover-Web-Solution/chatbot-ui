@@ -35,7 +35,7 @@ function DateGroup({ prevTime, messageTime, backgroundColor, textColor }: { prev
     }
 
     return (
-        <div className="flex justify-center my-8">
+        <div className="flex justify-center my-8" data-testid="chatbot-interface-date-group">
             <div className="flex items-center w-full">
                 <div className="flex-1 h-px bg-gray-300"></div>
                 <div className=" mx-2 text-xs bg-transparent p-3">{formatTime(+messageTime, 'shortDate')}</div>

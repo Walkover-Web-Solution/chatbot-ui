@@ -61,7 +61,7 @@ function Grid({ componentJson, msgId, ...props }) {
 
   return (
     <GridContext.Provider value={{ gridContextValue, componentJson }}>
-      <Box className="h-full w-full">
+      <Box className="h-full w-full" data-testid="chatbot-interface-grid">
         <React.Suspense fallback={<div>Loading...</div>}>
           <Viewonlygrid />
         </React.Suspense>

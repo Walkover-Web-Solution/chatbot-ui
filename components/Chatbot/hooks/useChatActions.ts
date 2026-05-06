@@ -186,6 +186,7 @@ export const useSendMessage = ({
         const isPlanUpdateRequest = mode === "plan" && !action && skipUserEcho === true;
         const isInlinePlanRequest = isPlanExecutionRequest || isPlanUpdateRequest || (mode === "plan" && action === "respond");
         globalDispatch(setNewMessage(true));
+        globalDispatch(setError(null)); // Clear any previous errors
         const textMessage = message || (messageRef?.current as HTMLInputElement)?.value;
         const files = images
             ?.filter((url) => url.split(".").pop()?.toLowerCase() === "pdf")
@@ -386,6 +387,21 @@ export const useSendMessage = ({
             resetPlanningStream();
         };
 
+        const shouldSuppressFinalExecutionContent = (content: unknown) => {
+            if (typeof content !== "string" || !content.trim()) return false;
+            try {
+                const parsed = JSON.parse(content);
+                const tasks = parsed?.tasks;
+                if (!tasks || typeof tasks !== "object") return false;
+                return Object.values(tasks).some((task: any) => {
+                    const status = String(task?.status || "").toLowerCase();
+                    return status === "failed" || status === "error" || task?.is_error === true || Boolean(task?.error);
+                });
+            } catch {
+                return false;
+            }
+        };
+
         const response = await streamDataToAction(
             payload,
             (event) => {
@@ -416,6 +432,13 @@ export const useSendMessage = ({
                         isPlanningStreamActive = true;
                         const planningPayload = event.plan ?? event.content;
                         pushPlanningUpdate(planningPayload, true);
+                        // Set planning loader flag
+                        if (streamMessageId || latestMessageId) {
+                            globalDispatch(updateSingleMessage({
+                                messageId: streamMessageId || latestMessageId,
+                                data: { isPlanningLoading: true }
+                            }));
+                        }
                         break;
                     }
                     case "execution":
@@ -540,6 +563,14 @@ export const useSendMessage = ({
                         const wasPlanningStream = isPlanningStreamActive;
                         finalizePlanningStream();
                         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+                        
+                        // Clear planning loader flag
+                        if (streamMessageId || latestMessageId) {
+                            globalDispatch(updateSingleMessage({
+                                messageId: streamMessageId || latestMessageId,
+                                data: { isPlanningLoading: false }
+                            }));
+                        }
 
                         // Always check first: if done content has paused/waiting_for_user — hold UI regardless of stream type or action
                         const doneResponseContent = (event as any)?.response?.data?.content;
@@ -573,11 +604,13 @@ export const useSendMessage = ({
                                 const finalExecutionContent = doneResponseContent;
                                 const suppressFinalContent = shouldSuppressFinalExecutionContent(finalExecutionContent);
                                 globalDispatch(updatePlanningExecutionState({ executionState: "completed" }));
-                                if (typeof finalExecutionContent === "string" && latestMessageId) {
+                                if (latestMessageId) {
                                     globalDispatch(updateSingleMessage({
                                         messageId: latestMessageId,
                                         data: {
-                                            content: finalExecutionContent,
+                                            content: suppressFinalContent && typeof finalExecutionContent === "string"
+                                                ? ""
+                                                : (typeof finalExecutionContent === "string" ? finalExecutionContent : ""),
                                             isStreaming: false,
                                             wait: false,
                                             message_id: event.message_id,
@@ -596,11 +629,13 @@ export const useSendMessage = ({
                             const finalExecutionContent = doneResponseContent;
                             const suppressFinalContent = shouldSuppressFinalExecutionContent(finalExecutionContent);
                             globalDispatch(updatePlanningExecutionState({ executionState: "completed" }));
-                            if (typeof finalExecutionContent === "string" && latestMessageId) {
+                            if (latestMessageId) {
                                 globalDispatch(updateSingleMessage({
                                     messageId: latestMessageId,
                                     data: {
-                                        content: finalExecutionContent,
+                                        content: suppressFinalContent && typeof finalExecutionContent === "string"
+                                            ? ""
+                                            : (typeof finalExecutionContent === "string" ? finalExecutionContent : ""),
                                         isStreaming: false,
                                         wait: false,
                                         message_id: event.message_id,
@@ -658,7 +693,7 @@ export const useSendMessage = ({
             if (!isInlinePlanRequest) {
                 globalDispatch(removeMessages({ numberOfMessages: 2 }));
             }
-            errorToast(response?.error || "Failed to send message. Please try again.");
+            globalDispatch(setError(response?.error || "Failed to send message. Please try again."));
         }
     }, [
         threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal,

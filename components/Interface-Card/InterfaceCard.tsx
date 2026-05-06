@@ -20,6 +20,7 @@ function InterfaceCard({ props, action }: any) {
     <Card
       sx={{ display: "flex", minWidth: "350px", maxWidth: "100%" }}
       className="mb-2 cursor-pointer" 
+      data-testid="chatbot-interface-card"
     >
       <CardActionArea onClick={handleClickCard}>
         <Box sx={{ display: "flex", flexDirection: "row" }} className="p-1 items-center">

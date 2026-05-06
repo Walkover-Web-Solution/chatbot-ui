@@ -45,6 +45,7 @@ const CallUI: React.FC = () => {
                                 onClick={endCall}
                                 className="p-2 rounded-full button-hover text-red-500 transition-colors end-button"
                                 aria-label="End Call"
+                                data-testid="chatbot-call-end-button"
                             >
                                 <Phone style={{ transform: 'rotate(135deg)' }} size={18} />
                             </button>
@@ -65,6 +66,7 @@ const CallUI: React.FC = () => {
                                 onClick={toggleMute}
                                 className={`p-2 rounded-full button-hover transition-colors ${isMuted ? 'bg-orange-500' : 'bg-blue-500'} text-white`}
                                 aria-label={isMuted ? 'Unmute' : 'Mute'}
+                                data-testid="chatbot-call-mute-button"
                             >
                                 {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
                             </button>
@@ -72,6 +74,7 @@ const CallUI: React.FC = () => {
                                 onClick={endCall}
                                 className="p-2 rounded-full button-hover transition-colors bg-red-500 text-white"
                                 aria-label="End Call"
+                                data-testid="chatbot-call-end-button-active"
                             >
                                 <Phone style={{ transform: 'rotate(135deg)' }} size={18} />
                             </button>

@@ -239,7 +239,7 @@ export const useHelloEffects = ({ chatSessionId, messageRef, tabSessionId }: Use
                 }
 
                 const keysToRemove = [
-                    'widgetToken', 'unique_id', 'user_jwt_token', 'sdkConfig', 'hide_launcher', 'show_widget_form', 'show_close_button', 'launch_widget', 'show_send_button', 'unique_id', 'primary_color', 'bot_id', 'name', 'number', 'mail', 'bot_type', 'isMobileSDK', 'pushConfig', 'variables', 'urlsToOpenInIFrame'
+                    'widgetToken', 'unique_id', 'user_jwt_token', 'sdkConfig', 'hide_launcher', 'show_widget_form', 'show_close_button', 'launch_widget', 'show_send_button', 'unique_id', 'primary_color', 'bot_id', 'name', 'number', 'mail', 'bot_type', 'isMobileSDK', 'pushConfig', 'variables', 'urlsToOpenInIFrame', 'previewLinks'
                 ]
 
                 keysToRemove.map(key => {

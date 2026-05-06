@@ -33,6 +33,7 @@ function InterfaceDropdown({ props, gridId, componentId, inpreview }: InterfaceD
         className='h-100'
         onChange={handleChange}
         readOnly={!inpreview}
+        data-testid={`chatbot-interface-dropdown-${componentId || 'default'}`}
       >
         {props?.options?.length > 0 ? (
           props?.options?.map((option) => (

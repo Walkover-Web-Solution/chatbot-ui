@@ -12,6 +12,7 @@ export const {
     appendLastAssistantMessageChunk,
     appendReasoningChunk,
     setPlanningData,
+    savePlanningAnswers,
     updatePlanningExecutionState,
     appendToolCall,
     updateToolResult,

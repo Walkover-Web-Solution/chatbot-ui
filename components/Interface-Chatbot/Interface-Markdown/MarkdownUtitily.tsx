@@ -28,7 +28,7 @@ export const Code = ({
   };
   const match = /language-(\w+)/.exec(className || "");
   return !inline && match ? (
-    <div className="py-4">
+    <div className="py-4" data-testid="chatbot-interface-markdown-code">
       <div
         className="flex justify-between items-center cursor-pointer py-2 px-3 rounded-t-lg border-b border-base-300 dark:border-base-600 bg-base-200 dark:bg-base-700"
       >
@@ -77,7 +77,7 @@ export const Code = ({
       </CodeBlock>
     </div>
   ) : (
-    <code className={className} {...props}>
+    <code className={className} {...props} data-testid="chatbot-interface-markdown-inline-code">
       {children}
     </code>
   );

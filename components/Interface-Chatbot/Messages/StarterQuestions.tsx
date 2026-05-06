@@ -23,13 +23,14 @@ function StarterQuestions() {
     if (starterQuestions?.length === 0) return null;
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 mt-4 w-full max-5xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 mt-4 w-full max-5xl" data-testid="chatbot-starter-questions">
             {starterQuestions?.map((question: string, index: number) => (
                 <div
                     key={index}
                     onClick={() => sendMessage({ message: question })}
                     className="group relative overflow-hidden rounded-lg border shadow-sm transition-all hover:shadow-md hover:scale-[1.01] cursor-pointer"
                     style={cardStyles}
+                    data-testid={`chatbot-starter-question-${index}`}
                 >
                     <div className="p-3">
                         <div className="flex items-center justify-between gap-2">

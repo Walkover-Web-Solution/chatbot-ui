@@ -16,6 +16,7 @@ function InterfaceMarkdown({ props }: any) {
         ol: OrderedList,
         li: ListItem,
       }}
+      data-testid="chatbot-interface-markdown"
     >
       {props?.children ||
         props?.text ||

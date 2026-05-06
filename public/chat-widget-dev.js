@@ -838,8 +838,8 @@
                 this.closeChatbot()
             }
             if (this.state.interfaceLoaded && this.state.delayElapsed) {
+                const interfaceEmbed = document.getElementById(this.elements.chatbotIconContainer);
                 if (!this.hideHelloIcon && !helloChatbotManager.helloProps?.isMobileSDK) {
-                    const interfaceEmbed = document.getElementById(this.elements.chatbotIconContainer);
                     if (interfaceEmbed) interfaceEmbed.style.display = 'block';
                 }
                 if (this.helloLaunchWidget) helloChatbotManager.openChatbot()

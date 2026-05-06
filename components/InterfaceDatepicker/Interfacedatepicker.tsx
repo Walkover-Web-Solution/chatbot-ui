@@ -37,6 +37,7 @@ function Interfacedatepicker({ props, gridId, componentId }: InterfaceDatePicker
         {...props}
         value={selectedDate}
         onChange={handleDateChange}
+        data-testid={`chatbot-interface-datepicker-${componentId || 'default'}`}
       />
     </Box>
   )
