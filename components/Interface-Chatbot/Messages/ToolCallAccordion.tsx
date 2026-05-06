@@ -13,11 +13,13 @@ interface ToolCallAccordionProps {
     toolsData: Record<string, ToolCall>;
 }
 
-function ToolCallItem({ toolCall, name }: { toolCall: ToolCall; name: string }) {
+function ToolCallItem({ toolCall, name }: { toolCall: ToolCall | null; name: string }) {
     const [open, setOpen] = useState(false);
-    console.log(toolCall,"helo")
+    
+    if (!toolCall) return null;
+    
     let parsedResult: any = null;
-    if (toolCall.result) {
+    if (toolCall?.result) {
         try {
             parsedResult = JSON.parse(toolCall.result);
         } catch {
