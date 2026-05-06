@@ -319,7 +319,7 @@ const AssistantMessageCard = React.memo(
                                                 componentRegistry[parsedContent.type]
                                             ) {
                                                 return (
-                                                    <div className="mt-4 richui-container w-full">
+                                                    <div className="mt-4 not-prose richui-container w-full">
                                                         <RenderNode
                                                             node={parsedContent}
                                                             onAction={(action: any) => {
