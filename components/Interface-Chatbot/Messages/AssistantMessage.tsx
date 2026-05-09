@@ -96,30 +96,29 @@ const AssistantMessageCard = React.memo(
 
         const toolsData = message?.tools_data || {};
         const reasoning = message?.reasoning || "";
-        const planning = message?.planning;
+        let planning = message?.planning;
+        if (!planning && isJSONString(message?.content)) {
+            try {
+                planning = JSON.parse(message?.content);
+            } catch (e) {
+                planning = null;
+            }
+        }
+
+        if (planning && planning.plan) {
+            planning = planning.plan;
+        }
+
         const isPlanningCompleted = planning?.execution?.state === "completed";
         // New backend format: { message_to_user, plan, questions }
-        const planData = planning?.plan;
-        const isNewPlanFormat = Boolean(planData && typeof planData === "object" && ("message_to_user" in planData || "questions" in planData));
-        const messageToUser: string = isNewPlanFormat ? (planData.message_to_user || "") : "";
-        const planQuestions: Array<{ id: string; question: string; options?: string[] }> = isNewPlanFormat ? (planData.questions || []) : [];
+        const messageToUser: string = planning?.message_to_user || "";
+        const planQuestions: Array<{ id: string; question: string; options?: string[] }> = planning?.questions || [];
         const planHistory: Array<{ message_to_user?: string; questions?: Array<{ id: string; question: string; options?: string[] }>; answers?: Record<string, string> }> = Array.isArray(planning?.planHistory) ? planning.planHistory : [];
         const suppressContent = planning && !isPlanningCompleted;
         const reviewPhases = Array.isArray(message?.review_phases) ? message.review_phases : [];
 
-        const handlePlanningAction = useCallback((action: "proceed" | "respond" | "revise", payload: { parsedPlan: any; rawPlan: string; taskQueries?: Record<string, string>; queryMessage?: string; humanQueryAnswers?: Record<string, string>; humanQueryMessage?: string; resolvedAfter?: boolean; humanQueryAnswersMessage?: string; updateMessage?: string }) => {
-            if (action === "respond") {
-                const humanAnswerEntries = Object.entries(payload.humanQueryAnswers || {});
-                const [firstTaskId, firstAnswer] = humanAnswerEntries[0] || [];
-                sendMessage({
-                    message: firstAnswer || "",
-                    action: "respond",
-                    mode: "plan",
-                    skipUserEcho: true,
-                    silent: true,
-                    task_id: firstTaskId,
-                });
-            } else if (action === "proceed") {
+        const handlePlanningAction = useCallback((action: "proceed" | "revise", payload: { parsedPlan: any; rawPlan: string; queryMessage?: string; updateMessage?: string }) => {
+            if (action === "proceed") {
                 sendMessage({
                     message: "Please execute this plan",
                     action: "approve",
@@ -230,10 +229,10 @@ const AssistantMessageCard = React.memo(
                                                 )}
                                             </div>
                                         ))}
-                                        {isNewPlanFormat && messageToUser && (
+                                        {messageToUser && (
                                             <p className="not-prose text-sm leading-relaxed mb-1">{messageToUser}</p>
                                         )}
-                                        {isNewPlanFormat && planQuestions.length > 0 && !isPlanningCompleted && (
+                                        {planQuestions.length > 0 && planning?.state !== "completed" && (
                                             <PlanningQuestionsCard
                                                 questions={planQuestions}
                                                 isStreaming={message?.isStreaming}
