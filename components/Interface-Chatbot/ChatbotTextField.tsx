@@ -36,10 +36,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [conversationMode, setConversationMode] = useState<"planning" | "fast">(() => {
-    const saved = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("conversationMode") : null;
-    return (saved === "planning" || saved === "fast") ? saved : "fast";
-  });
+  const [conversationMode, setConversationMode] = useState<"planning" | "fast">("fast");
   const [showModeMenu, setShowModeMenu] = useState(false);
   const modeMenuRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
@@ -116,14 +113,20 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }, [isHelloUser, sendMessage, sendMessageToHello, conversationMode, showModeDropdown, isStream]);
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (modeMenuRef.current && !modeMenuRef.current.contains(e.target as Node)) {
-        setShowModeMenu(false);
-      }
-    };
-    if (showModeMenu) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showModeMenu]);
+    if (showModeDropdown) {
+      setConversationMode("planning");
+    }
+  }, [showModeDropdown]);
+
+  // useEffect(() => {
+  //   const handleClickOutside = (e: MouseEvent) => {
+  //     if (modeMenuRef.current && !modeMenuRef.current.contains(e.target as Node)) {
+  //       setShowModeMenu(false);
+  //     }
+  //   };
+  //   if (showModeMenu) document.addEventListener("mousedown", handleClickOutside);
+  //   return () => document.removeEventListener("mousedown", handleClickOutside);
+  // }, [showModeMenu]);
 
   const handleMessage = useCallback((event: MessageEvent) => {
     if (event?.data?.type === "open") {
@@ -510,6 +513,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
               </div>
               {uploadButton}
 
+              {/* 
               {!isHelloUser && isStream && showModeDropdown && (
                 <div className="relative" ref={modeMenuRef}>
                   <button
@@ -559,7 +563,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                     </div>
                   )}
                 </div>
-              )}
+              )} */}
             </div>
 
             {/* Right section: under-review indicator + Call + Send button side by side */}
