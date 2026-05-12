@@ -95,7 +95,38 @@ export async function getAllChannels(): Promise<any> {
       // For anonymous users (msg not sent), use a_clientId if available
       authorization = `${widgetId}:${aClientId}`;
     }
+    // Determine if we should send anon_client_uuid for merging
+    const lastUniqueIdKey = `${widgetId}_last_unique_id`;
+    const lastUniqueId = localStorage.getItem(lastUniqueIdKey);
 
+    let anonClientUuidToSend = null;
+
+    if (!unique_id) {
+      console.log("ANONYMOUS CASE");
+      // LOGOUT CASE
+      if (lastUniqueId) {
+        console.log("pehle login tha")
+        // last_unique_id exists → user logged in before → get uuid from last login
+        const lastLoginClientIdKey = `${widgetId}_${lastUniqueId}_k_clientId`;
+        const lastLoginUuid = localStorage.getItem(lastLoginClientIdKey);
+        anonClientUuidToSend = lastLoginUuid;
+        console.log("anonClientUuidToSend", anonClientUuidToSend);
+      }
+    } else {
+      console.log("LOGIN CASE");
+      // LOGIN CASE (has unique_id)
+      if (!lastUniqueId) {
+        console.log("pehle logout tha")
+        // No last_unique_id → first login → send k/a clientId to merge logout chat
+        // No last_unique_id → first login → send logout user's k/a clientId to merge
+        const logoutKClientIdKey = `${widgetId}_k_clientId`;
+        const logoutAClientIdKey = `${widgetId}_a_clientId`;
+        const logoutKClientId = localStorage.getItem(logoutKClientIdKey);
+        const logoutAClientId = localStorage.getItem(logoutAClientIdKey);
+        anonClientUuidToSend = logoutKClientId || logoutAClientId;
+        console.log("anonClientUuidToSend", anonClientUuidToSend);
+      }
+    }
     const response = await axios.post(
       `${HELLO_HOST_URL}/pubnub-channels/list/`,
       {
@@ -104,6 +135,7 @@ export async function getAllChannels(): Promise<any> {
         number,
         unique_id,
         user_data: getUserData(),
+        ...(anonClientUuidToSend ? { anon_client_uuid: anonClientUuidToSend } : {})
         // is_anon: isAnon,
         // ...(isAnon ? { anonymous_client_uuid: aClientId, uuid: aClientId } : {})
       },
@@ -117,6 +149,18 @@ export async function getAllChannels(): Promise<any> {
     // Set the appropriate client ID based on user type
     if (response?.data?.uuid) {
       if (hasUserIdentity) {
+        if (unique_id) {
+          const widgetId = getLocalStorage('WidgetId');
+          console.log("widgetId", widgetId);
+          const lastUniqueIdKey = `${widgetId}_last_unique_id`;
+          console.log("lastunique id", lastUniqueIdKey);
+          const lastUniqueId = localStorage.getItem(lastUniqueIdKey);
+          if (unique_id && unique_id !== lastUniqueId) {
+            localStorage.setItem(lastUniqueIdKey, unique_id);
+          }
+          localStorage.setItem(`${widgetId}_k_clientId`, response.data.uuid);
+          localStorage.setItem(`${widgetId}_a_clientId`, response.data.uuid);
+        }
         setLocalStorage('k_clientId', response.data.uuid);
       } else if (isAnon) {
         setLocalStorage('a_clientId', response.data.uuid);
