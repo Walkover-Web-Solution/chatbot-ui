@@ -246,6 +246,7 @@ export const useSendMessage = ({
         let isPlanningStreamActive = false;
         let isExecutionStreamActive = isPlanExecutionRequest;
         let isExecutionWaitingForUser = false;
+        let isSynthesizerActive = false;
         let streamMessageId: string | null = null;
         let isReviewStreaming = false;
         let hasReviewPhase = false;
@@ -357,11 +358,54 @@ export const useSendMessage = ({
                     globalDispatch(updatePlanningExecutionState({ executionState: "paused" }));
                     return true;
                 }
+
+                if (parsed.event === "synthesizer_start") {
+                    isSynthesizerActive = true;
+                    const targetId = latestMessageId || streamMessageId;
+                    if (targetId) {
+                        globalDispatch(updateSingleMessage({
+                            messageId: targetId,
+                            data: { isStreaming: true, wait: false, isSynthesizerLoading: true },
+                        }));
+                    }
+                    return true;
+                }
+
+                if (parsed.event === "synthesizer_done") {
+                    isSynthesizerActive = true;
+                    try {
+                        const synthContent = typeof parsed.content === "string"
+                            ? JSON.parse(parsed.content)
+                            : parsed.content;
+                        const messageToUser: string = synthContent?.message_to_user || "";
+                        if (synthContent?.plan) {
+                            globalDispatch(setPlanningData({ plan: synthContent.plan }));
+                        }
+                        globalDispatch(updatePlanningExecutionState({ executionState: "completed" }));
+                        const targetId = latestMessageId || streamMessageId;
+                        if (targetId) {
+                            globalDispatch(updateSingleMessage({
+                                messageId: targetId,
+                                data: {
+                                    content: messageToUser,
+                                    isStreaming: false,
+                                    wait: false,
+                                    isSynthesizerLoading: false,
+                                },
+                            }));
+                        }
+                    } catch (_) {}
+                    return true;
+                }
             } catch (error) {
                 const normalized = raw.trim().toLowerCase();
                 if (normalized === "running") {
                     isExecutionStreamActive = true;
                     globalDispatch(updatePlanningExecutionState({ executionState: "running" }));
+                    return true;
+                }
+                if (isSynthesizerActive) {
+                    globalDispatch(appendLastAssistantMessageChunk({ chunk: raw }));
                     return true;
                 }
                 return false;
@@ -601,6 +645,50 @@ export const useSendMessage = ({
 
                         if (action === "respond") {
                             if (isExecutionStreamActive) {
+                                if (isSynthesizerActive) {
+                                    const targetId = latestMessageId || streamMessageId;
+                                    if (targetId) {
+                                        globalDispatch(updateSingleMessage({
+                                            messageId: targetId,
+                                            data: { isStreaming: false, wait: false, message_id: event.message_id, finish_reason: event.finish_reason },
+                                        }));
+                                    }
+                                } else {
+                                    const finalExecutionContent = doneResponseContent;
+                                    const suppressFinalContent = shouldSuppressFinalExecutionContent(finalExecutionContent);
+                                    globalDispatch(updatePlanningExecutionState({ executionState: "completed" }));
+                                    if (latestMessageId) {
+                                        globalDispatch(updateSingleMessage({
+                                            messageId: latestMessageId,
+                                            data: {
+                                                content: suppressFinalContent && typeof finalExecutionContent === "string"
+                                                    ? ""
+                                                    : (typeof finalExecutionContent === "string" ? finalExecutionContent : ""),
+                                                isStreaming: false,
+                                                wait: false,
+                                                message_id: event.message_id,
+                                                finish_reason: event.finish_reason,
+                                            },
+                                        }));
+                                    }
+                                }
+                            } else {
+                                globalDispatch(updatePlanningExecutionState({ executionState: "pending" }));
+                            }
+                            globalDispatch(setLoading(false));
+                            break;
+                        }
+
+                        if (isExecutionStreamActive) {
+                            if (isSynthesizerActive) {
+                                const targetId = latestMessageId || streamMessageId;
+                                if (targetId) {
+                                    globalDispatch(updateSingleMessage({
+                                        messageId: targetId,
+                                        data: { isStreaming: false, wait: false, message_id: event.message_id, finish_reason: event.finish_reason },
+                                    }));
+                                }
+                            } else {
                                 const finalExecutionContent = doneResponseContent;
                                 const suppressFinalContent = shouldSuppressFinalExecutionContent(finalExecutionContent);
                                 globalDispatch(updatePlanningExecutionState({ executionState: "completed" }));
@@ -618,30 +706,6 @@ export const useSendMessage = ({
                                         },
                                     }));
                                 }
-                            } else {
-                                globalDispatch(updatePlanningExecutionState({ executionState: "pending" }));
-                            }
-                            globalDispatch(setLoading(false));
-                            break;
-                        }
-
-                        if (isExecutionStreamActive) {
-                            const finalExecutionContent = doneResponseContent;
-                            const suppressFinalContent = shouldSuppressFinalExecutionContent(finalExecutionContent);
-                            globalDispatch(updatePlanningExecutionState({ executionState: "completed" }));
-                            if (latestMessageId) {
-                                globalDispatch(updateSingleMessage({
-                                    messageId: latestMessageId,
-                                    data: {
-                                        content: suppressFinalContent && typeof finalExecutionContent === "string"
-                                            ? ""
-                                            : (typeof finalExecutionContent === "string" ? finalExecutionContent : ""),
-                                        isStreaming: false,
-                                        wait: false,
-                                        message_id: event.message_id,
-                                        finish_reason: event.finish_reason,
-                                    },
-                                }));
                             }
                         } else if (wasPlanningStream) {
                             const doneContent = doneResponseContent;
