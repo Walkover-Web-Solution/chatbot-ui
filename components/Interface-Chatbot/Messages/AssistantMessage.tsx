@@ -246,10 +246,16 @@ const AssistantMessageCard = React.memo(
                                                 <span className="text-xs text-base-content/50 dark:text-base-content/60">Planning...</span>
                                             </div>
                                         )}
+                                        {message?.isSynthesizerLoading && (
+                                            <div className="flex items-center gap-2 mt-3 mb-2 px-1">
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin text-base-content/50 dark:text-base-content/60 shrink-0" />
+                                                <span className="text-xs text-base-content/50 dark:text-base-content/60">Preparing output...</span>
+                                            </div>
+                                        )}
                                         {planning && <PlanningTasksCard plan={planning} isStreaming={message?.isStreaming} onAction={handlePlanningAction} />}
                                         {!planning && <ToolCallAccordion toolsData={toolsData} />}
                                         <ReviewPhaseAccordion reviewPhases={reviewPhases} />
-                                        {message?.isStreaming && !message?.content && !suppressContent && !message?.isPlanningLoading ? (
+                                        {message?.isStreaming && !message?.content && !suppressContent && !message?.isPlanningLoading && !message?.isSynthesizerLoading ? (
                                             <div className="loading-indicator" style={themePalette}>
                                                 <div className="loading-bar"></div>
                                                 <div className="loading-bar"></div>
