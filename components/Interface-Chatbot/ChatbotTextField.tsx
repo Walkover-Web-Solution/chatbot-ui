@@ -426,8 +426,9 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           data-testid="chatbot-file-upload-input"
           multiple
           ref={fileInputRef}
+          disabled={isPlanExecuting}
         />
-        <label htmlFor="upload-image" className="cursor-pointer" data-testid="chatbot-file-upload-label">
+        <label htmlFor="upload-image" className={`${isPlanExecuting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`} data-testid="chatbot-file-upload-label">
           <div className="flex px-2 py-1.5 w-8 h-8 items-center group">
             {isUploading ? (
               <div className="flex items-center gap-1.5">
@@ -441,7 +442,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
         </label>
       </>
     );
-  }, [isHelloUser, subThreadId, canUploadImages, canUploadFiles, fileInputAccept, isUploading, handleImageUpload]);
+  }, [isHelloUser, subThreadId, canUploadImages, canUploadFiles, fileInputAccept, isUploading, handleImageUpload, isPlanExecuting]);
 
   const handleEmojiSelect = (data: { emoji: string }) => {
     if (messageRef?.current) {
@@ -504,8 +505,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
             <div className="flex items-center gap-1">
               {/* {aiIconElement} */}
               <div
-                onClick={(e) => { e.stopPropagation(); e.preventDefault(); setShowEmojiPicker(!showEmojiPicker) }}
-                className="group flex items-center justify-center w-8 h-8 cursor-pointer"
+                onClick={(e) => { if (!isPlanExecuting) { e.stopPropagation(); e.preventDefault(); setShowEmojiPicker(!showEmojiPicker); } }}
+                className={`group flex items-center justify-center w-8 h-8 ${isPlanExecuting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                 aria-label="Add emoji"
                 data-testid="chatbot-emoji-button"
               >
