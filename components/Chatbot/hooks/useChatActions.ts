@@ -247,6 +247,7 @@ export const useSendMessage = ({
         let isExecutionStreamActive = isPlanExecutionRequest;
         let isExecutionWaitingForUser = false;
         let isSynthesizerActive = false;
+        let isSynthesizerDoneHandled = false;
         let streamMessageId: string | null = null;
         let isReviewStreaming = false;
         let hasReviewPhase = false;
@@ -373,6 +374,7 @@ export const useSendMessage = ({
 
                 if (parsed.event === "synthesizer_done") {
                     isSynthesizerActive = false;
+                    isSynthesizerDoneHandled = true;
                     try {
                         const rawContent = parsed.content || "";
                         let synthContent: any = {};
@@ -574,21 +576,26 @@ export const useSendMessage = ({
                             // Auto-detect planning data in delta content
                             const deltaContent = event.content || "";
                             
-                            // Check if delta contains nested synthesizer_chunk event
+                            // Check if delta contains nested synthesizer_chunk event or complete response JSON
                             let isSynthesizerChunk = false;
+                            let isCompleteResponseJson = false;
                             try {
                                 const parsed = JSON.parse(deltaContent);
                                 if (parsed.event === "synthesizer_chunk") {
                                     isSynthesizerChunk = true;
                                     // Don't stream synthesizer chunks - wait for synthesizer_done event
                                     // which will provide the final message_to_user
+                                } else if (parsed.message_to_user && typeof parsed.message_to_user === "string") {
+                                    // This is a complete response JSON with message_to_user (error or success response)
+                                    // Skip it - the error/synthesizer_done event will handle displaying the message
+                                    isCompleteResponseJson = true;
                                 }
                             } catch {
                                 // Not JSON, continue with original content
                             }
                             
-                            if (isSynthesizerChunk) {
-                                // Skip streaming synthesizer chunks - they're intermediate
+                            if (isSynthesizerChunk || isCompleteResponseJson) {
+                                // Skip streaming complete response JSON - they're handled by error/synthesizer_done events
                             } else {
                                 const looksLikePlanData = deltaContent.includes('"state"') && 
                                                          (deltaContent.includes('"planning"') || deltaContent.includes('"tasks"'));
@@ -605,6 +612,17 @@ export const useSendMessage = ({
                     case "error": {
                         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
                         const errorMessage = event.error || "Failed to send message. Please try again.";
+                        let displayContent = errorMessage;
+
+                        // Try to extract message_to_user from error JSON
+                        try {
+                            const parsed = JSON.parse(errorMessage);
+                            if (parsed?.message_to_user) {
+                                displayContent = parsed.message_to_user;
+                            }
+                        } catch {
+                            // Not JSON, use error message as-is
+                        }
 
                         globalDispatch(setError(errorMessage));
 
@@ -624,7 +642,7 @@ export const useSendMessage = ({
                                 data: {
                                     isStreaming: false,
                                     wait: false,
-                                    ...(hasReviewPhase ? {} : { error: errorMessage, content: errorMessage }),
+                                    ...(hasReviewPhase ? {} : { error: errorMessage, content: displayContent }),
                                 },
                             }));
                         }
@@ -709,7 +727,7 @@ export const useSendMessage = ({
                         }
 
                         if (isExecutionStreamActive) {
-                            if (isSynthesizerActive) {
+                            if (isSynthesizerActive || isSynthesizerDoneHandled) {
                                 const targetId = latestMessageId || streamMessageId;
                                 if (targetId) {
                                     globalDispatch(updateSingleMessage({
