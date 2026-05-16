@@ -365,19 +365,28 @@ export const useSendMessage = ({
                     if (targetId) {
                         globalDispatch(updateSingleMessage({
                             messageId: targetId,
-                            data: { isStreaming: true, wait: false, isSynthesizerLoading: true },
+                            data: { isStreaming: true, wait: false, isPlanningLoading: false, isSynthesizerLoading: true },
                         }));
                     }
                     return true;
                 }
 
                 if (parsed.event === "synthesizer_done") {
-                    isSynthesizerActive = true;
+                    isSynthesizerActive = false;
                     try {
-                        const synthContent = typeof parsed.content === "string"
-                            ? JSON.parse(parsed.content)
-                            : parsed.content;
-                        const messageToUser: string = synthContent?.message_to_user || "";
+                        const rawContent = parsed.content || "";
+                        let synthContent: any = {};
+                        let messageToUser: string = "";
+                        
+                        // Try to parse as JSON first
+                        try {
+                            synthContent = typeof rawContent === "string" ? JSON.parse(rawContent) : rawContent;
+                            messageToUser = synthContent?.message_to_user || "";
+                        } catch {
+                            // If not JSON, treat as plain text message
+                            messageToUser = rawContent || "Plan Executed Successfully";
+                        }
+                        
                         if (synthContent?.plan) {
                             globalDispatch(setPlanningData({ plan: synthContent.plan }));
                         }
@@ -387,14 +396,16 @@ export const useSendMessage = ({
                             globalDispatch(updateSingleMessage({
                                 messageId: targetId,
                                 data: {
-                                    content: messageToUser,
+                                    content: messageToUser || "Plan executed successfully.",
                                     isStreaming: false,
                                     wait: false,
                                     isSynthesizerLoading: false,
                                 },
                             }));
                         }
-                    } catch (_) {}
+                    } catch (error) {
+                        console.error("Error handling synthesizer_done:", error);
+                    }
                     return true;
                 }
             } catch (error) {
@@ -562,14 +573,32 @@ export const useSendMessage = ({
                         } else {
                             // Auto-detect planning data in delta content
                             const deltaContent = event.content || "";
-                            const looksLikePlanData = deltaContent.includes('"state"') && 
-                                                     (deltaContent.includes('"planning"') || deltaContent.includes('"tasks"'));
                             
-                            if (looksLikePlanData) {
-                                isPlanningStreamActive = true;
-                                pushPlanningUpdate(deltaContent);
+                            // Check if delta contains nested synthesizer_chunk event
+                            let isSynthesizerChunk = false;
+                            try {
+                                const parsed = JSON.parse(deltaContent);
+                                if (parsed.event === "synthesizer_chunk") {
+                                    isSynthesizerChunk = true;
+                                    // Don't stream synthesizer chunks - wait for synthesizer_done event
+                                    // which will provide the final message_to_user
+                                }
+                            } catch {
+                                // Not JSON, continue with original content
+                            }
+                            
+                            if (isSynthesizerChunk) {
+                                // Skip streaming synthesizer chunks - they're intermediate
                             } else {
-                                globalDispatch(appendLastAssistantMessageChunk({ chunk: deltaContent }));
+                                const looksLikePlanData = deltaContent.includes('"state"') && 
+                                                         (deltaContent.includes('"planning"') || deltaContent.includes('"tasks"'));
+                                
+                                if (looksLikePlanData) {
+                                    isPlanningStreamActive = true;
+                                    pushPlanningUpdate(deltaContent);
+                                } else {
+                                    globalDispatch(appendLastAssistantMessageChunk({ chunk: deltaContent }));
+                                }
                             }
                         }
                         break;
