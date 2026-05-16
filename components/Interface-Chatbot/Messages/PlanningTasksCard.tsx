@@ -137,8 +137,8 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
             t?.status === "error" || t?.status === "failed" || t?.is_error
         )
     );
-    const showProceedButton = !isPaused && !hasTaskQueryValues && !isExecuting && !isActionLoading && !isUpdatingPlan && !isStreaming;
-    const showUpdateButton = isPaused || hasHumanQueries;
+    const showProceedButton = !isPaused && !hasTaskQueryValues && !isExecuting && !isActionLoading && !isUpdatingPlan && !isStreaming && !showQueryInputs;
+    const showUpdateButton = isPaused || hasHumanQueries || hasTaskQueryValues;
 
     const doneCount = useMemo(() => {
         if (!execution?.tasks) return 0;
@@ -722,10 +722,10 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                         : <><PlayCircle className="w-3.5 h-3.5" /> Proceed</>}
                                 </button>
                             )}
-                            {showUpdateButton && (
+                            {(showUpdateButton || showQueryInputs) && (
                                 <button
                                     type="button"
-                                    disabled={isActionLoading || isUpdatingPlan || (isStreaming && !hasHumanQueries && !isExecutionPaused) || (!isPausedDueToError && !allHumanQueriesAnswered && !hasTaskQueryValues)}
+                                    disabled={isActionLoading || isUpdatingPlan || (showQueryInputs && !hasTaskQueryValues) || (isStreaming && !hasHumanQueries && !isExecutionPaused && !showQueryInputs) || (!isPausedDueToError && !allHumanQueriesAnswered && !showQueryInputs)}
                                     onClick={() => handleAction("update")}
                                     className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-content hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
                                 >
@@ -738,22 +738,30 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                 : <><MessageSquare className="w-3.5 h-3.5" /> Update</>}
                                 </button>
                             )}
+                            {showQueryInputs && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setTaskQueries({});
+                                        setShowQueryInputs(false);
+                                    }}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium border bg-base-200 dark:bg-base-600 border-base-300 dark:border-base-500 text-base-content/80 dark:text-base-content/80 hover:bg-base-300 dark:hover:bg-base-500 transition-all"
+                                >
+                                    <XCircle className="w-3 h-3" />
+                                    Cancel
+                                </button>
+                            )}
                             {showProceedButton && (
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        const next = !showQueryInputs;
-                                        setShowQueryInputs(next);
-                                        if (next) setOpenTaskId("");
+                                        setShowQueryInputs(true);
+                                        setOpenTaskId("");
                                     }}
-                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium border transition-all ${
-                                        showQueryInputs
-                                            ? "bg-base-200 dark:bg-base-600 border-base-300 dark:border-base-500 text-base-content/80 dark:text-base-content/80"
-                                            : "bg-base-100 dark:bg-base-700 border-base-200 dark:border-base-600 text-base-content/60 dark:text-base-content/60 hover:border-base-300 dark:hover:border-base-500 hover:text-base-content/80"
-                                    }`}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium border bg-base-100 dark:bg-base-700 border-base-200 dark:border-base-600 text-base-content/60 dark:text-base-content/60 hover:border-base-300 dark:hover:border-base-500 hover:text-base-content/80 transition-all"
                                 >
                                     <Pencil className="w-3 h-3" />
-                                    {showQueryInputs ? "Cancel" : "Suggest changes"}
+                                    Suggest changes
                                 </button>
                             )}
                             {hasFailedTasks && !isActionLoading && !isUpdatingPlan && (
