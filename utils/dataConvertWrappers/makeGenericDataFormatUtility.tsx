@@ -49,11 +49,11 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                             urls: chat?.message?.content?.attachment,
                             id: chat?.id || chat?.message?.id || chat?.timetoken,
                             message_type: chat?.message?.message_type,
-                            messageJson: chat?.message?.content,
+                            messageJson: chat?.message?.content?.interactive || chat?.message?.content,
                             time: chat?.timetoken || null,
                             sender_id: chat?.message?.sender_id,
                             is_auto_response: chat?.message?.is_auto_response,
-                            replied_msg_content: chat?.message?.replied_msg_content,
+                            replied_msg_content: chat?.message?.replied_msg_content?.interactive || chat?.message?.replied_msg_content,
                             replied_msg_sender_id: chat?.message?.replied_msg_sender_id,
                             replied_msg_type: chat?.message?.replied_msg_type,
                             replied_from_name: chat?.message?.replied_from_name
@@ -69,11 +69,11 @@ function convertChatHistoryToGenericFormat(history: any, isHello: boolean = fals
                             : chat?.message?.content?.text,
                         urls: chat?.message?.content?.attachment,
                         message_type: chat?.message?.message_type,
-                        messageJson: chat?.message?.content,
+                        messageJson: chat?.message?.content?.interactive || chat?.message?.content,
                         time: chat?.timetoken,
                         sender_id: chat?.message?.sender_id,
                         is_auto_response: chat?.message?.is_auto_response,
-                        replied_msg_content: chat?.message?.replied_msg_content,
+                        replied_msg_content: chat?.message?.replied_msg_content?.interactive || chat?.message?.replied_msg_content,
                         replied_msg_sender_id: chat?.message?.replied_msg_sender_id,
                         replied_msg_type: chat?.message?.replied_msg_type,
                         replied_from_name: chat?.message?.replied_from_name
@@ -131,6 +131,7 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
 
 
     const { sender_id, from_name, content, type, is_auto_response, message_type } = message || {};
+
     // Handle feedback type messages    
     if (type === 'feedback') {
         return [{
@@ -160,11 +161,11 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
             urls: content?.body?.attachment || content?.attachment,
             id: message?.id || message?.message?.id || message?.timetoken,
             message_type: message?.message_type,
-            messageJson: message?.content,
+            messageJson: message?.content?.interactive || message?.content,
             time: message?.timetoken || null,
             sender_id: message?.sender_id,
             is_auto_response,
-            replied_msg_content: message?.replied_msg_content,
+            replied_msg_content: message?.replied_msg_content?.interactive || message?.replied_msg_content,
             replied_msg_sender_id: message?.replied_msg_sender_id,
             replied_msg_type: message?.replied_msg_type,
             replied_from_name: message?.replied_from_name
@@ -179,11 +180,11 @@ function convertEventMessageToGenericFormat(message: any, isHello: boolean = fal
         urls: content?.body?.attachment || content?.attachment,
         id: message?.id || message?.message?.id || message?.timetoken,
         message_type: message?.message_type,
-        messageJson: message?.content,
+        messageJson: message?.content?.interactive || message?.content,
         time: message?.timetoken || null,
         sender_id: message?.sender_id,
         is_auto_response,
-        replied_msg_content: message?.replied_msg_content,
+        replied_msg_content: message?.replied_msg_content?.interactive || message?.replied_msg_content,
         replied_msg_sender_id: message?.replied_msg_sender_id,
         replied_msg_type: message?.replied_msg_type,
         replied_from_name: message?.replied_from_name

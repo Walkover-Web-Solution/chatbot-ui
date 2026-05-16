@@ -3,12 +3,13 @@ import React, { createContext, ReactNode, useContext, useState } from 'react';
 
 interface ReplyMessage {
   id: string;
-  content: string | { text: string };
+  content?: string | { text: string } | any;
   urls?: string[];
   from_name?: string;
   is_auto_response?: boolean;
   message_id?: string;
   sender_id?: number
+  messageJson?: any
 }
 
 interface ReplyContextType {
