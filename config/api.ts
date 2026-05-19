@@ -166,7 +166,7 @@ export type StreamEvent =
     | { event: "tool_call"; call_id: string; name: string; args: Record<string, any> }
     | { event: "tool_result"; call_id: string; content: any }
     | { event: "template_response"; message_id: string; content: any; metadata?: Record<string, any> }
-    | { event: "done"; message_id: string; finish_reason: string; usage?: Record<string, any> }
+    | { event: "done"; message_id: string; finish_reason: string; usage?: Record<string, any>; response?: { data?: { content?: string; image_urls?: any[]; [key: string]: any }; [key: string]: any } }
     | { event: "error"; error: string; message_id?: string }
     | { event: "review_phase"; phase: string; round?: number; passed?: boolean; reason?: string };
 

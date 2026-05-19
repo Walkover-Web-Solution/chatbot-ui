@@ -607,7 +607,14 @@ export const useSendMessage = ({
                         const wasPlanningStream = isPlanningStreamActive;
                         finalizePlanningStream();
                         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
-                        
+
+                        // Extract image_urls sent in the done event so they can be
+                        // attached to the assistant message and rendered alongside text.
+                        const doneImageUrls = (event as any)?.response?.data?.image_urls;
+                        const imageUrlsPatch = Array.isArray(doneImageUrls) && doneImageUrls.length > 0
+                            ? { image_urls: doneImageUrls, llm_urls: doneImageUrls }
+                            : {};
+
                         // Clear planning loader flag
                         if (streamMessageId || latestMessageId) {
                             globalDispatch(updateSingleMessage({
@@ -650,7 +657,7 @@ export const useSendMessage = ({
                                     if (targetId) {
                                         globalDispatch(updateSingleMessage({
                                             messageId: targetId,
-                                            data: { isStreaming: false, wait: false, message_id: event.message_id, finish_reason: event.finish_reason },
+                                            data: { isStreaming: false, wait: false, message_id: event.message_id, finish_reason: event.finish_reason, ...imageUrlsPatch },
                                         }));
                                     }
                                 } else {
@@ -668,6 +675,7 @@ export const useSendMessage = ({
                                                 wait: false,
                                                 message_id: event.message_id,
                                                 finish_reason: event.finish_reason,
+                                                ...imageUrlsPatch,
                                             },
                                         }));
                                     }
@@ -685,7 +693,7 @@ export const useSendMessage = ({
                                 if (targetId) {
                                     globalDispatch(updateSingleMessage({
                                         messageId: targetId,
-                                        data: { isStreaming: false, wait: false, message_id: event.message_id, finish_reason: event.finish_reason },
+                                        data: { isStreaming: false, wait: false, message_id: event.message_id, finish_reason: event.finish_reason, ...imageUrlsPatch },
                                     }));
                                 }
                             } else {
@@ -703,6 +711,7 @@ export const useSendMessage = ({
                                             wait: false,
                                             message_id: event.message_id,
                                             finish_reason: event.finish_reason,
+                                            ...imageUrlsPatch,
                                         },
                                     }));
                                 }
@@ -728,6 +737,7 @@ export const useSendMessage = ({
                                         wait: false,
                                         content: "",
                                         finish_reason: event.finish_reason,
+                                        ...imageUrlsPatch,
                                     },
                                 }));
                             }
@@ -741,6 +751,7 @@ export const useSendMessage = ({
                                 id: streamMessageId || event.message_id,
                                 message_id: event.message_id,
                                 finish_reason: event.finish_reason,
+                                ...imageUrlsPatch,
                             }));
                         }
                         globalDispatch(setLoading(false));
