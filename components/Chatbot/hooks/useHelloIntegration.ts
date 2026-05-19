@@ -328,14 +328,14 @@ export const useSendMessageToHello = ({
     let textMessage = '';
     if (messageRef?.current) {
       if ('value' in messageRef.current) {
-        textMessage = messageRef.current.value || message || '';
+        textMessage = (messageRef.current.value || message || '').trim();
       } else if (messageRef.current instanceof HTMLDivElement) {
-        textMessage = messageRef.current.textContent || message || '';
+        textMessage = (messageRef.current.textContent || message || '').trim();
       }
     } else {
-      textMessage = message || '';
+      textMessage = (message || '').trim();
     }
-    if (!textMessage.trim() && (!images || images?.length === 0)) return false;
+    if (!textMessage && (!images || images?.length === 0)) return false;
 
     const messageId = generateNewId();
     const newMessage = {

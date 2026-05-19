@@ -187,7 +187,7 @@ export const useSendMessage = ({
         const isInlinePlanRequest = isPlanExecutionRequest || isPlanUpdateRequest || (mode === "plan" && action === "respond");
         globalDispatch(setNewMessage(true));
         globalDispatch(setError(null)); // Clear any previous errors
-        const textMessage = message || (messageRef?.current as HTMLInputElement)?.value;
+        const textMessage = (message || (messageRef?.current as HTMLInputElement)?.value).trim();
         const files = images
             ?.filter((url) => url.split(".").pop()?.toLowerCase() === "pdf")
             .map((url) => url);
