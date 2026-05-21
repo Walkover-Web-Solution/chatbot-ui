@@ -1,4 +1,4 @@
-import { linkify } from '@/utils/utilities';
+import InterfaceMarkdown from '@/components/Interface-Chatbot/Interface-Markdown/InterfaceMarkdown';
 import { ExternalLink } from 'lucide-react';
 import { useColor } from '../Chatbot/hooks/useColor';
 import { useSendMessageToHello } from '../Chatbot/hooks/useHelloIntegration';
@@ -42,15 +42,15 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
             {messageJson.header && renderHeader(messageJson.header)}
 
             {messageJson.body?.text && (
-              <div className="mb-1">
-                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.body?.text) }}></div>
-              </div>
+              <InterfaceMarkdown className="mb-1">
+                {messageJson.body.text}
+              </InterfaceMarkdown>
             )}
 
             {messageJson.footer?.text && (
-              <div className="text-xs text-gray-800 mb-1">
-                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.footer?.text) }}></div>
-              </div>
+              <InterfaceMarkdown className="text-xs text-gray-800 mb-1">
+                {messageJson.footer.text}
+              </InterfaceMarkdown>
             )}
 
             {messageJson.action?.buttons && (
@@ -82,33 +82,27 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
 
         return (
           <article className="space-y-4 shadow-sm">
-            {/* Header (optional) */}
             {hasHeader && renderHeader(header)}
 
-            {/* Body */}
             {hasBody && (
-              <section
-                className="prose max-w-none text-gray-800 text-sm"
-                dangerouslySetInnerHTML={{ __html: linkify(body.text) }}
-              />
+              <InterfaceMarkdown className="prose prose-sm max-w-none dark:prose-invert text-gray-800 text-sm">
+                {body.text}
+              </InterfaceMarkdown>
             )}
 
-            {/* Footer (optional) */}
             {hasFooter && (
-              <footer
-                className="text-xs text-gray-500"
-                dangerouslySetInnerHTML={{ __html: linkify(footer.text) }}
-              />
+              <InterfaceMarkdown className="text-xs text-gray-500">
+                {footer.text}
+              </InterfaceMarkdown>
             )}
 
-            {/* CTA button */}
             {hasAction && (
               <div className="pt-2">
                 <a
                   href={action.parameters.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg  px-4 py-2 text-sm font-medium"
+                  className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium"
                   style={{ backgroundColor: backgroundColor, color: textColor }}
                 >
                   <ExternalLink size={16} strokeWidth={2} />
@@ -123,13 +117,11 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
         return (
           <div className="flex flex-col gap-1 min-w-64">
             {messageJson?.header && renderHeader(messageJson?.header)}
+
             {messageJson?.body?.text && (
-              <div className="mb-1 px-1">
-                <div
-                  className="text-sm leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: linkify(messageJson?.body?.text) }}
-                ></div>
-              </div>
+              <InterfaceMarkdown className="mb-1 px-1 text-sm leading-relaxed">
+                {messageJson.body.text}
+              </InterfaceMarkdown>
             )}
 
             {messageJson?.action?.sections && (
@@ -151,9 +143,9 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
                             <div className="flex flex-col w-full items-start">
                               <div className="font-medium break-words w-full">{row?.title}</div>
                               {row?.description && (
-                                <div className="text-xs text-gray-500 mt-1 w-full">
-                                  <div className="break-words" dangerouslySetInnerHTML={{ __html: linkify(row?.description) }}></div>
-                                </div>
+                                <InterfaceMarkdown className="text-xs text-gray-500 mt-1 w-full break-words">
+                                  {row.description}
+                                </InterfaceMarkdown>
                               )}
                             </div>
                           </a>
@@ -166,9 +158,9 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
             )}
 
             {messageJson?.footer?.text && (
-              <div className="text-xs text-gray-800 mt-2 italic">
-                <div dangerouslySetInnerHTML={{ __html: linkify(messageJson?.footer?.text) }}></div>
-              </div>
+              <InterfaceMarkdown className="text-xs text-gray-800 mt-2 italic">
+                {messageJson.footer.text}
+              </InterfaceMarkdown>
             )}
           </div>
         );
