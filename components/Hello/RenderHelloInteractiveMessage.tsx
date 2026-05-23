@@ -220,16 +220,6 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
           </div>
         );
 
-      case 'carousel':
-        return (
-          <CarouselMessage
-            messageJson={messageJson}
-            backgroundColor={backgroundColor}
-            textColor={textColor}
-            sendMessageToHello={sendMessageToHello}
-            renderHeader={renderHeader}
-          />
-        );
       case 'product':
         const productDetailsArr = messageJson?.product_details || [];
         const firstDetail = productDetailsArr[0];
@@ -328,75 +318,6 @@ function RenderHelloInteractiveMessage({ message }: { message: any }) {
   return (
     <div className="interactive-message">
       {renderInteractiveContent()}
-    </div>
-  );
-}
-
-function CarouselMessage({ messageJson, backgroundColor, textColor, sendMessageToHello, renderHeader }: any) {
-  return (
-    <div className="flex flex-col gap-2 max-w-[320px] sm:max-w-[400px] md:max-w-[500px] lg:max-w-[600px]">
-      {messageJson.body?.text && (
-        <div className="mb-2 px-1">
-          <div
-            className="text-sm"
-            dangerouslySetInnerHTML={{ __html: linkify(messageJson.body.text) }}
-          ></div>
-        </div>
-      )}
-
-      <div className="carousel rounded-box w-full max-w-fit overflow-x-auto gap-3 py-2 px-1">
-        {messageJson.action?.cards?.map((card: any, index: number) => {
-          return (
-            <div key={index} className="carousel-item relative w-56 flex-col border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-sm h-auto overflow-hidden flex-shrink-0 p-4">
-              {card.header && renderHeader(card.header)}
-
-              <div className="flex flex-col flex-grow">
-                {card.body?.text && (
-                  <div className="text-sm text-gray-800 dark:text-gray-200 mb-4 whitespace-pre-wrap">
-                    <div dangerouslySetInnerHTML={{ __html: linkify(card.body.text) }}></div>
-                  </div>
-                )}
-
-                <div className="flex flex-col gap-2 mt-auto pb-1 z-10 w-full min-h-min">
-                  {card.action?.name === 'cta_url' && card.action?.parameters?.url && (
-                    <a
-                      href={card.action?.parameters?.url || "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-sm rounded-md normal-case font-medium flex items-center justify-center gap-2"
-                      style={{ backgroundColor, color: textColor, border: "none" }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <ExternalLink size={14} />
-                      {card.action?.parameters?.display_text || "View"}
-                    </a>
-                  )}
-
-                  {card.action?.buttons && card.action.buttons.map((button: any, bIndex: number) => (
-                    <button
-                      key={bIndex}
-                      className="btn btn-sm btn-outline rounded-md normal-case px-4 font-medium border-current"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const title = button?.quick_reply?.title || button?.reply?.title || button?.title;
-                        if (title) sendMessageToHello?.(title);
-                      }}
-                    >
-                      {button?.quick_reply?.title || button?.reply?.title || button?.title}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {messageJson.footer?.text && (
-        <div className="text-xs text-gray-500 mt-1 px-1 italic">
-          <div dangerouslySetInnerHTML={{ __html: linkify(messageJson.footer.text) }}></div>
-        </div>
-      )}
     </div>
   );
 }
