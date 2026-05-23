@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 @plugin "daisyui";
+@plugin "@tailwindcss/typography";
 
 :root {
   --background: #ffffff;

@@ -13,6 +13,7 @@ import "./Message.css";
 import MessageTime from "./MessageTime";
 import { MESSAGE_TYPES } from "./MessageType";
 import RepliedMessage from "./RepliedMessage";
+import InterfaceMarkdown from "../Interface-Markdown/InterfaceMarkdown";
 
 /**
  * A component that displays a human or bot message card.
@@ -194,7 +195,7 @@ const ShadowDomComponent = React.memo(({ htmlContent, messageId }: ShadowDomProp
 ShadowDomComponent.displayName = 'ShadowDomComponent';
 
 // Memoized message content renderer
-const MessageContent = React.memo(({ message }: { message: any }) => {
+const MessageContent = React.memo(({ message, isBot }: { message: any; isBot: boolean }) => {
     const content = useMemo(() => {
         const messageType = message?.message_type;
 
@@ -222,13 +223,20 @@ const MessageContent = React.memo(({ message }: { message: any }) => {
                 );
 
             default:
+                if (isBot) {
+                    return (
+                        <InterfaceMarkdown>
+                            {message?.content}
+                        </InterfaceMarkdown>
+                    );
+                }
                 return (
-                    <div className="prose max-w-none">
+                    <div className="max-w-none">
                         <div dangerouslySetInnerHTML={{ __html: linkify(message?.content) }}></div>
                     </div>
                 );
         }
-    }, [message?.message_type, message?.content, message?.id]);
+    }, [message?.message_type, message?.content, message?.id, isBot]);
 
     return content;
 });
@@ -253,10 +261,10 @@ const HumanOrBotMessageCard = React.memo(({ message, isBot = false, isLastMessag
         >
             <div className="flex items-start gap-2 max-w-[90%]">
                 {/* <Avatar message={message} isBot={isBot} /> */}
-                <div className="w-fit whitespace-pre-wrap break-words relative" onClick={() => setShowSenderTime(!showSenderTime)}>
-                    <div className="p-1 whitespace-pre-wrap w-full break-words message-card-backround relative">
+                <div className="w-fit break-words relative" onClick={() => setShowSenderTime(!showSenderTime)}>
+                    <div className="p-1 w-full break-words message-card-backround relative">
                         <RepliedMessage message={message} />
-                        <MessageContent message={message} />
+                        <MessageContent message={message} isBot={isBot} />
 
                         {/* Reply Button */}
                         {(message?.type !== "greeting_msg" && message?.message_type !== "feedback") && <button
