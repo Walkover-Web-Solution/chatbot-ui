@@ -244,10 +244,21 @@ export const chatReducerV2 = {
         message.planning.currentAnswers = action.payload.answers;
     },
 
-    updatePlanningExecutionState: (state, action: PayloadAction<{ executionState?: string; taskUpdate?: { id: string; title?: string; status?: string; result?: string; error?: string }; taskId?: string; taskDelta?: string; taskReasoning?: string }>) => {
+    updatePlanningExecutionState: (state, action: PayloadAction<{
+        executionState?: string;
+        taskUpdate?: { id: string; title?: string; status?: string; result?: string; error?: string; questions?: Array<{ id: string; question: string; options?: string[] }> };
+        taskId?: string;
+        taskDelta?: string;
+        taskReasoning?: string;
+        taskToolCall?: { call_id: string; name?: string };
+        taskToolResult?: { call_id: string; name?: string };
+        waitingTaskIds?: string[];
+        failureReason?: string;
+        waitingForUser?: { taskId: string; title?: string; questions: Array<{ id: string; question: string; options?: string[] }> } | null;
+    }>) => {
         const subThreadId = state.subThreadId;
         if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
-        
+
         const lastMessageId = state.messageIds[subThreadId][0];
         const message = state.msgIdAndDataMap[subThreadId]?.[lastMessageId];
         if (!message?.planning) return;
@@ -257,10 +268,25 @@ export const chatReducerV2 = {
 
         if (action.payload.executionState) {
             execution.state = action.payload.executionState;
+            if (action.payload.executionState !== "paused" && !("waitingForUser" in action.payload)) {
+                (execution as any).waitingForUser = null;
+            }
         }
 
-        const { taskUpdate, taskId, taskDelta, taskReasoning } = action.payload;
-        
+        if (action.payload.waitingTaskIds) {
+            (execution as any).waitingTaskIds = action.payload.waitingTaskIds;
+        }
+
+        if (action.payload.failureReason) {
+            (execution as any).failureReason = action.payload.failureReason;
+        }
+
+        if ("waitingForUser" in action.payload) {
+            (execution as any).waitingForUser = action.payload.waitingForUser;
+        }
+
+        const { taskUpdate, taskId, taskDelta, taskReasoning, taskToolCall, taskToolResult } = action.payload;
+
         if (taskUpdate?.id) {
             execution.tasks = execution.tasks || {};
             execution.tasks[taskUpdate.id] = {
@@ -269,20 +295,38 @@ export const chatReducerV2 = {
             };
         }
 
-        if (taskId && (taskDelta || taskReasoning)) {
+        if (taskId && (taskDelta || taskReasoning || taskToolCall || taskToolResult)) {
             execution.tasks = execution.tasks || {};
-            const task = execution.tasks[taskId] || {};
-            
+            const task: any = execution.tasks[taskId] || {};
+
             if (taskDelta) {
                 task.result = (task.result || "") + taskDelta;
                 task.status = "running";
             }
-            
+
             if (taskReasoning) {
                 task.reasoning = (task.reasoning || "") + taskReasoning;
                 task.status = "running";
             }
-            
+
+            if (taskToolCall?.call_id) {
+                task.toolCalls = task.toolCalls || {};
+                task.toolCalls[taskToolCall.call_id] = {
+                    name: taskToolCall.name,
+                    status: "calling",
+                };
+                task.status = "running";
+            }
+
+            if (taskToolResult?.call_id) {
+                task.toolCalls = task.toolCalls || {};
+                task.toolCalls[taskToolResult.call_id] = {
+                    ...(task.toolCalls[taskToolResult.call_id] || {}),
+                    name: taskToolResult.name || task.toolCalls[taskToolResult.call_id]?.name,
+                    status: "done",
+                };
+            }
+
             execution.tasks[taskId] = task;
         }
     },

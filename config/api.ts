@@ -162,6 +162,8 @@ export type StreamEvent =
     | { event: "execution"; state?: string }
     | { event: "task_delta"; task_id?: string; content?: string }
     | { event: "task_reasoning"; task_id?: string; content?: string }
+    | { event: "task_tool_call"; task_id?: string; name?: string; call_id?: string }
+    | { event: "task_tool_result"; task_id?: string; name?: string; call_id?: string }
     | { event: "delta"; content: string }
     | { event: "tool_call"; call_id: string; name: string; args: Record<string, any> }
     | { event: "tool_result"; call_id: string; content: any }

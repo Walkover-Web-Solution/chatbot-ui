@@ -16,7 +16,7 @@
                 side: 'right'
             };
             this.urls = {
-                chatbotUrl: 'https://chatbot.gtwy.ai/chatbot',
+                chatbotUrl: 'http://chatbot.gtwy.ai/chatbot',
                 styleSheet: 'https://chatbot.gtwy.ai/chatbot-style.css',
                 login: 'https://db.gtwy.ai/api/chatbot/loginuser'
             };

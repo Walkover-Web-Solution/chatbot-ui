@@ -104,6 +104,10 @@ const AssistantMessageCard = React.memo(
         const messageToUser: string = isNewPlanFormat ? (planData.message_to_user || "") : "";
         const planQuestions: Array<{ id: string; question: string; options?: string[] }> = isNewPlanFormat ? (planData.questions || []) : [];
         const planHistory: Array<{ message_to_user?: string; questions?: Array<{ id: string; question: string; options?: string[] }>; answers?: Record<string, string> }> = Array.isArray(planning?.planHistory) ? planning.planHistory : [];
+        const executionWaitingForUser: { taskId: string; title?: string; questions: Array<{ id: string; question: string; options?: string[] }> } | null =
+            planning?.execution?.state === "paused" && planning?.execution?.waitingForUser?.questions?.length
+                ? planning.execution.waitingForUser
+                : null;
         const suppressContent = planning && !isPlanningCompleted;
         const reviewPhases = Array.isArray(message?.review_phases) ? message.review_phases : [];
 
@@ -237,11 +241,25 @@ const AssistantMessageCard = React.memo(
                                         {isNewPlanFormat && messageToUser && (
                                             <p className="not-prose text-sm leading-relaxed mb-1">{messageToUser}</p>
                                         )}
-                                        {isNewPlanFormat && planQuestions.length > 0 && !isPlanningCompleted && (
+                                        {isNewPlanFormat && planQuestions.length > 0 && !isPlanningCompleted && !executionWaitingForUser && (
                                             <PlanningQuestionsCard
                                                 questions={planQuestions}
                                                 isStreaming={message?.isStreaming}
                                                 onSubmit={(answersText) => sendMessage({ message: answersText, mode: "plan", skipUserEcho: true, silent: true })}
+                                            />
+                                        )}
+                                        {executionWaitingForUser && (
+                                            <PlanningQuestionsCard
+                                                questions={executionWaitingForUser.questions}
+                                                isStreaming={message?.isStreaming}
+                                                onSubmit={(answersText) => sendMessage({
+                                                    message: answersText,
+                                                    action: "respond",
+                                                    mode: "plan",
+                                                    task_id: executionWaitingForUser.taskId,
+                                                    skipUserEcho: true,
+                                                    silent: true,
+                                                })}
                                             />
                                         )}
                                         {message?.isPlanningLoading && (

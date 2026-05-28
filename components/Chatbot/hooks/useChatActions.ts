@@ -342,21 +342,50 @@ export const useSendMessage = ({
                 if (parsed.event === "task_waiting_for_user") {
                     isExecutionStreamActive = true;
                     isExecutionWaitingForUser = true;
+                    const questions = Array.isArray(parsed.questions) ? parsed.questions : [];
                     globalDispatch(updatePlanningExecutionState({
                         executionState: "paused",
                         taskUpdate: {
                             id: parsed.task_id,
                             title: parsed.title,
                             status: "waiting_for_user",
+                            ...(questions.length ? { questions } : {}),
                         },
+                        ...(questions.length && parsed.task_id
+                            ? { waitingForUser: { taskId: parsed.task_id, title: parsed.title, questions } }
+                            : {}),
                     }));
                     return true;
                 }
 
-                if (parsed.event === "plan_paused" && parsed.plan) {
+                if (parsed.event === "plan_paused") {
                     isExecutionStreamActive = true;
-                    globalDispatch(setPlanningData({ plan: parsed.plan }));
-                    globalDispatch(updatePlanningExecutionState({ executionState: "paused" }));
+                    if (parsed.plan) {
+                        globalDispatch(setPlanningData({ plan: parsed.plan }));
+                    }
+                    globalDispatch(updatePlanningExecutionState({
+                        executionState: parsed.state || "paused",
+                        ...(Array.isArray(parsed.waiting_task_ids) ? { waitingTaskIds: parsed.waiting_task_ids } : {}),
+                    }));
+                    return true;
+                }
+
+                if (parsed.event === "plan_completed") {
+                    isExecutionStreamActive = true;
+                    globalDispatch(updatePlanningExecutionState({
+                        executionState: parsed.state || "completed",
+                        waitingForUser: null,
+                    }));
+                    return true;
+                }
+
+                if (parsed.event === "plan_failed") {
+                    isExecutionStreamActive = true;
+                    globalDispatch(updatePlanningExecutionState({
+                        executionState: parsed.state || "error",
+                        waitingForUser: null,
+                        ...(parsed.reason ? { failureReason: String(parsed.reason) } : {}),
+                    }));
                     return true;
                 }
 
@@ -518,6 +547,24 @@ export const useSendMessage = ({
                             }));
                         }
                         break;
+                    case "task_tool_call":
+                        if (event.task_id && event.call_id) {
+                            isExecutionStreamActive = true;
+                            globalDispatch(updatePlanningExecutionState({
+                                taskId: event.task_id,
+                                taskToolCall: { call_id: event.call_id, name: event.name },
+                            }));
+                        }
+                        break;
+                    case "task_tool_result":
+                        if (event.task_id && event.call_id) {
+                            isExecutionStreamActive = true;
+                            globalDispatch(updatePlanningExecutionState({
+                                taskId: event.task_id,
+                                taskToolResult: { call_id: event.call_id, name: event.name },
+                            }));
+                        }
+                        break;
                     case "tool_call":
                         globalDispatch(appendToolCall({
                             call_id: event.call_id,
@@ -675,7 +722,9 @@ export const useSendMessage = ({
                         const isPlanPausedInContent = (() => {
                             // Check 1: stream already signalled waiting_for_user via delta event
                             if (isExecutionWaitingForUser) return true;
-                            // Check 2: done response content is a plan JSON with paused/waiting state
+                            // Check 2: server marks the final event as paused (new format ships empty content here)
+                            if (event.finish_reason === "paused") return true;
+                            // Check 3: done response content is a plan JSON with paused/waiting state
                             if (typeof doneResponseContent !== "string" || !doneResponseContent.trim()) return false;
                             try {
                                 const parsed = JSON.parse(doneResponseContent);
