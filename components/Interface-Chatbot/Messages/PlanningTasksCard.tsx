@@ -1,5 +1,5 @@
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
-import { CheckCircle2, ChevronDown, Circle, Loader2, MessageSquare, PauseCircle, Pencil, PlayCircle, RotateCcw, Sparkles, XCircle } from "lucide-react";
+import { Check, CheckCircle2, ChevronDown, Circle, Loader2, MessageSquare, Pause, PauseCircle, Pencil, PlayCircle, RotateCcw, Sparkles, X, XCircle } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReasoningAccordion from "./ReasoningAccordion";
 
@@ -72,13 +72,11 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
     }, [humanQueryTasks]);
 
     const allHumanQueriesAnswered = useMemo(() => {
-        // Check humanQueryTasks (from parsedPlan)
         if (humanQueryTasks.length > 0) {
             return humanQueryTasks.every((t) => {
                 return humanQueryAnswers[`${t.id}_0`]?.trim().length > 0;
             });
         }
-        // When paused via execution.tasks (e.g. task has human_response already set in parsedPlan but execution still tracks it)
         if (execution?.state === "paused" && execution?.tasks) {
             const waitingEntries = Object.entries(execution.tasks).filter(([, t]: [string, any]) => t?.status === "waiting_for_user");
             if (waitingEntries.length > 0) {
@@ -116,9 +114,6 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
     const isUpdatingPlan = execution?.state === "updating";
     const isExecutionCompleted = execution?.state === "completed";
     const isExecutionLockedToActiveTask = isExecuting && Boolean(activeTaskId);
-    // True only when execution phase definitively started — execution/running/executing/queued/completed/error states
-    // OR when execution.tasks has any task with a non-pending status (including waiting_for_user set during execution)
-    // "paused" alone does NOT confirm execution started (it can be set during planning phase too)
     const executionHasStarted = Boolean(
         execution?.state === "executing" ||
         execution?.state === "running" ||
@@ -130,8 +125,6 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
         ))
     );
     const isExecutionPaused = executionHasStarted && (execution?.state === "paused" || isPaused);
-    // Paused because a task failed during EXECUTION (no human query pending) — needs retry, not respond
-    // Only true when execution has definitively started AND we have execution-level task failure evidence
     const isPausedDueToError = isExecutionPaused && !hasHumanQueries && Boolean(
         execution?.tasks && Object.values(execution.tasks).some((t: any) =>
             t?.status === "error" || t?.status === "failed" || t?.is_error
@@ -153,14 +146,12 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                 return status === "error" || status === "failed" || t?.is_error === true || Boolean(t?.error);
             });
         }
-
         if (parsedPlan?.tasks && typeof parsedPlan.tasks === "object") {
             return Object.values(parsedPlan.tasks).some((t: any) => {
                 const status = String(t?.status || "").toLowerCase();
                 return status === "error" || status === "failed" || t?.is_error === true || Boolean(t?.error);
             });
         }
-
         return false;
     }, [execution?.tasks, parsedPlan?.tasks]);
 
@@ -196,15 +187,12 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
         });
     }, [tasks]);
 
-    // When a task's human_response is set (task completed after answering),
-    // fill in the queryHistoryPerTask answer so options don't stay interactive
     useEffect(() => {
         tasks.forEach((t) => {
             if (t.human_response && t.human_query) {
                 setQueryHistoryPerTask((prev) => {
                     const existing = prev[t.id];
                     if (!existing || existing.length === 0) return prev;
-                    // Check if the last entry still has answer: null
                     const lastIdx = existing.length - 1;
                     if (existing[lastIdx].answer !== null) return prev;
                     const updated = [...existing];
@@ -216,7 +204,6 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
     }, [tasks]);
 
     useEffect(() => {
-        // Clear stale answers only when execution phase starts (approve/execute), not on plan update
         if (isExecuting) {
             setIsActionLoading(false);
             setHumanQueryAnswers({});
@@ -225,12 +212,10 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
     }, [isExecuting]);
 
     useEffect(() => {
-        // Clear loading state when a new plan arrives (e.g. done event response)
         setIsActionLoading(false);
     }, [parsedPlan]);
 
     useEffect(() => {
-        // Auto-scroll task result containers to bottom when new data arrives
         if (execution?.tasks) {
             Object.keys(execution.tasks).forEach((taskId) => {
                 const task = execution.tasks[taskId];
@@ -252,15 +237,11 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
 
         setQueryHistoryPerTask((prevHistory) => {
             const newHistory = { ...prevHistory };
-            
             humanQueryTasks.forEach((t) => {
                 const currentQuery = t.human_query || "";
-                const prevQuery = prevHumanQueriesRef.current[t.id];
-                
                 if (!newHistory[t.id]) {
                     newHistory[t.id] = [];
                 }
-                
                 if (currentQuery) {
                     const existingIndex = newHistory[t.id].findIndex(h => h.query === currentQuery);
                     if (existingIndex === -1) {
@@ -268,7 +249,6 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                     }
                 }
             });
-            
             return newHistory;
         });
 
@@ -281,13 +261,9 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
 
     const handleAction = (action: "proceed" | "update") => {
         setIsActionLoading(true);
-        
+
         if (action === "proceed") {
-            // No human_query case - execute the plan
-            const payload = {
-                parsedPlan,
-                rawPlan,
-            };
+            const payload = { parsedPlan, rawPlan };
             if (onAction) {
                 onAction("proceed", payload);
             } else {
@@ -297,7 +273,6 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
         }
 
         if (action === "update") {
-            // If paused due to task error — retry execution
             if (isPausedDueToError) {
                 const payload = { parsedPlan, rawPlan };
                 if (onAction) {
@@ -308,8 +283,6 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                 return;
             }
 
-            // If plan is paused during execution, respond with the human answer
-            // Find waiting task from humanQueryTasks or execution.tasks
             const executionWaitingTask = !humanQueryTasks.length && execution?.tasks
                 ? Object.entries(execution.tasks).find(([, t]: [string, any]) => t?.status === "waiting_for_user")
                 : null;
@@ -320,11 +293,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
             if (isExecutionPaused && waitingTaskId) {
                 const answer = humanQueryAnswers[`${waitingTaskId}_0`]?.trim() || "";
                 const humanQueryAnswersMap: Record<string, string> = { [waitingTaskId]: answer };
-                const payload = {
-                    parsedPlan,
-                    rawPlan,
-                    humanQueryAnswers: humanQueryAnswersMap,
-                };
+                const payload = { parsedPlan, rawPlan, humanQueryAnswers: humanQueryAnswersMap };
                 if (onAction) {
                     onAction("respond", payload);
                 } else {
@@ -333,450 +302,489 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                 return;
             }
 
-            // Collect answers for human queries and user suggestions
             const messages: string[] = [];
-            
-            // Collect answers for current waiting human query tasks
             humanQueryTasks.forEach((t) => {
                 const answer = humanQueryAnswers[`${t.id}_0`]?.trim();
                 if (answer) {
                     messages.push(`task_id:${t.id}, answer:${answer}`);
                 }
             });
-            
-            // Collect user suggestions/queries for all tasks
             tasks.forEach((t) => {
                 const query = taskQueries[t.id]?.trim();
                 if (query) {
                     messages.push(`task_id:${t.id}, query:${query}`);
                 }
             });
-            
+
             const message = messages.join("\n");
-            const payload = {
-                parsedPlan,
-                rawPlan,
-                updateMessage: message,
-            };
-            
+            const payload = { parsedPlan, rawPlan, updateMessage: message };
+
             if (onAction) {
                 onAction("revise", payload);
             } else {
                 emitEventToParent("PLANNING_ACTION", { action: "update", plan: parsedPlan || rawPlan, message, ...payload });
             }
-            
+
             setTaskQueries({});
             setShowQueryInputs(false);
         }
     };
 
     return (
-        <div className="mb-3 w-full not-prose" ref={cardRef}>
+        <div className="mb-2 w-full not-prose" ref={cardRef}>
             {!parsedPlan && rawPlan && (
                 <pre className="text-xs bg-base-200/70 dark:bg-base-800/80 rounded-xl p-3 whitespace-pre-wrap break-words mb-2 border border-base-300 dark:border-base-600 dark:text-base-content/80">{rawPlan}</pre>
             )}
 
             {parsedPlan && (
-                <div className="rounded-2xl border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-800 shadow-sm overflow-hidden">
+                <div className="flex flex-col gap-2">
 
-                    {tasks.length > 0 && (
-                        <div className="px-4 pt-4 pb-2">
-                            <div className="relative">
-                                <div className="absolute left-[13px] top-3 bottom-3 w-px bg-gradient-to-b from-base-300 via-base-300 to-transparent dark:from-base-500 dark:via-base-500" />
+                    {/* ── Main plan card ─────────────────────────────────── */}
+                    <div className="rounded-2xl border border-base-200 dark:border-base-600 bg-base-100 dark:bg-base-800 overflow-hidden shadow-sm">
 
-                                <div className="space-y-1">
-                                    {tasks.map((task, idx) => {
-                                        const executionTask = execution?.tasks?.[task.id] || {};
-                                        const status = String(executionTask?.status || task.status || "pending").toLowerCase();
-                                        const isLast = idx === tasks.length - 1;
-                                        const isTaskOpen = isExecutionLockedToActiveTask ? activeTaskId === task.id : (showQueryInputs ? true : openTaskId === task.id);
-                                        const isActive = status === "in_progress";
-                                        const isDone = status === "done" || status === "completed";
-                                        const isError = status === "error" || status === "failed";
-                                        const isWaitingForUser = isPaused && status === "waiting_for_user";
-                                        const isPending = !isActive && !isDone && !isError && !isWaitingForUser;
+                        {/* "YOUR PLAN" label */}
+                        {tasks.length > 0 && (
+                            <div className="px-3 pt-2.5 pb-1.5 bg-base-200/60 dark:bg-base-700/50">
+                                <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-base-content/45 dark:text-base-content/55">
+                                    {isExecuting
+                                        ? "Executing plan"
+                                        : isExecutionCompleted
+                                            ? "Plan completed"
+                                            : "Your plan"}
+                                </p>
+                            </div>
+                        )}
 
-                                        let iconEl: React.ReactNode;
-                                        if (isActive) {
-                                            iconEl = <Loader2 className="w-3.5 h-3.5 text-base-content/70 animate-spin" />;
-                                        } else if (isDone) {
-                                            iconEl = <CheckCircle2 className="w-3.5 h-3.5 text-success" />;
-                                        } else if (isError) {
-                                            iconEl = <XCircle className="w-3.5 h-3.5 text-error" />;
-                                        } else if (isWaitingForUser) {
-                                            iconEl = <PauseCircle className="w-3.5 h-3.5 text-warning" />;
-                                        } else {
-                                            iconEl = <Circle className="w-3.5 h-3.5 text-base-content/25 dark:text-base-content/40" />;
-                                        }
+                        {/* ── Task rows ─────────────────────────────────── */}
+                        {tasks.length > 0 && (
+                            <div className="divide-y divide-base-200 dark:divide-base-600/80">
+                                {tasks.map((task) => {
+                                    const executionTask = execution?.tasks?.[task.id] || {};
+                                    const status = String(executionTask?.status || task.status || "pending").toLowerCase();
+                                    const isTaskOpen = isExecutionLockedToActiveTask
+                                        ? activeTaskId === task.id
+                                        : (showQueryInputs ? true : openTaskId === task.id);
+                                    const isActive = status === "in_progress" || status === "running";
+                                    const isDone = status === "done" || status === "completed";
+                                    const isError = status === "error" || status === "failed";
+                                    const isWaitingForUser = isPaused && status === "waiting_for_user";
+                                    const isPending = !isActive && !isDone && !isError && !isWaitingForUser;
 
-                                        const taskError = executionTask?.error || (task as any)?.error;
-                                        const taskDesc = task.task_description;
-                                        const canExpand = taskDesc || executionTask?.result || taskError || executionTask?.reasoning || (task.human_query && !isExecuting) || showQueryInputs;
+                                    const taskError = executionTask?.error || (task as any)?.error;
+                                    const taskDesc = task.task_description;
+                                    const canExpand = taskDesc || executionTask?.result || taskError || executionTask?.reasoning || (task.human_query && !isExecuting) || showQueryInputs;
 
-                                        return (
-                                            <div
-                                                key={task.id}
-                                                ref={(node) => { taskRefs.current[task.id] = node; }}
-                                                className={`relative flex gap-3 ${isLast ? "pb-1" : "pb-2"}`}
+                                    // Status indicator — Windsurf-style circle/radio
+                                    let statusCircle: React.ReactNode;
+                                    if (isActive) {
+                                        statusCircle = (
+                                            <span className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-info flex items-center justify-center">
+                                                <Loader2 className="w-2.5 h-2.5 text-info animate-spin" />
+                                            </span>
+                                        );
+                                    } else if (isDone) {
+                                        statusCircle = (
+                                            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-success/15 border border-success/30 flex items-center justify-center">
+                                                <Check className="w-3 h-3 text-success" strokeWidth={3} />
+                                            </span>
+                                        );
+                                    } else if (isError) {
+                                        statusCircle = (
+                                            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-error/10 border border-error/30 flex items-center justify-center">
+                                                <X className="w-3 h-3 text-error" strokeWidth={3} />
+                                            </span>
+                                        );
+                                    } else if (isWaitingForUser) {
+                                        statusCircle = (
+                                            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-warning/10 border-2 border-warning/40 flex items-center justify-center">
+                                                <Pause className="w-2.5 h-2.5 text-warning" strokeWidth={3} />
+                                            </span>
+                                        );
+                                    } else {
+                                        // Pending — empty radio-style circle
+                                        statusCircle = (
+                                            <span className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-base-300 dark:border-base-500" />
+                                        );
+                                    }
+
+                                    return (
+                                        <div
+                                            key={task.id}
+                                            ref={(node) => { taskRefs.current[task.id] = node; }}
+                                            className="flex flex-col"
+                                        >
+                                            {/* ── Row button ───────────────── */}
+                                            <button
+                                                type="button"
+                                                className={`w-full flex items-center gap-3 px-3 py-2.5 text-left group transition-colors ${
+                                                    canExpand
+                                                        ? "hover:bg-base-50 dark:hover:bg-base-700/40 cursor-pointer"
+                                                        : "cursor-default"
+                                                } ${isPending && isExecuting ? "opacity-50" : ""}`}
+                                                onClick={() => {
+                                                    if (isExecutionLockedToActiveTask || !canExpand) return;
+                                                    setOpenTaskId((prev) => (prev === task.id ? "" : task.id));
+                                                }}
                                             >
-                                                <div className="relative z-10 flex-shrink-0 w-7 flex items-start justify-center pt-[3px]">
-                                                    <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
-                                                        isActive ? "bg-base-200 dark:bg-base-600 ring-1 ring-base-300 dark:ring-base-500" :
-                                                        isDone ? "bg-base-200/60 dark:bg-base-600/60" :
-                                                        isError ? "bg-base-200/60 dark:bg-base-600/60 text-error" :
-                                                        isWaitingForUser ? "bg-warning/10 dark:bg-warning/20 ring-1 ring-warning/40" :
-                                                        "bg-base-200 dark:bg-base-700"
+                                                {statusCircle}
+
+                                                <div className="flex-1 min-w-0">
+                                                    <p className={`text-[13.5px] font-semibold leading-snug ${
+                                                        isDone
+                                                            ? "text-base-content/45 dark:text-base-content/50 line-through"
+                                                            : "text-base-content/90 dark:text-base-content"
                                                     }`}>
-                                                        {iconEl}
-                                                    </div>
+                                                        {executionTask?.title || task.title || "Untitled task"}
+                                                    </p>
+                                                    {taskDesc && !isTaskOpen && !isError && (
+                                                        <p className={`text-[12px] truncate mt-0.5 ${
+                                                            isDone
+                                                                ? "text-base-content/35 dark:text-base-content/40 line-through"
+                                                                : "text-base-content/40 dark:text-base-content/50"
+                                                        }`}>
+                                                            {taskDesc}
+                                                        </p>
+                                                    )}
+                                                    {isError && taskError && !isTaskOpen && (
+                                                        <p className="text-[11px] text-error/75 truncate mt-0.5">{taskError}</p>
+                                                    )}
                                                 </div>
 
-                                                <div className="flex-1 min-w-0 pt-0.5">
-                                                    <button
-                                                        type="button"
-                                                        className={`w-full text-left group transition-opacity ${
-                                                            isPending ? "opacity-55 hover:opacity-80" : "opacity-100"
-                                                        }`}
-                                                        onClick={() => {
-                                                            if (isExecutionLockedToActiveTask || !canExpand) return;
-                                                            setOpenTaskId((prev) => (prev === task.id ? "" : task.id));
-                                                        }}
-                                                    >
-                                                        <div className="flex items-center justify-between gap-2 py-0.5">
-                                                            <div className="min-w-0">
-                                                                <p className={`text-[13px] font-medium leading-snug truncate ${
-                                                                    isDone ? "opacity-60 dark:opacity-70" : "dark:text-base-content"
-                                                                }`}>
-                                                                    {executionTask?.title || task.title || "Untitled task"}
-                                                                </p>
-                                                                {taskDesc && !isTaskOpen && !isError && (
-                                                                    <p className="text-[11px] text-base-content/55 dark:text-base-content/65 truncate mt-0.5 font-normal">{taskDesc}</p>
-                                                                )}
-                                                                {isError && taskError && !isTaskOpen && (
-                                                                    <p className="text-[11px] text-error/80 truncate mt-0.5 font-normal">{taskError}</p>
-                                                                )}
-                                                            </div>
-                                                            {canExpand && (
-                                                                <ChevronDown className={`w-3.5 h-3.5 text-base-content/30 dark:text-base-content/50 shrink-0 transition-transform duration-200 group-hover:text-base-content/60 ${isTaskOpen ? "rotate-180" : ""}`} />
-                                                            )}
-                                                        </div>
-                                                    </button>
+                                                {canExpand && (
+                                                    <ChevronDown className={`w-4 h-4 text-base-content/25 dark:text-base-content/40 shrink-0 transition-transform duration-200 group-hover:text-base-content/50 ${isTaskOpen ? "rotate-180" : ""}`} />
+                                                )}
+                                            </button>
 
-                                                    {isWaitingForUser && task.human_query && (
-                                                        <div className="mt-2 space-y-2">
-                                                            <div className="flex items-start gap-2 rounded-lg bg-warning/8 dark:bg-warning/15 border border-warning/30 dark:border-warning/50 px-3 py-2">
-                                                                <span className="text-warning font-bold text-xs shrink-0 mt-0.5">?</span>
-                                                                <span className="text-xs text-base-content/80 dark:text-base-content/90 leading-relaxed">{task.human_query}</span>
-                                                            </div>
-                                                            {(() => {
-                                                                const answerKey = `${task.id}_0`;
-                                                                const options = Array.isArray(task.human_options) ? task.human_options.filter(Boolean) : [];
-                                                                const showCustomChoice = Boolean(task.allow_custom_response);
-                                                                const useCustomAnswer = Boolean(useCustomAnswerPerQuery[answerKey]);
-                                                                return (
-                                                                    <div className="space-y-2">
-                                                                        {options.length > 0 && (
-                                                                            <div className="flex flex-wrap gap-2">
-                                                                                {options.map((opt: string, optIndex: number) => {
-                                                                                    const isSelected = humanQueryAnswers[answerKey] === opt && !useCustomAnswer;
-                                                                                    return (
-                                                                                        <button
-                                                                                            key={`${answerKey}_opt_${optIndex}`}
-                                                                                            type="button"
-                                                                                            onClick={() => {
-                                                                                                setUseCustomAnswerPerQuery((prev) => ({ ...prev, [answerKey]: false }));
-                                                                                                setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: opt }));
-                                                                                                if (!queryHistoryPerTask[task.id]?.length) {
-                                                                                                    setQueryHistoryPerTask((prev) => ({ ...prev, [task.id]: [{ query: task.human_query, answer: null }] }));
-                                                                                                }
-                                                                                            }}
-                                                                                            className={`px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer select-none transition-colors ${
-                                                                                                isSelected
-                                                                                                    ? "border-2 border-base-content bg-base-content text-base-100"
-                                                                                                    : "border border-base-content/25 dark:border-base-content/40 bg-transparent dark:bg-base-700/50 text-base-content hover:border-base-content/50 hover:bg-base-200/40 dark:hover:bg-base-600/60"
-                                                                                            }`}
-                                                                                        >
-                                                                                            {opt}
-                                                                                        </button>
-                                                                                    );
-                                                                                })}
-                                                                                {showCustomChoice && (
-                                                                                    <button
-                                                                                        type="button"
-                                                                                        onClick={() => {
-                                                                                            setUseCustomAnswerPerQuery((prev) => ({ ...prev, [answerKey]: true }));
-                                                                                            setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: prev[answerKey] || "" }));
-                                                                                        }}
-                                                                                        className={`px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer select-none transition-colors flex items-center gap-1.5 ${
-                                                                                            useCustomAnswer
-                                                                                                ? "border-2 border-base-content bg-base-content text-base-100"
-                                                                                                : "border border-base-content/25 dark:border-base-content/40 bg-transparent dark:bg-base-700/50 text-base-content hover:border-base-content/50 hover:bg-base-200/40 dark:hover:bg-base-600/60"
-                                                                                        }`}
-                                                                                    >
-                                                                                        <Pencil className="w-2.5 h-2.5" />
-                                                                                        Custom
-                                                                                    </button>
-                                                                                )}
-                                                                            </div>
-                                                                        )}
-                                                                        {(options.length === 0 || useCustomAnswer) && (
-                                                                            <input
-                                                                                type="text"
-                                                                                autoFocus={useCustomAnswer || options.length === 0}
-                                                                                className="w-full text-xs rounded-lg border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content dark:text-base-content px-3 py-2 outline-none focus:border-primary/60 dark:focus:border-base-400 focus:ring-2 focus:ring-primary/10 placeholder:text-base-content/35 dark:placeholder:text-base-content/40 transition-all"
-                                                                                placeholder={options.length > 0 ? "Type your custom response..." : "Your answer..."}
-                                                                                value={humanQueryAnswers[answerKey] || ""}
-                                                                                onChange={(e) => {
-                                                                                    const value = e.target.value;
-                                                                                    setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: value }));
-                                                                                    if (!queryHistoryPerTask[task.id]?.length) {
-                                                                                        setQueryHistoryPerTask((prev) => ({ ...prev, [task.id]: [{ query: task.human_query, answer: null }] }));
-                                                                                    }
-                                                                                }}
-                                                                            />
-                                                                        )}
-                                                                    </div>
-                                                                );
-                                                            })()}
-                                                        </div>
-                                                    )}
-
-                                                    {queryHistoryPerTask[task.id]?.length > 0 && !isExecuting && !isWaitingForUser && (
-                                                        <div className="mt-2 space-y-3">
-                                                            {queryHistoryPerTask[task.id].map((queryItem, idx) => (
-                                                                <div key={idx} className="space-y-2">
-                                                                    <div className="flex items-start gap-2 rounded-lg bg-base-200/70 dark:bg-base-700/60 border border-base-300/60 dark:border-base-500 px-3 py-2">
-                                                                        <span className="text-base-content/60 font-bold text-xs shrink-0 mt-0.5">?</span>
-                                                                        <span className="text-xs text-base-content/80 dark:text-base-content/85 leading-relaxed">{queryItem.query}</span>
-                                                                    </div>
-                                                                    {queryItem.answer !== null ? (
-                                                                        <div className="flex items-start gap-2 rounded-lg bg-base-200/50 dark:bg-base-700/40 border border-base-300/50 dark:border-base-500 px-3 py-2">
-                                                                            <CheckCircle2 className="w-3.5 h-3.5 text-base-content/60 shrink-0 mt-0.5" />
-                                                                            <span className="text-xs text-base-content/80 dark:text-base-content/85">{queryItem.answer}</span>
-                                                                        </div>
-                                                                    ) : !isWaitingForUser ? null : (
-                                                                        (() => {
-                                                                            const answerKey = `${task.id}_${idx}`;
-                                                                            const options = Array.isArray(task.human_options) ? task.human_options.filter(Boolean) : [];
-                                                                            const showCustomChoice = Boolean(task.allow_custom_response);
-                                                                            const useCustomAnswer = Boolean(useCustomAnswerPerQuery[answerKey]);
-                                                                            return (
-                                                                                <div className="space-y-2.5">
-                                                                                    {options.length > 0 && (
-                                                                                        <div className="space-y-1.5">
-                                                                                            <div className="flex items-center gap-1.5">
-                                                                                                <Sparkles className="w-3 h-3 text-base-content/50 dark:text-base-content/60" />
-                                                                                                <p className="text-[10px] font-semibold text-base-content/55 dark:text-base-content/65 uppercase tracking-wider">Suggested options</p>
-                                                                                            </div>
-                                                                                            <div className="flex flex-wrap gap-2">
-                                                                                                {options.map((opt: string, optIndex: number) => {
-                                                                                                    const isSelected = humanQueryAnswers[answerKey] === opt && !useCustomAnswer;
-                                                                                                    return (
-                                                                                                        <button
-                                                                                                            key={`${answerKey}_opt_${optIndex}`}
-                                                                                                            type="button"
-                                                                                                            onClick={() => {
-                                                                                                                setUseCustomAnswerPerQuery((prev) => ({ ...prev, [answerKey]: false }));
-                                                                                                                setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: opt }));
-                                                                                                            }}
-                                                                                                            className={`px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer select-none transition-colors ${
-                                                                                                                isSelected
-                                                                                                                    ? "border-2 border-base-content bg-base-content text-base-100"
-                                                                                                                    : "border border-base-content/25 dark:border-base-content/40 bg-transparent dark:bg-base-700/50 text-base-content hover:border-base-content/50 hover:bg-base-200/40 dark:hover:bg-base-600/60"
-                                                                                                            }`}
-                                                                                                        >
-                                                                                                            {opt}
-                                                                                                        </button>
-                                                                                                    );
-                                                                                                })}
-                                                                                                {showCustomChoice && (
-                                                                                                    <button
-                                                                                                        type="button"
-                                                                                                        onClick={() => {
-                                                                                                            setUseCustomAnswerPerQuery((prev) => ({ ...prev, [answerKey]: true }));
-                                                                                                            setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: prev[answerKey] || "" }));
-                                                                                                        }}
-                                                                                                        className={`px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer select-none transition-colors flex items-center gap-1.5 ${
-                                                                                                            useCustomAnswer
-                                                                                                                ? "border-2 border-base-content bg-base-content text-base-100"
-                                                                                                                : "border border-base-content/25 dark:border-base-content/40 bg-transparent dark:bg-base-700/50 text-base-content hover:border-base-content/50 hover:bg-base-200/40 dark:hover:bg-base-600/60"
-                                                                                                        }`}
-                                                                                                    >
-                                                                                                        <Pencil className="w-2.5 h-2.5" />
-                                                                                                        Custom
-                                                                                                    </button>
-                                                                                                )}
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    )}
-                                                                                    {(options.length === 0 || useCustomAnswer) && (
-                                                                                        <input
-                                                                                            type="text"
-                                                                                            autoFocus={useCustomAnswer}
-                                                                                            className="w-full text-xs rounded-lg border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content dark:text-base-content px-3 py-2 outline-none focus:border-primary/60 dark:focus:border-base-400 focus:ring-2 focus:ring-primary/10 placeholder:text-base-content/35 dark:placeholder:text-base-content/40 transition-all"
-                                                                                            placeholder={options.length > 0 ? "Type your custom response..." : "Your answer..."}
-                                                                                            value={humanQueryAnswers[answerKey] || ""}
-                                                                                            onChange={(e) => {
-                                                                                                const value = e.target.value;
-                                                                                                setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: value }));
-                                                                                            }}
-                                                                                        />
-                                                                                    )}
-                                                                                </div>
-                                                                            );
-                                                                        })()
-                                                                    )}
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-
-                                                    <div className={`overflow-hidden transition-all duration-200 ease-out ${
-                                                        isTaskOpen ? "max-h-[600px] opacity-100 mt-2" : "max-h-0 opacity-0 mt-0"
-                                                    }`}>
-                                                        <div className="space-y-2">
-                                                            {taskDesc && (
-                                                                <p className="text-[11.5px] leading-relaxed text-base-content/65 dark:text-base-content/75">{taskDesc}</p>
-                                                            )}
-                                                            {Array.isArray(task.dependencies) && task.dependencies.length > 0 && (
-                                                                <p className="text-[10px] text-base-content/50 dark:text-base-content/60">
-                                                                    <span className="font-semibold">Depends on:</span> {task.dependencies.join(", ")}
-                                                                </p>
-                                                            )}
-                                                            {!isExecuting && showQueryInputs && (
-                                                                <input
-                                                                    type="text"
-                                                                    className="w-full text-xs rounded-lg border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content dark:text-base-content px-3 py-2 outline-none focus:border-primary/60 dark:focus:border-base-400 focus:ring-2 focus:ring-primary/10 placeholder:text-base-content/35 dark:placeholder:text-base-content/40 transition-all"
-                                                                    placeholder={`Add a note for this task...`}
-                                                                    value={taskQueries[task.id] || ""}
-                                                                    onChange={(e) => {
-                                                                        const value = e.target.value;
-                                                                        setTaskQueries((prev) => ({ ...prev, [task.id]: value }));
-                                                                    }}
-                                                                />
-                                                            )}
-                                                            {executionTask?.reasoning && (
-                                                                <ReasoningAccordion
-                                                                    reasoning={executionTask.reasoning}
-                                                                    isStreaming={isActive || status === "running"}
-                                                                    label="Task Reasoning"
-                                                                    defaultOpen={isActive || status === "running"}
-                                                                />
-                                                            )}
-                                                            {executionTask?.result && (
-                                                                <div
-                                                                    ref={(el) => { taskResultRefs.current[task.id] = el; }}
-                                                                    className="text-[11.5px] rounded-xl p-3 max-h-36 overflow-auto whitespace-pre-wrap leading-relaxed border bg-base-200/60 dark:bg-base-700/60 border-base-300 dark:border-base-500 text-base-content/80 dark:text-base-content/85"
-                                                                >
-                                                                    {isActive && (
-                                                                        <div className="flex items-center gap-1.5 mb-1.5 text-base-content/60">
-                                                                            <Loader2 className="w-3 h-3 animate-spin" />
-                                                                            <span className="text-[10px] font-semibold uppercase tracking-wide">Running</span>
-                                                                        </div>
-                                                                    )}
-                                                                    {typeof executionTask.result === "string" ? executionTask.result : JSON.stringify(executionTask.result)}
-                                                                </div>
-                                                            )}
-                                                            {taskError && (
-                                                                <div className="text-[11.5px] bg-error/8 dark:bg-error/10 border border-error/25 rounded-xl p-3 whitespace-pre-wrap text-error/90 flex items-start gap-2">
-                                                                    <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-error" />
-                                                                    <span>{taskError}</span>
-                                                                </div>
-                                                            )}
-                                                        </div>
+                                            {/* ── Human query (waiting for user) ─── */}
+                                            {isWaitingForUser && task.human_query && (
+                                                <div className="px-4 pb-3.5 space-y-2 border-t border-base-200/60 dark:border-base-600/60">
+                                                    <div className="flex items-start gap-2 rounded-xl bg-warning/8 dark:bg-warning/15 border border-warning/25 dark:border-warning/40 px-3 py-2 mt-2">
+                                                        <span className="text-warning font-bold text-xs shrink-0 mt-0.5">?</span>
+                                                        <span className="text-[12.5px] text-base-content/80 dark:text-base-content/90 leading-relaxed">{task.human_query}</span>
                                                     </div>
+                                                    {(() => {
+                                                        const answerKey = `${task.id}_0`;
+                                                        const options = Array.isArray(task.human_options) ? task.human_options.filter(Boolean) : [];
+                                                        const showCustomChoice = Boolean(task.allow_custom_response);
+                                                        const useCustomAnswer = Boolean(useCustomAnswerPerQuery[answerKey]);
+                                                        return (
+                                                            <div className="space-y-2">
+                                                                {options.length > 0 && (
+                                                                    <div className="flex flex-wrap gap-2">
+                                                                        {options.map((opt: string, optIndex: number) => {
+                                                                            const isSelected = humanQueryAnswers[answerKey] === opt && !useCustomAnswer;
+                                                                            return (
+                                                                                <button
+                                                                                    key={`${answerKey}_opt_${optIndex}`}
+                                                                                    type="button"
+                                                                                    onClick={() => {
+                                                                                        setUseCustomAnswerPerQuery((prev) => ({ ...prev, [answerKey]: false }));
+                                                                                        setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: opt }));
+                                                                                        if (!queryHistoryPerTask[task.id]?.length) {
+                                                                                            setQueryHistoryPerTask((prev) => ({ ...prev, [task.id]: [{ query: task.human_query, answer: null }] }));
+                                                                                        }
+                                                                                    }}
+                                                                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer select-none transition-colors ${
+                                                                                        isSelected
+                                                                                            ? "bg-base-content text-base-100"
+                                                                                            : "border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content hover:border-base-content/30 hover:bg-base-content/5"
+                                                                                    }`}
+                                                                                >
+                                                                                    {opt}
+                                                                                </button>
+                                                                            );
+                                                                        })}
+                                                                        {showCustomChoice && (
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => {
+                                                                                    setUseCustomAnswerPerQuery((prev) => ({ ...prev, [answerKey]: true }));
+                                                                                    setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: prev[answerKey] || "" }));
+                                                                                }}
+                                                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer select-none transition-colors flex items-center gap-1.5 ${
+                                                                                    useCustomAnswer
+                                                                                        ? "bg-base-content text-base-100"
+                                                                                        : "border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content hover:border-base-content/30"
+                                                                                }`}
+                                                                            >
+                                                                                <Pencil className="w-2.5 h-2.5" />
+                                                                                Custom
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                                {(options.length === 0 || useCustomAnswer) && (
+                                                                    <input
+                                                                        type="text"
+                                                                        autoFocus={useCustomAnswer || options.length === 0}
+                                                                        className="w-full text-xs rounded-lg border border-base-300 dark:border-base-500 bg-base-50 dark:bg-base-700 text-base-content px-3 py-2 outline-none focus:border-base-content/60 focus:ring-2 focus:ring-base-content/10 placeholder:text-base-content/35 transition-all"
+                                                                        placeholder={options.length > 0 ? "Type your custom response..." : "Your answer..."}
+                                                                        value={humanQueryAnswers[answerKey] || ""}
+                                                                        onChange={(e) => {
+                                                                            const value = e.target.value;
+                                                                            setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: value }));
+                                                                            if (!queryHistoryPerTask[task.id]?.length) {
+                                                                                setQueryHistoryPerTask((prev) => ({ ...prev, [task.id]: [{ query: task.human_query, answer: null }] }));
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })()}
+                                                </div>
+                                            )}
+
+                                            {/* ── Query history ─────────────────── */}
+                                            {queryHistoryPerTask[task.id]?.length > 0 && !isExecuting && !isWaitingForUser && (
+                                                <div className="px-4 pb-3 space-y-2 border-t border-base-200/60 dark:border-base-600/60">
+                                                    {queryHistoryPerTask[task.id].map((queryItem, idx) => (
+                                                        <div key={idx} className="space-y-1.5 pt-2">
+                                                            <div className="flex items-start gap-2 rounded-xl bg-base-200/70 dark:bg-base-700/60 border border-base-300/50 dark:border-base-500/60 px-3 py-2">
+                                                                <span className="text-base-content/50 font-bold text-xs shrink-0 mt-0.5">?</span>
+                                                                <span className="text-[12px] text-base-content/75 leading-relaxed">{queryItem.query}</span>
+                                                            </div>
+                                                            {queryItem.answer !== null ? (
+                                                                <div className="flex items-start gap-2 rounded-xl bg-base-200/40 dark:bg-base-700/40 border border-base-300/40 dark:border-base-500/50 px-3 py-2">
+                                                                    <CheckCircle2 className="w-3.5 h-3.5 text-base-content/50 shrink-0 mt-0.5" />
+                                                                    <span className="text-[12px] text-base-content/75">{queryItem.answer}</span>
+                                                                </div>
+                                                            ) : !isWaitingForUser ? null : (
+                                                                (() => {
+                                                                    const answerKey = `${task.id}_${idx}`;
+                                                                    const options = Array.isArray(task.human_options) ? task.human_options.filter(Boolean) : [];
+                                                                    const showCustomChoice = Boolean(task.allow_custom_response);
+                                                                    const useCustomAnswer = Boolean(useCustomAnswerPerQuery[answerKey]);
+                                                                    return (
+                                                                        <div className="space-y-2">
+                                                                            {options.length > 0 && (
+                                                                                <div className="space-y-1.5">
+                                                                                    <div className="flex items-center gap-1.5">
+                                                                                        <Sparkles className="w-3 h-3 text-base-content/45" />
+                                                                                        <p className="text-[10px] font-semibold text-base-content/50 uppercase tracking-wider">Suggested options</p>
+                                                                                    </div>
+                                                                                    <div className="flex flex-wrap gap-2">
+                                                                                        {options.map((opt: string, optIndex: number) => {
+                                                                                            const isSelected = humanQueryAnswers[answerKey] === opt && !useCustomAnswer;
+                                                                                            return (
+                                                                                                <button
+                                                                                                    key={`${answerKey}_opt_${optIndex}`}
+                                                                                                    type="button"
+                                                                                                    onClick={() => {
+                                                                                                        setUseCustomAnswerPerQuery((prev) => ({ ...prev, [answerKey]: false }));
+                                                                                                        setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: opt }));
+                                                                                                    }}
+                                                                                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer select-none transition-colors ${
+                                                                                                        isSelected
+                                                                                                            ? "bg-base-content text-base-100"
+                                                                                                            : "border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content hover:border-base-content/30"
+                                                                                                    }`}
+                                                                                                >
+                                                                                                    {opt}
+                                                                                                </button>
+                                                                                            );
+                                                                                        })}
+                                                                                        {showCustomChoice && (
+                                                                                            <button
+                                                                                                type="button"
+                                                                                                onClick={() => {
+                                                                                                    setUseCustomAnswerPerQuery((prev) => ({ ...prev, [answerKey]: true }));
+                                                                                                    setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: prev[answerKey] || "" }));
+                                                                                                }}
+                                                                                                className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer select-none transition-colors flex items-center gap-1.5 ${
+                                                                                                    useCustomAnswer
+                                                                                                        ? "bg-base-content text-base-100"
+                                                                                                        : "border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content hover:border-base-content/30"
+                                                                                                }`}
+                                                                                            >
+                                                                                                <Pencil className="w-2.5 h-2.5" />
+                                                                                                Custom
+                                                                                            </button>
+                                                                                        )}
+                                                                                    </div>
+                                                                                </div>
+                                                                            )}
+                                                                            {(options.length === 0 || useCustomAnswer) && (
+                                                                                <input
+                                                                                    type="text"
+                                                                                    autoFocus={useCustomAnswer}
+                                                                                    className="w-full text-xs rounded-lg border border-base-300 dark:border-base-500 bg-base-50 dark:bg-base-700 text-base-content px-3 py-2 outline-none focus:border-base-content/60 focus:ring-2 focus:ring-base-content/10 placeholder:text-base-content/35 transition-all"
+                                                                                    placeholder={options.length > 0 ? "Type your custom response..." : "Your answer..."}
+                                                                                    value={humanQueryAnswers[answerKey] || ""}
+                                                                                    onChange={(e) => {
+                                                                                        const value = e.target.value;
+                                                                                        setHumanQueryAnswers((prev) => ({ ...prev, [answerKey]: value }));
+                                                                                    }}
+                                                                                />
+                                                                            )}
+                                                                        </div>
+                                                                    );
+                                                                })()
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {/* ── Expanded details ──────────────── */}
+                                            <div className={`overflow-hidden transition-all duration-200 ease-out ${isTaskOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"}`}>
+                                                <div className="px-4 pb-3.5 pt-2 space-y-2 border-t border-base-200/60 dark:border-base-600/60 bg-base-50/50 dark:bg-base-700/20">
+                                                    {taskDesc && (
+                                                        <p className="text-[12px] leading-relaxed text-base-content/60 dark:text-base-content/65">{taskDesc}</p>
+                                                    )}
+                                                    {Array.isArray(task.dependencies) && task.dependencies.length > 0 && (
+                                                        <p className="text-[10px] text-base-content/40">
+                                                            <span className="font-semibold">Depends on:</span> {task.dependencies.join(", ")}
+                                                        </p>
+                                                    )}
+                                                    {!isExecuting && showQueryInputs && (
+                                                        <input
+                                                            type="text"
+                                                            className="w-full text-xs rounded-lg border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content px-3 py-2 outline-none focus:border-base-content/60 focus:ring-2 focus:ring-base-content/10 placeholder:text-base-content/35 transition-all"
+                                                            placeholder="Add a note for this task..."
+                                                            value={taskQueries[task.id] || ""}
+                                                            onChange={(e) => {
+                                                                const value = e.target.value;
+                                                                setTaskQueries((prev) => ({ ...prev, [task.id]: value }));
+                                                            }}
+                                                        />
+                                                    )}
+                                                    {executionTask?.reasoning && (
+                                                        <ReasoningAccordion
+                                                            reasoning={executionTask.reasoning}
+                                                            isStreaming={isActive || status === "running"}
+                                                            label="Task Reasoning"
+                                                            defaultOpen={isActive || status === "running"}
+                                                        />
+                                                    )}
+                                                    {executionTask?.result && (
+                                                        <div
+                                                            ref={(el) => { taskResultRefs.current[task.id] = el; }}
+                                                            className="text-[11.5px] rounded-xl p-3 max-h-36 overflow-auto whitespace-pre-wrap leading-relaxed border bg-base-200/60 dark:bg-base-700/60 border-base-300 dark:border-base-500 text-base-content/75"
+                                                        >
+                                                            {isActive && (
+                                                                <div className="flex items-center gap-1.5 mb-1.5 text-base-content/55">
+                                                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                                                    <span className="text-[10px] font-semibold uppercase tracking-wide">Running</span>
+                                                                </div>
+                                                            )}
+                                                            {typeof executionTask.result === "string" ? executionTask.result : JSON.stringify(executionTask.result)}
+                                                        </div>
+                                                    )}
+                                                    {taskError && (
+                                                        <div className="text-[11.5px] bg-error/8 dark:bg-error/10 border border-error/20 rounded-xl p-3 whitespace-pre-wrap text-error/85 flex items-start gap-2">
+                                                            <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-error" />
+                                                            <span>{taskError}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
-                                        );
-                                    })}
-                                </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {isExecuting && tasks.length > 0 && (
-                        <div className="px-4 pb-3">
-                            <div className="flex items-center gap-2">
-                                <div className="flex-1 h-1 rounded-full bg-base-200 dark:bg-base-600 overflow-hidden">
-                                    <div
-                                        className="h-full rounded-full bg-primary transition-all duration-700"
-                                        style={{ width: `${tasks.length > 0 ? (doneCount / tasks.length) * 100 : 0}%` }}
-                                    />
+                        {/* ── Execution progress bar ─────────────────────── */}
+                        {isExecuting && tasks.length > 0 && (
+                            <div className="px-4 py-3 border-t border-base-200 dark:border-base-600">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="flex-1 h-1 rounded-full bg-base-200 dark:bg-base-600 overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full bg-success transition-all duration-700"
+                                            style={{ width: `${tasks.length > 0 ? (doneCount / tasks.length) * 100 : 0}%` }}
+                                        />
+                                    </div>
+                                    <span className="text-[10.5px] text-base-content/45 dark:text-base-content/55 shrink-0 tabular-nums font-medium">{doneCount}/{tasks.length}</span>
                                 </div>
-                                <span className="text-[10.5px] text-base-content/50 dark:text-base-content/70 shrink-0">{doneCount}/{tasks.length}</span>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
+
+                    {/* ── Action buttons — outside card, full-width Proceed ─ */}
                     {!isExecutionCompleted && (isStreaming ? (hasHumanQueries || isExecutionPaused) : true) && (
-                        <div className="flex items-center gap-2 px-4 py-3 border-t border-base-200 dark:border-base-600 bg-base-50 dark:bg-base-700/80 sticky bottom-0 z-10">
+                        /* Small horizontal inset so buttons don't span edge-to-edge like the card */
+                        <div className="flex flex-col gap-1.5 px-0.5">
+
+                            {/* Primary: full-width Proceed */}
                             {showProceedButton && (
                                 <button
                                     type="button"
                                     disabled={isActionLoading || (parsedPlan && tasks.length === 0)}
                                     title={(parsedPlan && tasks.length === 0) ? "Waiting for tasks to be generated" : undefined}
                                     onClick={() => handleAction("proceed")}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-content hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
+                                    className="w-full flex items-center justify-center gap-2 py-1.5 rounded-2xl text-[14px] font-semibold bg-base-content text-base-100 dark:bg-base-200 dark:text-base-content hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm active:scale-[0.98]"
                                 >
                                     {isActionLoading
-                                        ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</>
-                                        : <><PlayCircle className="w-3.5 h-3.5" /> Proceed</>}
+                                        ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
+                                        : "Proceed"}
                                 </button>
                             )}
+
+                            {/* Primary: Respond / Retry / Update */}
                             {(showUpdateButton || showQueryInputs) && (
                                 <button
                                     type="button"
-                                    disabled={isActionLoading || isUpdatingPlan || (showQueryInputs && !hasTaskQueryValues) || (isStreaming && !hasHumanQueries && !isExecutionPaused && !showQueryInputs) || (!isPausedDueToError && !allHumanQueriesAnswered && !showQueryInputs)}
+                                    disabled={
+                                        isActionLoading || isUpdatingPlan ||
+                                        (showQueryInputs && !hasTaskQueryValues) ||
+                                        (isStreaming && !hasHumanQueries && !isExecutionPaused && !showQueryInputs) ||
+                                        (!isPausedDueToError && !allHumanQueriesAnswered && !showQueryInputs)
+                                    }
                                     onClick={() => handleAction("update")}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-content hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
+                                    className="w-full flex items-center justify-center gap-2 py-1.5 rounded-2xl text-[14px] font-semibold bg-primary text-primary-content hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm active:scale-[0.98]"
                                 >
                                     {isActionLoading || isUpdatingPlan
-                                        ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> {isPausedDueToError ? "Retrying..." : isExecutionPaused ? "Responding..." : "Updating"}</>
+                                        ? <><Loader2 className="w-4 h-4 animate-spin" /> {isPausedDueToError ? "Retrying..." : isExecutionPaused ? "Responding..." : "Updating..."}</>
                                         : isPausedDueToError
-                                            ? <><PlayCircle className="w-3.5 h-3.5" /> Retry</>
+                                            ? "Retry"
                                             : isExecutionPaused
-                                                ? <><MessageSquare className="w-3.5 h-3.5" /> Respond</>
-                                                : <><MessageSquare className="w-3.5 h-3.5" /> Update</>}
+                                                ? "Respond"
+                                                : "Update Plan"}
                                 </button>
                             )}
-                            {showQueryInputs && (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setTaskQueries({});
-                                        setShowQueryInputs(false);
-                                    }}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium border bg-base-200 dark:bg-base-600 border-base-300 dark:border-base-500 text-base-content/80 dark:text-base-content/80 hover:bg-base-300 dark:hover:bg-base-500 transition-all"
-                                >
-                                    <XCircle className="w-3 h-3" />
-                                    Cancel
-                                </button>
-                            )}
-                            {showProceedButton && (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setShowQueryInputs(true);
-                                        setOpenTaskId("");
-                                    }}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium border bg-base-100 dark:bg-base-700 border-base-200 dark:border-base-600 text-base-content/60 dark:text-base-content/60 hover:border-base-300 dark:hover:border-base-500 hover:text-base-content/80 transition-all"
-                                >
-                                    <Pencil className="w-3 h-3" />
-                                    Suggest changes
-                                </button>
-                            )}
-                            {hasFailedTasks && !isActionLoading && !isUpdatingPlan && (
-                                <button
-                                    type="button"
-                                    onClick={() => handleAction("proceed")}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold border border-base-300 dark:border-base-500 text-base-content dark:text-base-content hover:bg-base-200/50 dark:hover:bg-base-600/50 transition-all"
-                                >
-                                    <RotateCcw className="w-3.5 h-3.5" />
-                                    Retry failed
-                                </button>
-                            )}
+
+                            {/* Secondary row */}
+                            <div className="flex items-center gap-1.5">
+                                {showProceedButton && !showQueryInputs && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowQueryInputs(true);
+                                            setOpenTaskId("");
+                                        }}
+                                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content/55 hover:text-base-content/85 hover:border-base-400 dark:hover:border-base-400 transition-all"
+                                    >
+                                        <Pencil className="w-3 h-3" />
+                                        Suggest changes
+                                    </button>
+                                )}
+                                {showQueryInputs && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setTaskQueries({});
+                                            setShowQueryInputs(false);
+                                        }}
+                                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content/65 hover:bg-base-200 dark:hover:bg-base-600 transition-all"
+                                    >
+                                        <XCircle className="w-3.5 h-3.5" />
+                                        Cancel
+                                    </button>
+                                )}
+                                {hasFailedTasks && !isActionLoading && !isUpdatingPlan && (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleAction("proceed")}
+                                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium border border-base-300 dark:border-base-500 text-base-content/70 hover:bg-base-200/50 dark:hover:bg-base-600/50 transition-all"
+                                    >
+                                        <RotateCcw className="w-3.5 h-3.5" />
+                                        Retry failed
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     )}
-
                 </div>
             )}
         </div>

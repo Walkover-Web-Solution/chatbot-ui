@@ -157,8 +157,8 @@ const AssistantMessageCard = React.memo(
                         />
                     </div>
                 </div> */}
-                <div className="flex flex-col max-w-[90%] animate-slide-left w-full ">
-                    <div className="p-2.5">
+                <div className={`flex flex-col animate-slide-left w-full ${message?.planning ? 'max-w-full' : 'max-w-[90%]'}`}>
+                    <div className="p-2.5 w-full">
 
                         {message?.wait ? (
                             <div className="w-full">
@@ -225,24 +225,15 @@ const AssistantMessageCard = React.memo(
                                                 {item.message_to_user && (
                                                     <p className="not-prose text-sm leading-relaxed mb-1">{item.message_to_user}</p>
                                                 )}
-                                                {Array.isArray(item.questions) && item.questions.length > 0 && (
-                                                    <PlanningQuestionsCard 
-                                                        questions={item.questions} 
-                                                        isHistorical 
-                                                        answers={item.answers}
-                                                    />
-                                                )}
+                                                {/* Historical questions are removed from chat UI per user request */}
                                             </div>
                                         ))}
                                         {isNewPlanFormat && messageToUser && (
                                             <p className="not-prose text-sm leading-relaxed mb-1">{messageToUser}</p>
                                         )}
                                         {isNewPlanFormat && planQuestions.length > 0 && !isPlanningCompleted && (
-                                            <PlanningQuestionsCard
-                                                questions={planQuestions}
-                                                isStreaming={message?.isStreaming}
-                                                onSubmit={(answersText) => sendMessage({ message: answersText, mode: "plan", skipUserEcho: true, silent: true })}
-                                            />
+                                            /* Active planning questions are now shown above the text field as a floating panel */
+                                            null
                                         )}
                                         {message?.isPlanningLoading && (
                                             <div className="flex items-center gap-2 mt-3 mb-2 px-1">
