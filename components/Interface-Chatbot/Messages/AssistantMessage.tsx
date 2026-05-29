@@ -12,6 +12,8 @@ import { AlertCircle, Check, Copy, Loader2, Maximize2, ThumbsDown, ThumbsUp } fr
 import React, { useContext, useMemo, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import ImageWithFallback from "./ImageWithFallback";
+import Image from "next/image";
+import { AiIcon } from "@/assests/assestsIndex";
 import "./Message.css";
 import RenderNode from "../../richUI/RenderNode";
 import { componentRegistry } from "../../richUI/componentRegistry";
@@ -216,6 +218,7 @@ const AssistantMessageCard = React.memo(
                                                 toolsData={toolsData}
                                                 isStreaming={message?.isStreaming}
                                                 hasContent={!!message?.content}
+                                                planning={planning}
                                             />
                                         ) : (
                                             <ReasoningAccordion reasoning={reasoning} isStreaming={message?.isStreaming} hasContent={!!message?.content} />
@@ -225,7 +228,13 @@ const AssistantMessageCard = React.memo(
                                                 {item.message_to_user && (
                                                     <p className="not-prose text-sm leading-relaxed mb-1">{item.message_to_user}</p>
                                                 )}
-                                                {/* Historical questions are removed from chat UI per user request */}
+                                                {item.questions && item.questions.length > 0 && (
+                                                    <PlanningQuestionsCard
+                                                        questions={item.questions}
+                                                        isHistorical={true}
+                                                        answers={item.answers}
+                                                    />
+                                                )}
                                             </div>
                                         ))}
                                         {isNewPlanFormat && messageToUser && (
@@ -236,15 +245,33 @@ const AssistantMessageCard = React.memo(
                                             null
                                         )}
                                         {message?.isPlanningLoading && (
-                                            <div className="flex items-center gap-2 mt-3 mb-2 px-1">
-                                                <Loader2 className="w-3.5 h-3.5 animate-spin text-base-content/50 dark:text-base-content/60 shrink-0" />
-                                                <span className="text-xs text-base-content/50 dark:text-base-content/60">Planning...</span>
+                                            <div className="flex items-center gap-2 mt-3 mb-2 px-1 not-prose">
+                                                <Image
+                                                    src={AiIcon}
+                                                    width={22}
+                                                    height={22}
+                                                    alt="AI"
+                                                    className="rounded-full bg-[#3EA9FC] p-1 shrink-0"
+                                                />
+                                                <span className="text-[13px] font-semibold text-base-content/60 dark:text-base-content/70">
+                                                    Planning
+                                                </span>
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin text-base-content/40 dark:text-base-content/50 shrink-0 ml-1" />
                                             </div>
                                         )}
                                         {message?.isSynthesizerLoading && (
-                                            <div className="flex items-center gap-2 mt-3 mb-2 px-1">
-                                                <Loader2 className="w-3.5 h-3.5 animate-spin text-base-content/50 dark:text-base-content/60 shrink-0" />
-                                                <span className="text-xs text-base-content/50 dark:text-base-content/60">Preparing output...</span>
+                                            <div className="flex items-center gap-2 mt-3 mb-2 px-1 not-prose">
+                                                <Image
+                                                    src={AiIcon}
+                                                    width={22}
+                                                    height={22}
+                                                    alt="AI"
+                                                    className="rounded-full bg-[#3EA9FC] p-1 shrink-0"
+                                                />
+                                                <span className="text-[13px] font-semibold text-base-content/60 dark:text-base-content/70">
+                                                    Preparing output
+                                                </span>
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin text-base-content/40 dark:text-base-content/50 shrink-0 ml-1" />
                                             </div>
                                         )}
                                         {planning && <PlanningTasksCard plan={planning} isStreaming={message?.isStreaming} onAction={handlePlanningAction} />}

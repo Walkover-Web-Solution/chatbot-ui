@@ -2,6 +2,7 @@ import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent
 import { Check, CheckCircle2, ChevronDown, Circle, Loader2, MessageSquare, Pause, PauseCircle, Pencil, PlayCircle, RotateCcw, Sparkles, X, XCircle } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReasoningAccordion from "./ReasoningAccordion";
+import { useColor } from "@/components/Chatbot/hooks/useColor";
 
 interface PlanningTasksCardProps {
     plan: any;
@@ -10,6 +11,7 @@ interface PlanningTasksCardProps {
 }
 
 export default function PlanningTasksCard({ plan, isStreaming = false, onAction }: PlanningTasksCardProps) {
+    const { backgroundColor, textColor } = useColor();
     const taskRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const taskResultRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const [showQueryInputs, setShowQueryInputs] = useState(false);
@@ -378,8 +380,8 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                     let statusCircle: React.ReactNode;
                                     if (isActive) {
                                         statusCircle = (
-                                            <span className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-info flex items-center justify-center">
-                                                <Loader2 className="w-2.5 h-2.5 text-info animate-spin" />
+                                            <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                                                <Loader2 className="w-4 h-4 text-info animate-spin" />
                                             </span>
                                         );
                                     } else if (isDone) {
@@ -486,9 +488,10 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                                     }}
                                                                                     className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer select-none transition-colors ${
                                                                                         isSelected
-                                                                                            ? "bg-base-content text-base-100"
+                                                                                            ? ""
                                                                                             : "border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content hover:border-base-content/30 hover:bg-base-content/5"
                                                                                     }`}
+                                                                                    style={isSelected ? { backgroundColor, color: textColor } : undefined}
                                                                                 >
                                                                                     {opt}
                                                                                 </button>
@@ -503,9 +506,10 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                                 }}
                                                                                 className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer select-none transition-colors flex items-center gap-1.5 ${
                                                                                     useCustomAnswer
-                                                                                        ? "bg-base-content text-base-100"
+                                                                                        ? ""
                                                                                         : "border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content hover:border-base-content/30"
                                                                                 }`}
+                                                                                style={useCustomAnswer ? { backgroundColor, color: textColor } : undefined}
                                                                             >
                                                                                 <Pencil className="w-2.5 h-2.5" />
                                                                                 Custom
@@ -576,9 +580,10 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                                                     }}
                                                                                                     className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer select-none transition-colors ${
                                                                                                         isSelected
-                                                                                                            ? "bg-base-content text-base-100"
+                                                                                                            ? ""
                                                                                                             : "border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content hover:border-base-content/30"
                                                                                                     }`}
+                                                                                                    style={isSelected ? { backgroundColor, color: textColor } : undefined}
                                                                                                 >
                                                                                                     {opt}
                                                                                                 </button>
@@ -593,9 +598,10 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                                                                                 }}
                                                                                                 className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer select-none transition-colors flex items-center gap-1.5 ${
                                                                                                     useCustomAnswer
-                                                                                                        ? "bg-base-content text-base-100"
+                                                                                                        ? ""
                                                                                                         : "border border-base-300 dark:border-base-500 bg-base-100 dark:bg-base-700 text-base-content hover:border-base-content/30"
                                                                                                 }`}
+                                                                                                style={useCustomAnswer ? { backgroundColor, color: textColor } : undefined}
                                                                                             >
                                                                                                 <Pencil className="w-2.5 h-2.5" />
                                                                                                 Custom
@@ -691,8 +697,11 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                 <div className="flex items-center gap-2.5">
                                     <div className="flex-1 h-1 rounded-full bg-base-200 dark:bg-base-600 overflow-hidden">
                                         <div
-                                            className="h-full rounded-full bg-success transition-all duration-700"
-                                            style={{ width: `${tasks.length > 0 ? (doneCount / tasks.length) * 100 : 0}%` }}
+                                            className="h-full rounded-full transition-all duration-700"
+                                            style={{
+                                                width: `${tasks.length > 0 ? (doneCount / tasks.length) * 100 : 0}%`,
+                                                backgroundColor
+                                            }}
                                         />
                                     </div>
                                     <span className="text-[10.5px] text-base-content/45 dark:text-base-content/55 shrink-0 tabular-nums font-medium">{doneCount}/{tasks.length}</span>
@@ -713,7 +722,8 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                     disabled={isActionLoading || (parsedPlan && tasks.length === 0)}
                                     title={(parsedPlan && tasks.length === 0) ? "Waiting for tasks to be generated" : undefined}
                                     onClick={() => handleAction("proceed")}
-                                    className="w-full flex items-center justify-center gap-2 py-1.5 rounded-2xl text-[14px] font-semibold bg-base-content text-base-100 dark:bg-base-200 dark:text-base-content hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm active:scale-[0.98]"
+                                    className="w-full flex items-center justify-center gap-2 py-1.5 rounded-2xl text-[14px] font-semibold hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm active:scale-[0.98]"
+                                    style={{ backgroundColor, color: textColor }}
                                 >
                                     {isActionLoading
                                         ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
@@ -732,7 +742,8 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                                         (!isPausedDueToError && !allHumanQueriesAnswered && !showQueryInputs)
                                     }
                                     onClick={() => handleAction("update")}
-                                    className="w-full flex items-center justify-center gap-2 py-1.5 rounded-2xl text-[14px] font-semibold bg-primary text-primary-content hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm active:scale-[0.98]"
+                                    className="w-full flex items-center justify-center gap-2 py-1.5 rounded-2xl text-[14px] font-semibold hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm active:scale-[0.98]"
+                                    style={{ backgroundColor, color: textColor }}
                                 >
                                     {isActionLoading || isUpdatingPlan
                                         ? <><Loader2 className="w-4 h-4 animate-spin" /> {isPausedDueToError ? "Retrying..." : isExecutionPaused ? "Responding..." : "Updating..."}</>

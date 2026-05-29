@@ -51,7 +51,12 @@ export default function PlanningQuestionsCard({ questions, isStreaming = false, 
         setIsVisible(false);
         setTimeout(() => {
             setCurrentIdx(nextIdx);
-            setCustomText("");
+            const nextQuestion = questions[nextIdx];
+            if (nextQuestion && useCustom[nextQuestion.id]) {
+                setCustomText(answers[nextQuestion.id] || "");
+            } else {
+                setCustomText("");
+            }
             setIsVisible(true);
         }, 250);
     };
