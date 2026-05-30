@@ -15,6 +15,7 @@ import ChatbotHeader from '../Interface-Chatbot/ChatbotHeader';
 import ChatbotHeaderTab from '../Interface-Chatbot/ChatbotHeaderTab';
 import ChatbotTextField from '../Interface-Chatbot/ChatbotTextField';
 import MessageList from '../Interface-Chatbot/Messages/MessageList';
+import PlanningQuestionsCard from '../Interface-Chatbot/Messages/PlanningQuestionsCard';
 import StarterQuestions from '../Interface-Chatbot/Messages/StarterQuestions';
 
 // Utils
@@ -24,6 +25,7 @@ import { setToggleDrawer } from '@/store/chat/chatSlice';
 import { useAppDispatch } from '@/store/useTypedHooks';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { useChatEffects } from './hooks/useChatEffects';
+import { useSendMessage } from './hooks/useChatActions';
 import { useColor } from './hooks/useColor';
 import { useHelloEffects } from './hooks/useHelloEffects';
 import { useReduxEffects } from './hooks/useReduxEffects';
@@ -63,16 +65,49 @@ const EmptyChatView = React.memo(() => (
   </div>
 ));
 
-const ActiveChatView = React.memo(() => (
-  <div className="flex flex-col h-full overflow-auto" style={{ height: '100vh' }} data-testid="chatbot-active-view">
-    <div className="flex-1 overflow-y-auto max-w-5xl mx-auto w-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent" data-testid="chatbot-messages-container">
-      <MessageList />
+const ActiveChatView = React.memo(() => {
+  const { activePlanningQuestions, isLastMessageStreaming } = useCustomSelector((state) => {
+    const subThreadId = state.Chat?.subThreadId;
+    const messageIds = subThreadId ? state.Chat?.messageIds?.[subThreadId] || [] : [];
+    const lastMessageId = messageIds[0] || null;
+    const lastMessage = lastMessageId ? state.Chat?.msgIdAndDataMap?.[subThreadId]?.[lastMessageId] : null;
+    const planning = lastMessage?.planning;
+    const planData = planning?.plan;
+    const isPlanningCompleted = planning?.execution?.state === "completed";
+    const isNewPlanFormat = Boolean(planData && typeof planData === "object" && ("message_to_user" in planData || "questions" in planData));
+    const planQuestions = isNewPlanFormat && !isPlanningCompleted ? (planData.questions || []) : [];
+    return {
+      activePlanningQuestions: planQuestions as Array<{ id: string; question: string; options?: string[] }>,
+      isLastMessageStreaming: Boolean(lastMessage?.isStreaming),
+    };
+  });
+
+  const sendMessage = useSendMessage({});
+
+  return (
+    <div className="flex flex-col h-full overflow-auto" style={{ height: '100vh' }} data-testid="chatbot-active-view">
+      <div className="flex-1 overflow-y-auto max-w-5xl mx-auto w-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent" data-testid="chatbot-messages-container">
+        <MessageList />
+      </div>
+      <div className="max-w-5xl mx-auto w-full" data-testid="chatbot-input-section">
+        {activePlanningQuestions.length > 0 && (
+          <PlanningQuestionsCard
+            questions={activePlanningQuestions}
+            isStreaming={isLastMessageStreaming}
+            floatingMode
+            onSubmit={(answersText) =>
+              sendMessage({ message: answersText, mode: "plan", skipUserEcho: true, silent: true })
+            }
+          />
+        )}
+        <div className="px-3 pb-3">
+          <ChatbotTextField />
+        </div>
+      </div>
     </div>
-    <div className="max-w-5xl mx-auto p-3 pb-3 w-full" data-testid="chatbot-input-section">
-      <ChatbotTextField />
-    </div>
-  </div>
-));
+  );
+});
+
 
 
 function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {

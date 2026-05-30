@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { supportsLookbehind } from "@/utils/appUtility";
-import { X } from "lucide-react";
+import { X, ChevronDown } from "lucide-react";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -18,6 +18,7 @@ interface WorkingAccordionProps {
     toolsData?: Record<string, ToolCall>;
     isStreaming?: boolean;
     hasContent?: boolean;
+    planning?: any;
 }
 
 export default function WorkingAccordion({
@@ -25,6 +26,7 @@ export default function WorkingAccordion({
     toolsData,
     isStreaming,
     hasContent,
+    planning,
 }: WorkingAccordionProps) {
     const [expanded, setExpanded] = useState(false);
     const [animateIn, setAnimateIn] = useState(false);
@@ -37,7 +39,13 @@ export default function WorkingAccordion({
     const toolCount = toolEntries.length;
     const hasTools = toolCount > 0;
     const callingCount = toolEntries.filter(([, t]) => t?.status === "calling").length;
-    const isWorking = Boolean(isStreaming) || callingCount > 0;
+
+    // Check planning execution state
+    const execution = planning?.execution;
+    const executionState = execution?.state;
+    const isPlanningExecuting = executionState === "executing" || executionState === "running" || executionState === "queued";
+
+    const isWorking = Boolean(isStreaming) || callingCount > 0 || isPlanningExecuting;
 
     const handleScroll = () => {
         const el = contentRef.current;
@@ -82,40 +90,22 @@ export default function WorkingAccordion({
         if (!isStreaming && hasContent) closeCard();
     }, [isStreaming, hasContent]);
 
-    if (!hasReasoning && !hasTools) return null;
-
-    const chipLabel = isWorking ? "Working…" : "Working";
+    if (!hasReasoning && !hasTools && !planning) return null;
 
     return (
         <div className="mb-2 not-prose" data-testid="chatbot-interface-working-accordion">
             {!expanded && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                     <button
                         type="button"
                         onClick={() => openCard()}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-base-200/80 dark:bg-base-700/60 border border-base-300/60 dark:border-base-600/40 hover:bg-base-200 dark:hover:bg-base-700 transition-colors cursor-pointer"
+                        className="flex items-center gap-2 text-[13px] text-base-content/50 dark:text-base-content/60 hover:text-base-content/80 transition-colors cursor-pointer bg-transparent border-0 p-0 outline-none select-none"
                     >
-                        {isWorking ? (
-                            <span className="w-2 h-2 rounded-full bg-base-content/40 animate-pulse shrink-0" />
-                        ) : (
-                            <span className="w-2 h-2 rounded-full border border-base-content/30 shrink-0" />
-                        )}
-                        <span className="text-xs text-base-content/60 font-medium">{chipLabel}</span>
-                        {hasTools && (
-                            <span className="text-[10px] text-base-content/60 px-1.5 py-0.5 rounded-md bg-base-300/60 dark:bg-base-600/50 font-medium">
-                                {toolCount} {toolCount === 1 ? "tool" : "tools"}
-                            </span>
-                        )}
+                        <span className="font-semibold text-base-content/80 dark:text-base-content/95">
+                            {isWorking ? "Working" : "Worked"}
+                        </span>
+                        <ChevronDown className="w-3.5 h-3.5 text-base-content/40 shrink-0 ml-0.5" />
                     </button>
-                    {!isWorking && (
-                        <button
-                            type="button"
-                            onClick={() => openCard()}
-                            className="text-xs text-base-content/50 hover:text-base-content/80 transition-colors font-medium"
-                        >
-                            Show
-                        </button>
-                    )}
                 </div>
             )}
 

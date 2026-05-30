@@ -3,8 +3,7 @@ import { supportsLookbehind } from "@/utils/appUtility";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { X } from "lucide-react";
-
+import { X, ChevronDown } from "lucide-react";
 interface ReasoningAccordionProps {
     reasoning: string;
     isStreaming?: boolean;
@@ -68,34 +67,22 @@ export default function ReasoningAccordion({ reasoning, isStreaming, hasContent,
     if (!reasoning) return null;
 
     const title = label ?? "Reasoning";
-    const chipLabel = isStreaming ? "Thinking…" : title;
 
     return (
         <div className="mb-2 not-prose" data-testid="chatbot-interface-reasoning-accordion">
             {/* Collapsed pill */}
             {!expanded && (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                     <button
                         type="button"
                         onClick={() => openCard()}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-base-200/80 dark:bg-base-700/60 border border-base-300/60 dark:border-base-600/40 hover:bg-base-200 dark:hover:bg-base-700 transition-colors cursor-pointer"
+                        className="flex items-center gap-2 text-[13px] text-base-content/50 dark:text-base-content/60 hover:text-base-content/80 transition-colors cursor-pointer bg-transparent border-0 p-0 outline-none select-none"
                     >
-                        {isStreaming ? (
-                            <span className="w-2 h-2 rounded-full bg-base-content/40 animate-pulse shrink-0" />
-                        ) : (
-                            <span className="w-2 h-2 rounded-full border border-base-content/30 shrink-0" />
-                        )}
-                        <span className="text-xs text-base-content/60 font-medium">{chipLabel}</span>
+                        <span className="font-semibold text-base-content/80 dark:text-base-content/95">
+                            {isStreaming ? "Thinking" : title}
+                        </span>
+                        <ChevronDown className="w-3.5 h-3.5 text-base-content/40 shrink-0 ml-0.5" />
                     </button>
-                    {!isStreaming && (
-                        <button
-                            type="button"
-                            onClick={() => openCard()}
-                            className="text-xs text-base-content/50 hover:text-base-content/80 transition-colors font-medium"
-                        >
-                            Show
-                        </button>
-                    )}
                 </div>
             )}
 
