@@ -41,7 +41,6 @@
 
 /* all space */
 .all_available_space-parent-container {
-    background-color: #fff;
     z-index: 9999;
     box-sizing: border-box;
     height: 100%;
@@ -57,9 +56,6 @@
 /* popup */
 .popup-parent-container {
     position: fixed;
-    bottom: 5px;
-    right: 5px;
-    background-color: #fff;
     z-index: 9999;
     display: none;
     box-sizing: border-box;
