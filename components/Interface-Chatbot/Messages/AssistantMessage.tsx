@@ -1,6 +1,7 @@
 /* eslint-disable */
 import { useMessageFeedback, useSendMessage } from "@/components/Chatbot/hooks/useChatActions";
 import { MessageContext } from "@/components/Interface-Chatbot/InterfaceChatbot";
+import { ChatbotContext } from "@/components/context";
 import InterfaceGrid from "@/components/Grid/Grid";
 import { Anchor, Code, UnorderedList, OrderedList, ListItem } from "@/components/Interface-Chatbot/Interface-Markdown/MarkdownUtitily";
 import { supportsLookbehind } from "@/utils/appUtility";
@@ -81,6 +82,7 @@ const AssistantMessageCard = React.memo(
         const [isCopied, setIsCopied] = React.useState(false);
         const sendMessage = useSendMessage({});
         const { messageRef } = useContext(MessageContext);
+        const { hideToolCall } = useContext(ChatbotContext);
         const handleCopy = () => {
             copy(message?.chatbot_message || message?.content);
             setIsCopied(true);
@@ -216,6 +218,7 @@ const AssistantMessageCard = React.memo(
                                                 toolsData={toolsData}
                                                 isStreaming={message?.isStreaming}
                                                 hasContent={!!message?.content}
+                                                hideToolCall={hideToolCall}
                                             />
                                         ) : (
                                             <ReasoningAccordion reasoning={reasoning} isStreaming={message?.isStreaming} hasContent={!!message?.content} />
@@ -257,7 +260,7 @@ const AssistantMessageCard = React.memo(
                                             </div>
                                         )}
                                         {planning && <PlanningTasksCard plan={planning} isStreaming={message?.isStreaming} onAction={handlePlanningAction} />}
-                                        {!planning && <ToolCallAccordion toolsData={toolsData} />}
+                                        {!planning && !hideToolCall && <ToolCallAccordion toolsData={toolsData} />}
                                         <ReviewPhaseAccordion reviewPhases={reviewPhases} />
                                         {message?.isStreaming && !message?.content && !suppressContent && !message?.isPlanningLoading && !message?.isSynthesizerLoading ? (
                                             <div className="loading-indicator" style={themePalette}>

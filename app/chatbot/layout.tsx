@@ -111,7 +111,8 @@ function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode,
         onConfigChange,
         toggleHideCloseButton,
         isHelloUser,
-        environment
+        environment,
+        hideToolCall: !!(chatbotConfig as any)?.hide_tool,
     }), [chatbotConfig, chatbot_id, userId, token, themeColor, onConfigChange, toggleHideCloseButton, isHelloUser, environment]);
 
     return (
