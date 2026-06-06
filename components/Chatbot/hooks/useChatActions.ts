@@ -144,10 +144,11 @@ export const useSendMessage = ({
     const messageRef = propMessageRef ?? context.messageRef;
     const timeoutIdRef = propTimeoutIdRef ?? context.timeoutIdRef;
     const { tabSessionId, chatSessionId } = useChatContext();
-    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, helloMode, latestMessageId } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, helloMode, latestMessageId, defaultErrorMessage } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
+        defaultErrorMessage: state.appInfo?.[tabSessionId]?.defaultErrorMessage,
         versionId: state.appInfo?.[tabSessionId]?.versionId || "null",
         variables: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.interfaceContext?.[state?.appInfo?.[tabSessionId]?.bridgeName]?.variables,
         selectedAiServiceAndModal: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.selectedAiServiceAndModal || null,
@@ -624,6 +625,10 @@ export const useSendMessage = ({
                             // Not JSON, use error message as-is
                         }
 
+                        if (typeof defaultErrorMessage === "string" && defaultErrorMessage.trim()) {
+                            displayContent = defaultErrorMessage;
+                        }
+
                         globalDispatch(setError(errorMessage));
 
                         if (isExecutionStreamActive || isPlanningStreamActive || mode === "plan" || isInlinePlanRequest) {
@@ -812,15 +817,25 @@ export const useSendMessage = ({
 
         if (!response?.success && response?.error !== "aborted") {
             globalDispatch(setLoading(false));
-            if (!isInlinePlanRequest) {
+            const rawErr = response?.error || "Failed to send message. Please try again.";
+            if (typeof defaultErrorMessage === "string" && defaultErrorMessage.trim()) {
+                globalDispatch(updateLastAssistantMessage({
+                    role: "assistant",
+                    isStreaming: false,
+                    wait: false,
+                    content: defaultErrorMessage,
+                    error: rawErr,
+                }));
+            } else if (!isInlinePlanRequest) {
                 globalDispatch(removeMessages({ numberOfMessages: 2 }));
             }
-            globalDispatch(setError(response?.error || "Failed to send message. Please try again."));
+            globalDispatch(setError(rawErr));
         }
     }, [
         threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal,
         userId, threadList, versionId, images, messageRef, globalDispatch,
-        startTimeoutTimer, chatSessionId, helloMode, timeoutIdRef, latestMessageId
+        startTimeoutTimer, chatSessionId, helloMode, timeoutIdRef, latestMessageId,
+        defaultErrorMessage
     ]);
 
     sendMessageRef.current = sendMessage;
