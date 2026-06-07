@@ -55,7 +55,8 @@ function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode,
             dispatch(setDataInAppInfoReducer({
                 chatBotId: chatbot_id,
                 userId: userId,
-                config: config
+                config: config,
+                ...(config?.defaultErrorMessage ? { defaultErrorMessage: config.defaultErrorMessage } : {})
             }));
         }
     }, [chatbot_id, userId, config, chatSessionId]);

@@ -152,6 +152,11 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
     if ('hideFullScreenButton' in receivedData) {
       dispatch(setDataInAppInfoReducer({ hideFullScreenButton: receivedData.hideFullScreenButton }));
     }
+
+    // Allow parent to set a default error message via SendDataToChatbot({ defaultErrorMessage: "..." })
+    if ('defaultErrorMessage' in receivedData) {
+      dispatch(setDataInAppInfoReducer({ defaultErrorMessage: receivedData.defaultErrorMessage }));
+    }
   }
 
 

@@ -1,6 +1,8 @@
 'use client';
 /* eslint-disable */
 import { useColor } from "@/components/Chatbot/hooks/useColor";
+import { useChatContext } from "@/components/Chatbot/hooks/useChatActions";
+import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ChatbotContext } from "@/components/context";
 import React, { useContext, useMemo } from "react";
 import AssistantMessageCard from "./AssistantMessage";
@@ -39,6 +41,10 @@ const PLAN_ANSWER_PREFIX_RE = /^\s*q\d+\s*:/i;
 
 function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps) {
   const { backgroundColor, textColor } = useColor();
+  const { tabSessionId } = useChatContext();
+  const { defaultErrorMessage } = useCustomSelector((state) => ({
+    defaultErrorMessage: state.appInfo?.[tabSessionId]?.defaultErrorMessage,
+  }));
   const { hideToolCall } = useContext(ChatbotContext);
 
   /**
@@ -77,8 +83,10 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
                 urls: message?.llm_urls || [],
                 image_urls: message?.llm_urls || [],
               }}
+              isError={!!message?.error}
               textColor={textColor}
               backgroundColor={backgroundColor}
+              defaultErrorMessage={defaultErrorMessage}
             />
           )}
         </>
@@ -101,6 +109,7 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
                 isError={true}
                 textColor={textColor}
                 backgroundColor={backgroundColor}
+                defaultErrorMessage={defaultErrorMessage}
               />
             )}
           </>
@@ -112,6 +121,7 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
             message={message}
             textColor={textColor}
             backgroundColor={backgroundColor}
+            defaultErrorMessage={defaultErrorMessage}
           />
         );
 

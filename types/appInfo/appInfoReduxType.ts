@@ -20,5 +20,6 @@ export interface $AppInfoReduxType {
         widget: string, //weather to set the flag true or false in the sendmessaage api
         image_model: string, //weather to set the flag true or false in the sendmessaage api
         mode: boolean, //whether to show Fast/Planning mode dropdown and send mode in sendMessage api
+        defaultErrorMessage?: string, //user-configurable fallback shown instead of the original error
     }
 }
