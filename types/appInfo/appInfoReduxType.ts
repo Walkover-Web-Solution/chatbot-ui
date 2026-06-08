@@ -20,6 +20,11 @@ export interface $AppInfoReduxType {
         widget: string, //weather to set the flag true or false in the sendmessaage api
         image_model: string, //weather to set the flag true or false in the sendmessaage api
         mode: boolean, //whether to show Fast/Planning mode dropdown and send mode in sendMessage api
+        defaultMessage?: string, //default/first message shown in empty state
+        mcpConfig?: Array<{
+            name: string;
+            url: string;
+        }>; //MCP servers array
         defaultErrorMessage?: string, //user-configurable fallback shown instead of the original error
     }
 }
