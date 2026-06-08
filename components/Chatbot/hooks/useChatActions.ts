@@ -652,6 +652,7 @@ export const useSendMessage = ({
                             }));
                         }
 
+                        emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', { message_id: event || null, error: errorMessage });
                         globalDispatch(setLoading(false));
                         break;
                     }
@@ -698,6 +699,7 @@ export const useSendMessage = ({
                                 }
                             } catch (_) {}
                             globalDispatch(updatePlanningExecutionState({ executionState: "paused" }));
+                            emitEventToParent('MESSAGE_RECEIVED', event?.response?.data);
                             globalDispatch(setLoading(false));
                             break;
                         }
@@ -735,6 +737,7 @@ export const useSendMessage = ({
                             } else {
                                 globalDispatch(updatePlanningExecutionState({ executionState: "pending" }));
                             }
+                            emitEventToParent('MESSAGE_RECEIVED', event?.response?.data);
                             globalDispatch(setLoading(false));
                             break;
                         }
@@ -806,6 +809,7 @@ export const useSendMessage = ({
                                 ...imageUrlsPatch,
                             }));
                         }
+                        emitEventToParent('MESSAGE_RECEIVED', event?.response?.data);
                         globalDispatch(setLoading(false));
                         break;
                     }
