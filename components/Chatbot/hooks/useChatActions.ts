@@ -144,7 +144,7 @@ export const useSendMessage = ({
     const messageRef = propMessageRef ?? context.messageRef;
     const timeoutIdRef = propTimeoutIdRef ?? context.timeoutIdRef;
     const { tabSessionId, chatSessionId } = useChatContext();
-    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, helloMode, latestMessageId, defaultErrorMessage } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, helloMode, latestMessageId, mcpConfig, defaultErrorMessage } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
@@ -156,6 +156,7 @@ export const useSendMessage = ({
         threadList: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId],
         helloMode: state.Hello?.[chatSessionId]?.mode || [],
         latestMessageId: state.Chat?.messageIds?.[state.appInfo?.[tabSessionId]?.subThreadId]?.[0],
+        mcpConfig: state.appInfo?.[tabSessionId]?.mcpConfig,
     }));
 
     const { images } = useCustomSelector((state) => ({
@@ -219,6 +220,20 @@ export const useSendMessage = ({
             globalDispatch(setHelloEventMessage({ message: { role: "assistant", content: "", wait: true } }));
         }
 
+        // Build configuration object with model and mcp_config
+        const configuration: any = {};
+        let service: string | undefined;
+        
+        if (selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) {
+            configuration.model = selectedAiServiceAndModal.modal;
+            service = selectedAiServiceAndModal.service;
+        }
+        if (mcpConfig && Array.isArray(mcpConfig) && mcpConfig.length > 0) {
+            configuration.mcp_config = {
+                servers: mcpConfig
+            };
+        }
+
         const payload = {
             message: textMessage,
             images: imageUrls,
@@ -232,14 +247,12 @@ export const useSendMessage = ({
             thread_flag: ((threadList?.length === 1 && threadList?.[0]?.thread_id === threadList?.[0]?.sub_thread_id && threadList?.[0]?.display_name === threadList?.[0]?.thread_id) || (threadList?.[0]?.newChat && threadList?.[0]?.sub_thread_id === subThreadId)) ? true : false,
             chatBotId: chatSessionId,
             version_id: versionId === "null" ? null : versionId,
-            ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {
-                configuration: { model: selectedAiServiceAndModal?.modal },
-                service: selectedAiServiceAndModal?.service
-            } : {}),
             ...(action ? { action } : {}),
             ...(mode ? { mode } : {}),
             ...(silent ? { silent } : {}),
             ...(action === "respond" && task_id ? { task_id } : {}),
+            ...(service ? { service } : {}),
+            ...(Object.keys(configuration).length > 0 ? { configuration } : {}),
         };
         emitEventToParent('MESSAGE_SENT', payload.message);
 
