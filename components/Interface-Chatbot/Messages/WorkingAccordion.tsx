@@ -18,6 +18,7 @@ interface WorkingAccordionProps {
     toolsData?: Record<string, ToolCall>;
     isStreaming?: boolean;
     hasContent?: boolean;
+    hideToolCall?: boolean;
 }
 
 export default function WorkingAccordion({
@@ -25,6 +26,7 @@ export default function WorkingAccordion({
     toolsData,
     isStreaming,
     hasContent,
+    hideToolCall,
 }: WorkingAccordionProps) {
     const [expanded, setExpanded] = useState(false);
     const [animateIn, setAnimateIn] = useState(false);
@@ -163,7 +165,7 @@ export default function WorkingAccordion({
                         {hasReasoning && hasTools && (
                             <div className="border-t border-base-200 dark:border-base-700" />
                         )}
-                        {hasTools && toolsData && (
+                        {hasTools && toolsData && !hideToolCall && (
                             <div className="px-4 py-3">
                                 <p className="text-[10px] font-semibold uppercase tracking-wide text-base-content/40 mb-1.5">
                                     Tools used

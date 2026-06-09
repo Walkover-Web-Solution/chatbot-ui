@@ -55,7 +55,8 @@ function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode,
             dispatch(setDataInAppInfoReducer({
                 chatBotId: chatbot_id,
                 userId: userId,
-                config: config
+                config: config,
+                ...(config?.defaultErrorMessage ? { defaultErrorMessage: config.defaultErrorMessage } : {})
             }));
         }
     }, [chatbot_id, userId, config, chatSessionId]);
@@ -111,7 +112,8 @@ function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode,
         onConfigChange,
         toggleHideCloseButton,
         isHelloUser,
-        environment
+        environment,
+        hideToolCall: !!(chatbotConfig as any)?.hide_tool,
     }), [chatbotConfig, chatbot_id, userId, token, themeColor, onConfigChange, toggleHideCloseButton, isHelloUser, environment]);
 
     return (

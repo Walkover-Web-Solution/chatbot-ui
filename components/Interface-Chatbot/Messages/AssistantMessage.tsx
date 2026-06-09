@@ -1,6 +1,7 @@
 /* eslint-disable */
-import { useMessageFeedback, useSendMessage } from "@/components/Chatbot/hooks/useChatActions";
+import { useChatContext, useMessageFeedback, useSendMessage } from "@/components/Chatbot/hooks/useChatActions";
 import { MessageContext } from "@/components/Interface-Chatbot/InterfaceChatbot";
+import { ChatbotContext } from "@/components/context";
 import InterfaceGrid from "@/components/Grid/Grid";
 import { Anchor, Code, UnorderedList, OrderedList, ListItem } from "@/components/Interface-Chatbot/Interface-Markdown/MarkdownUtitily";
 import { supportsLookbehind } from "@/utils/appUtility";
@@ -77,10 +78,15 @@ const AssistantMessageCard = React.memo(
         message,
         backgroundColor,
         isError = false,
+        defaultErrorMessage,
     }: any) => {
         const [isCopied, setIsCopied] = React.useState(false);
         const sendMessage = useSendMessage({});
         const { messageRef } = useContext(MessageContext);
+        const errorDisplayText = (typeof defaultErrorMessage === "string" && defaultErrorMessage.trim())
+            ? defaultErrorMessage
+            : message?.error;
+        const { hideToolCall } = useContext(ChatbotContext);
         const handleCopy = () => {
             copy(message?.chatbot_message || message?.content);
             setIsCopied(true);
@@ -181,37 +187,42 @@ const AssistantMessageCard = React.memo(
                                         <AlertCircle className="w-4 h-4" />
                                         <p>Timeout reached. Please try again later.</p>
                                     </div>
-                                ) : message.image_urls?.length > 0 ? (
-                                    message?.image_urls?.map((image: any) => (
-                                        <div className="space-y-2" key={image}>
-                                            <ImageWithFallback
-                                                src={image?.image_url || image?.permanent_url}
-                                                permanentUrl={image?.permanent_url}
-                                                alt="Loading image, please wait..."
-                                                width={400}
-                                                height={400}
-                                                loading="lazy"
-                                                className="w-full max-h-[400px] min-h-[100px] rounded-lg object-cover"
-                                            />
-                                            <a
-                                                href={image?.image_url || image?.permanent_url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="btn btn-ghost btn-sm w-full text-primary flex items-center justify-center"
-                                            >
-                                                <Maximize2 className="w-4 h-4 mr-2" />
-                                                View Full Image
-                                            </a>
-                                        </div>
-                                    ))
                                 ) : (
-                                    <div className="prose dark:prose-invert break-words" style={{ color: theme.palette.text.primary }}>
+                                    <>
+                                        {message?.image_urls?.length > 0 && (
+                                            <div className="space-y-3 mb-3">
+                                                {message?.image_urls?.map((image: any, idx: number) => (
+                                                    <div className="space-y-2" key={image?.image_url || image?.permanent_url || idx}>
+                                                        <ImageWithFallback
+                                                            src={image?.image_url || image?.permanent_url}
+                                                            permanentUrl={image?.permanent_url}
+                                                            alt="Loading image, please wait..."
+                                                            width={400}
+                                                            height={400}
+                                                            loading="lazy"
+                                                            className="w-full max-h-[400px] min-h-[100px] rounded-lg object-cover"
+                                                        />
+                                                        <a
+                                                            href={image?.image_url || image?.permanent_url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="btn btn-ghost btn-sm w-full text-primary flex items-center justify-center"
+                                                        >
+                                                            <Maximize2 className="w-4 h-4 mr-2" />
+                                                            View Full Image
+                                                        </a>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                        <div className="prose dark:prose-invert break-words" style={{ color: theme.palette.text.primary }}>
                                         {planning ? (
                                             <WorkingAccordion
                                                 reasoning={reasoning}
                                                 toolsData={toolsData}
                                                 isStreaming={message?.isStreaming}
                                                 hasContent={!!message?.content}
+                                                hideToolCall={hideToolCall}
                                             />
                                         ) : (
                                             <ReasoningAccordion reasoning={reasoning} isStreaming={message?.isStreaming} hasContent={!!message?.content} />
@@ -253,7 +264,7 @@ const AssistantMessageCard = React.memo(
                                             </div>
                                         )}
                                         {planning && <PlanningTasksCard plan={planning} isStreaming={message?.isStreaming} onAction={handlePlanningAction} />}
-                                        {!planning && <ToolCallAccordion toolsData={toolsData} />}
+                                        {!planning && !hideToolCall && <ToolCallAccordion toolsData={toolsData} />}
                                         <ReviewPhaseAccordion reviewPhases={reviewPhases} />
                                         {message?.isStreaming && !message?.content && !suppressContent && !message?.isPlanningLoading && !message?.isSynthesizerLoading ? (
                                             <div className="loading-indicator" style={themePalette}>
@@ -264,7 +275,7 @@ const AssistantMessageCard = React.memo(
                                         ) : (() => {
                                             if (suppressContent) return null;
                                             const rawContent = isError
-                                                ? message?.error
+                                                ? errorDisplayText
                                                 : message?.chatbot_message || message?.content;
 
                                             let parsedContent: any = null;
@@ -316,7 +327,7 @@ const AssistantMessageCard = React.memo(
                                             // Check if content contains HTML
                                             const messageContent = !isError
                                                 ? message?.chatbot_message || message?.content
-                                                : message.error;
+                                                : errorDisplayText;
 
                                             // Check if it's Rich UI JSON
                                             if (
@@ -376,7 +387,8 @@ const AssistantMessageCard = React.memo(
                                                 </ReactMarkdown>
                                             );
                                         })()}
-                                    </div>
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         )}
