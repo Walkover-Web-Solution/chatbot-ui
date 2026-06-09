@@ -66,23 +66,41 @@ const EmptyChatView = React.memo(({ defaultMessage }: { defaultMessage?: string 
 ));
 
 const ActiveChatView = React.memo(() => {
-  const { activePlanningQuestions, isLastMessageStreaming } = useCustomSelector((state) => {
+  const { activePlanningQuestions, executionWaitingTaskId, executionWaitingQuestions, isLastMessageStreaming } = useCustomSelector((state) => {
     const subThreadId = state.Chat?.subThreadId;
     const messageIds = subThreadId ? state.Chat?.messageIds?.[subThreadId] || [] : [];
     const lastMessageId = messageIds[0] || null;
     const lastMessage = lastMessageId ? state.Chat?.msgIdAndDataMap?.[subThreadId]?.[lastMessageId] : null;
     const planning = lastMessage?.planning;
     const planData = planning?.plan;
-    const isPlanningCompleted = planning?.execution?.state === "completed";
+    const execution = planning?.execution;
+    const isPlanningCompleted = execution?.state === "completed";
     const isNewPlanFormat = Boolean(planData && typeof planData === "object" && ("message_to_user" in planData || "questions" in planData));
     const planQuestions = isNewPlanFormat && !isPlanningCompleted ? (planData.questions || []) : [];
+
+    let waitingTaskId = "";
+    let waitingQuestions: Array<{ id: string; question: string; options?: string[] }> = [];
+    if (planQuestions.length === 0 && execution?.tasks && typeof execution.tasks === "object") {
+      const entry = Object.entries(execution.tasks).find(
+        ([, t]: [string, any]) => t?.status === "waiting_for_user" && Array.isArray(t?.questions) && t.questions.length > 0,
+      );
+      if (entry) {
+        waitingTaskId = entry[0];
+        waitingQuestions = (entry[1] as any).questions;
+      }
+    }
+
     return {
       activePlanningQuestions: planQuestions as Array<{ id: string; question: string; options?: string[] }>,
+      executionWaitingTaskId: waitingTaskId,
+      executionWaitingQuestions: waitingQuestions,
       isLastMessageStreaming: Boolean(lastMessage?.isStreaming),
     };
   });
 
   const sendMessage = useSendMessage({});
+
+  const showExecutionQuestions = activePlanningQuestions.length === 0 && executionWaitingQuestions.length > 0;
 
   return (
     <div className="flex flex-col h-full overflow-auto" style={{ height: '100vh' }} data-testid="chatbot-active-view">
@@ -97,6 +115,23 @@ const ActiveChatView = React.memo(() => {
             floatingMode
             onSubmit={(answersText) =>
               sendMessage({ message: answersText, mode: "plan", skipUserEcho: true, silent: true })
+            }
+          />
+        )}
+        {showExecutionQuestions && (
+          <PlanningQuestionsCard
+            questions={executionWaitingQuestions}
+            isStreaming={isLastMessageStreaming}
+            floatingMode
+            onSubmit={(answersText) =>
+              sendMessage({
+                message: answersText,
+                action: "respond",
+                mode: "plan",
+                skipUserEcho: true,
+                silent: true,
+                task_id: executionWaitingTaskId,
+              })
             }
           />
         )}

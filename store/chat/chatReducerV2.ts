@@ -13,6 +13,7 @@ interface PlanTask {
     result?: string;
     error?: string;
     reasoning?: string;
+    questions?: Array<{ id: string; question: string; options?: string[] }>;
 }
 
 interface PlanExecution {
@@ -244,7 +245,7 @@ export const chatReducerV2 = {
         message.planning.currentAnswers = action.payload.answers;
     },
 
-    updatePlanningExecutionState: (state, action: PayloadAction<{ executionState?: string; taskUpdate?: { id: string; title?: string; status?: string; result?: string; error?: string }; taskId?: string; taskDelta?: string; taskReasoning?: string }>) => {
+    updatePlanningExecutionState: (state, action: PayloadAction<{ executionState?: string; taskUpdate?: { id: string; title?: string; status?: string; result?: string; error?: string; questions?: Array<{ id: string; question: string; options?: string[] }> }; taskId?: string; taskDelta?: string; taskReasoning?: string }>) => {
         const subThreadId = state.subThreadId;
         if (!subThreadId || !state.messageIds[subThreadId]?.length) return;
         

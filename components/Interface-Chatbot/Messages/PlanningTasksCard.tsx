@@ -69,6 +69,14 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
 
     const humanQueryTasks = useMemo(() => tasks.filter((t) => t.status === "waiting_for_user" && t.human_query && !t.human_response), [tasks]);
 
+    const hasFloatingExecutionQuestions = useMemo(() => {
+        const executionTasks = execution?.tasks;
+        if (!executionTasks || typeof executionTasks !== "object") return false;
+        return Object.values(executionTasks).some((t: any) =>
+            t?.status === "waiting_for_user" && Array.isArray(t?.questions) && t.questions.length > 0,
+        );
+    }, [execution?.tasks]);
+
     const humanQueriesKey = useMemo(() => {
         return JSON.stringify(humanQueryTasks.map(t => ({ id: t.id, query: t.human_query })));
     }, [humanQueryTasks]);
@@ -711,7 +719,7 @@ export default function PlanningTasksCard({ plan, isStreaming = false, onAction 
                     </div>
 
                     {/* ── Action buttons — outside card, full-width Proceed ─ */}
-                    {!isExecutionCompleted && (isStreaming ? (hasHumanQueries || isExecutionPaused) : true) && (
+                    {!isExecutionCompleted && !hasFloatingExecutionQuestions && (isStreaming ? (hasHumanQueries || isExecutionPaused) : true) && (
                         /* Small horizontal inset so buttons don't span edge-to-edge like the card */
                         <div className="flex flex-col gap-1.5 px-0.5">
 

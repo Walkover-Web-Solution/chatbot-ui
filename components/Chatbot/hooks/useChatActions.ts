@@ -356,12 +356,16 @@ export const useSendMessage = ({
                 if (parsed.event === "task_waiting_for_user") {
                     isExecutionStreamActive = true;
                     isExecutionWaitingForUser = true;
+                    const incomingQuestions = Array.isArray(parsed.questions) ? parsed.questions : [];
                     globalDispatch(updatePlanningExecutionState({
                         executionState: "paused",
                         taskUpdate: {
                             id: parsed.task_id,
                             title: parsed.title,
                             status: "waiting_for_user",
+                            ...(incomingQuestions.length > 0 ? { questions: incomingQuestions } : {}),
+                            ...(parsed.result ? { result: parsed.result } : {}),
+                            ...(parsed.error ? { error: parsed.error } : {}),
                         },
                     }));
                     return true;
