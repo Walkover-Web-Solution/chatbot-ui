@@ -28,6 +28,11 @@ interface InterfaceData {
   serviceChanged?: string;
   stream?: string;
   theme?: "light" | "dark" | "system";
+  defaultMessage?: string;
+  mcpConfig?: Array<{
+    name: string;
+    url: string;
+  }>;
 }
 
 const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
@@ -151,6 +156,21 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
 
     if ('hideFullScreenButton' in receivedData) {
       dispatch(setDataInAppInfoReducer({ hideFullScreenButton: receivedData.hideFullScreenButton }));
+    }
+
+    // Handle defaultMessage
+    if ('defaultMessage' in receivedData) {
+      dispatch(setDataInAppInfoReducer({ defaultMessage: receivedData.defaultMessage }));
+    }
+
+    // Handle mcpConfig
+    if ('mcpConfig' in receivedData) {
+      dispatch(setDataInAppInfoReducer({ mcpConfig: receivedData.mcpConfig }));
+    }
+
+    // Allow parent to set a default error message via SendDataToChatbot({ defaultErrorMessage: "..." })
+    if ('defaultErrorMessage' in receivedData) {
+      dispatch(setDataInAppInfoReducer({ defaultErrorMessage: receivedData.defaultErrorMessage }));
     }
   }
 

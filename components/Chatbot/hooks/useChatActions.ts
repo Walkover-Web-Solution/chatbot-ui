@@ -144,10 +144,11 @@ export const useSendMessage = ({
     const messageRef = propMessageRef ?? context.messageRef;
     const timeoutIdRef = propTimeoutIdRef ?? context.timeoutIdRef;
     const { tabSessionId, chatSessionId } = useChatContext();
-    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, helloMode, latestMessageId } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, helloMode, latestMessageId, mcpConfig, defaultErrorMessage } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
+        defaultErrorMessage: state.appInfo?.[tabSessionId]?.defaultErrorMessage,
         versionId: state.appInfo?.[tabSessionId]?.versionId || "null",
         variables: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.interfaceContext?.[state?.appInfo?.[tabSessionId]?.bridgeName]?.variables,
         selectedAiServiceAndModal: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.selectedAiServiceAndModal || null,
@@ -155,6 +156,7 @@ export const useSendMessage = ({
         threadList: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId],
         helloMode: state.Hello?.[chatSessionId]?.mode || [],
         latestMessageId: state.Chat?.messageIds?.[state.appInfo?.[tabSessionId]?.subThreadId]?.[0],
+        mcpConfig: state.appInfo?.[tabSessionId]?.mcpConfig,
     }));
 
     const { images } = useCustomSelector((state) => ({
@@ -218,6 +220,20 @@ export const useSendMessage = ({
             globalDispatch(setHelloEventMessage({ message: { role: "assistant", content: "", wait: true } }));
         }
 
+        // Build configuration object with model and mcp_config
+        const configuration: any = {};
+        let service: string | undefined;
+        
+        if (selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) {
+            configuration.model = selectedAiServiceAndModal.modal;
+            service = selectedAiServiceAndModal.service;
+        }
+        if (mcpConfig && Array.isArray(mcpConfig) && mcpConfig.length > 0) {
+            configuration.mcp_config = {
+                servers: mcpConfig
+            };
+        }
+
         const payload = {
             message: textMessage,
             images: imageUrls,
@@ -231,14 +247,12 @@ export const useSendMessage = ({
             thread_flag: ((threadList?.length === 1 && threadList?.[0]?.thread_id === threadList?.[0]?.sub_thread_id && threadList?.[0]?.display_name === threadList?.[0]?.thread_id) || (threadList?.[0]?.newChat && threadList?.[0]?.sub_thread_id === subThreadId)) ? true : false,
             chatBotId: chatSessionId,
             version_id: versionId === "null" ? null : versionId,
-            ...((selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) ? {
-                configuration: { model: selectedAiServiceAndModal?.modal },
-                service: selectedAiServiceAndModal?.service
-            } : {}),
             ...(action ? { action } : {}),
             ...(mode ? { mode } : {}),
             ...(silent ? { silent } : {}),
             ...(action === "respond" && task_id ? { task_id } : {}),
+            ...(service ? { service } : {}),
+            ...(Object.keys(configuration).length > 0 ? { configuration } : {}),
         };
         emitEventToParent('MESSAGE_SENT', payload.message);
 
@@ -624,6 +638,10 @@ export const useSendMessage = ({
                             // Not JSON, use error message as-is
                         }
 
+                        if (typeof defaultErrorMessage === "string" && defaultErrorMessage.trim()) {
+                            displayContent = defaultErrorMessage;
+                        }
+
                         globalDispatch(setError(errorMessage));
 
                         if (isExecutionStreamActive || isPlanningStreamActive || mode === "plan" || isInlinePlanRequest) {
@@ -647,6 +665,7 @@ export const useSendMessage = ({
                             }));
                         }
 
+                        emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', { message_id: event || null, error: errorMessage });
                         globalDispatch(setLoading(false));
                         break;
                     }
@@ -693,6 +712,7 @@ export const useSendMessage = ({
                                 }
                             } catch (_) {}
                             globalDispatch(updatePlanningExecutionState({ executionState: "paused" }));
+                            emitEventToParent('MESSAGE_RECEIVED', event?.response?.data);
                             globalDispatch(setLoading(false));
                             break;
                         }
@@ -730,6 +750,7 @@ export const useSendMessage = ({
                             } else {
                                 globalDispatch(updatePlanningExecutionState({ executionState: "pending" }));
                             }
+                            emitEventToParent('MESSAGE_RECEIVED', event?.response?.data);
                             globalDispatch(setLoading(false));
                             break;
                         }
@@ -801,6 +822,7 @@ export const useSendMessage = ({
                                 ...imageUrlsPatch,
                             }));
                         }
+                        emitEventToParent('MESSAGE_RECEIVED', event?.response?.data);
                         globalDispatch(setLoading(false));
                         break;
                     }
@@ -812,15 +834,25 @@ export const useSendMessage = ({
 
         if (!response?.success && response?.error !== "aborted") {
             globalDispatch(setLoading(false));
-            if (!isInlinePlanRequest) {
+            const rawErr = response?.error || "Failed to send message. Please try again.";
+            if (typeof defaultErrorMessage === "string" && defaultErrorMessage.trim()) {
+                globalDispatch(updateLastAssistantMessage({
+                    role: "assistant",
+                    isStreaming: false,
+                    wait: false,
+                    content: defaultErrorMessage,
+                    error: rawErr,
+                }));
+            } else if (!isInlinePlanRequest) {
                 globalDispatch(removeMessages({ numberOfMessages: 2 }));
             }
-            globalDispatch(setError(response?.error || "Failed to send message. Please try again."));
+            globalDispatch(setError(rawErr));
         }
     }, [
         threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal,
         userId, threadList, versionId, images, messageRef, globalDispatch,
-        startTimeoutTimer, chatSessionId, helloMode, timeoutIdRef, latestMessageId
+        startTimeoutTimer, chatSessionId, helloMode, timeoutIdRef, latestMessageId,
+        defaultErrorMessage
     ]);
 
     sendMessageRef.current = sendMessage;

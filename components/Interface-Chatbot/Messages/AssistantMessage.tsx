@@ -1,6 +1,7 @@
 /* eslint-disable */
-import { useMessageFeedback, useSendMessage } from "@/components/Chatbot/hooks/useChatActions";
+import { useChatContext, useMessageFeedback, useSendMessage } from "@/components/Chatbot/hooks/useChatActions";
 import { MessageContext } from "@/components/Interface-Chatbot/InterfaceChatbot";
+import { ChatbotContext } from "@/components/context";
 import InterfaceGrid from "@/components/Grid/Grid";
 import { Anchor, Code, UnorderedList, OrderedList, ListItem } from "@/components/Interface-Chatbot/Interface-Markdown/MarkdownUtitily";
 import { supportsLookbehind } from "@/utils/appUtility";
@@ -79,10 +80,15 @@ const AssistantMessageCard = React.memo(
         message,
         backgroundColor,
         isError = false,
+        defaultErrorMessage,
     }: any) => {
         const [isCopied, setIsCopied] = React.useState(false);
         const sendMessage = useSendMessage({});
         const { messageRef } = useContext(MessageContext);
+        const errorDisplayText = (typeof defaultErrorMessage === "string" && defaultErrorMessage.trim())
+            ? defaultErrorMessage
+            : message?.error;
+        const { hideToolCall } = useContext(ChatbotContext);
         const handleCopy = () => {
             copy(message?.chatbot_message || message?.content);
             setIsCopied(true);
@@ -219,6 +225,7 @@ const AssistantMessageCard = React.memo(
                                                 isStreaming={message?.isStreaming}
                                                 hasContent={!!message?.content}
                                                 planning={planning}
+                                                hideToolCall={hideToolCall}
                                             />
                                         ) : (
                                             <ReasoningAccordion reasoning={reasoning} isStreaming={message?.isStreaming} hasContent={!!message?.content} />
@@ -275,7 +282,7 @@ const AssistantMessageCard = React.memo(
                                             </div>
                                         )}
                                         {planning && <PlanningTasksCard plan={planning} isStreaming={message?.isStreaming} onAction={handlePlanningAction} />}
-                                        {!planning && <ToolCallAccordion toolsData={toolsData} />}
+                                        {!planning && !hideToolCall && <ToolCallAccordion toolsData={toolsData} />}
                                         <ReviewPhaseAccordion reviewPhases={reviewPhases} />
                                         {message?.isStreaming && !message?.content && !suppressContent && !message?.isPlanningLoading && !message?.isSynthesizerLoading ? (
                                             <div className="loading-indicator" style={themePalette}>
@@ -286,7 +293,7 @@ const AssistantMessageCard = React.memo(
                                         ) : (() => {
                                             if (suppressContent) return null;
                                             const rawContent = isError
-                                                ? message?.error
+                                                ? errorDisplayText
                                                 : message?.chatbot_message || message?.content;
 
                                             let parsedContent: any = null;
@@ -338,7 +345,7 @@ const AssistantMessageCard = React.memo(
                                             // Check if content contains HTML
                                             const messageContent = !isError
                                                 ? message?.chatbot_message || message?.content
-                                                : message.error;
+                                                : errorDisplayText;
 
                                             // Check if it's Rich UI JSON
                                             if (

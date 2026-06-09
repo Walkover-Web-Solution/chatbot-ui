@@ -31,10 +31,11 @@ function useWebSocketClient(isHelloUser: boolean) {
 
 function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: { timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, chatSessionId: string, tabSessionId: string }) {
   const { isHelloUser } = useContext(ChatbotContext)
-  const { reduxBridgeName, threadId, subThreadId } = useCustomSelector((state) => ({
+  const { reduxBridgeName, threadId, subThreadId, defaultErrorMessage } = useCustomSelector((state) => ({
     reduxBridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
     threadId: state.appInfo?.[tabSessionId]?.threadId,
     subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
+    defaultErrorMessage: state.appInfo?.[tabSessionId]?.defaultErrorMessage,
   }))
   const dispatch = useDispatch()
   const client = useWebSocketClient(isHelloUser);
@@ -64,8 +65,9 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
         return;
       } else if (parsedMessage.event === "error") {
         const errorMsg = parsedMessage.error || parsedMessage.fallback_error || "An error occurred while talking to AI";
+        const displayMsg = (typeof defaultErrorMessage === "string" && defaultErrorMessage.trim()) ? defaultErrorMessage : errorMsg;
         emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', errorMsg);
-        dispatch(updateLastAssistantMessage({ role: "assistant", content: errorMsg, id: parsedMessage.message_id || generateNewId() }));
+        dispatch(updateLastAssistantMessage({ role: "assistant", content: displayMsg, id: parsedMessage.message_id || generateNewId() }));
         dispatch(setLoading(false));
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
         return;
@@ -87,12 +89,15 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
         break;
 
       // Case: Error is present without response data
-      case !data && !!parsedMessage?.error:
-        emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', parsedMessage?.error || error || "Error while talking to AI");
-        dispatch(updateLastAssistantMessage({ role: "assistant", content: `${parsedMessage?.error || error || "Error while talking to AI"}`, id: generateNewId() }));
+      case !data && !!parsedMessage?.error: {
+        const rawErr = parsedMessage?.error || error || "Error while talking to AI";
+        const displayErr = (typeof defaultErrorMessage === "string" && defaultErrorMessage.trim()) ? defaultErrorMessage : `${rawErr}`;
+        emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', rawErr);
+        dispatch(updateLastAssistantMessage({ role: "assistant", content: displayErr, id: generateNewId() }));
         dispatch(setLoading(false));
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
         break;
+      }
 
       // Case: Reset role is present without mode
       case data?.role === "reset" && !data?.mode:
@@ -131,7 +136,7 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
       default:
         console.warn("Some error occurred in the message", parsedMessage);
     }
-  }, [reduxBridgeName]);
+  }, [reduxBridgeName, defaultErrorMessage]);
 
   useEffect(() => {
     if (!client) return;

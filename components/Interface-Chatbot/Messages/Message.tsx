@@ -1,7 +1,10 @@
 'use client';
 /* eslint-disable */
 import { useColor } from "@/components/Chatbot/hooks/useColor";
-import React, { useMemo } from "react";
+import { useChatContext } from "@/components/Chatbot/hooks/useChatActions";
+import { useCustomSelector } from "@/utils/deepCheckSelector";
+import { ChatbotContext } from "@/components/context";
+import React, { useContext, useMemo } from "react";
 import AssistantMessageCard from "./AssistantMessage";
 import DateGroup from "./DateGroup";
 import HumanOrBotMessageCard from "./HumanOrBotMessage";
@@ -38,6 +41,11 @@ const PLAN_ANSWER_PREFIX_RE = /^\s*q\d+\s*:/i;
 
 function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps) {
   const { backgroundColor, textColor } = useColor();
+  const { tabSessionId } = useChatContext();
+  const { defaultErrorMessage } = useCustomSelector((state) => ({
+    defaultErrorMessage: state.appInfo?.[tabSessionId]?.defaultErrorMessage,
+  }));
+  const { hideToolCall } = useContext(ChatbotContext);
 
   /**
    * Memoize role-based rendering to prevent unnecessary re-computations
@@ -75,8 +83,10 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
                 urls: message?.llm_urls || [],
                 image_urls: message?.llm_urls || [],
               }}
+              isError={!!message?.error}
               textColor={textColor}
               backgroundColor={backgroundColor}
+              defaultErrorMessage={defaultErrorMessage}
             />
           )}
         </>
@@ -99,6 +109,7 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
                 isError={true}
                 textColor={textColor}
                 backgroundColor={backgroundColor}
+                defaultErrorMessage={defaultErrorMessage}
               />
             )}
           </>
@@ -110,6 +121,7 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
             message={message}
             textColor={textColor}
             backgroundColor={backgroundColor}
+            defaultErrorMessage={defaultErrorMessage}
           />
         );
 
@@ -120,7 +132,7 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
         return <HumanOrBotMessageCard message={message} isBot={true} isLastMessage={isLastMessage} />;
 
       case ROLE_TOOLS_CALL:
-        return <ToolsCallMessage message={message} />;
+        return hideToolCall ? null : <ToolsCallMessage message={message} />;
 
       case ROLE_VOICE_CALL:
         return <VoiceCallMessage message={message} />;

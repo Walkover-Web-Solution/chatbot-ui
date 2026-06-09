@@ -42,7 +42,7 @@ interface ChatbotProps {
 }
 
 // Memoized components
-const EmptyChatView = React.memo(() => (
+const EmptyChatView = React.memo(({ defaultMessage }: { defaultMessage?: string }) => (
   <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-84px] p-5" data-testid="chatbot-empty-view">
     <div className="flex flex-col items-center w-full">
       <Image
@@ -55,7 +55,7 @@ const EmptyChatView = React.memo(() => (
         data-testid="chatbot-empty-gif"
       />
       <h2 className="text-xl font-bold text-base-content" data-testid="chatbot-empty-title">
-        What can I help with?
+        {defaultMessage || "What can I help with?"}
       </h2>
     </div>
     <div className="max-w-5xl w-full mt-8">
@@ -121,7 +121,7 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
   const dispatch = useAppDispatch();
 
   // State management
-  const { show_widget_form, greetingMessage, isToggledrawer, chatsLoading, messageIds, subThreadId, helloMsgIds } = useCustomSelector((state) => {
+  const { show_widget_form, greetingMessage, isToggledrawer, chatsLoading, messageIds, subThreadId, helloMsgIds, defaultMessage } = useCustomSelector((state) => {
     const widgetInfo = state.Hello?.[chatSessionId]?.widgetInfo
     return ({
       show_widget_form: typeof widgetInfo?.show_widget_form === 'boolean' ? widgetInfo?.show_widget_form : state.Hello?.[chatSessionId]?.showWidgetForm,
@@ -130,7 +130,8 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
       chatsLoading: state.Chat.chatsLoading,
       messageIds: state.Chat.messageIds,
       subThreadId: state.Chat.subThreadId,
-      helloMsgIds: state.Chat.helloMsgIds
+      helloMsgIds: state.Chat.helloMsgIds,
+      defaultMessage: state.appInfo?.[tabSessionId]?.defaultMessage
     })
   });
 
@@ -211,7 +212,7 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
           <ChatbotHeaderTab />
 
           {isChatEmpty ? (
-            <EmptyChatView />
+            <EmptyChatView defaultMessage={defaultMessage} />
           ) : (
             <ActiveChatView />
           )}
