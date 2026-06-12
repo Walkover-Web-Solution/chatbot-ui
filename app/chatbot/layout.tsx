@@ -57,6 +57,7 @@ function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode,
                 userId: userId,
                 config: config,
                 ...(config?.defaultErrorMessage ? { defaultErrorMessage: config.defaultErrorMessage } : {}),
+                ...(config?.defaultMessage ? { defaultMessage: config.defaultMessage } : {}),
                 ...(config?.mcpConfig ? { mcpConfig: config.mcpConfig } : {})
             }));
         }
