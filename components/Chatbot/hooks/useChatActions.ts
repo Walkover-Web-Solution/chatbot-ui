@@ -562,6 +562,7 @@ export const useSendMessage = ({
                             call_id: event.call_id,
                             content: event.content,
                         }));
+                        emitEventToParent('TOOL_CALL_RESULT', event.content);
                         break;
                     case "template_response":
                         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
