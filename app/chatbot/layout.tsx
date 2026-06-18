@@ -14,15 +14,14 @@ function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode,
     const { themeColor, handleThemeChange, handleColorSchemeChange } = useContext(ThemeContext);
     const dispatch = useDispatch();
     // Use useMemo to parse interfaceDetails once and avoid repeated parsing
-    const { chatbot_id, userId, token, config, isHelloUser = false } = useMemo(() => {
+    const { chatbot_id, userId, token, config } = useMemo(() => {
         const interfaceDetails = search.get("interfaceDetails");
         // Default values if parsing fails or interfaceDetails is not provided
         const defaultValues = {
             chatbot_id: null,
             userId: null,
             token: null,
-            config: null,
-            isHelloUser: false
+            config: null
         };
 
         // Return default values if interfaceDetails is undefined or null
@@ -113,10 +112,9 @@ function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode,
         themeColor,
         onConfigChange,
         toggleHideCloseButton,
-        isHelloUser,
         environment,
         hideToolCall: !!(chatbotConfig as any)?.hide_tool,
-    }), [chatbotConfig, chatbot_id, userId, token, themeColor, onConfigChange, toggleHideCloseButton, isHelloUser, environment]);
+    }), [chatbotConfig, chatbot_id, userId, token, themeColor, onConfigChange, toggleHideCloseButton, environment]);
 
     return (
         <ChatbotContext.Provider value={contextValue}>

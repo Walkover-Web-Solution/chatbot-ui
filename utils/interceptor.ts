@@ -4,14 +4,6 @@ import { errorToast } from "../components/customToast";
 import { getCurrentEnvironment, removeCookie } from "../utils/utilities";
 
 const instance = defaultAxios.create();
-// const axios = setupCache(instance, {
-//   ttl: 1000 * 60 * 5, // 5 minute.
-//   methods: ["get"],
-//   generateKey: buildKeyGenerator((request) => ({
-//     method: request.method,
-//     url: request.url,
-//   })),
-// });
 
 const axios = instance;
 

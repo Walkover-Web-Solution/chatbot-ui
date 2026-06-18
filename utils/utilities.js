@@ -162,14 +162,6 @@ export const linkify = (str) => {
 }
 
 
-export const playMessageRecivedSound = () => {
-  const notificationSound = new Audio('/notification-sound.mp3');
-  notificationSound.volume = 0.2;
-  notificationSound.play().catch(error => {
-    console.log("Failed to play notification sound:", error);
-  });
-}
-
 /**
  * Converts a timestamp to various formatted date/time strings
  * @param {number} value - The timestamp to convert

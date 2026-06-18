@@ -268,21 +268,6 @@ function BridgeSwitchDropdown({ currentSelectedBridgeSlug, bridges }: { currentS
   </label>
 }
 
-function getAgentTeamName(state: $ReduxCoreType, chatSessionId: string, currentChannelId: string = "") {
-  const agent_teams = state.Hello?.[chatSessionId]?.agent_teams || {};
-  const channel = state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
-    (channel: any) => channel?.channel === currentChannelId
-  );
-  const assigned_type = channel?.assigned_type;
-  const assigned_id = channel?.assigned_id;
-  if (assigned_type === "team" && assigned_id) {
-    return agent_teams?.teams?.[assigned_id] || "";
-  } else if (assigned_type === "agent" && assigned_id) {
-    return agent_teams?.agents?.[assigned_id] || "";
-  } else {
-    return null;
-  }
-}
 
 interface ChatbotHeaderProps {
   preview?: boolean;
@@ -303,7 +288,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
     setToggleDrawer,
   } = useChatActions();
 
-  const { isToggledrawer, bridgeName: reduxBridgeName, headerButtons, messageIds, lastMessage, unReadCount, isChatbotMinimized } = useCustomSelector((state) => ({
+  const { isToggledrawer, bridgeName: reduxBridgeName, headerButtons, messageIds, lastMessage, isChatbotMinimized } = useCustomSelector((state) => ({
     isToggledrawer: state.Chat?.isToggledrawer,
     bridgeName: state.Chat.bridgeName || [],
     headerButtons: state.Chat?.headerButtons || [],
@@ -312,9 +297,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
       const lastMessageId = state.Chat?.messageIds?.[currentChannelId]?.[0]
       return state.Chat?.msgIdAndDataMap?.[currentChannelId]?.[lastMessageId]
     })(),
-    unReadCount: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
-      (channel: any) => channel?.channel === currentChannelId
-    )?.widget_unread_count || 0,
     isChatbotMinimized: state.draftData?.isChatbotMinimized || false
   }))
 
@@ -329,7 +311,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
   } = chatbotConfig || {};
 
   const [fullScreen, setFullScreen] = useState(false);
-  const [teamName, setTeamName] = useState(false);
 
   const shouldToggleScreenSize = `${width}${widthUnit}` !== '1200%';
 
@@ -346,32 +327,24 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
     allowBridgeSwitchViaProp,
     subThreadList,
     hideFullScreenButton,
-    isHelloUser,
-    teams,
-    agentTeamName,
-    isMobileSDK
+    isMobileSDK,
   } = useCustomSelector((state: $ReduxCoreType) => {
-    const show_close_button = state.Hello?.[chatSessionId]?.helloConfig?.show_close_button
     return ({
-      isMobileSDK: state.Hello?.[chatSessionId]?.helloConfig?.isMobileSDK || false,
       allowModalSwitch: state.Interface?.[chatSessionId]?.allowModalSwitch || false,
-      hideCloseButton: typeof show_close_button === 'boolean' ? !show_close_button : state.appInfo?.[tabSessionId]?.hideCloseButton || false,
+      hideCloseButton: state.appInfo?.[tabSessionId]?.hideCloseButton || false,
       hideFullScreenButton: state.appInfo?.[tabSessionId]?.hideFullScreenButton || false,
       chatTitle: state.Interface?.[chatSessionId]?.chatTitle || "",
       chatSubTitle: state.Interface?.[chatSessionId]?.chatSubTitle || "",
       chatIcon: state.Interface?.[chatSessionId]?.chatIcon || "",
       allowBridgeSwitchViaProp: state?.Interface?.[chatSessionId]?.allowBridgeSwitch,
-      teams: state.Hello?.[chatSessionId]?.widgetInfo?.teams || [],
-      agentTeamName: getAgentTeamName(state, chatSessionId, currentChannelId),
       subThreadList: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.interfaceContext?.[bridgeName]?.threadList?.[threadId] || [],
-      isHelloUser: state.draftData?.isHelloUser || false,
-      voice_call_widget: state.Hello?.[chatSessionId]?.widgetInfo?.voice_call_widget || false
+      isMobileSDK: state.appInfo?.[tabSessionId]?.isMobileSDK || false,
     })
   });
   // Determine if we should show the create thread button
   const showCreateThreadButton = useMemo(() => {
-    return !isHelloUser && !(subThreadList?.length < 2 && (!messageIds || messageIds.length === 0));
-  }, [subThreadList?.length, messageIds?.length, isHelloUser]);
+    return !(subThreadList?.length < 2 && (!messageIds || messageIds.length === 0));
+  }, [subThreadList?.length, messageIds?.length]);
 
   // Handler for creating a new thread
   const handleCreateNewSubThread = async () => {
@@ -418,19 +391,10 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
     window.parent.postMessage({ type: "CLOSE_CHATBOT" }, "*");
   };
 
-  // Set team name when teams or currentTeamId changes
-  useEffect(() => {
-    if (!teams?.length || !currentTeamId) return;
-
-    const team = teams.find((item: any) => item?.id === currentTeamId);
-    if (team) {
-      setTeamName(team.name);
-    }
-  }, [teams, currentTeamId]);
 
   // Memoized drawer toggle button
   const DrawerToggleButton = useMemo(() => {
-    if (!(subThreadList?.length > 1 || isHelloUser)) return null;
+    if (!(subThreadList?.length > 1)) return null;
 
     return (
       <button
@@ -441,7 +405,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
         {isToggledrawer ? null : <AlignLeft size={22} color={iconColor} />}
       </button>
     );
-  }, [subThreadList?.length, isHelloUser, isToggledrawer, setToggleDrawer, iconColor]);
+  }, [subThreadList?.length, isToggledrawer, setToggleDrawer, iconColor]);
 
   // Memoized create thread button
   const CreateThreadButton = useMemo(() => {
@@ -462,7 +426,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
 
   // Memoized header title section
   const HeaderTitleSection = useMemo(() => {
-    const displayTitle = isChatbotMinimized && lastMessage?.role === 'user' ? 'You' : chatTitle || chatbotTitle || (isHelloUser ? (agentTeamName || teamName || "Conversation")?.toString().split(" ")?.[0] : "AI Assistant");
+    const displayTitle = isChatbotMinimized && lastMessage?.role === 'user' ? 'You' : chatTitle || chatbotTitle || "AI Assistant";
     const displaySubtitle = chatSubTitle || chatbotSubtitle || "Do you have any questions? Ask us!";
 
     // Minimized version of the header
@@ -483,11 +447,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
               <h1 className="text-base-content text-center font-semibold whitespace-nowrap overflow-hidden overflow-ellipsis text-sm">
                 {displayTitle}
               </h1>
-              {unReadCount > 0 && (
-                <sup className="absolute -top-3 -right-3 text-[10px] min-w-[16px] h-[16px] px-1 bg-red-500 text-white font-bold rounded-full flex items-center justify-center shadow-md">
-                  {unReadCount}
-                </sup>
-              )}
             </div>
             {lastMessage && (
               <div className="flex items-center gap-1 ml-2">
@@ -541,14 +500,10 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
     chatIcon,
     chatTitle,
     chatbotTitle,
-    isHelloUser,
-    teamName,
     chatSubTitle,
     chatbotSubtitle,
-    agentTeamName,
     isChatbotMinimized,
     lastMessage,
-    unReadCount
   ]);
 
   // Memoized fullscreen toggle button
@@ -606,7 +561,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
   }
 
   const MinimizeButton = useMemo(() => {
-    if (!isHelloUser) return null;
     return (
       <div
         className="cursor-pointer p-2 py-2 rounded-full hover:bg-base-200 dark:hover:bg-slate-700 transition-colors"
@@ -616,7 +570,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
         {isChatbotMinimized ? <Maximize2 size={22} color={iconColor} style={{ transform: 'rotate(90deg)' }} /> : <Minus size={22} color={iconColor} />}
       </div>
     );
-  }, [isHelloUser, isChatbotMinimized, fullScreen, toggleFullScreen, iconColor])
+  }, [isChatbotMinimized, fullScreen, toggleFullScreen, iconColor])
 
   return isChatbotMinimized ?
     <div className="px-2 sm:py-4 py-3 w-full cursor-pointer" onClick={handleToggleMinimize}>
@@ -663,7 +617,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
 
           <div className="flex items-center">
             {ScreenSizeToggleButton}
-            {(isMobileSDK || !isHelloUser) ? CloseButton : MinimizeButton}
+            {(!isMobileSDK) ? CloseButton : MinimizeButton}
           </div>
         </div>
       </div>

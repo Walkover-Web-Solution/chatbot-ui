@@ -3,7 +3,7 @@ export interface $AppInfoReduxType {
         threadId: string
         bridgeName: string
         subThreadId: string
-        helloId: string
+        helloId?: string | null
         versionId: string
         userId: string
         config: Record<string, unknown>
@@ -16,9 +16,12 @@ export interface $AppInfoReduxType {
         callToken: string,
         serviceChanged: string, //name of the service
         modelChanged: string, //name of the model
-        stream: string, //weather to set the flag true or false in the sendmessaage api
-        widget: string, //weather to set the flag true or false in the sendmessaage api
-        image_model: string, //weather to set the flag true or false in the sendmessaage api
+        stream?: boolean | string, //weather to set the flag true or false in the sendmessaage api
+        isStream?: boolean | string, //whether to set stream UI flag true or false
+        widget?: boolean | string, //weather to set the flag true or false in the sendmessaage api
+        image_model?: boolean | string, //weather to set the flag true or false in the sendmessaage api
+        vision?: boolean | string, //whether to set the vision flag true or false
+        supportedServices?: string[], //list of supported services
         mode: boolean, //whether to show Fast/Planning mode dropdown and send mode in sendMessage api
         defaultMessage?: string, //default/first message shown in empty state
         mcpConfig?: Array<{

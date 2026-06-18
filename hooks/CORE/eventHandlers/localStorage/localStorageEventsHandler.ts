@@ -1,4 +1,3 @@
-import useHelloLocalStorageEventHandlers from "@/hooks/HELLO/eventHandlers/localStorage/localStorageEventsHandler";
 import { resetAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { resetDraftDataReducer } from "@/store/draftData/draftDataSlice";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
@@ -44,8 +43,6 @@ class LocalStorageEventRegistry {
 export const useLocalStorageEventHandler = (tabSessionId: string) => {
   const dispatch = useDispatch();
   const LocalStorageEventHandler: LocalStorageEventRegistryInstance = new LocalStorageEventRegistry(tabSessionId)
-
-  useHelloLocalStorageEventHandlers(LocalStorageEventHandler)
 
   const handleStorageUpdate = (event: CustomEvent<{ key: string, value: string | boolean }>) => {
     const { key } = event.detail;

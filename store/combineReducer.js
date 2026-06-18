@@ -5,9 +5,10 @@ import { persistReducer } from "redux-persist";
 import { createNoopStorage, STORAGE_OPTIONS } from "@/utils/storageUtility";
 import appInfoReducer from "./appInfo/appInfoSlice";
 import chatReducer from "./chat/chatSlice";
+import componentOverridesReducer from "./componentOverrides/componentOverridesSlice";
 import draftDataReducer from "./draftData/draftDataSlice";
-import helloReducer from "./hello/helloSlice";
 import InterfaceReducer from "./interface/interfaceSlice";
+import subscribeDataReducer from "./subscribeData/subscribeDataSlice";
 
 const storage =
   typeof window !== "undefined"
@@ -21,10 +22,11 @@ const appInfoPersistConfig = {
 
 const rootReducer = combineReducers({
   Interface: InterfaceReducer,
-  Hello: helloReducer,
   Chat: chatReducer,
   draftData: draftDataReducer,
   appInfo: persistReducer(appInfoPersistConfig, appInfoReducer),
+  componentOverrides: componentOverridesReducer,
+  subscribeData: subscribeDataReducer,
 });
 
 export default rootReducer;

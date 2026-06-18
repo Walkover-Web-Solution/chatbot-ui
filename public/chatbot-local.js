@@ -16,10 +16,10 @@
                 side: 'right'
             };
             this.urls = {
-                chatbotUrl: 'http://localhost:3001/chatbot',
-                styleSheet: 'http://localhost:3001/chatbot-style.css',
+                chatbotUrl: 'http://localhost:3000/chatbot',
+                styleSheet: 'http://localhost:3000/chatbot-style.css',
                 // login: 'http://localhost:7072/api/chatbot/loginuser'
-                login: 'https://dev-db.gtwy.ai/api/chatbot/loginuser'
+                login: 'https://db.gtwy.ai/api/chatbot/loginuser'
             };
             this.icons = {
                 white: this.makeImageUrl('b1357e23-2fc6-4dc3-855a-7a213b1fa100'),
@@ -161,7 +161,7 @@
             window.addEventListener('message', (event) => {
                 // Only process messages from trusted origins
                 const trustedOrigins = [
-                    'http://localhost:3001',
+                    'http://localhost:3000',
                     window.location.origin
                 ];
 
@@ -297,7 +297,7 @@
             const { chatBotIcon, imgElement, textElement } = this.createChatbotIcon();
             document.body.appendChild(chatBotIcon);
             document.head.appendChild(this.createStyleLink()); // load the External Css for script
-            
+
             this.extractScriptProps();
             this.attachIconEvents(chatBotIcon);
             this.createIframeContainer();

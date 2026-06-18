@@ -9,7 +9,7 @@ import { useDispatch } from "react-redux";
 export const runtime = "edge";
 
 export default function InterfaceEmbed() {
-    const { chatbot_id, userId, token, isHelloUser, environment = null } = useContext(ChatbotContext);
+    const { chatbot_id, userId, token } = useContext(ChatbotContext);
     const router = useRouter();
     const [verifiedState, setVerifiedState] = useState(EmbedVerificationStatus.VERIFYING);
     const dispatch = useDispatch();
@@ -53,25 +53,15 @@ export default function InterfaceEmbed() {
             SetSessionStorage("interfaceToken", token);
             SetSessionStorage("interfaceUserId", userId);
             setVerifiedState(EmbedVerificationStatus.VERIFIED);
-            dispatch(setDataInDraftReducer({ isHelloUser: false }))
-        } else if (isHelloUser) {
-            setVerifiedState(EmbedVerificationStatus.VERIFIED);
         }
-    }, [token, userId, isHelloUser]);
+    }, [token, userId]);
 
     useEffect(() => {
         if (verifiedState === EmbedVerificationStatus.VERIFIED && chatbot_id) {
             dispatch(setDataInDraftReducer({ chatbotId: chatbot_id, chatSessionId: chatbot_id }))
             router.replace(`/chatbot/${chatbot_id}`);
         }
-        if (isHelloUser && verifiedState === EmbedVerificationStatus.VERIFIED) {
-            if (environment) {
-                router.replace(`/chatbot/hello?env=${environment}`);
-            } else {
-                router.replace(`/chatbot/hello`);
-            }
-        }
-    }, [verifiedState, chatbot_id, router, isHelloUser]);
+    }, [verifiedState, chatbot_id, router]);
 
     return (
         <div className="h-screen w-full flex items-center justify-center">

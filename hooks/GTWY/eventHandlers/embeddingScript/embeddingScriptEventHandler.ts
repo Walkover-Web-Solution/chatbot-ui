@@ -1,6 +1,7 @@
 import { ThemeContext } from "@/components/AppWrapper";
 import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
+import { clearComponentOverride, resetComponentOverrides, setComponentOverride, setComponentOverrideTree } from "@/store/componentOverrides/componentOverridesSlice";
 import { addDefaultContext, setDataInInterfaceRedux, setEventsSubsribedByParent, setHeaderActionButtons, setModalConfig } from "@/store/interface/interfaceSlice";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
 import { SetSessionStorage } from "@/utils/ChatbotUtility";
@@ -33,6 +34,7 @@ interface InterfaceData {
     name: string;
     url: string;
   }>;
+  config?: Record<string, { path: string[]; code: string }> | { tree: Record<string, any> };
 }
 
 const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
@@ -171,6 +173,39 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
     // Allow parent to set a default error message via SendDataToChatbot({ defaultErrorMessage: "..." })
     if ('defaultErrorMessage' in receivedData) {
       dispatch(setDataInAppInfoReducer({ defaultErrorMessage: receivedData.defaultErrorMessage }));
+    }
+
+    // Handle componentOverrides config.
+    //
+    // Two accepted shapes:
+    //   1. Flat map of named entries, each pointing at a path in the tree:
+    //      config: { sidebar: { path: ["sidebar"], code: "return (...)" },
+    //                header: { path: ["sidebar","header"], code: "return (...)" } }
+    //   2. A full nested tree matching the slice shape:
+    //      config: { tree: { sidebar: { code: "...", subcomponents: { header: { code: "..." } } } } }
+    if ('config' in receivedData && receivedData.config && typeof receivedData.config === 'object') {
+      const cfg: any = receivedData.config;
+
+      // { config: { reset: true } } -> wipe all overrides
+      if (cfg.reset === true) {
+        dispatch(resetComponentOverrides());
+      }
+
+      // { config: { tree: {...} } } -> fully replace tree
+      if (cfg.tree && typeof cfg.tree === 'object') {
+        dispatch(setComponentOverrideTree({ tree: cfg.tree }));
+      }
+
+      // Flat map entries: each entry may set or clear a path
+      Object.entries(cfg).forEach(([key, entry]: [string, any]) => {
+        if (key === 'tree' || key === 'reset') return;
+        if (!entry || !Array.isArray(entry.path) || entry.path.length === 0) return;
+        if (entry.clear === true || entry.code === null) {
+          dispatch(clearComponentOverride({ path: entry.path }));
+        } else if (typeof entry.code === 'string') {
+          dispatch(setComponentOverride({ path: entry.path, code: entry.code }));
+        }
+      });
     }
   }
 

@@ -10,7 +10,6 @@ import InfiniteScroll from "react-infinite-scroll-component";
 // App imports
 import { useChatActions, useGetMoreChats } from "@/components/Chatbot/hooks/useChatActions";
 import { useColor } from "@/components/Chatbot/hooks/useColor";
-import { useGetMoreHelloChats } from "@/components/Chatbot/hooks/useHelloIntegration";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ParamsEnums } from "@/utils/enums";
@@ -27,7 +26,6 @@ const NEAR_BOTTOM_THRESHOLD = 80;
  */
 
 function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: string, currentChannelId: string }) {
-  const getMoreHelloChats = useGetMoreHelloChats();
   const getMoreChats = useGetMoreChats();
   const { setNewMessage } = useChatActions();
   const { backgroundColor, textColor } = useColor();
@@ -44,22 +42,13 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
   const isAtBottomRef = useRef(true);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
-  const { isHelloUser, assigned_type, greetingMessage } = useCustomSelector((state) => ({
-    isHelloUser: state.draftData?.isHelloUser,
-    assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find((channel: any) => channel?.channel === currentChannelId)?.assigned_type,
-    greetingMessage: state.Hello?.[chatSessionId]?.greeting
-  }));
   const themePalette = useMemo(() => ({
     "--primary-main": lighten(backgroundColor, 0.4),
   }), [backgroundColor]);
 
   const fetchMoreData = useCallback(() => {
-    if (isHelloUser) {
-      getMoreHelloChats();
-    } else {
-      getMoreChats();
-    }
-  }, [isHelloUser, getMoreHelloChats, getMoreChats]);
+    getMoreChats();
+  }, [getMoreChats]);
 
   const moveToDown = useCallback(() => {
     if (scrollableDivRef.current) {
@@ -104,42 +93,8 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
     }
   }, [latestMessage?.content, latestMessage?.tools_data, latestMessage?.isStreaming]);
 
-  // this is the greeting message that is shown when the user first opens the chat
-  const renderGreetingMessage = useMemo(() => {
-    if (!isHelloUser || !greetingMessage ||
-      (!greetingMessage.text && !greetingMessage?.options?.length)) {
-      return null;
-    }
-
-    return (
-      <Message
-        message={{
-          role: 'Bot',
-          id: generateNewId(),
-          message_type: 'interactive',
-          messageJson: {
-            type: 'button',
-            body: {
-              text: greetingMessage.text
-            },
-            action: {
-              buttons: greetingMessage.options?.map((option: any) => ({
-                reply: {
-                  title: option
-                }
-              }))
-            }
-          }
-        }}
-      />
-    );
-  }, [isHelloUser, greetingMessage]);
-
   const ThinkingIndicator = React.memo(({ themePalette }: { themePalette: any }) => (
     <div className="w-full" data-testid="chatbot-thinking-indicator">
-      <div className="flex flex-wrap gap-2 items-center">
-        <p className="text-sm">Thinking...</p>
-      </div>
       <div className="loading-indicator" style={themePalette}>
         <div className="loading-bar" />
         <div className="loading-bar" />
@@ -149,9 +104,13 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
   ));
 
   const renderThinkingIndicator = useMemo(() => {
-    const shouldShow = loading && (assigned_type === 'bot') && isHelloUser;
+    const isLatestMessageAssistant = latestMessage?.role === "assistant";
+    const isLatestMessageStreaming = latestMessage?.isStreaming === true;
+    const isLatestMessageWaiting = latestMessage?.wait === true;
+
+    const shouldShow = loading && !(isLatestMessageAssistant && (isLatestMessageStreaming || isLatestMessageWaiting));
     return shouldShow ? <ThinkingIndicator themePalette={themePalette} /> : null;
-  }, [loading, assigned_type, isHelloUser, themePalette]);
+  }, [loading, latestMessage?.role, latestMessage?.isStreaming, latestMessage?.wait, themePalette]);
 
   const renderedMessages = useMemo(() => {
     let lastHumanOrBotIndex = -1;
@@ -214,7 +173,6 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
       >
         {renderThinkingIndicator}
         {renderedMessages}
-        {renderGreetingMessage}
       </InfiniteScroll>
       <MoveToDownButton
         movetoDown={moveToDown}

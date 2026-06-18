@@ -54,7 +54,7 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
     const role = message?.role;
 
     // Handle combined message format (new backend format with user and llm_message in same object)
-    if (message?.user || message?.llm_message) {
+    if (message?.user || message?.llm_message || message?.content) {
       const hasPlanning = Boolean(message?.planning);
       const userText = typeof message?.user === "string" ? message.user : "";
       const isPlanAnswerEcho = hasPlanning && userText !== "" && PLAN_ANSWER_PREFIX_RE.test(userText);
@@ -74,11 +74,11 @@ function Message({ message, addMessage, prevTime, isLastMessage }: MessageProps)
               backgroundColor={backgroundColor}
             />
           )}
-          {(message?.llm_message || message?.error || hasPlanning) && (
+          {(message?.content || message?.llm_message || message?.error || hasPlanning || message?.isStreaming) && (
             <AssistantMessageCard
               message={{
                 ...message,
-                content: hasPlanning ? "" : (message?.chatbot_message || message?.llm_message || message?.error),
+                content: hasPlanning ? "" : (message?.content || message?.chatbot_message || message?.llm_message || message?.error),
                 role: 'assistant',
                 urls: message?.llm_urls || [],
                 image_urls: message?.llm_urls || [],

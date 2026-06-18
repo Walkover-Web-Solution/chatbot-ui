@@ -1,4 +1,4 @@
-import { convertChatHistoryToGenericFormat, convertEventMessageToGenericFormat } from "@/utils/dataConvertWrappers/makeGenericDataFormatUtility";
+import { convertChatHistoryToGenericFormat } from "@/utils/dataConvertWrappers/makeGenericDataFormatUtility";
 import { ChatAction, ChatActionTypes, ChatState } from './chatTypes';
 
 export const initialChatState: ChatState = {
@@ -6,9 +6,6 @@ export const initialChatState: ChatState = {
   messages: [],
   messageIds: {},
   msgIdAndDataMap: {},
-  helloMsgIds: {},
-  helloMsgIdAndDataMap: {},
-  helloMessages: [],
   starterQuestions: [],
   isTyping: {},
 
@@ -18,7 +15,6 @@ export const initialChatState: ChatState = {
   isFetching: false,
 
   // UI States
-  openHelloForm: false,
   isToggledrawer: false,
   headerButtons: [],
 
@@ -26,7 +22,6 @@ export const initialChatState: ChatState = {
   threadId: "",
   subThreadId: "",
   bridgeName: "",
-  helloId: "",
   bridgeVersionId: "",
 
   // Pagination & Message Handling
@@ -131,11 +126,6 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         ...state,
         bridgeName: action.payload
       };
-    case ChatActionTypes.SET_HELLO_ID:
-      return {
-        ...state,
-        helloId: action.payload
-      };
     case ChatActionTypes.SET_BRIDGE_VERSION_ID:
       return {
         ...state,
@@ -224,16 +214,9 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         }
       }
     }
-    case ChatActionTypes.SET_OPEN_HELLO_FORM: {
-      return {
-        ...state,
-        openHelloForm: action.payload
-      };
-    }
-
     case ChatActionTypes.SET_INTIAL_MESSAGES: {
       const subThreadId = action.payload?.subThreadId || state.subThreadId
-      const messages = convertChatHistoryToGenericFormat(action.payload.messages, state.isHelloUser)
+      const messages = convertChatHistoryToGenericFormat(action.payload.messages)
       if (subThreadId) {
         return {
           ...state,
@@ -255,7 +238,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
     case ChatActionTypes.SET_PAGINATE_MESSAGES: {
       const subThreadId = action.payload?.subThreadId || state.subThreadId
       const messages = action.payload.messages
-      const messagesArray = convertChatHistoryToGenericFormat(messages, state.isHelloUser)
+      const messagesArray = convertChatHistoryToGenericFormat(messages)
       if (subThreadId) {
         return {
           ...state,
@@ -280,39 +263,11 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
       }
     }
 
-    case ChatActionTypes.SET_HELLO_EVENT_MESSAGE: {
-      const subThreadId = action.payload?.subThreadId || state.subThreadId
-      const messagesArray = convertEventMessageToGenericFormat(action.payload.message, state.isHelloUser)
-      if (subThreadId) {
-        return {
-          ...state,
-          messageIds: {
-            ...state.messageIds,
-            [subThreadId]: [
-              ...messagesArray?.map(msg => msg?.id),
-              ...(state.messageIds[subThreadId] || [])
-            ]
-          },
-          msgIdAndDataMap: {
-            ...state.msgIdAndDataMap,
-            [subThreadId]: {
-              ...(state.msgIdAndDataMap[subThreadId] || {}),
-              ...messagesArray.reduce((acc: Record<string, unknown>, item) => {
-                acc[item.id] = item;
-                return acc;
-              }, {})
-            }
-          }
-        };
-      }
-    }
-
     case ChatActionTypes.RESET_STATE:
       return {
         ...initialChatState,
         threadId: state.threadId,
         bridgeName: state.bridgeName,
-        helloId: state.helloId,
         bridgeVersionId: state.bridgeVersionId,
         headerButtons: state.headerButtons
       };
