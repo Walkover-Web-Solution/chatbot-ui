@@ -3,22 +3,22 @@ export type ModalConfigType = { aiServices: { service: "string", modals: string[
 export type SelectedAiServicesType = { service: "string", modal: "string" }
 export interface $InterfaceReduxType {
   [chatSessionId: string]: {
-    allowModalSwitch: boolean
-    hideCloseButton: boolean
-    hideFullScreenButton: boolean
+    allowModalSwitch?: boolean
+    hideCloseButton?: boolean
+    hideFullScreenButton?: boolean
     allowBridgeSwitch?: boolean
     chatSubTitle?: string
     chatTitle?: string
     chatIcon?: string
-    selectedAiServiceAndModal: SelectedAiServicesType
-    availableAiServicesToSwitch: string[]
-    eventsSubscribedByParent: string[]
-    headerButtons: HeaderButtonType
-    modalConfig: ModalConfigType
-    isLoading: boolean;
-    interfaceData: InterFaceDataType;
-    interfaceContext: { [bridgeName: string]: any };
-    currentSelectedComponent: {
+    selectedAiServiceAndModal?: SelectedAiServicesType
+    availableAiServicesToSwitch?: string[]
+    eventsSubscribedByParent?: string[]
+    headerButtons?: HeaderButtonType
+    modalConfig?: ModalConfigType
+    isLoading?: boolean;
+    interfaceData?: InterFaceDataType;
+    interfaceContext?: { [bridgeName: string]: any };
+    currentSelectedComponent?: {
       [key: string]: any;
     };
   }

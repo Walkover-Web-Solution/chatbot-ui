@@ -1,4 +1,4 @@
-import { setBridgeName, setBridgeVersionId, setData, setHeaderButtons, setHelloId, setSubThreadId, setThreadId, setToggleDrawer } from '@/store/chat/chatSlice';
+import { setBridgeName, setBridgeVersionId, setData, setHeaderButtons, setSubThreadId, setThreadId, setToggleDrawer } from '@/store/chat/chatSlice';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
@@ -13,18 +13,14 @@ export const useReduxEffects = ({ tabSessionId, chatSessionId }: { tabSessionId:
         reduxThreadId,
         reduxSubThreadId,
         reduxBridgeName,
-        reduxHelloId,
         reduxBridgeVersionId,
-        reduxHeaderButtons,
-        isHelloUser
+        reduxHeaderButtons
     } = useCustomSelector((state) => ({
         reduxThreadId: state.appInfo?.[tabSessionId]?.threadId || "",
         reduxSubThreadId: state.appInfo?.[tabSessionId]?.subThreadId || "",
         reduxHeaderButtons: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.headerButtons || [],
         reduxBridgeName: state.appInfo?.[tabSessionId]?.bridgeName || "root",
-        reduxHelloId: state.appInfo?.[tabSessionId]?.helloId || null,
         reduxBridgeVersionId: state.appInfo?.[tabSessionId]?.versionId || null,
-        isHelloUser: state.draftData?.isHelloUser || false,
     }));
     // Sync Redux threadId with local state
     useEffect(() => {
@@ -48,24 +44,16 @@ export const useReduxEffects = ({ tabSessionId, chatSessionId }: { tabSessionId:
         }
     }, [reduxHeaderButtons, dispatch]);
 
-    // Sync Redux helloId with local state
-    useEffect(() => {
-        dispatch(setHelloId(reduxHelloId));
-    }, [reduxHelloId, dispatch]);
-
     // Sync Redux bridgeVersionId with local state
     useEffect(() => {
         dispatch(setBridgeVersionId(reduxBridgeVersionId));
     }, [reduxBridgeVersionId, dispatch]);
 
-    // Sync isHelloUser with local state
-    useEffect(() => {
-        dispatch(setData({ isHelloUser }))
-    }, [isHelloUser, dispatch]);
-
     // Sync large screen toggle with local state
     useEffect(() => {
-        dispatch(setToggleDrawer(!isSmallScreen));
+        if (isSmallScreen) {
+            dispatch(setToggleDrawer(false));
+        }
     }, [isSmallScreen, dispatch]);
 
     return null;

@@ -1,15 +1,18 @@
 import { ChatContext } from '@/components/Chatbot-Wrapper/ChatbotWrapper';
 import { errorToast } from '@/components/customToast';
 import { MessageContext } from '@/components/Interface-Chatbot/InterfaceChatbot';
-import { getAllThreadsApi, getPreviousMessage, streamDataToAction, sendFeedbackAction } from '@/config/api';
-import { appendLastAssistantMessageChunk, appendReasoningChunk, appendReviewDelta, appendToolCall, removeMessages, setChatsLoading, setData, setError, setHelloEventMessage, setImages, setInitialMessages, setIsFetching, setLoading, setNewMessage, setOptions, setPaginateMessages, setPlanningData, setReviewData, setStarterQuestions, setToggleDrawer, updateLastAssistantMessage, updatePlanningExecutionState, updateSingleMessage, updateToolResult } from '@/store/chat/chatSlice';
+import { getAllThreadsApi, getPreviousMessage, streamDataToAction, sendFeedbackAction, getSubscribeChatbotDetailsApi, sendDataToAction } from '@/config/api';
+import { appendLastAssistantMessageChunk, appendReasoningChunk, appendReviewDelta, appendToolCall, removeMessages, setChatsLoading, setData, setError, setImages, setInitialMessages, setIsFetching, setLoading, setNewMessage, setOptions, setPaginateMessages, setPlanningData, setReviewData, setStarterQuestions, setToggleDrawer, updateLastAssistantMessage, updatePlanningExecutionState, updateSingleMessage, updateToolResult } from '@/store/chat/chatSlice';
 import { setThreads } from '@/store/interface/interfaceSlice';
+import { setSubscribeChatbotDetailsInChatSession } from '@/store/subscribeData/subscribeDataSlice';
+import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { PAGE_SIZE } from '@/utils/enums';
 import React, { useCallback, useContext, useMemo, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { SendMessagePayloadType } from './chatTypes';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
+import { generateNewId } from '@/utils/utilities';
 
 
 export const useChatContext = () => {
@@ -37,6 +40,64 @@ export const useFetchAllThreads = () => {
             );
         }
     }, [threadId, bridgeName, globalDispatch]);
+};
+
+export const useSubscribeChatbotDetails = () => {
+    const globalDispatch = useDispatch();
+    const { tabSessionId, chatSessionId } = useChatContext();
+    const { threadId, bridgeName, versionId, helloId } = useCustomSelector((state) => ({
+        threadId: state.appInfo?.[tabSessionId]?.threadId,
+        bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
+        versionId: state.appInfo?.[tabSessionId]?.versionId || null,
+        helloId: state.appInfo?.[tabSessionId]?.helloId || null,
+    }));
+
+    return useCallback(async () => {
+        if (!bridgeName) return;
+        try {
+            const response = await getSubscribeChatbotDetailsApi({
+                threadId,
+                slugName: bridgeName,
+                helloId,
+                versionId,
+            });
+            if (response) {
+                // Save to chatSession (state.subscribeData keyed by chatSessionId)
+                globalDispatch(setSubscribeChatbotDetailsInChatSession(response));
+
+                // Save to tabSession (state.appInfo keyed by tabSessionId)
+                const modes = Array.isArray(response?.mode)
+                    ? response.mode
+                    : (typeof response?.mode === 'string' ? response.mode.split(',').map((m: any) => m.trim()) : []);
+                const streamEnabled = modes.includes("stream") || response?.stream === true || response?.isStream === true;
+                const filesEnabled = modes.includes("files") || response?.files === true;
+                const visionEnabled = modes.includes("vision") || response?.vision === true;
+                const imageModelEnabled = modes.includes("image_model") || response?.image_model === true;
+
+                globalDispatch(setDataInAppInfoReducer({
+                    stream: streamEnabled,
+                    isStream: streamEnabled,
+                    files: filesEnabled,
+                    vision: visionEnabled,
+                    image_model: imageModelEnabled,
+                    supportedServices: response?.supportedServices || [],
+                    helloId: response?.helloId || null
+                }));
+
+                // Set local storage for Hello Agent Auth (if helloId and uuid are present)
+                const receivedHelloId = response?.helloId;
+                const anonymousClientId = response?.uuid;
+                if (receivedHelloId && anonymousClientId) {
+                    localStorage.setItem(
+                        "HelloAgentAuth",
+                        `${receivedHelloId}:${anonymousClientId}`
+                    );
+                }
+            }
+        } catch (error) {
+            console.error("Error subscribing chatbot details:", error);
+        }
+    }, [threadId, bridgeName, helloId, versionId, globalDispatch, chatSessionId, tabSessionId]);
 };
 
 export const useGetInitialChatHistory = () => {
@@ -144,7 +205,7 @@ export const useSendMessage = ({
     const messageRef = propMessageRef ?? context.messageRef;
     const timeoutIdRef = propTimeoutIdRef ?? context.timeoutIdRef;
     const { tabSessionId, chatSessionId } = useChatContext();
-    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, helloMode, latestMessageId, mcpConfig, defaultErrorMessage } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, latestMessageId, mcpConfig, defaultErrorMessage, stream, image_model } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
@@ -154,9 +215,10 @@ export const useSendMessage = ({
         selectedAiServiceAndModal: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.selectedAiServiceAndModal || null,
         userId: state.appInfo?.[tabSessionId]?.userId || null,
         threadList: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId],
-        helloMode: state.Hello?.[chatSessionId]?.mode || [],
         latestMessageId: state.Chat?.messageIds?.[state.appInfo?.[tabSessionId]?.subThreadId]?.[0],
         mcpConfig: state.appInfo?.[tabSessionId]?.mcpConfig,
+        stream: state.appInfo?.[tabSessionId]?.stream,
+        image_model: state.appInfo?.[tabSessionId]?.image_model ?? false,
     }));
 
     const { images } = useCustomSelector((state) => ({
@@ -177,10 +239,8 @@ export const useSendMessage = ({
         customVariables = {},
         customThreadId = '',
         customBridgeSlug = '',
-        apiCall = true,
         action,
         mode,
-        silent,
         skipUserEcho,
         task_id,
     }: SendMessagePayloadType) => {
@@ -213,17 +273,24 @@ export const useSendMessage = ({
             images: [],
         }));
 
-        if (!skipUserEcho && !isInlinePlanRequest) {
-            globalDispatch(setHelloEventMessage({ message: { role: "user", content: textMessage, urls: images } }));
-        }
+        const tempMessageId = generateNewId();
         if (!isInlinePlanRequest) {
-            globalDispatch(setHelloEventMessage({ message: { role: "assistant", content: "", wait: true } }));
+            globalDispatch(updateLastAssistantMessage({
+                id: tempMessageId,
+                role: "assistant",
+                user: textMessage,
+                user_urls: imageUrls,
+                content: "",
+                wait: true,
+                isNewMessage: true,
+            }));
         }
+
 
         // Build configuration object with model and mcp_config
         const configuration: any = {};
         let service: string | undefined;
-        
+
         if (selectedAiServiceAndModal?.modal && selectedAiServiceAndModal?.service) {
             configuration.model = selectedAiServiceAndModal.modal;
             service = selectedAiServiceAndModal.service;
@@ -239,7 +306,7 @@ export const useSendMessage = ({
             images: imageUrls,
             files,
             userId,
-            flag: Boolean(helloMode?.includes("stream") && !(helloMode?.includes("image_model"))),
+            flag: stream && !image_model,
             interfaceContextData: { ...variables, ...customVariables } || {},
             threadId: customThreadId || threadId,
             subThreadId: subThreadId,
@@ -249,10 +316,9 @@ export const useSendMessage = ({
             version_id: versionId === "null" ? null : versionId,
             ...(action ? { action } : {}),
             ...(mode ? { mode } : {}),
-            ...(silent ? { silent } : {}),
             ...(action === "respond" && task_id ? { task_id } : {}),
             ...(service ? { service } : {}),
-            ...(Object.keys(configuration).length > 0 ? { configuration } : {}),
+            ...(Object.keys(configuration).length > 0 ? { configuration } : {})
         };
         emitEventToParent('MESSAGE_SENT', payload.message);
 
@@ -473,6 +539,17 @@ export const useSendMessage = ({
             }
         };
 
+        if (stream === false || stream === "false") {
+            globalDispatch(updateLastAssistantMessage({
+                role: "assistant",
+                content: " ",
+                wait: true,
+                id: tempMessageId,
+            }));
+            await sendDataToAction(payload);
+            return;
+        }
+
         const response = await streamDataToAction(
             payload,
             (event) => {
@@ -518,9 +595,9 @@ export const useSendMessage = ({
                         break;
                     case "task_delta":
                         if (event.task_id && event.content) {
-                            globalDispatch(updatePlanningExecutionState({ 
+                            globalDispatch(updatePlanningExecutionState({
                                 taskId: event.task_id,
-                                taskDelta: event.content 
+                                taskDelta: event.content
                             }));
                         }
                         break;
@@ -611,9 +688,9 @@ export const useSendMessage = ({
                             if (isSynthesizerChunk || isCompleteResponseJson) {
                                 // Skip streaming complete response JSON - they're handled by error/synthesizer_done events
                             } else {
-                                const looksLikePlanData = deltaContent.includes('"state"') && 
-                                                         (deltaContent.includes('"planning"') || deltaContent.includes('"tasks"'));
-                                
+                                const looksLikePlanData = deltaContent.includes('"state"') &&
+                                    (deltaContent.includes('"planning"') || deltaContent.includes('"tasks"'));
+
                                 if (looksLikePlanData) {
                                     isPlanningStreamActive = true;
                                     pushPlanningUpdate(deltaContent);
@@ -710,7 +787,7 @@ export const useSendMessage = ({
                                 if (parsedPausedPlan?.tasks) {
                                     globalDispatch(setPlanningData({ plan: parsedPausedPlan }));
                                 }
-                            } catch (_) {}
+                            } catch (_) { }
                             globalDispatch(updatePlanningExecutionState({ executionState: "paused" }));
                             emitEventToParent('MESSAGE_RECEIVED', event?.response?.data);
                             globalDispatch(setLoading(false));
@@ -724,7 +801,7 @@ export const useSendMessage = ({
                                     if (targetId) {
                                         globalDispatch(updateSingleMessage({
                                             messageId: targetId,
-                                            data: { isStreaming: false, wait: false, message_id: event.message_id, finish_reason: event.finish_reason, ...imageUrlsPatch },
+                                            data: { ...(event.response?.data || {}), isStreaming: false, wait: false, message_id: event.message_id, finish_reason: event.finish_reason, ...imageUrlsPatch },
                                         }));
                                     }
                                 } else {
@@ -735,6 +812,7 @@ export const useSendMessage = ({
                                         globalDispatch(updateSingleMessage({
                                             messageId: latestMessageId,
                                             data: {
+                                                ...(event.response?.data || {}),
                                                 content: suppressFinalContent && typeof finalExecutionContent === "string"
                                                     ? ""
                                                     : (typeof finalExecutionContent === "string" ? finalExecutionContent : ""),
@@ -761,7 +839,7 @@ export const useSendMessage = ({
                                 if (targetId) {
                                     globalDispatch(updateSingleMessage({
                                         messageId: targetId,
-                                        data: { isStreaming: false, wait: false, message_id: event.message_id, finish_reason: event.finish_reason, ...imageUrlsPatch },
+                                        data: { ...(event.response?.data || {}), isStreaming: false, wait: false, message_id: event.message_id, finish_reason: event.finish_reason, ...imageUrlsPatch },
                                     }));
                                 }
                             } else {
@@ -772,6 +850,7 @@ export const useSendMessage = ({
                                     globalDispatch(updateSingleMessage({
                                         messageId: latestMessageId,
                                         data: {
+                                            ...(event.response?.data || {}),
                                             content: suppressFinalContent && typeof finalExecutionContent === "string"
                                                 ? ""
                                                 : (typeof finalExecutionContent === "string" ? finalExecutionContent : ""),
@@ -792,7 +871,7 @@ export const useSendMessage = ({
                                     if (parsed?.state === "planning" && parsed?.tasks) {
                                         globalDispatch(setPlanningData({ plan: parsed }));
                                     }
-                                } catch (_) {}
+                                } catch (_) { }
                             }
                             // Clear updating state when planning stream completes
                             globalDispatch(updatePlanningExecutionState({ executionState: "pending" }));
@@ -801,6 +880,7 @@ export const useSendMessage = ({
                                 globalDispatch(updateSingleMessage({
                                     messageId: targetId,
                                     data: {
+                                        ...(event.response?.data || {}),
                                         isStreaming: false,
                                         wait: false,
                                         content: "",
@@ -813,6 +893,7 @@ export const useSendMessage = ({
                             globalDispatch(updatePlanningExecutionState({ executionState: "updated" }));
                         } else {
                             globalDispatch(updateLastAssistantMessage({
+                                ...(event.response?.data || {}),
                                 role: "assistant",
                                 isStreaming: false,
                                 wait: false,
@@ -851,8 +932,8 @@ export const useSendMessage = ({
     }, [
         threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal,
         userId, threadList, versionId, images, messageRef, globalDispatch,
-        startTimeoutTimer, chatSessionId, helloMode, timeoutIdRef, latestMessageId,
-        defaultErrorMessage
+        startTimeoutTimer, chatSessionId, timeoutIdRef, latestMessageId,
+        defaultErrorMessage, stream
     ]);
 
     sendMessageRef.current = sendMessage;

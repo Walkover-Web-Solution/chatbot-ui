@@ -8,7 +8,6 @@ export const ChatbotContext = createContext({
     themeColor: "#000000",
     onConfigChange: () => { },
     toggleHideCloseButton: () => { },
-    isHelloUser: false,
     environment: null,
     hideToolCall: false,
 });

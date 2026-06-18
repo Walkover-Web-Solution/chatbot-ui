@@ -47,24 +47,26 @@ export const perFormAction = (actionData: any, sendMessage: any, props: any) => 
   }
 };
 
-export const toggleSidebar = (sidebarId) => {
+export const toggleSidebar = (sidebarId: string) => {
   const sidebar = document.getElementById(sidebarId);
-  const handleClickOutside = (event) => {
+  const handleClickOutside = (event: MouseEvent) => {
     const sidebar = document.getElementById(sidebarId);
-    const button = event.target.closest('button');
+    const button = (event.target as HTMLElement)?.closest('button');
 
-    if (sidebar && !sidebar.contains(event.target) && !button) {
+    if (sidebar && event.target && !sidebar.contains(event.target as Node) && !button) {
       sidebar.classList.add('-translate-x-full');
-      document.removeEventListener('click', handleClickOutside);
-      document.removeEventListener('keydown', handleEscPress);
+      document.removeEventListener('click', handleClickOutside as any);
+      document.removeEventListener('keydown', handleEscPress as any);
     }
   };
 
-  const handleEscPress = (event) => {
+  const handleEscPress = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
-      sidebar.classList.add('-translate-x-full');
-      document.removeEventListener('click', handleClickOutside);
-      document.removeEventListener('keydown', handleEscPress);
+      if (sidebar) {
+        sidebar.classList.add('-translate-x-full');
+      }
+      document.removeEventListener('click', handleClickOutside as any);
+      document.removeEventListener('keydown', handleEscPress as any);
     }
   };
 
@@ -72,11 +74,11 @@ export const toggleSidebar = (sidebarId) => {
     sidebar.classList.toggle('-translate-x-full');
 
     if (!sidebar.classList.contains('-translate-x-full')) {
-      document.addEventListener('click', handleClickOutside);
-      document.addEventListener('keydown', handleEscPress);
+      document.addEventListener('click', handleClickOutside as any);
+      document.addEventListener('keydown', handleEscPress as any);
     } else {
-      document.removeEventListener('click', handleClickOutside);
-      document.removeEventListener('keydown', handleEscPress);
+      document.removeEventListener('click', handleClickOutside as any);
+      document.removeEventListener('keydown', handleEscPress as any);
     }
   }
 };

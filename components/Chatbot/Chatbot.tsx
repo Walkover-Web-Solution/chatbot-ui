@@ -8,8 +8,6 @@ import { useReduxStateManagement } from './hooks/useReduxManagement';
 import useRtlayerEventManager from './hooks/useRtlayerEventManager';
 
 // Components
-import FormComponent from '../FormComponent';
-import CallUI from '../Hello/callUI';
 import ChatbotDrawer from '../Interface-Chatbot/ChatbotDrawer';
 import ChatbotHeader from '../Interface-Chatbot/ChatbotHeader';
 import ChatbotHeaderTab from '../Interface-Chatbot/ChatbotHeaderTab';
@@ -25,7 +23,6 @@ import { useAppDispatch } from '@/store/useTypedHooks';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { useChatEffects } from './hooks/useChatEffects';
 import { useColor } from './hooks/useColor';
-import { useHelloEffects } from './hooks/useHelloEffects';
 import { useReduxEffects } from './hooks/useReduxEffects';
 import { useScreenSize } from './hooks/useScreenSize';
 
@@ -86,37 +83,32 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
   const dispatch = useAppDispatch();
 
   // State management
-  const { show_widget_form, greetingMessage, isToggledrawer, chatsLoading, messageIds, subThreadId, helloMsgIds, defaultMessage } = useCustomSelector((state) => {
-    const widgetInfo = state.Hello?.[chatSessionId]?.widgetInfo
+  const { isToggledrawer, chatsLoading, messageIds, subThreadId, defaultMessage } = useCustomSelector((state) => {
     return ({
-      show_widget_form: typeof widgetInfo?.show_widget_form === 'boolean' ? widgetInfo?.show_widget_form : state.Hello?.[chatSessionId]?.showWidgetForm,
-      greetingMessage: state.Hello?.[chatSessionId]?.greeting as any,
       isToggledrawer: state.Chat.isToggledrawer,
       chatsLoading: state.Chat.chatsLoading,
       messageIds: state.Chat.messageIds,
       subThreadId: state.Chat.subThreadId,
-      helloMsgIds: state.Chat.helloMsgIds,
       defaultMessage: state.appInfo?.[tabSessionId]?.defaultMessage
     })
   });
 
   // Custom hooks
   useChatEffects({ chatSessionId, tabSessionId, messageRef, timeoutIdRef });
-  useHelloEffects({ chatSessionId, tabSessionId, messageRef });
   useReduxEffects({ chatSessionId, tabSessionId });
   useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId });
 
-  const { isHelloUser, currentChatId, isDefaultNavigateToChatScreen } = useReduxStateManagement({ chatSessionId, tabSessionId });
+  const { currentChatId, isDefaultNavigateToChatScreen } = useReduxStateManagement({ chatSessionId, tabSessionId });
 
   // Initialize RTLayer event listeners
 
   // Effect to open drawer for new human users
   useEffect(() => {
-    if (isHelloUser && !currentChatId && !mountedRef.current) {
+    if (!currentChatId && !mountedRef.current) {
       dispatch(setToggleDrawer(true));
     }
     mountedRef.current = true;
-  }, [isHelloUser, currentChatId, dispatch]);
+  }, [currentChatId, dispatch]);
 
   // open Chat directly if no team or one team exista
   useEffect(() => {
@@ -138,10 +130,7 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
   ]);
 
   // Check if chat is empty
-  const isChatEmpty = isHelloUser
-    ? (!subThreadId || helloMsgIds[subThreadId]?.length === 0) &&
-    (!greetingMessage || (!greetingMessage.text && !greetingMessage?.options?.length))
-    : !subThreadId || messageIds[subThreadId]?.length === 0;
+  const isChatEmpty = !subThreadId || messageIds[subThreadId]?.length === 0;
 
   return (
     <MessageContext.Provider value={contextValue}>
@@ -168,12 +157,6 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
               />
             </div>
           )}
-
-          {/* Form and UI components */}
-          {isHelloUser && show_widget_form && (
-            <FormComponent />
-          )}
-          <CallUI />
           <ChatbotHeaderTab />
 
           {isChatEmpty ? (

@@ -1,12 +1,8 @@
 /* eslint-disable */
 import { UserAssistant } from "@/assests/assestsIndex";
-import RenderHelloVedioCallMessage from "@/components/Hello/RenderHelloVedioCallMessage";
 import { linkify } from "@/utils/utilities";
 import Image from "next/image";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import RenderHelloAttachmentMessage from "../../Hello/RenderHelloAttachmentMessage";
-import RenderHelloFeedbackMessage from "../../Hello/RenderHelloFeedbackMessage";
-import RenderHelloInteractiveMessage from "../../Hello/RenderHelloInteractiveMessage";
 import "./Message.css";
 import MessageTime from "./MessageTime";
 
@@ -205,19 +201,6 @@ const MessageContent = React.memo(({ message }: { message: any }) => {
         const messageType = message?.message_type;
 
         switch (messageType) {
-            case MESSAGE_TYPES.VIDEO_CALL:
-                return <RenderHelloVedioCallMessage message={message} />;
-
-            case MESSAGE_TYPES.INTERACTIVE:
-                return <RenderHelloInteractiveMessage message={message} />;
-
-            case MESSAGE_TYPES.ATTACHMENT:
-            case MESSAGE_TYPES.TEXT_ATTACHMENT:
-                return <RenderHelloAttachmentMessage message={message} />;
-
-            case MESSAGE_TYPES.FEEDBACK:
-                return <RenderHelloFeedbackMessage message={message} />;
-
             case MESSAGE_TYPES.PUSH_NOTIFICATION:
                 return (
                     <ShadowDomComponent

@@ -50,9 +50,6 @@ interface ChatState {
     messages: any[];
     messageIds: Record<string, string[]>;
     msgIdAndDataMap: Record<string, Record<string, any>>;
-    helloMsgIds: Record<string, string[]>;
-    helloMsgIdAndDataMap: Record<string, Record<string, any>>;
-    helloMessages: any[];
     starterQuestions: any[];
     isTyping: Record<string, any>;
 
@@ -62,7 +59,6 @@ interface ChatState {
     isFetching: boolean;
 
     // UI States
-    openHelloForm: boolean;
     isToggledrawer: boolean;
     headerButtons: any[];
 
@@ -70,7 +66,6 @@ interface ChatState {
     threadId: string;
     subThreadId: string;
     bridgeName: string;
-    helloId: string;
     bridgeVersionId: string;
 
     // Pagination & Message Handling
@@ -88,16 +83,12 @@ interface ChatState {
 
     // Additional properties that might be needed
     open?: boolean;
-    isHelloUser?: boolean;
 }
 export const initialChatState: ChatState = {
     // Messages and Conversations
     messages: [],
     messageIds: {},
     msgIdAndDataMap: {},
-    helloMsgIds: {},
-    helloMsgIdAndDataMap: {},
-    helloMessages: [],
     starterQuestions: [],
     isTyping: {},
 
@@ -107,7 +98,6 @@ export const initialChatState: ChatState = {
     isFetching: false,
 
     // UI States
-    openHelloForm: false,
     isToggledrawer: false,
     headerButtons: [],
 
@@ -115,7 +105,6 @@ export const initialChatState: ChatState = {
     threadId: "",
     subThreadId: "",
     bridgeName: "",
-    helloId: "",
     bridgeVersionId: "",
 
     // Pagination & Message Handling
@@ -167,17 +156,49 @@ const buildPlanHistory = (
 };
 
 export const chatReducerV2 = {
-    updateLastAssistantMessage: (state, action: PayloadAction<{ id?: string;[key: string]: any }>) => {
+    updateLastAssistantMessage: (state, action: PayloadAction<{ id?: string; isNewMessage?: boolean; [key: string]: any }>) => {
         const subThreadId = state.subThreadId;
         if (subThreadId) {
-            state.messageIds[subThreadId] = [action.payload.id, ...state.messageIds[subThreadId].slice(1)];
+            const currentIds = state.messageIds[subThreadId] || [];
+            const lastId = currentIds[0];
+            const lastMessageData = lastId ? state.msgIdAndDataMap[subThreadId]?.[lastId] : {};
+
+            if (action.payload.isNewMessage) {
+                state.messageIds[subThreadId] = [action.payload.id, ...currentIds];
+            } else {
+                state.messageIds[subThreadId] = [action.payload.id, ...currentIds.slice(1)];
+                if (lastId && lastId !== action.payload.id && state.msgIdAndDataMap[subThreadId]) {
+                    delete state.msgIdAndDataMap[subThreadId][lastId];
+                }
+            }
+
             if (!state.msgIdAndDataMap[subThreadId]) {
                 state.msgIdAndDataMap[subThreadId] = {};
             }
             state.msgIdAndDataMap[subThreadId][action.payload.id] = {
-                ...(state.msgIdAndDataMap[subThreadId][action.payload.id] || {}),
+                ...(action.payload.isNewMessage ? {} : lastMessageData),
                 ...action.payload,
             };
+        }
+    },
+
+    setHelloEventMessage: (state, action: PayloadAction<{ subThreadId?: string; message: any }>) => {
+        const subThreadId = action.payload?.subThreadId || state.subThreadId;
+        const rawMessage = action.payload.message;
+        const messages = convertEventMessageToGenericFormat(rawMessage, true);
+
+        if (subThreadId && messages.length > 0) {
+            const newMsg = messages[0];
+            if (!state.messageIds[subThreadId]) {
+                state.messageIds[subThreadId] = [];
+            }
+            if (!state.messageIds[subThreadId].includes(newMsg.id)) {
+                state.messageIds[subThreadId] = [newMsg.id, ...state.messageIds[subThreadId]];
+            }
+            if (!state.msgIdAndDataMap[subThreadId]) {
+                state.msgIdAndDataMap[subThreadId] = {};
+            }
+            state.msgIdAndDataMap[subThreadId][newMsg.id] = newMsg;
         }
     },
 
@@ -431,7 +452,7 @@ export const chatReducerV2 = {
 
     setInitialMessages: (state, action: PayloadAction<{ subThreadId?: string; messages: any[] }>) => {
         const subThreadId = action.payload?.subThreadId || state.subThreadId;
-        const messages = convertChatHistoryToGenericFormat(action.payload.messages, state.isHelloUser);
+        const messages = convertChatHistoryToGenericFormat(action.payload.messages);
 
         if (subThreadId) {
             state.messageIds[subThreadId] = messages.map((item) => item.id);
@@ -445,36 +466,12 @@ export const chatReducerV2 = {
     setPaginateMessages: (state, action: PayloadAction<{ subThreadId?: string; messages: any[] }>) => {
         const subThreadId = action.payload?.subThreadId || state.subThreadId;
         const messages = action.payload.messages;
-        const messagesArray = convertChatHistoryToGenericFormat(messages, state.isHelloUser);
+        const messagesArray = convertChatHistoryToGenericFormat(messages);
 
         if (subThreadId) {
             state.messageIds[subThreadId] = [
                 ...(state.messageIds[subThreadId] || []),
                 ...messagesArray.map(msg => msg.id)
-            ];
-
-            if (!state.msgIdAndDataMap[subThreadId]) {
-                state.msgIdAndDataMap[subThreadId] = {};
-            }
-
-            Object.assign(
-                state.msgIdAndDataMap[subThreadId],
-                messagesArray.reduce((acc: Record<string, any>, item) => {
-                    acc[item.id] = item;
-                    return acc;
-                }, {})
-            );
-        }
-    },
-
-    setHelloEventMessage: (state, action: PayloadAction<{ subThreadId?: string; message: any }>) => {
-        const subThreadId = action.payload?.subThreadId || state.subThreadId;
-        const messagesArray = convertEventMessageToGenericFormat(action.payload.message, state.isHelloUser);
-
-        if (subThreadId) {
-            state.messageIds[subThreadId] = [
-                ...messagesArray?.map(msg => msg?.id),
-                ...(state.messageIds[subThreadId] || [])
             ];
 
             if (!state.msgIdAndDataMap[subThreadId]) {

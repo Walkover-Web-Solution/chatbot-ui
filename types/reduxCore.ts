@@ -1,12 +1,12 @@
 import { $AppInfoReduxType } from "./appInfo/appInfoReduxType";
-import { $HelloReduxType } from "./hello/HelloReduxType";
 import { $InterfaceReduxType } from "./interface/InterfaceReduxType";
+import { SubscribeDataState } from "../store/subscribeData/subscribeDataSlice";
 
 export interface $ReduxCoreType {
-  Hello: $HelloReduxType;
   Interface: $InterfaceReduxType;
-  appInfo: $AppInfoReduxType,
-  draftData: $DraftDataReducerType
+  appInfo: $AppInfoReduxType;
+  draftData: $DraftDataReducerType;
+  subscribeData: SubscribeDataState;
 }
 
 export interface $DraftDataReducerType {
@@ -14,9 +14,5 @@ export interface $DraftDataReducerType {
   tabSessionId?: string
   widgetToken?: string;
   chatbotId?: string;
-  isHelloUser?: boolean;
-  hello: {
-    variables: Record<string, any>
-  }
   isChatbotMinimized?: boolean;
 }

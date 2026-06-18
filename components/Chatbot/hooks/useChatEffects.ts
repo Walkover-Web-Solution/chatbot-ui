@@ -1,21 +1,20 @@
 import { errorToast } from "@/components/customToast";
-import { getHelloDetailsStart } from "@/store/hello/helloSlice";
 import { useAppDispatch } from "@/store/useTypedHooks";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { useCallback, useEffect } from "react";
-import { useFetchAllThreads, useGetInitialChatHistory, useSendMessage } from "./useChatActions";
+import { useFetchAllThreads, useGetInitialChatHistory, useSendMessage, useSubscribeChatbotDetails } from "./useChatActions";
 
 export const useChatEffects = ({ chatSessionId, tabSessionId, messageRef, timeoutIdRef }: { chatSessionId: string, tabSessionId: string, messageRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>, timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, }) => {
     const globalDispatch = useAppDispatch();
     const fetchAllThreads = useFetchAllThreads()
     const getIntialChatHistory = useGetInitialChatHistory()
     const sendMessage = useSendMessage({ messageRef, timeoutIdRef });
-    const { threadId, subThreadId, bridgeName, isHelloUser, threadList, versionId, loading, serviceChanged, modelChanged, stream, widget, image_model } = useCustomSelector((state) => ({
+    const subscribeChatbotDetails = useSubscribeChatbotDetails();
+    const { threadId, subThreadId, bridgeName, threadList, versionId, loading, serviceChanged, modelChanged, stream, widget, image_model } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
         versionId: state.appInfo?.[tabSessionId]?.versionId || null,
-        isHelloUser: state.draftData?.isHelloUser || false,
         threadList: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId],
         loading: state.Chat.loading || false,
         serviceChanged: state.appInfo?.[tabSessionId]?.serviceChanged || false,
@@ -26,9 +25,9 @@ export const useChatEffects = ({ chatSessionId, tabSessionId, messageRef, timeou
     }))
     useEffect(() => {
         if (bridgeName) {
-            globalDispatch(getHelloDetailsStart({ slugName: bridgeName, versionId }));
+            subscribeChatbotDetails();
         }
-    }, [bridgeName, chatSessionId, serviceChanged, modelChanged, versionId, stream, widget, image_model])
+    }, [bridgeName, chatSessionId, serviceChanged, modelChanged, versionId, stream, widget, image_model, subscribeChatbotDetails])
 
     useEffect(() => {
         threadId && bridgeName && fetchAllThreads()
@@ -68,12 +67,10 @@ export const useChatEffects = ({ chatSessionId, tabSessionId, messageRef, timeou
     );
 
     useEffect(() => {
-        if (!isHelloUser) {
-            window.addEventListener("message", handleMessage);
-            return () => {
-                window.removeEventListener("message", handleMessage);
-            };
-        }
+        window.addEventListener("message", handleMessage);
+        return () => {
+            window.removeEventListener("message", handleMessage);
+        };
     }, [handleMessage]);
 
     return null;

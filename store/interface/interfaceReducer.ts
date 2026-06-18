@@ -28,7 +28,7 @@ const sampleInterfaceData: any = {
   bridgeName: "root",
 };
 
-export const initialState: $InterfaceReduxType = {
+export const initialState: any = {
   isLoading: false,
   interfaceData: {},
   interfaceContext: {},
@@ -49,7 +49,7 @@ export const reducers: ValidateSliceCaseReducers<
       value: string;
     }>
   ) {
-    const { chatSessionId, tabSessionId } = action.urlData;
+    const { chatSessionId, tabSessionId } = action?.urlData || {};
     if (!chatSessionId || !tabSessionId) return;
     
     const sessionKey = `${chatSessionId}_${tabSessionId}`;

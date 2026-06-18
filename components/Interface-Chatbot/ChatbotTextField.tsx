@@ -2,20 +2,16 @@
 import { AiIcon } from "@/assests/assestsIndex";
 import { errorToast } from "@/components/customToast";
 import { uploadImage } from "@/config/api";
-import { uploadAttachmentToHello } from "@/config/helloApi";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
-import { useTypingStatus } from "@/hooks/socketEventEmitter";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ParamsEnums } from "@/utils/enums";
 import { isColorLight } from "@/utils/themeUtility";
 import { TextField, useTheme } from "@mui/material";
 import debounce from "lodash.debounce";
-import { ChevronDown, ChevronUp, Loader2, Paperclip, Send, Smile, X, Zap, BrainCircuit } from "lucide-react";
+import { ChevronDown, Loader2, Paperclip, Send, Smile, X } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
-import { useSendMessageToHello } from "../Chatbot/hooks/useHelloIntegration";
-import CallButton from "./CallButton";
 import EmojiSelector from "./EmojiSelector";
 import { MessageContext } from "./InterfaceChatbot";
 import ImageWithFallback from "./Messages/ImageWithFallback";
@@ -42,22 +38,16 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const theme = useTheme();
   const isLight = isColorLight(theme.palette.primary.main);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const emitTypingStatus = useTypingStatus({ chatSessionId, tabSessionId });
 
-  const { isHelloUser, mode, inbox_id, show_send_button, assigned_type, isStream, showModeDropdown } = useCustomSelector((state) => ({
-    isHelloUser: state.draftData?.isHelloUser || false,
-    mode: state.Hello?.[chatSessionId]?.mode || [],
-    inbox_id: state.Hello?.[chatSessionId]?.widgetInfo?.inbox_id,
-    show_send_button: typeof state.Hello?.[chatSessionId]?.helloConfig?.show_send_button === 'boolean' ? state.Hello?.[chatSessionId]?.helloConfig?.show_send_button : true,
-    assigned_type: state.Hello?.[chatSessionId]?.channelListData?.channels?.find(
-      (channel: any) => channel?.channel === currentChannelId
-    )?.assigned_type || '',
-    isStream: (state.Hello?.[chatSessionId]?.mode || []).includes('stream'),
+  const { isStream, showModeDropdown, image_model, vision } = useCustomSelector((state) => ({
+    isStream: state.appInfo?.[tabSessionId]?.isStream === true,
     showModeDropdown: state.appInfo?.[tabSessionId]?.mode === true,
+    image_model: state.appInfo?.[tabSessionId]?.image_model,
+    vision: state.appInfo?.[tabSessionId]?.vision,
   }));
 
-  const canUploadImages = useMemo(() => (isHelloUser ? true : mode?.includes("vision")), [isHelloUser, mode]);
-  const canUploadFiles = useMemo(() => (isHelloUser ? true : mode?.includes("files")), [isHelloUser, mode]);
+  const canUploadImages = useMemo(() => image_model === true || image_model === "true" || vision === true || vision === "true", [image_model, vision]);
+  const canUploadFiles = useMemo(() => image_model === true || image_model === "true", [image_model]);
   const fileInputAccept = useMemo(() => {
     if (canUploadImages && canUploadFiles) return "image/*,application/pdf";
     if (canUploadImages) return "image/*";
@@ -66,7 +56,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }, [canUploadImages, canUploadFiles]);
 
   const { messageRef } = useContext(MessageContext);
-  const sendMessageToHello = useSendMessageToHello({ messageRef });
 
   const { setImages } = useChatActions();
   const sendMessage = useSendMessage({});
@@ -86,13 +75,9 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   })
 
   const buttonDisabled = useMemo(() => {
-    if (isHelloUser) {
-      return ((isHelloUser && (assigned_type !== 'bot' && assigned_type !== 'workflow')) ? false : loading) || isUploading || (!inputValue.trim() && images.length === 0)
-    } else {
-      return isPlanExecuting || loading || isUploading || (!inputValue.trim() && images.length === 0) ||
-        (images.some((imageUrl) => imageUrl?.toLowerCase()?.includes('.pdf')) && !inputValue.trim());
-    }
-  }, [loading, isUploading, inputValue, images, assigned_type, isHelloUser, isPlanExecuting]);
+    return isPlanExecuting || loading || isUploading || (!inputValue.trim() && images.length === 0) ||
+      (images.some((imageUrl) => imageUrl?.toLowerCase()?.includes('.pdf')) && !inputValue.trim());
+  }, [loading, isUploading, inputValue, images, isPlanExecuting]);
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey && !buttonDisabled) {
@@ -103,30 +88,15 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
 
   const handleSendMessage = useCallback((messageObj: { message?: string } = {}) => {
     setInputValue('');
-    if (isHelloUser) {
-      sendMessageToHello?.();
-      emitTypingStatus("not-typing");
-    } else {
-      const planningPayload = (showModeDropdown && isStream && conversationMode === "planning") ? { mode: "plan" } : {};
-      sendMessage({ ...messageObj, ...planningPayload });
-    }
-  }, [isHelloUser, sendMessage, sendMessageToHello, conversationMode, showModeDropdown, isStream]);
+    const planningPayload = (showModeDropdown && isStream && conversationMode === "planning") ? { mode: "plan" } : {};
+    sendMessage({ ...messageObj, ...planningPayload });
+  }, [sendMessage, conversationMode, showModeDropdown, isStream]);
 
   useEffect(() => {
     if (showModeDropdown) {
       setConversationMode("planning");
     }
   }, [showModeDropdown]);
-
-  // useEffect(() => {
-  //   const handleClickOutside = (e: MouseEvent) => {
-  //     if (modeMenuRef.current && !modeMenuRef.current.contains(e.target as Node)) {
-  //       setShowModeMenu(false);
-  //     }
-  //   };
-  //   if (showModeMenu) document.addEventListener("mousedown", handleClickOutside);
-  //   return () => document.removeEventListener("mousedown", handleClickOutside);
-  // }, [showModeMenu]);
 
   const handleMessage = useCallback((event: MessageEvent) => {
     if (event?.data?.type === "open") {
@@ -198,19 +168,10 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
 
     try {
       const uploadPromises = allowedFiles.map(async (file) => {
-        if (isHelloUser) {
-          const response = await uploadAttachmentToHello(file, inbox_id);
-          if (!response) {
-            errorToast("Failed to upload images. Please try again.");
-            return null;
-          }
-          return response?.data?.[0];
-        } else {
-          const formData = new FormData();
-          formData.append("image", file);
-          const response = await uploadImage({ formData });
-          return response.success ? response.image_url : null;
-        }
+        const formData = new FormData();
+        formData.append("image", file);
+        const response = await uploadImage({ formData });
+        return response.success ? response.image_url : null;
       });
 
       const uploadedUrls = (await Promise.all(uploadPromises)).filter((url): url is string => url !== null);
@@ -224,7 +185,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
         fileInputRef.current.value = '';
       }
     }
-  }, [images, setImages, isHelloUser, inbox_id, canUploadImages, canUploadFiles]);
+  }, [images, setImages, canUploadImages, canUploadFiles]);
 
   const handleRemoveImage = useCallback((index: number) => {
     setImages(images.filter((_, i) => i !== index));
@@ -244,34 +205,13 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     }
   }, []);
 
-  const debouncedStopTyping = useMemo(
-    () => debounce(() => emitTypingStatus("not-typing"), 2000),
-    [emitTypingStatus]
-  );
-
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (messageRef.current) {
       messageRef.current.value = value;
     }
     setInputValue(value);
-
-    if (isHelloUser) {
-      if (value.trim()) {
-        emitTypingStatus("typing");
-        debouncedStopTyping();
-      } else {
-        emitTypingStatus("not-typing");
-        debouncedStopTyping.cancel();
-      }
-    }
-  }, [messageRef, isHelloUser, emitTypingStatus, debouncedStopTyping]);
-
-  useEffect(() => {
-    return () => {
-      debouncedStopTyping.cancel();
-    };
-  }, [debouncedStopTyping]);
+  }, [messageRef]);
 
   const suggestionButtonStyles = useMemo(() => ({
     backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#ffffff',
@@ -340,7 +280,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
           <div key={index} className="relative group">
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden shadow-md transition-transform hover:scale-105">
               <ImageWithFallback
-                src={isHelloUser ? image?.path : image}
+                src={image}
                 alt={`Uploaded Preview ${index + 1}`}
                 style={{ width: 128, height: 128 }}
                 canDownload={false}
@@ -359,7 +299,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
         ))}
       </div>
     );
-  }, [images, isHelloUser, handleRemoveImage]);
+  }, [images, handleRemoveImage]);
 
   const textFieldStyles = useMemo(() => ({
     '& .MuiOutlinedInput-root': {
@@ -393,8 +333,6 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }), [theme]);
 
   const aiIconElement = useMemo(() => {
-    if (isHelloUser) return null;
-
     return (
       <div className="relative w-6 h-6 z-[2] ml-1">
         <Image
@@ -406,14 +344,10 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
         />
       </div>
     );
-  }, [isHelloUser]);
+  }, []);
 
   const uploadButton = useMemo(() => {
-    if (isHelloUser) {
-      if (!subThreadId) return null;
-    } else {
-      if (!canUploadImages && !canUploadFiles) return null;
-    }
+    if (!canUploadImages && !canUploadFiles) return null;
 
     return (
       <>
@@ -442,7 +376,7 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
         </label>
       </>
     );
-  }, [isHelloUser, subThreadId, canUploadImages, canUploadFiles, fileInputAccept, isUploading, handleImageUpload, isPlanExecuting]);
+  }, [subThreadId, canUploadImages, canUploadFiles, fileInputAccept, isUploading, handleImageUpload, isPlanExecuting]);
 
   const handleEmojiSelect = (data: { emoji: string }) => {
     if (messageRef?.current) {
@@ -575,21 +509,18 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                   <span className="text-[10px] font-medium" style={{ color: "oklch(var(--p) / 0.7)" }}>Under review…</span>
                 </div>
               )}
-              <CallButton />
-              {show_send_button && (
-                <button
-                  onClick={() => !buttonDisabled && handleSendMessage()}
-                  data-testid="chatbot-send-button"
-                  className="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:scale-105 transition-transform duration-200"
-                  disabled={buttonDisabled}
-                  style={{
-                    backgroundColor: buttonDisabled ? '#d1d5db' : theme.palette.primary.main
-                  }}
-                  aria-label="Send message"
-                >
-                  <Send className={`w-3 h-3 md:w-4 md:h-4 ${isLight ? 'text-slate-900' : 'text-white'}`} />
-                </button>
-              )}
+              <button
+                onClick={() => !buttonDisabled && handleSendMessage()}
+                data-testid="chatbot-send-button"
+                className="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:scale-105 transition-transform duration-200"
+                disabled={buttonDisabled}
+                style={{
+                  backgroundColor: buttonDisabled ? '#d1d5db' : theme.palette.primary.main
+                }}
+                aria-label="Send message"
+              >
+                <Send className={`w-3 h-3 md:w-4 md:h-4 ${isLight ? 'text-slate-900' : 'text-white'}`} />
+              </button>
             </div>
           </div>
         </div>

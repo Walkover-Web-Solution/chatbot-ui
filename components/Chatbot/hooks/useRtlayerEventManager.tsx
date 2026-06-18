@@ -1,5 +1,4 @@
-import { ChatbotContext } from '@/components/context';
-import { setHelloEventMessage, setLoading, setOptions, updateLastAssistantMessage, appendLastAssistantMessageChunk } from '@/store/chat/chatSlice';
+import { setLoading, setOptions, updateLastAssistantMessage, appendLastAssistantMessageChunk } from '@/store/chat/chatSlice';
 import { setThreads } from '@/store/interface/interfaceSlice';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
@@ -9,28 +8,25 @@ import { useDispatch } from 'react-redux';
 import WebSocketClient from 'rtlayer-client';
 
 // Create a separate hook to manage the WebSocket client instance
-function useWebSocketClient(isHelloUser: boolean) {
+function useWebSocketClient() {
   const [client, setClient] = React.useState(null);
 
   // Only create the WebSocket client when needed
   React.useEffect(() => {
-    if (!isHelloUser) {
-      const newClient = WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
-      setClient(newClient);
+    const newClient = WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
+    setClient(newClient);
 
-      return () => {
-        if (newClient && typeof newClient.close === 'function') {
-          newClient.close();
-        }
-      };
-    }
-  }, [isHelloUser]);
+    return () => {
+      if (newClient && typeof newClient.close === 'function') {
+        newClient.close();
+      }
+    };
+  }, []);
 
   return client;
 }
 
 function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: { timeoutIdRef: React.RefObject<NodeJS.Timeout | null>, chatSessionId: string, tabSessionId: string }) {
-  const { isHelloUser } = useContext(ChatbotContext)
   const { reduxBridgeName, threadId, subThreadId, defaultErrorMessage } = useCustomSelector((state) => ({
     reduxBridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
     threadId: state.appInfo?.[tabSessionId]?.threadId,
@@ -38,7 +34,7 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
     defaultErrorMessage: state.appInfo?.[tabSessionId]?.defaultErrorMessage,
   }))
   const dispatch = useDispatch()
-  const client = useWebSocketClient(isHelloUser);
+  const client = useWebSocketClient();
   const { userId } = useCustomSelector((state) => ({ userId: state.appInfo?.[tabSessionId]?.userId }))
 
   const handleMessageRTLayer = useCallback((message: string) => {
@@ -67,7 +63,7 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
         const errorMsg = parsedMessage.error || parsedMessage.fallback_error || "An error occurred while talking to AI";
         const displayMsg = (typeof defaultErrorMessage === "string" && defaultErrorMessage.trim()) ? defaultErrorMessage : errorMsg;
         emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', errorMsg);
-        dispatch(updateLastAssistantMessage({ role: "assistant", content: displayMsg, id: parsedMessage.message_id || generateNewId() }));
+        dispatch(updateLastAssistantMessage({ role: "assistant", content: displayMsg, id: parsedMessage.message_id || generateNewId(), isStreaming: false, wait: false }));
         dispatch(setLoading(false));
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
         return;
@@ -93,7 +89,7 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
         const rawErr = parsedMessage?.error || error || "Error while talking to AI";
         const displayErr = (typeof defaultErrorMessage === "string" && defaultErrorMessage.trim()) ? defaultErrorMessage : `${rawErr}`;
         emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', rawErr);
-        dispatch(updateLastAssistantMessage({ role: "assistant", content: displayErr, id: generateNewId() }));
+        dispatch(updateLastAssistantMessage({ role: "assistant", content: displayErr, id: generateNewId(), isStreaming: false, wait: false }));
         dispatch(setLoading(false));
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
         break;
@@ -101,7 +97,6 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
 
       // Case: Reset role is present without mode
       case data?.role === "reset" && !data?.mode:
-        dispatch(setHelloEventMessage({ message: { role: "reset", content: "Resetting the chat", mode: data?.mode } }));
         break;
 
       // Case: Suggestions are present
@@ -126,7 +121,9 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
         dispatch(updateLastAssistantMessage({ 
           role: parsedMessage?.response?.data?.role || "assistant", 
           ...(parsedMessage.response.data || {}),
-          id: messageId
+          id: messageId,
+          isStreaming: false,
+          wait: false,
         }));
         dispatch(setLoading(false));
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);

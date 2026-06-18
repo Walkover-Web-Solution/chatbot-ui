@@ -2,7 +2,7 @@ import countryCodes from "@/assests/countryCode.json";
 import { saveClientDetails } from "@/config/helloApi";
 import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { setOpenHelloForm } from "@/store/chat/chatSlice";
-import { setHelloClientInfo, setHelloKeysData } from "@/store/hello/helloSlice";
+import { setSubscribeClientInfo, setSubscribeKeysData } from "@/store/subscribeData/subscribeDataSlice";
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { splitNumber } from "@/utils/utilities";
@@ -39,9 +39,9 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
   const { textColor, backgroundColor } = useColor();
   const dispatch = useDispatch();
   const { showWidgetForm, open, userData } = useCustomSelector((state) => ({
-    showWidgetForm: state.Hello?.[chatSessionId]?.showWidgetForm ?? true,
+    showWidgetForm: state.subscribeData?.[chatSessionId]?.showWidgetForm ?? true,
     open: state.Chat.openHelloForm,
-    userData: state.Hello?.[chatSessionId]?.clientInfo
+    userData: state.subscribeData?.[chatSessionId]?.clientInfo
   }));
   const scriptParams = JSON.parse(GetSessionStorageData('helloConfig') || '{}')
   const { isSmallScreen } = useScreenSize();
@@ -113,14 +113,14 @@ function FormComponent({ chatSessionId }: FormComponentProps) {
         Email: formData?.email
       }
 
-      // Dispatch setHelloKeysData if all three fields are filled
+      // Dispatch setSubscribeKeysData if all three fields are filled
       if (formData.name && formData.email && formData.number) {
-        dispatch(setHelloKeysData({ showWidgetForm: false }));
+        dispatch(setSubscribeKeysData({ showWidgetForm: false }));
       }
 
       saveClientDetails(clientData).then(() => {
         setOpen(false);
-        dispatch(setHelloClientInfo({ clientInfo: { ...clientData } }));
+        dispatch(setSubscribeClientInfo({ clientInfo: { ...clientData } }));
         setIsLoading(false);
       }).catch(() => {
         setIsLoading(false);

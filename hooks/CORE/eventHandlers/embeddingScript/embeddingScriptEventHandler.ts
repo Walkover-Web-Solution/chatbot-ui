@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import useHandleGtwyEmbeddingScriptEvents from "../../../GTWY/eventHandlers/embeddingScript/embeddingScriptEventHandler";
-import useHandleHelloEmbeddingScriptEvents from "../../../HELLO/eventHandlers/embeddingScript/embeddingScriptEventHandler";
 
 
 export type EmbeddingScriptEventRegistryInstance = InstanceType<typeof EmbeddingScrpitEventRegistry>;
@@ -44,7 +43,6 @@ export const useEmbeddingScriptEventHandler = (tabSessionId: string) => {
   const EmebeddingScriptEventHandler: EmbeddingScriptEventRegistryInstance = new EmbeddingScrpitEventRegistry(tabSessionId)
 
   useHandleGtwyEmbeddingScriptEvents(EmebeddingScriptEventHandler)
-  useHandleHelloEmbeddingScriptEvents(EmebeddingScriptEventHandler)
 
   const handleMessage = (event: MessageEvent) => {
     const { type } = event.data;
