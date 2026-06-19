@@ -59,6 +59,9 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
       } else if (parsedMessage.event === "delta") {
         dispatch(appendLastAssistantMessageChunk({ chunk: parsedMessage.content || "" }));
         return;
+      } else if (parsedMessage.event === "tool_result") {
+        emitEventToParent('TOOL_CALL_RESULT', parsedMessage.content);
+        return;
       } else if (parsedMessage.event === "error") {
         const errorMsg = parsedMessage.error || parsedMessage.fallback_error || "An error occurred while talking to AI";
         const displayMsg = (typeof defaultErrorMessage === "string" && defaultErrorMessage.trim()) ? defaultErrorMessage : errorMsg;
@@ -72,8 +75,13 @@ function useRtlayerEventManager({ timeoutIdRef, chatSessionId, tabSessionId }: {
     }
 
     // Determine the type of response
-    const { function_call, message: responseMessage, data, error } = parsedMessage?.response || {};
+    const { function_call, message: responseMessage, data, error, result } = parsedMessage?.response || {};
     switch (true) {
+      // Case: Function call result is present
+      case function_call && !!result:
+        emitEventToParent('TOOL_CALL_RESULT', result);
+        break;
+
       // Case: Function call is present without a message
       case function_call && !responseMessage:
         dispatch(updateLastAssistantMessage({ role: "assistant", wait: true, content: "Running ", Name: parsedMessage?.response?.Name || [], id: generateNewId() }));
