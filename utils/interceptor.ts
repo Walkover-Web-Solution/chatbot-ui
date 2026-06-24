@@ -36,7 +36,7 @@ axios.interceptors.response.use(
       removeCookie(getCurrentEnvironment());
       localStorage.clear();
 
-      const redirectUrl = new URL(window.location.origin);
+      const redirectUrl = new URL('/error?error=session+expired', window.location.origin);
 
       redirectUrl.searchParams.append("error", "session expired");
 
