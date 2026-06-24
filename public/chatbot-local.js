@@ -19,7 +19,7 @@
                 chatbotUrl: 'http://localhost:3001/chatbot',
                 styleSheet: 'http://localhost:3001/chatbot-style.css',
                 // login: 'http://localhost:7072/api/chatbot/loginuser'
-                login: 'https://dev-db.gtwy.ai/api/chatbot/loginuser'
+                login: 'https://db.gtwy.ai/api/chatbot/loginuser'
             };
             this.icons = {
                 white: this.makeImageUrl('b1357e23-2fc6-4dc3-855a-7a213b1fa100'),
@@ -186,6 +186,9 @@
                     break;
                 case 'interfaceLoaded':
                     this.sendInitialData();
+                    break;
+                case 'SESSION_EXPIRED':
+                    this.loadChatbotEmbed();
                     break;
             }
         }

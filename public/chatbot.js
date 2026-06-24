@@ -187,6 +187,9 @@
                 case 'interfaceLoaded':
                     this.sendInitialData();
                     break;
+                case 'SESSION_EXPIRED':
+                    this.loadChatbotEmbed();
+                    break;
             }
         }
 
