@@ -19,6 +19,7 @@ export type ParentEventType =
   | 'MESSAGE_SENT'
   | 'MESSAGE_RECEIVED'
   | 'MESSAGE_RECEIVED_WITH_ERROR'
+  | 'TOOL_CALL_RESULT'
 /**
  * Emits an event to the parent window using postMessage
  * @param type - The type of event to emit
