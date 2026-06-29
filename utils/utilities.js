@@ -56,14 +56,28 @@ export const getSubdomain = () => {
 export const getCurrentEnvironment = () =>
   process.env.REACT_APP_API_ENVIRONMENT;
 
+/**
+ * Returns the cookie key prefixed with the current user_id when available.
+ */
+function getNamespacedCookieKey(key) {
+  try {
+    const userId = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('interfaceUserId') : null;
+    if (userId) return `${userId}_${key}`;
+  } catch {
+    // ignore
+  }
+  return key;
+}
+
 export const setInCookies = (key, value) => {
   const domain = getDomain();
+  const namespacedKey = getNamespacedCookieKey(key);
   let expires = "";
 
   const date = new Date();
   date.setTime(date.getTime() + 2 * 24 * 60 * 60 * 1000);
   expires = `; expires= ${date.toUTCString()}`;
-  document.cookie = `${key}=${value || ""}${expires}; domain=${domain}; path=/`;
+  document.cookie = `${namespacedKey}=${value || ""}${expires}; domain=${domain}; path=/`;
 };
 
 function splitFromFirstEqual(str) {
@@ -91,6 +105,7 @@ function splitFromFirstEqual(str) {
 }
 
 export const getFromCookies = (cookieId) => {
+  const namespacedId = getNamespacedCookieKey(cookieId);
   // Split cookies string into individual cookie pairs and trim whitespace
   const cookies = document.cookie?.split(";").map((cookie) => cookie.trim());
   // Loop through each cookie pair
@@ -98,7 +113,7 @@ export const getFromCookies = (cookieId) => {
     // const cookiePair = cookies[i]?.split('=');
     // If cookie name matches, return its value
     const [key, value] = splitFromFirstEqual(cookies[i]);
-    if (cookieId === key) {
+    if (namespacedId === key) {
       return value;
     }
   }
@@ -108,7 +123,8 @@ export const getFromCookies = (cookieId) => {
 
 export const removeCookie = (cookieName) => {
   const domain = getDomain();
-  document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain};`;
+  const namespacedName = getNamespacedCookieKey(cookieName);
+  document.cookie = `${namespacedName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain};`;
 };
 
 export const setLocalStorage = (key, value = '') => {

@@ -1,12 +1,36 @@
 import { emitEventToParent } from "./emitEventsToParent/emitEventsToParent";
 
+/**
+ * Keys that are set during bootstrap / auth initialization and must remain
+ * accessible before the user_id is known. These are stored as-is (no prefix).
+ */
+const UNNAMESPACED_KEYS = new Set([
+  "interfaceUserId",
+  "widgetToken",
+]);
+
+/**
+ * Returns the storage key prefixed with the current user_id when available.
+ * Falls back to the raw key for unnamespaced / bootstrap keys.
+ */
+const getNamespacedKey = (key: string): string => {
+  if (UNNAMESPACED_KEYS.has(key)) return key;
+  try {
+    const userId = sessionStorage.getItem("interfaceUserId");
+    if (userId) return `${userId}_${key}`;
+  } catch {
+    // ignore
+  }
+  return key;
+};
+
 export const SetSessionStorage = (key: string, value: string) => {
-  sessionStorage.setItem(key, value);
+  sessionStorage.setItem(getNamespacedKey(key), value);
 };
 
 export const GetSessionStorageData = (key: string): string | null => {
   try {
-    return sessionStorage.getItem(key);
+    return sessionStorage.getItem(getNamespacedKey(key));
   } catch (error) {
     console.error(
       `Error retrieving session storage data for key "${key}":`,
