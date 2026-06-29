@@ -2,7 +2,6 @@ import defaultAxios from "axios";
 // import { buildKeyGenerator, setupCache } from "axios-cache-interceptor";
 import { errorToast } from "../components/customToast";
 import { getCurrentEnvironment, removeCookie } from "../utils/utilities";
-import { GetSessionStorageData } from "../utils/ChatbotUtility";
 
 const instance = defaultAxios.create();
 // const axios = setupCache(instance, {
@@ -21,13 +20,13 @@ axios.interceptors.request.use(
     // Check if URL contains 'rag' to determine which token to use
 
     if (config.url?.includes("rag")) {
-      config.headers["Authorization"] = GetSessionStorageData("ragToken");
+      config.headers["Authorization"] = sessionStorage.getItem("ragToken");
     }
     else if (config.url?.includes('image')) {
-      config.headers["Authorization"] = GetSessionStorageData("ragToken") ? GetSessionStorageData("ragToken") : GetSessionStorageData("interfaceToken");
+      config.headers["Authorization"] = sessionStorage.getItem("ragToken") ? sessionStorage.getItem("ragToken") : sessionStorage.getItem("interfaceToken");
     } else {
       config.headers["Authorization"] =
-        GetSessionStorageData("interfaceToken")
+        sessionStorage.getItem("interfaceToken")
     }
     return config;
   },

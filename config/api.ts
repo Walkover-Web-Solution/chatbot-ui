@@ -6,7 +6,6 @@ import axios from "@/utils/interceptor";
 import { getLocalStorage } from "@/utils/utilities";
 import { PAGE_SIZE } from "@/utils/enums";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
-import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 
 const URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const PYTHON_URL = process.env.NEXT_PUBLIC_PYTHON_API_BASE_URL;
@@ -178,7 +177,7 @@ export async function streamDataToAction(
 ): Promise<{ success: boolean; error?: string }> {
     try {
         if (!data.threadId) data.threadId = "";
-        const token = GetSessionStorageData("interfaceToken");
+        const token = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("interfaceToken") : null;
         const response = await fetch(`${PYTHON_URL}/chatbot/${data.chatBotId}/sendMessage`, {
             method: "POST",
             headers: {
