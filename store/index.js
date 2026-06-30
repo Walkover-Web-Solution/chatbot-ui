@@ -44,14 +44,22 @@ const customMiddleware = (storeAPI) => (next) => (action) => {
 };
 
 
+// IMPORTANT: When multiple chatbot iframes (different users/embeds) are loaded
+// on the same parent page, they share a BroadcastChannel because they have the
+// same origin. Without proper filtering, one embed's Redux actions would
+// propagate to the other embed's store, causing it to fire API calls with its
+// own (different) auth token — producing duplicate requests with cross-user
+// tokens. We exclude all per-embed slices below so each iframe only reacts to
+// its OWN dispatched actions.
 const crossTabSyncConfig = {
   channel: 'crossTabChannel',
   predicate: (action) => {
     const isPersistAction = [PERSIST, REHYDRATE, FLUSH, PAUSE, PURGE, REGISTER].includes(action.type);
     const actionTypeRoot = action.type.split('/')[0];
-    const isAppOrDraftAction = actionTypeRoot === 'appInfo' || actionTypeRoot === "draftData" || actionTypeRoot === "Chat";
+    const perEmbedSlices = ['appInfo', 'draftData', 'Chat', 'Hello', 'Interface', 'subscribeData', 'componentOverrides'];
+    const isPerEmbedAction = perEmbedSlices.includes(actionTypeRoot);
     const isCountIncreaseAction = action.type === "Hello/setUnReadCount" && !action.payload?.resetCount;
-    return !isPersistAction && !isAppOrDraftAction && !isCountIncreaseAction;
+    return !isPersistAction && !isPerEmbedAction && !isCountIncreaseAction;
   }
 };
 
