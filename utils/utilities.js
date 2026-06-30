@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import linkifyHtml from "linkify-html";
 import { customAlphabet } from "nanoid";
 import { GetSessionStorageData } from "./ChatbotUtility";
+import { getScopedKey } from "./embedNamespace";
 import relativeTime from 'dayjs/plugin/relativeTime'
 import updateLocale from 'dayjs/plugin/updateLocale'
 dayjs.extend(relativeTime);
@@ -63,7 +64,7 @@ export const setInCookies = (key, value) => {
   const date = new Date();
   date.setTime(date.getTime() + 2 * 24 * 60 * 60 * 1000);
   expires = `; expires= ${date.toUTCString()}`;
-  document.cookie = `${key}=${value || ""}${expires}; domain=${domain}; path=/`;
+  document.cookie = `${getScopedKey(key)}=${value || ""}${expires}; domain=${domain}; path=/`;
 };
 
 function splitFromFirstEqual(str) {
@@ -91,14 +92,14 @@ function splitFromFirstEqual(str) {
 }
 
 export const getFromCookies = (cookieId) => {
+  const scopedId = getScopedKey(cookieId);
   // Split cookies string into individual cookie pairs and trim whitespace
   const cookies = document.cookie?.split(";").map((cookie) => cookie.trim());
   // Loop through each cookie pair
   for (let i = 0; i < cookies.length; i++) {
-    // const cookiePair = cookies[i]?.split('=');
     // If cookie name matches, return its value
     const [key, value] = splitFromFirstEqual(cookies[i]);
-    if (cookieId === key) {
+    if (scopedId === key) {
       return value;
     }
   }
@@ -108,7 +109,7 @@ export const getFromCookies = (cookieId) => {
 
 export const removeCookie = (cookieName) => {
   const domain = getDomain();
-  document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain};`;
+  document.cookie = `${getScopedKey(cookieName)}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain};`;
 };
 
 export const setLocalStorage = (key, value = '') => {

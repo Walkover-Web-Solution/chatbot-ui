@@ -1,12 +1,13 @@
 import { emitEventToParent } from "./emitEventsToParent/emitEventsToParent";
+import { getScopedKey } from "./embedNamespace";
 
 export const SetSessionStorage = (key: string, value: string) => {
-  sessionStorage.setItem(key, value);
+  sessionStorage.setItem(getScopedKey(key), value);
 };
 
 export const GetSessionStorageData = (key: string): string | null => {
   try {
-    return sessionStorage.getItem(key);
+    return sessionStorage.getItem(getScopedKey(key));
   } catch (error) {
     console.error(
       `Error retrieving session storage data for key "${key}":`,
@@ -14,6 +15,10 @@ export const GetSessionStorageData = (key: string): string | null => {
     );
     return null;
   }
+};
+
+export const RemoveSessionStorage = (key: string) => {
+  sessionStorage.removeItem(getScopedKey(key));
 };
 
 export const isJSONString = (str: string) => {
