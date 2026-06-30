@@ -3,7 +3,7 @@ import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { addDefaultContext, setDataInInterfaceRedux, setEventsSubsribedByParent, setHeaderActionButtons, setModalConfig } from "@/store/interface/interfaceSlice";
 import { ALLOWED_EVENTS_TO_SUBSCRIBE } from "@/utils/enums";
-import { SetSessionStorage } from "@/utils/ChatbotUtility";
+import { RemoveSessionStorage, SetSessionStorage } from "@/utils/ChatbotUtility";
 import { useContext, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
@@ -53,7 +53,7 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
         handleColorSchemeChange(receivedData.theme);
       }
     } else {
-      sessionStorage.removeItem('chatbotTheme');
+      RemoveSessionStorage('chatbotTheme');
     }
 
     // Process thread-related data
