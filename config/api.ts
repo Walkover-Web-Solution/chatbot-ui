@@ -3,6 +3,7 @@ import { errorToast } from "@/components/customToast";
 import { InterFaceDataType } from "@/types/interface/InterfaceReduxType";
 import { UrlDataType } from "@/types/utility";
 import axios from "@/utils/interceptor";
+import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { getLocalStorage } from "@/utils/utilities";
 import { PAGE_SIZE } from "@/utils/enums";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
@@ -177,7 +178,7 @@ export async function streamDataToAction(
 ): Promise<{ success: boolean; error?: string }> {
     try {
         if (!data.threadId) data.threadId = "";
-        const token = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("interfaceToken") : null;
+        const token = typeof sessionStorage !== "undefined" ? GetSessionStorageData("interfaceToken") : null;
         const response = await fetch(`${PYTHON_URL}/chatbot/${data.chatBotId}/sendMessage`, {
             method: "POST",
             headers: {
