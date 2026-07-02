@@ -1,5 +1,5 @@
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState, useId } from "react";
 
 // MUI Components
 import { lighten } from "@mui/material";
@@ -29,6 +29,8 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
   const getMoreChats = useGetMoreChats();
   const { setNewMessage } = useChatActions();
   const { backgroundColor, textColor } = useColor();
+  const scrollId = useId();
+  const safeScrollId = useMemo(() => `scrollableDiv-${scrollId.replace(/:/g, "")}`, [scrollId]);
 
   const { newMessage, messageIds, msgIdAndDataMap, loading, hasMoreMessages } = useCustomSelector((state) => ({
     newMessage: state.Chat.newMessage || false,
@@ -40,6 +42,7 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
 
   const scrollableDivRef = useRef<HTMLDivElement>(null);
   const isAtBottomRef = useRef(true);
+  const userHasScrolledUpRef = useRef(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
   const themePalette = useMemo(() => ({
@@ -53,19 +56,32 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
   const moveToDown = useCallback(() => {
     if (scrollableDivRef.current) {
       scrollableDivRef.current.scrollTo({
-        top: scrollableDivRef.current.scrollHeight,
+        top: 0,
         behavior: 'smooth'
       });
+      isAtBottomRef.current = true;
+      userHasScrolledUpRef.current = false;
       setShowScrollButton(false);
     }
   }, []);
 
   const handleScroll = useCallback((e) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.target;
-    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    const { scrollTop } = e.target;
+    // column-reverse: scrollTop = 0 at visual bottom, negative when scrolled up
+    const distanceFromBottom = Math.abs(scrollTop);
     const isNearBottom = distanceFromBottom < NEAR_BOTTOM_THRESHOLD;
+
     isAtBottomRef.current = isNearBottom;
-    setShowScrollButton(!isNearBottom);
+
+    if (isNearBottom) {
+      // User scrolled back to bottom — re-enable auto-scroll
+      userHasScrolledUpRef.current = false;
+      setShowScrollButton(false);
+    } else {
+      // User scrolled away from bottom — pause auto-scroll
+      userHasScrolledUpRef.current = true;
+      setShowScrollButton(true);
+    }
   }, []);
 
   // Handle new message and scroll to bottom
@@ -83,34 +99,15 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
     return null;
   }, [messageIds, msgIdAndDataMap]);
 
-  // Handle auto-scrolling during continuous streaming without stuttering smooth-scroll
   useEffect(() => {
-    if (latestMessage?.isStreaming && isAtBottomRef.current && scrollableDivRef.current) {
-      scrollableDivRef.current.scrollTo({
-        top: scrollableDivRef.current.scrollHeight,
-        behavior: 'auto'
-      });
+    if (
+      latestMessage?.isStreaming &&
+      !userHasScrolledUpRef.current &&
+      scrollableDivRef.current
+    ) {
+      scrollableDivRef.current.scrollTop = 0;
     }
   }, [latestMessage?.content, latestMessage?.tools_data, latestMessage?.isStreaming]);
-
-  const ThinkingIndicator = React.memo(({ themePalette }: { themePalette: any }) => (
-    <div className="w-full" data-testid="chatbot-thinking-indicator">
-      <div className="loading-indicator" style={themePalette}>
-        <div className="loading-bar" />
-        <div className="loading-bar" />
-        <div className="loading-bar" />
-      </div>
-    </div>
-  ));
-
-  const renderThinkingIndicator = useMemo(() => {
-    const isLatestMessageAssistant = latestMessage?.role === "assistant";
-    const isLatestMessageStreaming = latestMessage?.isStreaming === true;
-    const isLatestMessageWaiting = latestMessage?.wait === true;
-
-    const shouldShow = loading && !(isLatestMessageAssistant && (isLatestMessageStreaming || isLatestMessageWaiting));
-    return shouldShow ? <ThinkingIndicator themePalette={themePalette} /> : null;
-  }, [loading, latestMessage?.role, latestMessage?.isStreaming, latestMessage?.wait, themePalette]);
 
   const renderedMessages = useMemo(() => {
     let lastHumanOrBotIndex = -1;
@@ -147,10 +144,10 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
 
   return (
     <div
-      id="scrollableDiv"
+      id={safeScrollId}
       ref={scrollableDivRef}
       onScroll={handleScroll}
-      className="w-full h-full flex-1 overflow-auto px-3 sm:p-4"
+      className="w-full h-full flex-1 overflow-auto px-3 sm:p-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
       data-testid="chatbot-messages-scroll-container"
       style={{
         display: 'flex',
@@ -163,7 +160,7 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
         next={fetchMoreData}
         hasMore={hasMoreMessages}
         loader={<Loader />}
-        scrollableTarget="scrollableDiv"
+        scrollableTarget={safeScrollId}
         scrollThreshold='200px'
         inverse={true}
         style={{
@@ -171,7 +168,6 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
           flexDirection: 'column-reverse'
         }}
       >
-        {renderThinkingIndicator}
         {renderedMessages}
       </InfiniteScroll>
       <MoveToDownButton
