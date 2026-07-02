@@ -61,8 +61,8 @@ const EmptyChatView = React.memo(({ defaultMessage }: { defaultMessage?: string 
 ));
 
 const ActiveChatView = React.memo(() => (
-  <div className="flex flex-col h-full overflow-auto" style={{ height: '100vh' }} data-testid="chatbot-active-view">
-    <div className="flex-1 overflow-y-auto max-w-5xl mx-auto w-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent" data-testid="chatbot-messages-container">
+  <div className="flex flex-col h-full overflow-hidden" style={{ height: '100vh' }} data-testid="chatbot-active-view">
+    <div className="flex-1 overflow-hidden max-w-5xl mx-auto w-full" data-testid="chatbot-messages-container">
       <MessageList />
     </div>
     <div className="max-w-5xl mx-auto p-3 pb-3 w-full" data-testid="chatbot-input-section">
@@ -102,13 +102,13 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
 
   // Initialize RTLayer event listeners
 
-  // Effect to open drawer for new human users
+  // Effect to open drawer for new human users (only on larger screens)
   useEffect(() => {
-    if (!currentChatId && !mountedRef.current) {
+    if (!currentChatId && !mountedRef.current && !isSmallScreen) {
       dispatch(setToggleDrawer(true));
     }
     mountedRef.current = true;
-  }, [currentChatId, dispatch]);
+  }, [currentChatId, dispatch, isSmallScreen]);
 
   // open Chat directly if no team or one team exista
   useEffect(() => {

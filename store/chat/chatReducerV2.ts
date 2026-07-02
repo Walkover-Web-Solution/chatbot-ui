@@ -455,8 +455,15 @@ export const chatReducerV2 = {
         const messages = convertChatHistoryToGenericFormat(action.payload.messages);
 
         if (subThreadId) {
-            state.messageIds[subThreadId] = messages.map((item) => item.id);
-            state.msgIdAndDataMap[subThreadId] = messages.reduce((acc: Record<string, any>, item) => {
+            const seenIds = new Set<string>();
+            const uniqueMessages = messages.filter((msg) => {
+                if (seenIds.has(msg.id)) return false;
+                seenIds.add(msg.id);
+                return true;
+            });
+
+            state.messageIds[subThreadId] = uniqueMessages.map((item) => item.id);
+            state.msgIdAndDataMap[subThreadId] = uniqueMessages.reduce((acc: Record<string, any>, item) => {
                 acc[item.id] = item;
                 return acc;
             }, {});
@@ -469,9 +476,16 @@ export const chatReducerV2 = {
         const messagesArray = convertChatHistoryToGenericFormat(messages);
 
         if (subThreadId) {
+            const existingIds = new Set<string>(state.messageIds[subThreadId] || []);
+            const newUniqueMessages = messagesArray.filter((msg) => {
+                if (existingIds.has(msg.id)) return false;
+                existingIds.add(msg.id);
+                return true;
+            });
+
             state.messageIds[subThreadId] = [
                 ...(state.messageIds[subThreadId] || []),
-                ...messagesArray.map(msg => msg.id)
+                ...newUniqueMessages.map(msg => msg.id)
             ];
 
             if (!state.msgIdAndDataMap[subThreadId]) {
@@ -480,7 +494,7 @@ export const chatReducerV2 = {
 
             Object.assign(
                 state.msgIdAndDataMap[subThreadId],
-                messagesArray.reduce((acc: Record<string, any>, item) => {
+                newUniqueMessages.reduce((acc: Record<string, any>, item) => {
                     acc[item.id] = item;
                     return acc;
                 }, {})
