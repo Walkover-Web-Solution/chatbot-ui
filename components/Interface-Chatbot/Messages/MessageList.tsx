@@ -14,6 +14,8 @@ import { addUrlDataHoc } from "@/hoc/addUrlDataHoc";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 import { ParamsEnums } from "@/utils/enums";
 import { generateNewId } from "@/utils/utilities";
+import { useComponentOverride } from "../ChatbotDrawerParts/useComponentOverride";
+import { useDynamicMessageStyles } from "@/hooks/useDynamicMessageStyles";
 import MoveToDownButton from "../MoveToDownButton";
 import Message from "./Message";
 
@@ -26,6 +28,8 @@ const NEAR_BOTTOM_THRESHOLD = 80;
  */
 
 function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: string, currentChannelId: string }) {
+  const Override = useComponentOverride(["messageList"]);
+  const dynamicStyles = useDynamicMessageStyles();
   const getMoreChats = useGetMoreChats();
   const { setNewMessage } = useChatActions();
   const { backgroundColor, textColor } = useColor();
@@ -142,6 +146,8 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
     </div>
   ));
 
+  if (Override) return <Override chatSessionId={chatSessionId} currentChannelId={currentChannelId} />;
+
   return (
     <div
       id={safeScrollId}
@@ -152,7 +158,8 @@ function MessageList({ chatSessionId, currentChannelId = "" }: { chatSessionId: 
       style={{
         display: 'flex',
         flexDirection: 'column-reverse',
-        minHeight: 0 // Important for flex child to properly scroll
+        minHeight: 0, // Important for flex child to properly scroll
+        background: dynamicStyles.containerBg,
       }}
     >
       <InfiniteScroll

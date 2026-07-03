@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { EmojiPicker } from 'frimousse';
+import { useComponentOverride } from './ChatbotDrawerParts/useComponentOverride';
 
 interface EmojiSelectorProps {
     isVisible: boolean;
@@ -14,6 +15,7 @@ const EmojiSelector: React.FC<EmojiSelectorProps> = ({
     onEmojiSelect,
     onClose,
 }) => {
+    const Override = useComponentOverride(["emojiSelector"]);
     const emojiPickerRef = useRef<HTMLDivElement>(null);
     const emojiSearchRef = useRef<HTMLInputElement>(null);
 
@@ -47,6 +49,8 @@ const EmojiSelector: React.FC<EmojiSelectorProps> = ({
     }, [isVisible, onClose]);
 
     if (!isVisible) return null;
+
+    if (Override) return <Override isVisible={isVisible} onEmojiSelect={onEmojiSelect} onClose={onClose} />;
 
     return (
         <div ref={emojiPickerRef} className="absolute bottom-full left-0 mb-2 z-50" data-testid="chatbot-emoji-picker">

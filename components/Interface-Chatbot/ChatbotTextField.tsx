@@ -13,6 +13,8 @@ import { ChevronDown, Loader2, Paperclip, Send, Smile, X } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
+import { useComponentOverride } from "./ChatbotDrawerParts/useComponentOverride";
+import { useDynamicMessageStyles } from "@/hooks/useDynamicMessageStyles";
 import EmojiSelector from "./EmojiSelector";
 import { MessageContext } from "./InterfaceChatbot";
 import ImageWithFallback from "./Messages/ImageWithFallback";
@@ -30,6 +32,10 @@ const MAX_IMAGES = 4;
 const MAX_UPLOAD_SIZE_MB = 10;
 
 const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSessionId, tabSessionId, subThreadId, currentTeamId = "", currentChannelId = "" }) => {
+  const Override = useComponentOverride(["chatbotTextField"]);
+  const SendButtonOverride = useComponentOverride(["chatbotTextField", "sendButton"]);
+  const UploadButtonOverride = useComponentOverride(["chatbotTextField", "uploadButton"]);
+  const dynamicStyles = useDynamicMessageStyles();
   const [isUploading, setIsUploading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -328,10 +334,11 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   }), [theme]);
 
   const containerStyles = useMemo(() => ({
-    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#ffffff',
-    borderColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#e5e7eb',
+    backgroundColor: dynamicStyles.textFieldBg || (theme.palette.mode === 'dark' ? theme.palette.background.paper : '#ffffff'),
+    borderColor: dynamicStyles.textFieldBorder || (theme.palette.mode === 'dark' ? '#2a2a2a' : '#e5e7eb'),
     outlineColor: theme.palette.primary.main,
-  }), [theme]);
+    color: dynamicStyles.textFieldColor || undefined,
+  }), [theme, dynamicStyles.textFieldBg, dynamicStyles.textFieldBorder, dynamicStyles.textFieldColor]);
 
   const aiIconElement = useMemo(() => {
     return (
@@ -400,6 +407,8 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     }, 50);
   }
 
+  if (Override) return <Override className={className} chatSessionId={chatSessionId} tabSessionId={tabSessionId} subThreadId={subThreadId} currentTeamId={currentTeamId} currentChannelId={currentChannelId} />;
+
   return (
     <div className={`relative w-full shadow-sm ${className}`} data-testid="chatbot-text-field">
       {optionButtons}
@@ -447,7 +456,13 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
               >
                 <Smile className="w-4 h-4 group-hover:scale-110 transition-transform duration-200 text-gray-600 dark:text-slate-300" />
               </div>
-              {uploadButton}
+              {UploadButtonOverride ? (
+                <UploadButtonOverride
+                  onUploadClick={() => fileInputRef.current?.click()}
+                  isUploading={isUploading}
+                  disabled={isPlanExecuting}
+                />
+              ) : uploadButton}
 
               {/* 
               {!isHelloUser && isStream && showModeDropdown && (
@@ -510,18 +525,26 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                   <span className="text-[10px] font-medium" style={{ color: "oklch(var(--p) / 0.7)" }}>Under review…</span>
                 </div>
               )}
-              <button
-                onClick={() => !buttonDisabled && handleSendMessage()}
-                data-testid="chatbot-send-button"
-                className="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:scale-105 transition-transform duration-200"
-                disabled={buttonDisabled}
-                style={{
-                  backgroundColor: buttonDisabled ? '#d1d5db' : theme.palette.primary.main
-                }}
-                aria-label="Send message"
-              >
-                <Send className={`w-3 h-3 md:w-4 md:h-4 ${isLight ? 'text-slate-900' : 'text-white'}`} />
-              </button>
+              {SendButtonOverride ? (
+                <SendButtonOverride
+                  onSend={() => !buttonDisabled && handleSendMessage()}
+                  disabled={buttonDisabled}
+                  inputValue={inputValue}
+                />
+              ) : (
+                <button
+                  onClick={() => !buttonDisabled && handleSendMessage()}
+                  data-testid="chatbot-send-button"
+                  className="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:scale-105 transition-transform duration-200"
+                  disabled={buttonDisabled}
+                  style={{
+                    backgroundColor: buttonDisabled ? '#d1d5db' : theme.palette.primary.main
+                  }}
+                  aria-label="Send message"
+                >
+                  <Send className={`w-3 h-3 md:w-4 md:h-4 ${isLight ? 'text-slate-900' : 'text-white'}`} />
+                </button>
+              )}
             </div>
           </div>
         </div>

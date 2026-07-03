@@ -30,6 +30,7 @@ import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent
 import { createRandomId, DEFAULT_AI_SERVICE_MODALS, ParamsEnums } from "@/utils/enums";
 import { useChatActions } from "../Chatbot/hooks/useChatActions";
 import { ChatbotContext } from "../context";
+import { useComponentOverride } from "./ChatbotDrawerParts/useComponentOverride";
 import "./InterfaceChatbot.css";
 
 export function ChatbotHeaderPreview() {
@@ -280,6 +281,10 @@ interface ChatbotHeaderProps {
 }
 
 const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSessionId, tabSessionId, currentTeamId = "", currentChannelId = "", threadId = "", bridgeName = "" }) => {
+  const Override = useComponentOverride(["chatbotHeader"]);
+  const TitleOverride = useComponentOverride(["chatbotHeader", "title"]);
+  const CloseButtonOverride = useComponentOverride(["chatbotHeader", "closeButton"]);
+  const MinimizeButtonOverride = useComponentOverride(["chatbotHeader", "minimizeButton"]);
   const dispatch = useDispatch();
   const theme = useTheme();
   const iconColor = theme.palette.text.primary;
@@ -392,6 +397,9 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
   };
 
 
+  const MenuIconOverride = useComponentOverride(["chatbotHeader", "menuIcon"]);
+  const EditIconOverride = useComponentOverride(["chatbotHeader", "editIcon"]);
+
   // Memoized drawer toggle button
   const DrawerToggleButton = useMemo(() => {
     if (!(subThreadList?.length > 1)) return null;
@@ -402,10 +410,16 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
         onClick={() => setToggleDrawer(!isToggledrawer)}
         data-testid="chatbot-drawer-toggle-button"
       >
-        {isToggledrawer ? null : <AlignLeft size={22} color={iconColor} />}
+        {isToggledrawer ? null : (
+          MenuIconOverride ? (
+            <MenuIconOverride />
+          ) : (
+            <AlignLeft size={22} color={iconColor} />
+          )
+        )}
       </button>
     );
-  }, [subThreadList?.length, isToggledrawer, setToggleDrawer, iconColor]);
+  }, [subThreadList?.length, isToggledrawer, setToggleDrawer, iconColor, MenuIconOverride]);
 
   // Memoized create thread button
   const CreateThreadButton = useMemo(() => {
@@ -418,11 +432,15 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
           onClick={handleCreateNewSubThread}
           data-testid="chatbot-create-thread-button"
         >
-          <SquarePen size={22} color={iconColor} />
+          {EditIconOverride ? (
+            <EditIconOverride />
+          ) : (
+            <SquarePen size={22} color={iconColor} />
+          )}
         </button>
       </div>
     );
-  }, [showCreateThreadButton, isToggledrawer, handleCreateNewSubThread, iconColor]);
+  }, [showCreateThreadButton, isToggledrawer, handleCreateNewSubThread, iconColor, EditIconOverride]);
 
   // Memoized header title section
   const HeaderTitleSection = useMemo(() => {
@@ -572,14 +590,28 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
     );
   }, [isChatbotMinimized, fullScreen, toggleFullScreen, iconColor])
 
+  if (Override) return <Override preview={preview} chatSessionId={chatSessionId} tabSessionId={tabSessionId} currentTeamId={currentTeamId} currentChannelId={currentChannelId} threadId={threadId} bridgeName={bridgeName} />;
+
+  const TitleNode = TitleOverride
+    ? <TitleOverride title={chatTitle || chatbotTitle || "AI Assistant"} subtitle={chatSubTitle || chatbotSubtitle} chatIcon={chatIcon} isChatbotMinimized={isChatbotMinimized} lastMessage={lastMessage} />
+    : HeaderTitleSection;
+
+  const CloseBtnNode = CloseButtonOverride
+    ? <CloseButtonOverride onClose={handleCloseChatbot} iconColor={iconColor} />
+    : CloseButton;
+
+  const MinimizeBtnNode = MinimizeButtonOverride
+    ? <MinimizeButtonOverride onToggle={handleToggleMinimize} isMinimized={isChatbotMinimized} iconColor={iconColor} />
+    : MinimizeButton;
+
   return isChatbotMinimized ?
     <div className="px-2 sm:py-4 py-3 w-full cursor-pointer" onClick={handleToggleMinimize}>
       <div className="flex items-center w-full relative px-2">
-        {HeaderTitleSection}
+        {TitleNode}
         <div className="flex justify-end items-center gap-1 flex-1 sm:absolute sm:right-0">
           <div className="flex items-center">
-            {MinimizeButton}
-            {CloseButton}
+            {MinimizeBtnNode}
+            {CloseBtnNode}
           </div>
         </div>
       </div>
@@ -595,7 +627,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
 
         {/* Center title section */}
         <div className="flex justify-center items-center flex-1">
-          {HeaderTitleSection}
+          {TitleNode}
         </div>
 
         {/* Right side buttons */}
@@ -617,7 +649,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
 
           <div className="flex items-center">
             {ScreenSizeToggleButton}
-            {(!isMobileSDK) ? CloseButton : MinimizeButton}
+            {(!isMobileSDK) ? CloseBtnNode : MinimizeBtnNode}
           </div>
         </div>
       </div>

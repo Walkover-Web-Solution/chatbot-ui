@@ -25,6 +25,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-theme="light">
+      <head>
+        {/* Tailwind Play CDN — enables any Tailwind class at runtime for dynamic overrides */}
+        <script src="https://cdn.tailwindcss.com" async></script>
+      </head>
       <body
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

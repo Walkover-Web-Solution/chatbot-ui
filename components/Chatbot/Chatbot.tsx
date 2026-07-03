@@ -25,6 +25,7 @@ import { useChatEffects } from './hooks/useChatEffects';
 import { useColor } from './hooks/useColor';
 import { useReduxEffects } from './hooks/useReduxEffects';
 import { useScreenSize } from './hooks/useScreenSize';
+import { useComponentOverride } from '../Interface-Chatbot/ChatbotDrawerParts/useComponentOverride';
 
 /**
  * A component that displays a chatbot interface.
@@ -37,39 +38,52 @@ interface ChatbotProps {
 }
 
 // Memoized components
-const EmptyChatView = React.memo(({ defaultMessage }: { defaultMessage?: string }) => (
-  <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-84px] p-5" data-testid="chatbot-empty-view">
-    <div className="flex flex-col items-center w-full">
-      <Image
-        src={ChatBotGif}
-        alt="Chatbot"
-        className="block"
-        width={100}
-        height={100}
-        priority
-        data-testid="chatbot-empty-gif"
-      />
-      <h2 className="text-xl font-bold text-base-content" data-testid="chatbot-empty-title">
-        {defaultMessage || "What can I help with?"}
-      </h2>
-    </div>
-    <div className="max-w-5xl w-full mt-8">
-      <ChatbotTextField />
-    </div>
-    <StarterQuestions />
-  </div>
-));
+const EmptyChatView = React.memo(({ defaultMessage }: { defaultMessage?: string }) => {
+  const WelcomeOverride = useComponentOverride(["emptyChatView"]);
+  const TextFieldOverride = useComponentOverride(["chatbotTextField"]);
 
-const ActiveChatView = React.memo(() => (
-  <div className="flex flex-col h-full overflow-hidden" style={{ height: '100vh' }} data-testid="chatbot-active-view">
-    <div className="flex-1 overflow-hidden max-w-5xl mx-auto w-full" data-testid="chatbot-messages-container">
-      <MessageList />
+  if (WelcomeOverride) {
+    return <WelcomeOverride ChatbotTextField={ChatbotTextField} />;
+  }
+
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto mt-[-84px] p-5" data-testid="chatbot-empty-view">
+      <div className="flex flex-col items-center w-full">
+        <Image
+          src={ChatBotGif}
+          alt="Chatbot"
+          className="block"
+          width={100}
+          height={100}
+          priority
+          data-testid="chatbot-empty-gif"
+        />
+        <h2 className="text-xl font-bold text-base-content" data-testid="chatbot-empty-title">
+          {defaultMessage || "What can I help with?"}
+        </h2>
+      </div>
+      <div className="max-w-5xl w-full mt-8">
+        {TextFieldOverride ? <TextFieldOverride ChatbotTextField={ChatbotTextField} /> : <ChatbotTextField />}
+      </div>
+      <StarterQuestions />
     </div>
-    <div className="max-w-5xl mx-auto p-3 pb-3 w-full" data-testid="chatbot-input-section">
-      <ChatbotTextField />
+  );
+});
+
+const ActiveChatView = React.memo(() => {
+  const TextFieldOverride = useComponentOverride(["chatbotTextField"]);
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden" style={{ height: '100vh' }} data-testid="chatbot-active-view">
+      <div className="flex-1 overflow-hidden max-w-5xl mx-auto w-full" data-testid="chatbot-messages-container">
+        <MessageList />
+      </div>
+      <div className="max-w-5xl mx-auto p-3 pb-3 w-full" data-testid="chatbot-input-section">
+        {TextFieldOverride ? <TextFieldOverride /> : <ChatbotTextField />}
+      </div>
     </div>
-  </div>
-));
+  );
+});
 
 
 function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
@@ -129,8 +143,9 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
     timeoutIdRef
   ]);
 
-  // Check if chat is empty
-  const isChatEmpty = !subThreadId || messageIds[subThreadId]?.length === 0;
+  // Check if chat is empty - only show welcome page if no messages exist
+  // This persists the welcome page until the user actually sends a message
+  const isChatEmpty = !subThreadId || !messageIds[subThreadId] || messageIds[subThreadId].length === 0;
 
   return (
     <MessageContext.Provider value={contextValue}>

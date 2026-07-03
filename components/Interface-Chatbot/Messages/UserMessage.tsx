@@ -5,6 +5,7 @@ import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent
 import { ALLOWED_EVENTS_TO_SUBSCRIBE } from '@/utils/enums';
 import React, { useState } from 'react';
 import ImageWithFallback from './ImageWithFallback';
+import { useComponentOverride } from '../ChatbotDrawerParts/useComponentOverride';
 import "./Message.css";
 import MessageTime from './MessageTime';
 
@@ -15,6 +16,7 @@ import MessageTime from './MessageTime';
 
 const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatSessionId, tabSessionId }: any) => {
     const [showSenderTime, setShowSenderTime] = useState(false);
+    const Override = useComponentOverride(["messageList", "userMessage"]);
     const { sendEventToParentOnMessageClick } = useCustomSelector((state) => ({
         sendEventToParentOnMessageClick: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.eventsSubscribedByParent?.includes(ALLOWED_EVENTS_TO_SUBSCRIBE.MESSAGE_CLICK) || false
     }))
@@ -24,6 +26,9 @@ const UserMessageCard = React.memo(({ message, backgroundColor, textColor, chatS
             emitEventToParent("MESSAGE_CLICK", message)
         }
     }
+
+    if (Override) return <Override message={message} backgroundColor={backgroundColor} textColor={textColor} chatSessionId={chatSessionId} tabSessionId={tabSessionId} />;
+
     return (
         <div className="flex flex-col items-end w-full pb-3 animate-slide-left" onClick={handleMessageClick} data-testid="chatbot-user-message">
             {Array.isArray(message?.urls) && message.urls.length > 0 && (

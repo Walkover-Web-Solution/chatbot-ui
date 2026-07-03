@@ -3,6 +3,8 @@ import { UserAssistant } from "@/assests/assestsIndex";
 import { linkify } from "@/utils/utilities";
 import Image from "next/image";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDynamicMessageStyles } from "@/hooks/useDynamicMessageStyles";
+import { useComponentOverride } from "../ChatbotDrawerParts/useComponentOverride";
 import "./Message.css";
 import MessageTime from "./MessageTime";
 
@@ -226,12 +228,30 @@ MessageContent.displayName = 'MessageContent';
 
 const HumanOrBotMessageCard = React.memo(({ message, isBot = false, isLastMessage = false }: MessageCardProps) => {
     const [showSenderTime, setShowSenderTime] = useState(isLastMessage);
+    const dynamicStyles = useDynamicMessageStyles();
+    const Override = useComponentOverride(["messageList", isBot ? "botMessage" : "humanMessage"]);
+    
+    const bubbleStyle = isBot ? {
+        background: dynamicStyles.botBubbleBg,
+        color: dynamicStyles.botBubbleColor,
+        padding: dynamicStyles.padding,
+        borderRadius: dynamicStyles.borderRadius,
+    } : {
+        background: dynamicStyles.userBubbleBg,
+        color: dynamicStyles.userBubbleColor,
+        padding: dynamicStyles.padding,
+        borderRadius: dynamicStyles.borderRadius,
+        borderTopRightRadius: '2px',
+    };
+
+    if (Override) return <Override message={message} isBot={isBot} isLastMessage={isLastMessage} />;
+    
     return (
         <div className="w-full pb-3 animate-fade-in animate-slide-left" data-testid="chatbot-human-bot-message">
             <div className="flex items-start gap-2 max-w-[90%]">
                 {/* <Avatar message={message} isBot={isBot} /> */}
                 <div className="w-fit whitespace-pre-wrap break-words" onClick={() => setShowSenderTime(!showSenderTime)} data-testid="chatbot-human-bot-message-content">
-                    <div className="p-1 whitespace-pre-wrap w-full break-words message-card-backround">
+                    <div className="p-1 whitespace-pre-wrap w-full break-words message-card-backround" style={bubbleStyle}>
                         <MessageContent message={message} />
                     </div>
                     <div className={`transition-all duration-300 ease-in-out ${showSenderTime ? 'opacity-100 max-h-12' : 'opacity-0 max-h-0'}`}>

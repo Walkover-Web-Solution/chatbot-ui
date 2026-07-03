@@ -22,6 +22,7 @@ import ReasoningAccordion from "./ReasoningAccordion";
 import ReviewPhaseAccordion from "./ReviewPhaseAccordion";
 import ToolCallAccordion from "./ToolCallAccordion";
 import WorkingAccordion from "./WorkingAccordion";
+import { useComponentOverride } from "../ChatbotDrawerParts/useComponentOverride";
 import remarkGfm from 'remark-gfm';
 
 function FeedBackButtons({ msgId }: { msgId: string }) {
@@ -81,6 +82,7 @@ const AssistantMessageCard = React.memo(
         defaultErrorMessage,
     }: any) => {
         const [isCopied, setIsCopied] = React.useState(false);
+        const Override = useComponentOverride(["messageList", "assistantMessage"]);
         const sendMessage = useSendMessage({});
         const { messageRef } = useContext(MessageContext);
         const errorDisplayText = (typeof defaultErrorMessage === "string" && defaultErrorMessage.trim())
@@ -150,6 +152,7 @@ const AssistantMessageCard = React.memo(
             }
         }, [messageRef, sendMessage]);
 
+        if (Override) return <Override message={message} backgroundColor={backgroundColor} isError={isError} defaultErrorMessage={defaultErrorMessage} />;
 
         return (
             <div className="flex w-full pb-1">

@@ -175,6 +175,15 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
       dispatch(setDataInAppInfoReducer({ defaultErrorMessage: receivedData.defaultErrorMessage }));
     }
 
+    // Handle dynamic message styles.
+    //   { messageStyles: { containerBg: '#0f172a', userBubbleBg: '#10a37f', ... } }
+    if ('messageStyles' in receivedData && receivedData.messageStyles && typeof receivedData.messageStyles === 'object') {
+      window.postMessage({
+        type: 'UPDATE_MESSAGE_STYLES',
+        styles: receivedData.messageStyles,
+      }, '*');
+    }
+
     // Handle componentOverrides config.
     //
     // Two accepted shapes:
