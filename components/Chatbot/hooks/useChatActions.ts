@@ -331,6 +331,7 @@ export const useSendMessage = ({
         let streamMessageId: string | null = null;
         let isReviewStreaming = false;
         let hasReviewPhase = false;
+        let isToolCallPending = false; // true between tool_call and tool_result events
 
         const pushPlanningUpdate = (incoming: any, resetBuffer = false) => {
             if (resetBuffer) {
@@ -610,6 +611,7 @@ export const useSendMessage = ({
                         }
                         break;
                     case "tool_call":
+                        isToolCallPending = true;
                         globalDispatch(appendToolCall({
                             call_id: event.call_id,
                             name: event.name,
@@ -635,6 +637,7 @@ export const useSendMessage = ({
                         }
                         break;
                     case "tool_result":
+                        isToolCallPending = false;
                         globalDispatch(updateToolResult({
                             call_id: event.call_id,
                             content: event.content,
@@ -663,6 +666,11 @@ export const useSendMessage = ({
                             isPlanningStreamActive = true;
                             pushPlanningUpdate(event.content || "");
                         } else if (action === "respond") {
+                            break;
+                        } else if (isToolCallPending) {
+                            // Suppress deltas between tool_call and tool_result — they are
+                            // intermediate LLM content generated before the tool result arrives
+                            // and should not appear in the final assistant message.
                             break;
                         } else {
                             // Auto-detect planning data in delta content
