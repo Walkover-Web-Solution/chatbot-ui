@@ -2,7 +2,7 @@
 import { supportsLookbehind } from "@/utils/appUtility.js";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Anchor, Code, UnorderedList, OrderedList, ListItem } from "./MarkdownUtitily.tsx";
+import { Anchor, Code, UnorderedList, OrderedList, ListItem, Table, TableHead, TableRow, TableHeaderCell, TableCell } from "./MarkdownUtitily.tsx";
 
 function InterfaceMarkdown({ props }: any) {
   return (
@@ -15,6 +15,11 @@ function InterfaceMarkdown({ props }: any) {
         ul: UnorderedList,
         ol: OrderedList,
         li: ListItem,
+        table: Table,
+        thead: TableHead,
+        tr: TableRow,
+        th: TableHeaderCell,
+        td: TableCell,
       }}
       data-testid="chatbot-interface-markdown"
     >
