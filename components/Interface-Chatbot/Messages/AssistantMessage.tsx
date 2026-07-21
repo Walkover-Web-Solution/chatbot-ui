@@ -3,7 +3,7 @@ import { useChatContext, useMessageFeedback, useSendMessage } from "@/components
 import { MessageContext } from "@/components/Interface-Chatbot/InterfaceChatbot";
 import { ChatbotContext } from "@/components/context";
 import InterfaceGrid from "@/components/Grid/Grid";
-import { Anchor, Code, UnorderedList, OrderedList, ListItem } from "@/components/Interface-Chatbot/Interface-Markdown/MarkdownUtitily";
+import { Anchor, Code, UnorderedList, OrderedList, ListItem, Table, TableHead, TableRow, TableHeaderCell, TableCell } from "@/components/Interface-Chatbot/Interface-Markdown/MarkdownUtitily";
 import { supportsLookbehind } from "@/utils/appUtility";
 import { isJSONString } from "@/utils/ChatbotUtility";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
@@ -306,6 +306,11 @@ const AssistantMessageCard = React.memo(
                                                                 ul: UnorderedList,
                                                                 ol: OrderedList,
                                                                 li: ListItem,
+                                                                table: Table,
+                                                                thead: TableHead,
+                                                                tr: TableRow,
+                                                                th: TableHeaderCell,
+                                                                td: TableCell,
                                                             }}
                                                         >
                                                             {parsedContent?.markdown ||
@@ -381,6 +386,11 @@ const AssistantMessageCard = React.memo(
                                                         ul: UnorderedList,
                                                         ol: OrderedList,
                                                         li: ListItem,
+                                                        table: Table,
+                                                        thead: TableHead,
+                                                        tr: TableRow,
+                                                        th: TableHeaderCell,
+                                                        td: TableCell,
                                                     }}
                                                 >
                                                     {typeof messageContent === "string" ? messageContent : JSON.stringify(messageContent)}

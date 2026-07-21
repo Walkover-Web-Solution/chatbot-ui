@@ -110,3 +110,25 @@ export const OrderedList = ({ children, ...props }: React.HTMLAttributes<HTMLOLi
 export const ListItem = ({ children, ...props }: React.HTMLAttributes<HTMLLIElement>) => (
   <li className="leading-relaxed" {...props}>{children}</li>
 );
+
+export const Table = ({ children, ...props }: React.HTMLAttributes<HTMLTableElement>) => (
+  <div className="my-2 w-full overflow-x-auto rounded-lg border border-base-300 dark:border-base-600" data-testid="chatbot-interface-markdown-table-wrapper">
+    <table className="w-full border-collapse text-sm" {...props}>{children}</table>
+  </div>
+);
+
+export const TableHead = ({ children, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) => (
+  <thead className="bg-base-200 dark:bg-base-700" {...props}>{children}</thead>
+);
+
+export const TableRow = ({ children, ...props }: React.HTMLAttributes<HTMLTableRowElement>) => (
+  <tr className="border-b border-base-300 dark:border-base-600 last:border-0" {...props}>{children}</tr>
+);
+
+export const TableHeaderCell = ({ children, ...props }: React.ThHTMLAttributes<HTMLTableCellElement>) => (
+  <th className="px-3 py-2 text-left font-semibold whitespace-nowrap" {...props}>{children}</th>
+);
+
+export const TableCell = ({ children, ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) => (
+  <td className="px-3 py-2 align-top" {...props}>{children}</td>
+);
