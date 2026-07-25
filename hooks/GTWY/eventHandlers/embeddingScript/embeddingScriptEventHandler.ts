@@ -110,6 +110,11 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
       dispatch(setDataInAppInfoReducer({ mode: normalizedMode }))
     }
 
+    //process allow model switch (enables/disables model switching)
+    if(receivedData.allowModalSwitch){
+      dispatch(setDataInInterfaceRedux({ allowModalSwitch: receivedData.allowModalSwitch }))
+    }
+
     // Process gtwy service change
     if (receivedData.serviceChanged) {
       dispatch(setDataInAppInfoReducer({ serviceChanged: receivedData.serviceChanged }))

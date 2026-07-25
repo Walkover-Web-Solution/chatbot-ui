@@ -47,6 +47,7 @@ export const {
   setEventsSubsribedByParent,
   setAvailableModelsToSwitch,
   setModalConfig,
+  setServiceModels,
   setSelectedAIServiceAndModal,
   setDataInInterfaceRedux
 

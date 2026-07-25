@@ -14,7 +14,7 @@ import {
 
 // Third-party libraries
 import Image from "next/image";
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useTheme } from "@mui/material";
 
@@ -158,33 +158,59 @@ const renderIconsByType = (item: { type: string }, iconColor: string) => {
 }
 
 
-const AiServicesToSwitch = ({ chatSessionId, tabSessionId }: { chatSessionId: string; tabSessionId: string }) => {
+export const AiServicesToSwitch = ({ chatSessionId, tabSessionId }: { chatSessionId: string; tabSessionId: string }) => {
   const { currentSelectedModal, aiServiceAndModalOptions, defaultModal } = useCustomSelector((state: $ReduxCoreType) => {
     const selectedAiServiceAndModal = state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.selectedAiServiceAndModal || {};
     const modalConfig = state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.modalConfig || {};
-    const availableAiServicesToSwitch = state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.availableAiServicesToSwitch || [];
+    const serviceModels = state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.serviceModels || {};
+    const modelVisibilityConfig = state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.modelVisibilityConfig || {};
+    const adminDefaultAiServiceAndModal = state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.adminDefaultAiServiceAndModal || {};
+    const configuredAiServicesToSwitch = state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.availableAiServicesToSwitch || [];
+    const availableAiServicesToSwitch = configuredAiServicesToSwitch.length > 0
+      ? configuredAiServicesToSwitch
+      : Object.keys(serviceModels);
     const { defaultSelected = {}, aiServices = [] } = modalConfig;
+    const typesForService = (service: string, configuredModals: string[] = []): Record<string, { id: string; label: string }[]> => {
+      let rawTypes: Record<string, string[]> = {};
+      if (serviceModels[service] && typeof serviceModels[service] === 'object' && Object.keys(serviceModels[service]).length > 0) {
+        rawTypes = serviceModels[service];
+      } else {
+        const fallbackModals = Array.from(new Set([
+          ...(Array.isArray(configuredModals) ? configuredModals : []),
+          ...(Array.isArray((DEFAULT_AI_SERVICE_MODALS as Record<string, string[]>)[service]) ? (DEFAULT_AI_SERVICE_MODALS as Record<string, string[]>)[service] : [])
+        ]));
+        if (fallbackModals.length > 0) rawTypes = { chat: fallbackModals };
+      }
+
+      const visibilityForService = modelVisibilityConfig[service] || {};
+      const result: Record<string, { id: string; label: string }[]> = {};
+      Object.entries(rawTypes).forEach(([modelType, modelNames]) => {
+        const visibleModels = modelNames
+          .filter((modelName) => !visibilityForService[modelName]?.hide)
+          .map((modelName) => ({ id: modelName, label: visibilityForService[modelName]?.value || modelName }));
+        if (visibleModels.length > 0) result[modelType] = visibleModels;
+      });
+      return result;
+    };
 
     const filteredUserRequestedOptions = aiServices.filter((item: any) =>
       availableAiServicesToSwitch.includes(item.service)
     ).map((item: any) => ({
-      ...item,
-      modals: Array.from(new Set([
-        ...(Array.isArray(item.modals) ? item.modals : []),
-        ...(Array.isArray(DEFAULT_AI_SERVICE_MODALS[item.service]) ? DEFAULT_AI_SERVICE_MODALS[item.service] : [])
-      ]))
+      service: item.service,
+      types: typesForService(item.service, item.modals)
     }));
 
-    const aiServiceAndModalOptions = filteredUserRequestedOptions.length > 0
+    const aiServiceAndModalOptions = (filteredUserRequestedOptions.length > 0
       ? filteredUserRequestedOptions
       : availableAiServicesToSwitch.map((service) => ({
         service,
-        modals: DEFAULT_AI_SERVICE_MODALS[service] || []
-      }));
+        types: typesForService(service)
+      }))
+    ).filter((item) => Object.keys(item.types).length > 0);
 
     const isValidSelection = (selection: SelectedAiServicesType) =>
       selection.service && selection.modal && aiServiceAndModalOptions.some((item) =>
-        item.service === selection.service && item.modals.includes(selection.modal)
+        item.service === selection.service && (Object.values(item.types) as { id: string; label: string }[][]).some((models) => models.some((m) => m.id === selection.modal))
       );
 
     const currentSelectedModal = isValidSelection(selectedAiServiceAndModal)
@@ -192,49 +218,123 @@ const AiServicesToSwitch = ({ chatSessionId, tabSessionId }: { chatSessionId: st
       : { service: "", modal: "" };
 
     const defaultModal = isValidSelection(defaultSelected)
-      ? defaultSelected : null
+      ? defaultSelected
+      : isValidSelection(adminDefaultAiServiceAndModal as SelectedAiServicesType)
+        ? adminDefaultAiServiceAndModal
+        : null
 
     return { currentSelectedModal, aiServiceAndModalOptions, defaultModal };
   });
 
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const firstAvailableModal = useMemo(() => {
+    const firstService = aiServiceAndModalOptions?.[0];
+    const firstType = firstService && Object.keys(firstService.types)[0];
+    const firstModel = firstType && firstService.types[firstType]?.[0];
+    return firstService && firstModel ? { service: firstService.service, modal: firstModel.id } : null;
+  }, [aiServiceAndModalOptions]);
+
+  const currentSelectedModalLabel = useMemo(() => {
+    for (const item of aiServiceAndModalOptions || []) {
+      if (item.service !== currentSelectedModal.service) continue;
+      for (const models of Object.values(item.types) as { id: string; label: string }[][]) {
+        const match = models.find((m) => m.id === currentSelectedModal.modal);
+        if (match) return match.label;
+      }
+    }
+    return currentSelectedModal.modal;
+  }, [aiServiceAndModalOptions, currentSelectedModal]);
 
   useEffect(() => {
     const shouldSetDefaultModal = defaultModal && (!currentSelectedModal?.modal || !currentSelectedModal?.service);
-    const shouldSetFirstAvailableOption = !defaultModal && (!currentSelectedModal?.modal || !currentSelectedModal?.service) && aiServiceAndModalOptions?.[0]?.service && aiServiceAndModalOptions?.[0]?.modals?.[0];
+    const shouldSetFirstAvailableOption = !defaultModal && (!currentSelectedModal?.modal || !currentSelectedModal?.service) && firstAvailableModal;
 
     if (shouldSetDefaultModal) {
       dispatch(setSelectedAIServiceAndModal(defaultModal));
     } else if (shouldSetFirstAvailableOption) {
-      const firstOption = aiServiceAndModalOptions[0];
-      dispatch(setSelectedAIServiceAndModal({ service: firstOption.service, modal: firstOption.modals[0] }));
+      dispatch(setSelectedAIServiceAndModal(firstAvailableModal));
     }
-  }, [defaultModal, currentSelectedModal, aiServiceAndModalOptions, chatSessionId]);
+  }, [defaultModal, currentSelectedModal, firstAvailableModal, chatSessionId]);
 
-  const handleSelectedModalChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const [service, modal] = event.target.value.split('|');
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  const handleSelect = (service: string, modal: string) => {
     dispatch(setSelectedAIServiceAndModal({ service, modal }));
+    setIsOpen(false);
   };
 
+  const borderColor = theme.palette.mode === 'dark' ? '#2a2a2a' : '#e5e7eb';
+  const panelBg = theme.palette.mode === 'dark' ? theme.palette.background.paper : '#ffffff';
+
+  if (!Array.isArray(aiServiceAndModalOptions) || aiServiceAndModalOptions.length === 0) return null;
+
   return (
-    <label className="form-control w-full max-w-fit">
-      <select
-        value={`${currentSelectedModal.service}|${currentSelectedModal.modal}`}
-        onChange={handleSelectedModalChange}
-        className="select select-sm w-full select-bordered"
+    <div className="relative" ref={menuRef}>
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setIsOpen((v) => !v); }}
+        className="flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-medium transition-colors hover:bg-base-200/60"
+        style={{ borderColor, color: theme.palette.text.primary }}
+        data-testid="ai-service-switch-trigger"
       >
-        <option disabled>Select an AI Service</option>
-        {Array.isArray(aiServiceAndModalOptions) && aiServiceAndModalOptions.map((item, sectionIndex) => (
-          <optgroup label={item.service} key={`group_${sectionIndex}`}>
-            {item.modals.map((modal, optionIndex) => (
-              <option key={`option_${sectionIndex}_${optionIndex}`} value={`${item.service}|${modal}`}>
-                {modal}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
-    </label>
+        <span>{currentSelectedModalLabel || "Select model"}</span>
+        <ChevronDown className={`w-3 h-3 opacity-60 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div
+          className="absolute bottom-full mb-2 left-0 z-50 w-64 max-h-80 overflow-y-auto rounded-xl border shadow-xl"
+          style={{ backgroundColor: panelBg, borderColor }}
+          data-testid="ai-service-switch-menu"
+        >
+          {aiServiceAndModalOptions.map((item, sectionIndex) => (
+            <div key={`group_${sectionIndex}`}>
+              {sectionIndex > 0 && (
+                <div className="my-1 border-t" style={{ borderColor }} />
+              )}
+              <p className="px-3 pt-2 pb-1 text-xs font-semibold" style={{ color: theme.palette.text.primary }}>
+                {item.service}
+              </p>
+              {Object.entries(item.types).map(([modelType, models], typeIndex) => (
+                <div key={`type_${sectionIndex}_${typeIndex}`}>
+                  <p className="px-4 pt-1 pb-0.5 text-[10px] uppercase tracking-widest opacity-50 font-semibold" style={{ color: theme.palette.text.primary }}>
+                    {modelType}
+                  </p>
+                  {(models as { id: string; label: string }[]).map((model, optionIndex: number) => {
+                    const isSelected = currentSelectedModal.service === item.service && currentSelectedModal.modal === model.id;
+                    return (
+                      <button
+                        key={`option_${sectionIndex}_${typeIndex}_${optionIndex}`}
+                        type="button"
+                        onClick={() => handleSelect(item.service, model.id)}
+                        className={`w-full text-left pl-6 pr-3 py-1.5 text-sm transition-colors ${isSelected ? 'bg-base-200/70' : 'hover:bg-base-200/40'}`}
+                        style={{ color: theme.palette.text.primary }}
+                        data-testid={`ai-service-switch-option-${sectionIndex}-${typeIndex}-${optionIndex}`}
+                      >
+                        {model.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -324,7 +424,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
   }
 
   const {
-    allowModalSwitch,
     hideCloseButton,
     chatTitle,
     chatIcon,
@@ -335,7 +434,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
     isMobileSDK,
   } = useCustomSelector((state: $ReduxCoreType) => {
     return ({
-      allowModalSwitch: state.Interface?.[chatSessionId]?.allowModalSwitch || false,
       hideCloseButton: state.appInfo?.[tabSessionId]?.hideCloseButton || false,
       hideFullScreenButton: state.appInfo?.[tabSessionId]?.hideFullScreenButton || false,
       chatTitle: state.Interface?.[chatSessionId]?.chatTitle || "",
@@ -638,8 +736,6 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
               bridges={bridges}
             />
           )}
-
-          {allowModalSwitch && <AiServicesToSwitch chatSessionId={chatSessionId} tabSessionId={tabSessionId} />}
 
           {headerButtons?.map((item, index) => (
             <React.Fragment key={`header-button-${index}`}>

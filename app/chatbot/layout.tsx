@@ -3,6 +3,7 @@ import { ThemeContext } from '@/components/AppWrapper';
 import { ChatbotContext } from '@/components/context';
 import { addUrlDataHoc } from '@/hoc/addUrlDataHoc';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
+import { setDataInInterfaceRedux } from '@/store/interface/interfaceSlice';
 import { GetSessionStorageData } from '@/utils/ChatbotUtility';
 import { useSearchParams } from 'next/navigation';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -59,6 +60,13 @@ function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode,
                 ...(config?.defaultMessage ? { defaultMessage: config.defaultMessage } : {}),
                 ...(config?.mcpConfig ? { mcpConfig: config.mcpConfig } : {})
             }));
+            if (config?.allowModalSwitch !== undefined || config?.models || config?.defaultModel) {
+                dispatch(setDataInInterfaceRedux({
+                    ...(config?.allowModalSwitch !== undefined ? { allowModalSwitch: !!config.allowModalSwitch } : {}),
+                    ...(config?.models ? { modelVisibilityConfig: config.models } : {}),
+                    ...(config?.defaultModel ? { adminDefaultAiServiceAndModal: config.defaultModel } : {})
+                }));
+            }
         }
     }, [chatbot_id, userId, config, chatSessionId]);
 

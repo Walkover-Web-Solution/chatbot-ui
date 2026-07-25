@@ -13,6 +13,7 @@ import { ChevronDown, Loader2, Paperclip, Send, Smile, X } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useChatActions, useSendMessage } from "../Chatbot/hooks/useChatActions";
+import { AiServicesToSwitch } from "./ChatbotHeader";
 import { useComponentOverride } from "./ChatbotDrawerParts/useComponentOverride";
 import { useDynamicMessageStyles } from "@/hooks/useDynamicMessageStyles";
 import EmojiSelector from "./EmojiSelector";
@@ -46,11 +47,12 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   const isLight = isColorLight(theme.palette.primary.main);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { isStream, showModeDropdown, image_model, vision } = useCustomSelector((state) => ({
+  const { isStream, showModeDropdown, image_model, vision, allowModalSwitch } = useCustomSelector((state) => ({
     isStream: state.appInfo?.[tabSessionId]?.isStream === true,
     showModeDropdown: state.appInfo?.[tabSessionId]?.mode === true,
     image_model: state.appInfo?.[tabSessionId]?.image_model,
     vision: state.appInfo?.[tabSessionId]?.vision,
+    allowModalSwitch: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.allowModalSwitch || false,
   }));
 
   const canUploadImages = useMemo(() => image_model === true || image_model === "true" || vision === true || vision === "true", [image_model, vision]);
@@ -464,7 +466,13 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
                 />
               ) : uploadButton}
 
-              {/* 
+              {allowModalSwitch && (
+                <div onClick={(e) => e.stopPropagation()}>
+                  <AiServicesToSwitch chatSessionId={chatSessionId} tabSessionId={tabSessionId} />
+                </div>
+              )}
+
+              {/*
               {!isHelloUser && isStream && showModeDropdown && (
                 <div className="relative" ref={modeMenuRef}>
                   <button

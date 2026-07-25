@@ -1,9 +1,9 @@
 import { ChatContext } from '@/components/Chatbot-Wrapper/ChatbotWrapper';
 import { errorToast } from '@/components/customToast';
 import { MessageContext } from '@/components/Interface-Chatbot/InterfaceChatbot';
-import { getAllThreadsApi, getPreviousMessage, streamDataToAction, sendFeedbackAction, getSubscribeChatbotDetailsApi, sendDataToAction } from '@/config/api';
+import { getAllThreadsApi, getPreviousMessage, streamDataToAction, sendFeedbackAction, getSubscribeChatbotDetailsApi, getServiceModelsApi, sendDataToAction } from '@/config/api';
 import { appendLastAssistantMessageChunk, appendReasoningChunk, appendReviewDelta, appendToolCall, removeMessages, setChatsLoading, setData, setError, setImages, setInitialMessages, setIsFetching, setLoading, setNewMessage, setOptions, setPaginateMessages, setPlanningData, setReviewData, setStarterQuestions, setToggleDrawer, updateLastAssistantMessage, updatePlanningExecutionState, updateSingleMessage, updateToolResult } from '@/store/chat/chatSlice';
-import { setThreads } from '@/store/interface/interfaceSlice';
+import { setThreads, setServiceModels } from '@/store/interface/interfaceSlice';
 import { setSubscribeChatbotDetailsInChatSession } from '@/store/subscribeData/subscribeDataSlice';
 import { setDataInAppInfoReducer } from '@/store/appInfo/appInfoSlice';
 import { useCustomSelector } from '@/utils/deepCheckSelector';
@@ -83,6 +83,30 @@ export const useSubscribeChatbotDetails = () => {
                     supportedServices: response?.supportedServices || [],
                     helloId: response?.helloId || null
                 }));
+                const EXCLUDED_MODEL_TYPES = [/fine[\s_-]?tun/i, /^image/i];
+                const isExcludedType = (modelType: string) => EXCLUDED_MODEL_TYPES.some((pattern) => pattern.test(modelType));
+
+                const supportedServices: string[] = Array.isArray(response?.supportedServices) ? response.supportedServices : [];
+                if (supportedServices.length > 0) {
+                    Promise.all(supportedServices.map(async (service) => {
+                        const serviceConfig = await getServiceModelsApi(service);
+                        const modelTypes: Record<string, string[]> = {};
+                        Object.keys(serviceConfig || {}).forEach((modelType) => {
+                            if (isExcludedType(modelType)) return;
+                            const modelNames = Object.keys(serviceConfig[modelType] || {});
+                            if (modelNames.length > 0) modelTypes[modelType] = modelNames;
+                        });
+                        return { service, modelTypes };
+                    })).then((results) => {
+                        const serviceModels = results.reduce((acc, { service, modelTypes }) => {
+                            if (Object.keys(modelTypes).length > 0) acc[service] = modelTypes;
+                            return acc;
+                        }, {} as Record<string, Record<string, string[]>>);
+                        if (Object.keys(serviceModels).length > 0) {
+                            globalDispatch(setServiceModels(serviceModels));
+                        }
+                    });
+                }
 
                 // Set local storage for Hello Agent Auth (if helloId and uuid are present)
                 const receivedHelloId = response?.helloId;

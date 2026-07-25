@@ -15,6 +15,9 @@ export interface $InterfaceReduxType {
     eventsSubscribedByParent?: string[]
     headerButtons?: HeaderButtonType
     modalConfig?: ModalConfigType
+    serviceModels?: { [service: string]: { [modelType: string]: string[] } }
+    modelVisibilityConfig?: { [service: string]: { [modelName: string]: { hide?: boolean; value?: string } } }
+    adminDefaultAiServiceAndModal?: SelectedAiServicesType
     isLoading?: boolean;
     interfaceData?: InterFaceDataType;
     interfaceContext?: { [bridgeName: string]: any };

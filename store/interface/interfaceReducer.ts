@@ -188,6 +188,20 @@ export const reducers: ValidateSliceCaseReducers<
     state[sessionKey].modalConfig = action.payload;
   },
 
+  setServiceModels(state, action: actionType<{ [service: string]: { [modelType: string]: string[] } }>) {
+    const { chatSessionId, tabSessionId } = action?.urlData || {};
+    if (!chatSessionId || !tabSessionId) return;
+
+    const sessionKey = `${chatSessionId}_${tabSessionId}`;
+    if(!state[sessionKey]){
+      state[sessionKey] = {...initialState};
+    }
+    state[sessionKey].serviceModels = {
+      ...state[sessionKey].serviceModels,
+      ...action.payload
+    };
+  },
+
   setSelectedAIServiceAndModal(state, action: actionType<SelectedAiServicesType>) {
     const { chatSessionId, tabSessionId } = action?.urlData || {};
     if (!chatSessionId || !tabSessionId) return;
@@ -199,14 +213,14 @@ export const reducers: ValidateSliceCaseReducers<
     state[sessionKey].selectedAiServiceAndModal = action.payload;
   },
 
-  setDataInInterfaceRedux(state, action: actionType<any>) {   
+  setDataInInterfaceRedux(state, action: actionType<any>) {
     const { chatSessionId, tabSessionId } = action?.urlData || {};
     if (!chatSessionId || !tabSessionId) return;
-    
+
     const sessionKey = `${chatSessionId}_${tabSessionId}`;
     if(!state[sessionKey]){
       state[sessionKey] = {...initialState};
     }
-    return { ...state, [sessionKey]: { ...state[sessionKey], ...action.payload } };
+    state[sessionKey] = { ...state[sessionKey], ...action.payload };
   }
 };
