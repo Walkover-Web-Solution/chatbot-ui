@@ -393,7 +393,7 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
     setToggleDrawer,
   } = useChatActions();
 
-  const { isToggledrawer, bridgeName: reduxBridgeName, headerButtons, messageIds, lastMessage, isChatbotMinimized } = useCustomSelector((state) => ({
+  const { isToggledrawer, bridgeName: reduxBridgeName, headerButtons, messageIds, lastMessage, isChatbotMinimized, currentSubThreadId } = useCustomSelector((state) => ({
     isToggledrawer: state.Chat?.isToggledrawer,
     bridgeName: state.Chat.bridgeName || [],
     headerButtons: state.Chat?.headerButtons || [],
@@ -402,7 +402,8 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
       const lastMessageId = state.Chat?.messageIds?.[currentChannelId]?.[0]
       return state.Chat?.msgIdAndDataMap?.[currentChannelId]?.[lastMessageId]
     })(),
-    isChatbotMinimized: state.draftData?.isChatbotMinimized || false
+    isChatbotMinimized: state.draftData?.isChatbotMinimized || false,
+    currentSubThreadId: state.appInfo?.[tabSessionId]?.subThreadId || state.Chat?.subThreadId,
   }))
 
   const { chatbotConfig } = useContext<any>(ChatbotContext);
@@ -452,7 +453,13 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
   // Handler for creating a new thread
   const handleCreateNewSubThread = async () => {
     if (preview) return;
+    // Reuse the unused empty "New Chat" instead of creating another / no-op
     if (subThreadList?.[0]?.newChat) {
+      const emptySubThreadId = subThreadList[0].sub_thread_id;
+      if (currentSubThreadId !== emptySubThreadId) {
+        dispatch(setDataInAppInfoReducer({ subThreadId: emptySubThreadId }));
+        setOptions([]);
+      }
       return;
     }
 
@@ -463,16 +470,14 @@ const ChatbotHeader: React.FC<ChatbotHeaderProps> = ({ preview = false, chatSess
       newChat: true
     }
 
-    if (!subThreadList?.[0]?.newChat) {
-      dispatch(
-        setThreads({
-          newThreadData,
-          bridgeName: reduxBridgeName,
-          threadId: threadId,
-        })
-      );
-      setOptions([]);
-    }
+    dispatch(
+      setThreads({
+        newThreadData,
+        bridgeName: reduxBridgeName,
+        threadId: threadId,
+      })
+    );
+    setOptions([]);
   };
 
   // Handle fullscreen toggle

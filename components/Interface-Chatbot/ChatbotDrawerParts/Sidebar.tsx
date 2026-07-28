@@ -73,9 +73,27 @@ const SidebarDefault = ({
     }
   };
 
+  const handleChangeSubThread = (sub_thread_id: string) => {
+    setLoading(false);
+    dispatch(setDataInAppInfoReducer({ subThreadId: sub_thread_id }));
+    setNewMessage(true);
+    setOptions([]);
+    focusTextField();
+    if (isSmallScreen) setToggleDrawer(false);
+  };
+
   const handleCreateNewSubThread = () => {
     if (preview) return;
-    if (subThreadList?.[0]?.newChat) return;
+    // Reuse the unused empty "New Chat" instead of creating another / no-op
+    if (subThreadList?.[0]?.newChat) {
+      const emptySubThreadId = subThreadList[0].sub_thread_id;
+      if (subThreadId !== emptySubThreadId) {
+        handleChangeSubThread(emptySubThreadId);
+      } else {
+        focusTextField();
+      }
+      return;
+    }
     const newThreadData = {
       sub_thread_id: createRandomId(),
       thread_id: threadId,
@@ -84,15 +102,6 @@ const SidebarDefault = ({
     };
     dispatch(setThreads({ newThreadData, bridgeName, threadId } as any));
     setOptions([]);
-  };
-
-  const handleChangeSubThread = (sub_thread_id: string) => {
-    setLoading(false);
-    dispatch(setDataInAppInfoReducer({ subThreadId: sub_thread_id }));
-    setNewMessage(true);
-    setOptions([]);
-    focusTextField();
-    if (isSmallScreen) setToggleDrawer(false);
   };
 
   const closeToggleDrawer = (isOpen: boolean) => setToggleDrawer(isOpen);
