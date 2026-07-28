@@ -287,11 +287,11 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
       <div className="flex flex-wrap gap-3 my-4 px-4">
         {images.map((image, index) => (
           <div key={index} className="relative group">
-            <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden shadow-md transition-transform hover:scale-105">
+            <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden shadow-md bg-base-200 transition-transform hover:scale-105">
               <ImageWithFallback
                 src={image}
                 alt={`Uploaded Preview ${index + 1}`}
-                style={{ width: 128, height: 128 }}
+                style={{ width: "100%", height: "100%" }}
                 canDownload={false}
                 preview={true}
               />

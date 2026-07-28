@@ -9,6 +9,7 @@ type ImageWithFallbackProps = {
   permanentUrl?: string;
   alt?: string;
   style?: React.CSSProperties;
+  className?: string;
   canDownload?: boolean;
   preview?: boolean;
 };
@@ -82,6 +83,7 @@ const ImageWithFallback = ({
   permanentUrl,
   alt = "attachment",
   style,
+  className = "",
   canDownload = true,
   preview = false
 }: ImageWithFallbackProps) => {
@@ -135,11 +137,20 @@ const ImageWithFallback = ({
     }, "*");
   }, [currentSrc]);
 
-  // Memoized container classes
-  const containerClasses = useMemo(() =>
-    `flex relative group ${isSmallScreen ? 'max-w-[80%]' : 'max-w-[40%]'} h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity`,
-    [isSmallScreen]
-  );
+  // Preview thumbs fill their parent; message images keep natural aspect with a larger cap
+  const containerClasses = useMemo(() => {
+    if (preview) {
+      return "flex relative group w-full h-full rounded-md overflow-hidden";
+    }
+    return `flex relative group ${isSmallScreen ? "max-w-[85%]" : "max-w-[70%]"} h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity`;
+  }, [isSmallScreen, preview]);
+
+  const imageClasses = useMemo(() => {
+    if (preview) {
+      return `w-full h-full object-contain ${className}`.trim();
+    }
+    return `max-w-full h-auto max-h-[480px] object-contain rounded-md ${className}`.trim();
+  }, [preview, className]);
 
   const renderContent = useCallback(() => {
     if (error) return <ErrorDisplay />;
@@ -152,6 +163,7 @@ const ImageWithFallback = ({
             alt={alt}
             onError={handleError}
             onClick={handleClick}
+            className={imageClasses}
             style={style}
             data-testid="chatbot-message-image"
           />
@@ -160,13 +172,13 @@ const ImageWithFallback = ({
       case "video":
         return preview ? (
           <div
-            className="max-w-full rounded-md relative"
+            className="max-w-full rounded-md relative w-full h-full"
             style={style}
             onClick={handleClick}
             data-testid="chatbot-message-video-preview"
           >
             <video
-              className="w-full h-full object-cover rounded-md"
+              className="w-full h-full object-contain rounded-md"
               onError={handleError}
             >
               <source src={currentSrc} type={videoType} />
@@ -224,12 +236,13 @@ const ImageWithFallback = ({
             alt={alt}
             onError={handleError}
             onClick={handleClick}
+            className={imageClasses}
             style={style}
             data-testid="chatbot-message-file"
           />
         );
     }
-  }, [error, fileType, currentSrc, alt, style, preview, handleError, handleClick, videoType, audioType]);
+  }, [error, fileType, currentSrc, alt, style, preview, handleError, handleClick, videoType, audioType, imageClasses]);
 
   return (
     <div className={containerClasses} data-testid="chatbot-image-container">

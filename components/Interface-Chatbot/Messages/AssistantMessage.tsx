@@ -200,10 +200,7 @@ const AssistantMessageCard = React.memo(
                                                             src={image?.image_url || image?.permanent_url}
                                                             permanentUrl={image?.permanent_url}
                                                             alt="Loading image, please wait..."
-                                                            width={400}
-                                                            height={400}
-                                                            loading="lazy"
-                                                            className="w-full max-h-[400px] min-h-[100px] rounded-lg object-cover"
+                                                            className="w-full max-h-[400px] rounded-lg object-contain"
                                                         />
                                                         <a
                                                             href={image?.image_url || image?.permanent_url}
