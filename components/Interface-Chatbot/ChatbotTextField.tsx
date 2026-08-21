@@ -84,8 +84,9 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
   })
 
   const buttonDisabled = useMemo(() => {
-    return isPlanExecuting || loading || isUploading || !inputValue.trim();
-  }, [loading, isUploading, inputValue, isPlanExecuting]);
+    return isPlanExecuting || loading || isUploading || (!inputValue.trim() && images.length === 0) ||
+      (images.some((imageUrl) => imageUrl?.toLowerCase()?.includes('.pdf')) && !inputValue.trim());
+  }, [loading, isUploading, inputValue, images, isPlanExecuting]);
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey && !buttonDisabled) {
