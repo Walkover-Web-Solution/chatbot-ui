@@ -140,7 +140,7 @@ function RagComponent() {
         const value = parseInt(target.value);
         if (value > MAX_CHUNK_SIZE) {
             target.value = String(MAX_CHUNK_SIZE);
-            warningToast(`Chunk size cannot exceed ${MAX_CHUNK_SIZE}`, 1000);
+            warningToast(`Chunk size cannot exceed ${MAX_CHUNK_SIZE}`);
         } else if (value < 1 && target.value !== "") {
             target.value = "1";
         }
@@ -151,7 +151,7 @@ function RagComponent() {
         const value = parseInt(target.value);
         if (value > MAX_CHUNK_OVERLAP) {
             target.value = String(MAX_CHUNK_OVERLAP);
-            warningToast(`Chunk overlap cannot exceed ${MAX_CHUNK_OVERLAP}`, 1000);
+            warningToast(`Chunk overlap cannot exceed ${MAX_CHUNK_OVERLAP}`);
         } else if (value < 0 && target.value !== "") {
             target.value = "0";
         }
