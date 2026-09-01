@@ -1,4 +1,5 @@
 import { ThemeContext } from "@/components/AppWrapper";
+import { ChatbotContext } from "@/components/context";
 import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { clearComponentOverride, resetComponentOverrides, setComponentOverride, setComponentOverrideTree } from "@/store/componentOverrides/componentOverridesSlice";
@@ -40,6 +41,7 @@ interface InterfaceData {
 const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
   const dispatch = useDispatch();
   const { handleColorSchemeChange } = useContext(ThemeContext);
+  const { onConfigChange, themeColor: currentThemeColor } = useContext<any>(ChatbotContext);
   const tabSessionId = useCustomSelector((state) => `${state.draftData.chatSessionId}_${state.draftData.tabSessionId}`);
 
   const handleInterfaceData = (event: MessageEvent) => {
@@ -82,6 +84,21 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
       );
     } else if (receivedData.variables) {
       dispatch(addDefaultContext({ variables: { ...receivedData.variables } }));
+    }
+
+    // chatbotTitle/chatbotSubtitle/themeColor live in ChatbotContext's chatbotConfig
+    // (set via onConfigChange in app/chatbot/layout.tsx), not in the appInfo redux slice.
+    const nestedConfig = (receivedData?.config && typeof receivedData.config === 'object') ? receivedData.config as Record<string, any> : undefined;
+    const source = (nestedConfig?.themeColor !== undefined || nestedConfig?.chatbotTitle !== undefined || nestedConfig?.chatbotSubtitle !== undefined)
+      ? nestedConfig
+      : receivedData;
+
+    if (source?.themeColor !== undefined || source?.chatbotTitle !== undefined || source?.chatbotSubtitle !== undefined) {
+      onConfigChange({
+        themeColor: source.themeColor ?? currentThemeColor,
+        ...(source.chatbotTitle !== undefined ? { chatbotTitle: source.chatbotTitle } : {}),
+        ...(source.chatbotSubtitle !== undefined ? { chatbotSubtitle: source.chatbotSubtitle } : {}),
+      });
     }
 
     // Process gtwy model change
