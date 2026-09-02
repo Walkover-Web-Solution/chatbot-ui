@@ -11,7 +11,10 @@ import { formatErrorMessage } from "@/utils/errorFormatter";
 // import DriveIcon from "@/assests/DriveIcon";
 import { CircleX, Loader2, Settings, Upload, X } from "lucide-react";
 import * as React from "react";
-import { successToast, errorToast } from "@/components/customToast";
+import { successToast, errorToast, warningToast } from "@/components/customToast";
+
+const MAX_CHUNK_SIZE = 4000;
+const MAX_CHUNK_OVERLAP = 200;
 
 interface KnowledgeBaseType {
     _id: string;
@@ -131,6 +134,28 @@ function RagComponent() {
         setShowQuerySettings(false);
         formRef.current?.reset();
     }, []);
+
+    const handleChunkSizeInput = (e: React.SyntheticEvent<HTMLInputElement>) => {
+        const target = e.currentTarget;
+        const value = parseInt(target.value);
+        if (value > MAX_CHUNK_SIZE) {
+            target.value = String(MAX_CHUNK_SIZE);
+            warningToast(`Chunk size cannot exceed ${MAX_CHUNK_SIZE}`);
+        } else if (value < 1 && target.value !== "") {
+            target.value = "1";
+        }
+    };
+
+    const handleChunkOverlapInput = (e: React.SyntheticEvent<HTMLInputElement>) => {
+        const target = e.currentTarget;
+        const value = parseInt(target.value);
+        if (value > MAX_CHUNK_OVERLAP) {
+            target.value = String(MAX_CHUNK_OVERLAP);
+            warningToast(`Chunk overlap cannot exceed ${MAX_CHUNK_OVERLAP}`);
+        } else if (value < 0 && target.value !== "") {
+            target.value = "0";
+        }
+    };
 
     const handleDeleteKnowledgeBase = React.useCallback(async (id: string) => {
         try {
@@ -271,10 +296,10 @@ function RagComponent() {
 
             settings.strategy = chunkingType || configuration?.chunkingType || "recursive";
             if (formData?.get("chunk_size") || configuration?.chunkSize) {
-                settings.chunkSize = Number(formData?.get("chunk_size")) || Number(configuration?.chunkSize);
+                settings.chunkSize = Math.min(Number(formData?.get("chunk_size")) || Number(configuration?.chunkSize), MAX_CHUNK_SIZE);
             }
             if ((formData?.get("chunk_overlap") || configuration?.chunkOverlap) && (chunkingType === 'semantic' || settings.strategy === 'semantic')) {
-                settings.chunkOverlap = Number(formData?.get("chunk_overlap")) || Number(configuration?.chunkOverlap);
+                settings.chunkOverlap = Math.min(Number(formData?.get("chunk_overlap")) || Number(configuration?.chunkOverlap), MAX_CHUNK_OVERLAP);
             }
 
             if (inputType === 'file' && !editingKnowledgeBase) {
@@ -765,8 +790,10 @@ function RagComponent() {
                                             name="chunk_size"
                                             type="number"
                                             className={getInputClassName()}
-                                            defaultValue={configuration?.chunkSize || 4000}
+                                            defaultValue={configuration?.chunkSize ? Math.min(configuration.chunkSize, MAX_CHUNK_SIZE) : MAX_CHUNK_SIZE}
                                             min="1"
+                                            max={MAX_CHUNK_SIZE}
+                                            onInput={handleChunkSizeInput}
                                             disabled={isLoading}
                                         />
                                     </div>
@@ -780,8 +807,10 @@ function RagComponent() {
                                                 name="chunk_overlap"
                                                 type="number"
                                                 className={getInputClassName()}
-                                                defaultValue={configuration?.chunkOverlap || 200}
+                                                defaultValue={configuration?.chunkOverlap ? Math.min(configuration.chunkOverlap, MAX_CHUNK_OVERLAP) : MAX_CHUNK_OVERLAP}
                                                 min="0"
+                                                max={MAX_CHUNK_OVERLAP}
+                                                onInput={handleChunkOverlapInput}
                                                 disabled={isLoading}
                                             />
                                         </div>
