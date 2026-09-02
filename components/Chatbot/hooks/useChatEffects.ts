@@ -1,6 +1,9 @@
 import { errorToast } from "@/components/customToast";
+import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
+import { setInitialMessages, setStarterQuestions } from "@/store/chat/chatSlice";
 import { useAppDispatch } from "@/store/useTypedHooks";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
+import { DEMO_STARTER_QUESTIONS } from "@/utils/demoChatbotData";
 import { useCallback, useEffect } from "react";
 import { useFetchAllThreads, useGetInitialChatHistory, useSendMessage, useSubscribeChatbotDetails } from "./useChatActions";
 
@@ -10,7 +13,7 @@ export const useChatEffects = ({ chatSessionId, tabSessionId, messageRef, timeou
     const getIntialChatHistory = useGetInitialChatHistory()
     const sendMessage = useSendMessage({ messageRef, timeoutIdRef });
     const subscribeChatbotDetails = useSubscribeChatbotDetails();
-    const { threadId, subThreadId, bridgeName, threadList, versionId, loading, serviceChanged, modelChanged, stream, widget, image_model } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, threadList, versionId, loading, serviceChanged, modelChanged, stream, widget, image_model, isTestChatbot } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
@@ -22,22 +25,35 @@ export const useChatEffects = ({ chatSessionId, tabSessionId, messageRef, timeou
         stream: state.appInfo?.[tabSessionId]?.stream || false,
         widget: state.appInfo?.[tabSessionId]?.widget || false,
         image_model: state.appInfo?.[tabSessionId]?.image_model || false,
+        isTestChatbot: state.appInfo?.[tabSessionId]?.isTestChatbot || false,
     }))
     useEffect(() => {
-        if (bridgeName) {
+        if (bridgeName && !isTestChatbot) {
             subscribeChatbotDetails();
         }
-    }, [bridgeName, chatSessionId, serviceChanged, modelChanged, versionId, stream, widget, image_model, subscribeChatbotDetails])
+    }, [bridgeName, chatSessionId, serviceChanged, modelChanged, versionId, stream, widget, image_model, subscribeChatbotDetails, isTestChatbot])
 
     useEffect(() => {
-        threadId && bridgeName && fetchAllThreads()
-    }, [threadId, bridgeName, chatSessionId]);
+        if (isTestChatbot && !subThreadId) {
+            const demoSubThreadId = `demo-subthread-${chatSessionId}`;
+            globalDispatch(setStarterQuestions(DEMO_STARTER_QUESTIONS));
+            globalDispatch(setDataInAppInfoReducer({
+                threadId: `demo-thread-${chatSessionId}`,
+                subThreadId: demoSubThreadId,
+            }));
+            globalDispatch(setInitialMessages({ subThreadId: demoSubThreadId, messages: [] }));
+        }
+    }, [isTestChatbot, subThreadId, chatSessionId])
 
     useEffect(() => {
-        if (!(threadList?.[0]?.newChat && threadList?.[0]?.subThread_id === subThreadId)) {
+        threadId && bridgeName && !isTestChatbot && fetchAllThreads()
+    }, [threadId, bridgeName, chatSessionId, isTestChatbot]);
+
+    useEffect(() => {
+        if (!isTestChatbot && !(threadList?.[0]?.newChat && threadList?.[0]?.subThread_id === subThreadId)) {
             getIntialChatHistory();
         }
-    }, [threadId, bridgeName, subThreadId]);
+    }, [threadId, bridgeName, subThreadId, isTestChatbot]);
 
     const handleMessage = useCallback(
         (event: MessageEvent) => {

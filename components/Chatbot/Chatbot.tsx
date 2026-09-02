@@ -1,8 +1,9 @@
 import { LinearProgress } from '@mui/material';
 import Image from 'next/image';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useContext, useEffect, useMemo, useRef } from 'react';
 
 // Context and hooks
+import { ChatbotContext } from '@/components/context';
 import { MessageContext } from '../Interface-Chatbot/InterfaceChatbot';
 import { useReduxStateManagement } from './hooks/useReduxManagement';
 import useRtlayerEventManager from './hooks/useRtlayerEventManager';
@@ -97,15 +98,16 @@ function Chatbot({ chatSessionId, tabSessionId }: ChatbotProps) {
   const dispatch = useAppDispatch();
 
   // State management
-  const { isToggledrawer, chatsLoading, messageIds, subThreadId, defaultMessage } = useCustomSelector((state) => {
+  const { isToggledrawer, chatsLoading, messageIds, subThreadId } = useCustomSelector((state) => {
     return ({
       isToggledrawer: state.Chat.isToggledrawer,
       chatsLoading: state.Chat.chatsLoading,
       messageIds: state.Chat.messageIds,
       subThreadId: state.Chat.subThreadId,
-      defaultMessage: state.appInfo?.[tabSessionId]?.defaultMessage
     })
   });
+  const { chatbotConfig } = useContext<any>(ChatbotContext);
+  const defaultMessage = chatbotConfig?.defaultMessage;
 
   // Custom hooks
   useChatEffects({ chatSessionId, tabSessionId, messageRef, timeoutIdRef });

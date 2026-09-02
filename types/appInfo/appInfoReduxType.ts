@@ -23,11 +23,11 @@ export interface $AppInfoReduxType {
         vision?: boolean | string, //whether to set the vision flag true or false
         supportedServices?: string[], //list of supported services
         mode: boolean, //whether to show Fast/Planning mode dropdown and send mode in sendMessage api
-        defaultMessage?: string, //default/first message shown in empty state
         mcpConfig?: Array<{
             name: string;
             url: string;
         }>; //MCP servers array
         defaultErrorMessage?: string, //user-configurable fallback shown instead of the original error
+        isTestChatbot?: boolean, //demo/no-token chatbot mode that returns a canned response for any message
     }
 }

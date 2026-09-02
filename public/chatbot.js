@@ -77,7 +77,7 @@
                 'fullScreen', 'hideCloseButton', 'hideIcon', 'parentId', 'config',
                 'headerButtons', 'eventsToSubscribe', 'modalConfig', 'allowModalSwitch',
                 'chatTitle', 'chatIcon', 'hideFullScreenButton', 'defaultOpen', 'theme', 'mode',
-                'defaultMessage', 'mcpConfig', 'defaultErrorMessage'
+                'defaultMessage', 'mcpConfig', 'defaultErrorMessage', 'test_chatbot'
             ];
 
             return attributes.reduce((props, attr) => {
@@ -356,6 +356,11 @@
 
         async fetchChatbotDetails() {
             const script = document.getElementById('chatbot-main-script');
+
+            if (script?.getAttribute('test_chatbot') === 'true') {
+                return this.buildDemoChatbotDetails(script);
+            }
+
             const embedToken = script?.getAttribute('embedToken');
             const interfaceId = script?.getAttribute('interface_id');
 
@@ -377,6 +382,29 @@
                     await new Promise(resolve => setTimeout(resolve, 1000));
                 }
             }
+        }
+
+        buildDemoChatbotDetails(script) {
+            let demoConfig = {};
+            const rawConfig = script?.getAttribute('config');
+            if (rawConfig) {
+                try {
+                    demoConfig = JSON.parse(rawConfig);
+                } catch (e) {
+                    console.error('Error parsing config for demo chatbot:', e);
+                }
+            }
+
+            return {
+                success: true,
+                data: {
+                    chatbot_id: 'demo-chatbot',
+                    userId: 'demo-user',
+                    token: null,
+                    test_chatbot: true,
+                    config: { ...demoConfig, test_chatbot: true }
+                }
+            };
         }
 
         createTokenBasedRequest(embedToken) {
