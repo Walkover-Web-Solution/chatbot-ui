@@ -5,6 +5,7 @@ import { UrlDataType } from "@/types/utility";
 import axios from "@/utils/interceptor";
 import { GetSessionStorageData } from "@/utils/ChatbotUtility";
 import { getLocalStorage } from "@/utils/utilities";
+import { getApiErrorMessage } from "@/utils/errorFormatter";
 import { PAGE_SIZE } from "@/utils/enums";
 import { emitEventToParent } from "@/utils/emitEventsToParent/emitEventsToParent";
 
@@ -191,8 +192,7 @@ export async function streamDataToAction(
 
         if (!response.ok) {
             const errData = await response.json().catch(() => ({}));
-            const errorMessage =
-                errData?.detail?.error || errData?.detail || "Something went wrong!";
+            const errorMessage = getApiErrorMessage(errData);
             emitEventToParent("MESSAGE_RECEIVED_WITH_ERROR", { status: response.status });
             return { success: false, error: errorMessage };
         }
@@ -225,7 +225,7 @@ export async function streamDataToAction(
     } catch (error: any) {
         if (error?.name === "AbortError") return { success: false, error: "aborted" };
         emitEventToParent("MESSAGE_RECEIVED_WITH_ERROR", { message: error?.message });
-        const errorMessage = error?.message || "Streaming failed";
+        const errorMessage = getApiErrorMessage(error);
         return { success: false, error: errorMessage };
     }
 }
@@ -250,9 +250,7 @@ export async function sendDataToAction(data: any): Promise<any> {
         };
         emitEventToParent('MESSAGE_RECEIVED_WITH_ERROR', sanitizedError);
 
-        const errorMessage = error?.response?.data?.detail?.error ||
-            error?.response?.data?.detail ||
-            "Something went wrong!";
+        const errorMessage = getApiErrorMessage(error);
 
         return { success: false, error: errorMessage };
     }
