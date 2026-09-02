@@ -15,14 +15,15 @@ function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode,
     const { themeColor, handleThemeChange, handleColorSchemeChange } = useContext(ThemeContext);
     const dispatch = useDispatch();
     // Use useMemo to parse interfaceDetails once and avoid repeated parsing
-    const { chatbot_id, userId, token, config } = useMemo(() => {
+    const { chatbot_id, userId, token, config, test_chatbot = false } = useMemo(() => {
         const interfaceDetails = search.get("interfaceDetails");
         // Default values if parsing fails or interfaceDetails is not provided
         const defaultValues = {
             chatbot_id: null,
             userId: null,
             token: null,
-            config: null
+            config: null,
+            test_chatbot: false
         };
 
         // Return default values if interfaceDetails is undefined or null
@@ -56,8 +57,8 @@ function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode,
                 chatBotId: chatbot_id,
                 userId: userId,
                 config: config,
+                isTestChatbot: !!test_chatbot,
                 ...(config?.defaultErrorMessage ? { defaultErrorMessage: config.defaultErrorMessage } : {}),
-                ...(config?.defaultMessage ? { defaultMessage: config.defaultMessage } : {}),
                 ...(config?.mcpConfig ? { mcpConfig: config.mcpConfig } : {})
             }));
             if (config?.allowModalSwitch !== undefined || config?.models || config?.defaultModel) {
@@ -68,7 +69,7 @@ function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode,
                 }));
             }
         }
-    }, [chatbot_id, userId, config, chatSessionId]);
+    }, [chatbot_id, userId, config, test_chatbot, chatSessionId]);
 
 
     const onConfigChange = useCallback((config: any) => {
@@ -120,9 +121,10 @@ function ChatbotLayout({ children, chatSessionId }: { children: React.ReactNode,
         themeColor,
         onConfigChange,
         toggleHideCloseButton,
+        isTestChatbot: !!test_chatbot,
         environment,
         hideToolCall: !!(chatbotConfig as any)?.hide_tool,
-    }), [chatbotConfig, chatbot_id, userId, token, themeColor, onConfigChange, toggleHideCloseButton, environment]);
+    }), [chatbotConfig, chatbot_id, userId, token, themeColor, onConfigChange, toggleHideCloseButton, test_chatbot, environment]);
 
     return (
         <ChatbotContext.Provider value={contextValue}>

@@ -6,8 +6,9 @@ export const ChatbotContext = createContext({
     userId: "",
     token: "",
     themeColor: "#000000",
-    onConfigChange: () => { },
+    onConfigChange: (config?: any) => { },
     toggleHideCloseButton: () => { },
+    isTestChatbot: false,
     environment: null,
     hideToolCall: false,
 });

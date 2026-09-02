@@ -9,7 +9,7 @@ import { useDispatch } from "react-redux";
 export const runtime = "edge";
 
 export default function InterfaceEmbed() {
-    const { chatbot_id, userId, token } = useContext(ChatbotContext);
+    const { chatbot_id, userId, token, isTestChatbot } = useContext(ChatbotContext);
     const router = useRouter();
     const [verifiedState, setVerifiedState] = useState(EmbedVerificationStatus.VERIFYING);
     const dispatch = useDispatch();
@@ -53,8 +53,11 @@ export default function InterfaceEmbed() {
             SetSessionStorage("interfaceToken", token);
             SetSessionStorage("interfaceUserId", userId);
             setVerifiedState(EmbedVerificationStatus.VERIFIED);
+        } else if (isTestChatbot) {
+            SetSessionStorage("interfaceUserId", userId);
+            setVerifiedState(EmbedVerificationStatus.VERIFIED);
         }
-    }, [token, userId]);
+    }, [token, userId, isTestChatbot]);
 
     useEffect(() => {
         if (verifiedState === EmbedVerificationStatus.VERIFIED && chatbot_id) {

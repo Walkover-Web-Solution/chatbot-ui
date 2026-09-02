@@ -86,18 +86,17 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
       dispatch(addDefaultContext({ variables: { ...receivedData.variables } }));
     }
 
-    // chatbotTitle/chatbotSubtitle/themeColor live in ChatbotContext's chatbotConfig
-    // (set via onConfigChange in app/chatbot/layout.tsx), not in the appInfo redux slice.
     const nestedConfig = (receivedData?.config && typeof receivedData.config === 'object') ? receivedData.config as Record<string, any> : undefined;
-    const source = (nestedConfig?.themeColor !== undefined || nestedConfig?.chatbotTitle !== undefined || nestedConfig?.chatbotSubtitle !== undefined)
-      ? nestedConfig
-      : receivedData;
+    const hasContextConfigKeys = (obj?: Record<string, any>) =>
+      !!obj && (obj.themeColor !== undefined || obj.chatbotTitle !== undefined || obj.chatbotSubtitle !== undefined || obj.defaultMessage !== undefined);
+    const source: Record<string, any> = hasContextConfigKeys(nestedConfig) ? nestedConfig! : receivedData;
 
-    if (source?.themeColor !== undefined || source?.chatbotTitle !== undefined || source?.chatbotSubtitle !== undefined) {
+    if (hasContextConfigKeys(source)) {
       onConfigChange({
         themeColor: source.themeColor ?? currentThemeColor,
         ...(source.chatbotTitle !== undefined ? { chatbotTitle: source.chatbotTitle } : {}),
         ...(source.chatbotSubtitle !== undefined ? { chatbotSubtitle: source.chatbotSubtitle } : {}),
+        ...(source.defaultMessage !== undefined ? { defaultMessage: source.defaultMessage } : {}),
       });
     }
 
@@ -180,11 +179,6 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
 
     if ('hideFullScreenButton' in receivedData) {
       dispatch(setDataInAppInfoReducer({ hideFullScreenButton: receivedData.hideFullScreenButton }));
-    }
-
-    // Handle defaultMessage
-    if ('defaultMessage' in receivedData) {
-      dispatch(setDataInAppInfoReducer({ defaultMessage: receivedData.defaultMessage }));
     }
 
     // Handle mcpConfig

@@ -13,6 +13,7 @@ import { useDispatch } from 'react-redux';
 import { SendMessagePayloadType } from './chatTypes';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 import { generateNewId } from '@/utils/utilities';
+import { getDemoFollowUpSuggestions, getDemoResponse } from '@/utils/demoChatbotData';
 
 
 export const useChatContext = () => {
@@ -27,33 +28,36 @@ export const useChatContext = () => {
 export const useFetchAllThreads = () => {
     const globalDispatch = useDispatch();
     const { tabSessionId } = useChatContext();
-    const { threadId, bridgeName } = useCustomSelector((state) => ({
+    const { threadId, bridgeName, isTestChatbot } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
+        isTestChatbot: state.appInfo?.[tabSessionId]?.isTestChatbot || false,
     }));
 
     return useCallback(async () => {
+        if (isTestChatbot) return;
         const result = await getAllThreadsApi({ threadId, bridgeName });
         if (result?.success) {
             globalDispatch(
                 setThreads({ bridgeName, threadId, threadList: result?.threads })
             );
         }
-    }, [threadId, bridgeName, globalDispatch]);
+    }, [threadId, bridgeName, globalDispatch, isTestChatbot]);
 };
 
 export const useSubscribeChatbotDetails = () => {
     const globalDispatch = useDispatch();
     const { tabSessionId, chatSessionId } = useChatContext();
-    const { threadId, bridgeName, versionId, helloId } = useCustomSelector((state) => ({
+    const { threadId, bridgeName, versionId, helloId, isTestChatbot } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
         versionId: state.appInfo?.[tabSessionId]?.versionId || null,
         helloId: state.appInfo?.[tabSessionId]?.helloId || null,
+        isTestChatbot: state.appInfo?.[tabSessionId]?.isTestChatbot || false,
     }));
 
     return useCallback(async () => {
-        if (!bridgeName) return;
+        if (!bridgeName || isTestChatbot) return;
         try {
             const response = await getSubscribeChatbotDetailsApi({
                 threadId,
@@ -121,20 +125,21 @@ export const useSubscribeChatbotDetails = () => {
         } catch (error) {
             console.error("Error subscribing chatbot details:", error);
         }
-    }, [threadId, bridgeName, helloId, versionId, globalDispatch, chatSessionId, tabSessionId]);
+    }, [threadId, bridgeName, helloId, versionId, globalDispatch, chatSessionId, tabSessionId, isTestChatbot]);
 };
 
 export const useGetInitialChatHistory = () => {
     const globalDispatch = useDispatch();
     const { tabSessionId } = useChatContext();
-    const { threadId, subThreadId, bridgeName } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, isTestChatbot } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
+        isTestChatbot: state.appInfo?.[tabSessionId]?.isTestChatbot || false,
     }));
 
     return useCallback(async () => {
-        if (threadId && bridgeName) {
+        if (threadId && bridgeName && !isTestChatbot) {
             globalDispatch(setChatsLoading(true));
             try {
                 const { previousChats, starterQuestion } = await getPreviousMessage(
@@ -167,7 +172,7 @@ export const useGetInitialChatHistory = () => {
                 globalDispatch(setChatsLoading(false));
             }
         }
-    }, [threadId, subThreadId, bridgeName, globalDispatch]);
+    }, [threadId, subThreadId, bridgeName, globalDispatch, isTestChatbot]);
 };
 
 export const useGetMoreChats = () => {
@@ -229,7 +234,7 @@ export const useSendMessage = ({
     const messageRef = propMessageRef ?? context.messageRef;
     const timeoutIdRef = propTimeoutIdRef ?? context.timeoutIdRef;
     const { tabSessionId, chatSessionId } = useChatContext();
-    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, latestMessageId, mcpConfig, defaultErrorMessage, stream, image_model } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, latestMessageId, mcpConfig, defaultErrorMessage, stream, image_model, isTestChatbot } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
@@ -243,6 +248,7 @@ export const useSendMessage = ({
         mcpConfig: state.appInfo?.[tabSessionId]?.mcpConfig,
         stream: state.appInfo?.[tabSessionId]?.stream,
         image_model: state.appInfo?.[tabSessionId]?.image_model ?? false,
+        isTestChatbot: state.appInfo?.[tabSessionId]?.isTestChatbot || false,
     }));
 
     const { images } = useCustomSelector((state) => ({
@@ -345,6 +351,34 @@ export const useSendMessage = ({
             ...(Object.keys(configuration).length > 0 ? { configuration } : {})
         };
         emitEventToParent('MESSAGE_SENT', payload.message);
+
+        if (isTestChatbot) {
+            const demoMessageId = `demo-${Date.now()}`;
+            const demoContent = getDemoResponse(textMessage);
+            if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+            globalDispatch(updateLastAssistantMessage({
+                role: "assistant",
+                wait: false,
+                isStreaming: true,
+                content: "",
+                id: demoMessageId,
+            }));
+            setTimeout(() => {
+                globalDispatch(appendLastAssistantMessageChunk({ chunk: demoContent }));
+                globalDispatch(updateLastAssistantMessage({
+                    role: "assistant",
+                    isStreaming: false,
+                    wait: false,
+                    id: demoMessageId,
+                    message_id: demoMessageId,
+                    finish_reason: "stop",
+                }));
+                emitEventToParent('MESSAGE_RECEIVED', { content: demoContent });
+                globalDispatch(setLoading(false));
+                globalDispatch(setOptions(getDemoFollowUpSuggestions(textMessage)));
+            }, 600);
+            return;
+        }
 
         let planningStreamBuffer = "";
         let isPlanningStreamActive = false;
@@ -966,7 +1000,7 @@ export const useSendMessage = ({
         threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal,
         userId, threadList, versionId, images, messageRef, globalDispatch,
         startTimeoutTimer, chatSessionId, timeoutIdRef, latestMessageId,
-        defaultErrorMessage, stream
+        defaultErrorMessage, stream, isTestChatbot
     ]);
 
     sendMessageRef.current = sendMessage;
