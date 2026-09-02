@@ -168,12 +168,16 @@ export const AiServicesToSwitch = ({ chatSessionId, tabSessionId }: { chatSessio
     const configuredAiServicesToSwitch = state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.availableAiServicesToSwitch || [];
     const availableAiServicesToSwitch = configuredAiServicesToSwitch.length > 0
       ? configuredAiServicesToSwitch
-      : Object.keys(serviceModels);
+      : Object.keys(serviceModels).length > 0
+        ? Object.keys(serviceModels)
+        : Object.keys(modelVisibilityConfig);
     const { defaultSelected = {}, aiServices = [] } = modalConfig;
     const typesForService = (service: string, configuredModals: string[] = []): Record<string, { id: string; label: string }[]> => {
       let rawTypes: Record<string, string[]> = {};
       if (serviceModels[service] && typeof serviceModels[service] === 'object' && Object.keys(serviceModels[service]).length > 0) {
         rawTypes = serviceModels[service];
+      } else if (modelVisibilityConfig[service] && Object.keys(modelVisibilityConfig[service]).length > 0) {
+        rawTypes = { chat: Object.keys(modelVisibilityConfig[service]) };
       } else {
         const fallbackModals = Array.from(new Set([
           ...(Array.isArray(configuredModals) ? configuredModals : []),
