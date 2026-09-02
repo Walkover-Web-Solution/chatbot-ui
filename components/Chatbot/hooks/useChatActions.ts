@@ -13,7 +13,7 @@ import { useDispatch } from 'react-redux';
 import { SendMessagePayloadType } from './chatTypes';
 import { emitEventToParent } from '@/utils/emitEventsToParent/emitEventsToParent';
 import { generateNewId } from '@/utils/utilities';
-import { getDemoFollowUpSuggestions, getDemoResponse } from '@/utils/demoChatbotData';
+import { getDemoFollowUpSuggestions, getDemoResponse, isStreamingDemoRequest } from '@/utils/demoChatbotData';
 
 
 export const useChatContext = () => {
@@ -355,6 +355,7 @@ export const useSendMessage = ({
         if (isTestChatbot) {
             const demoMessageId = `demo-${Date.now()}`;
             const demoContent = getDemoResponse(textMessage);
+            const shouldStream = isStreamingDemoRequest(textMessage);
             if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
             globalDispatch(updateLastAssistantMessage({
                 role: "assistant",
@@ -363,8 +364,8 @@ export const useSendMessage = ({
                 content: "",
                 id: demoMessageId,
             }));
-            setTimeout(() => {
-                globalDispatch(appendLastAssistantMessageChunk({ chunk: demoContent }));
+
+            const finishDemoMessage = () => {
                 globalDispatch(updateLastAssistantMessage({
                     role: "assistant",
                     isStreaming: false,
@@ -376,7 +377,28 @@ export const useSendMessage = ({
                 emitEventToParent('MESSAGE_RECEIVED', { content: demoContent });
                 globalDispatch(setLoading(false));
                 globalDispatch(setOptions(getDemoFollowUpSuggestions(textMessage)));
-            }, 600);
+            };
+
+            if (shouldStream) {
+                // Simulate real token-by-token streaming instead of one appended chunk.
+                const tokens = demoContent.split(/(\s+)/);
+                let tokenIndex = 0;
+                const streamNextToken = () => {
+                    if (tokenIndex >= tokens.length) {
+                        finishDemoMessage();
+                        return;
+                    }
+                    globalDispatch(appendLastAssistantMessageChunk({ chunk: tokens[tokenIndex] }));
+                    tokenIndex += 1;
+                    setTimeout(streamNextToken, 12);
+                };
+                setTimeout(streamNextToken, 150);
+            } else {
+                setTimeout(() => {
+                    globalDispatch(appendLastAssistantMessageChunk({ chunk: demoContent }));
+                    finishDemoMessage();
+                }, 600);
+            }
             return;
         }
 
