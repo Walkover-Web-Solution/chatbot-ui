@@ -119,12 +119,9 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
       dispatch(setDataInAppInfoReducer({ widget: receivedData?.widget }))
     }
 
-    //process mode (enables/disables Fast vs Planning dropdown)
-    if (receivedData?.mode !== undefined) {
-      const modeValue = receivedData?.mode;
-      const normalizedMode = modeValue === true || modeValue === "true";
-      dispatch(setDataInAppInfoReducer({ mode: normalizedMode }))
-    }
+    const modeValue = receivedData?.mode;
+    const normalizedMode = modeValue === true || modeValue === "true";
+    dispatch(setDataInAppInfoReducer({ mode: normalizedMode }))
 
     //process allow model switch (enables/disables model switching)
     if(receivedData.allowModalSwitch){
