@@ -16,10 +16,20 @@ function useWebSocketClient() {
     const newClient = WebSocketClient("lyvSfW7uPPolwax0BHMC", "DprvynUwAdFwkE91V5Jj");
     setClient(newClient);
 
-    return () => {
+    const closeConnection = () => {
       if (newClient && typeof newClient.close === 'function') {
         newClient.close();
       }
+    };
+
+    // Close on page/tab close too, not just unmount
+    window.addEventListener('pagehide', closeConnection);
+    window.addEventListener('beforeunload', closeConnection);
+
+    return () => {
+      window.removeEventListener('pagehide', closeConnection);
+      window.removeEventListener('beforeunload', closeConnection);
+      closeConnection();
     };
   }, []);
 
