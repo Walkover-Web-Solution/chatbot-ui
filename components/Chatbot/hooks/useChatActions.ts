@@ -144,12 +144,13 @@ export const useSendMessage = ({
     const messageRef = propMessageRef ?? context.messageRef;
     const timeoutIdRef = propTimeoutIdRef ?? context.timeoutIdRef;
     const { tabSessionId, chatSessionId } = useChatContext();
-    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, helloMode, latestMessageId, mcpConfig, defaultErrorMessage } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, environment, helloMode, latestMessageId, mcpConfig, defaultErrorMessage } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
         defaultErrorMessage: state.appInfo?.[tabSessionId]?.defaultErrorMessage,
         versionId: state.appInfo?.[tabSessionId]?.versionId || "null",
+        environment: state.appInfo?.[tabSessionId]?.environment,
         variables: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.interfaceContext?.[state?.appInfo?.[tabSessionId]?.bridgeName]?.variables,
         selectedAiServiceAndModal: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.selectedAiServiceAndModal || null,
         userId: state.appInfo?.[tabSessionId]?.userId || null,
@@ -247,6 +248,7 @@ export const useSendMessage = ({
             thread_flag: ((threadList?.length === 1 && threadList?.[0]?.thread_id === threadList?.[0]?.sub_thread_id && threadList?.[0]?.display_name === threadList?.[0]?.thread_id) || (threadList?.[0]?.newChat && threadList?.[0]?.sub_thread_id === subThreadId)) ? true : false,
             chatBotId: chatSessionId,
             version_id: versionId === "null" ? null : versionId,
+            ...(environment ? { environment } : {}),
             ...(action ? { action } : {}),
             ...(mode ? { mode } : {}),
             ...(silent ? { silent } : {}),
@@ -851,7 +853,7 @@ export const useSendMessage = ({
         }
     }, [
         threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal,
-        userId, threadList, versionId, images, messageRef, globalDispatch,
+        userId, threadList, versionId, environment, images, messageRef, globalDispatch,
         startTimeoutTimer, chatSessionId, helloMode, timeoutIdRef, latestMessageId,
         defaultErrorMessage
     ]);
