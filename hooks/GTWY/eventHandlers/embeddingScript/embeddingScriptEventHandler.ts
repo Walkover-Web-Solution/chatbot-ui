@@ -13,6 +13,7 @@ interface InterfaceData {
   bridgeName?: string | null;
   helloId?: string | null;
   versionId?: string | null;
+  environment?: string | null;
   headerButtons?: Array<any>;
   eventsToSubscribe?: Array<string>;
   modalConfig?: Record<string, any>;
@@ -67,6 +68,12 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
 
     if (receivedData.version_id === 'null' || receivedData.version_id) {
       dispatch(setDataInAppInfoReducer({ versionId: receivedData.version_id }))
+    }
+
+    // Environment label (e.g. "production"/"staging") resolved server-side against
+    // settings.environment_config to a version_id, so embeds don't need to hardcode one.
+    if ('environment' in receivedData) {
+      dispatch(setDataInAppInfoReducer({ environment: receivedData.environment }))
     }
 
     // Process bridge data
