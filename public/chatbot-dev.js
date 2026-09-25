@@ -596,6 +596,11 @@
             if (data.askAi) {
                 sendMessageToChatbot({ type: 'askAi', data: data || {} });
             }
+
+            // Handle setInput specifically - fills the chatbot text field without sending
+            if ('setInput' in data) {
+                sendMessageToChatbot({ type: 'setInput', data: data || {} });
+            }
         }
 
         // Handle config updates
@@ -634,6 +639,9 @@
         askAi: (data) => {
             sendMessageToChatbot({ type: 'askAi', data: data || "" });
         },
+        setInput: (data) => {
+            sendMessageToChatbot({ type: 'setInput', data: data || "" });
+        },
         sendData: (data) => {
             window.SendDataToChatbot(data);
         }
@@ -652,6 +660,10 @@
 
     window.askAi = (data) => {
         sendMessageToChatbot({ type: 'askAi', data: data || "" });
+    };
+
+    window.setInput = (data) => {
+        sendMessageToChatbot({ type: 'setInput', data: data || "" });
     };
 
     chatbotManager.initializeChatbot();
