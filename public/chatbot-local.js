@@ -50,7 +50,7 @@
             chatBotIcon.appendChild(imgElement);
 
             const textElement = document.createElement('span');
-            textElement.id = 'popup-interfaceEmbed-text';
+            textElement.id = 'popup-interfaceEmbed-text'; 
             chatBotIcon.appendChild(textElement);
 
             return { chatBotIcon, imgElement, textElement };
