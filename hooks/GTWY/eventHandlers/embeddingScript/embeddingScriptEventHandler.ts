@@ -36,6 +36,7 @@ interface InterfaceData {
     url?: string;
     headers?: Record<string, string>;
   }>;
+  mcpAuth?: Record<string, string | Record<string, string>>;
   config?: Record<string, { path: string[]; code: string }> | { tree: Record<string, any> };
 }
 
@@ -185,6 +186,11 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
     // Handle mcpConfig
     if ('mcpConfig' in receivedData) {
       dispatch(setDataInAppInfoReducer({ mcpConfig: receivedData.mcpConfig }));
+    }
+
+    // Per-user MCP auth, e.g. SendDataToChatbot({ mcpAuth: { my_mcp: "<token>" } })
+    if ('mcpAuth' in receivedData) {
+      dispatch(setDataInAppInfoReducer({ mcpAuth: receivedData.mcpAuth }));
     }
 
     // Allow parent to set a default error message via SendDataToChatbot({ defaultErrorMessage: "..." })

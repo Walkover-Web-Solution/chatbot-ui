@@ -234,7 +234,7 @@ export const useSendMessage = ({
     const messageRef = propMessageRef ?? context.messageRef;
     const timeoutIdRef = propTimeoutIdRef ?? context.timeoutIdRef;
     const { tabSessionId, chatSessionId } = useChatContext();
-    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, latestMessageId, mcpConfig, defaultErrorMessage, stream, image_model, isTestChatbot } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, latestMessageId, mcpConfig, mcpAuth, defaultErrorMessage, stream, image_model, isTestChatbot } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
@@ -246,6 +246,7 @@ export const useSendMessage = ({
         threadList: state.Interface?.[`${chatSessionId}_${tabSessionId}`]?.interfaceContext?.[state.appInfo?.[tabSessionId]?.bridgeName]?.threadList?.[state.appInfo?.[tabSessionId]?.threadId],
         latestMessageId: state.Chat?.messageIds?.[state.appInfo?.[tabSessionId]?.subThreadId]?.[0],
         mcpConfig: state.appInfo?.[tabSessionId]?.mcpConfig,
+        mcpAuth: state.appInfo?.[tabSessionId]?.mcpAuth,
         stream: state.appInfo?.[tabSessionId]?.stream,
         image_model: state.appInfo?.[tabSessionId]?.image_model ?? false,
         isTestChatbot: state.appInfo?.[tabSessionId]?.isTestChatbot || false,
@@ -348,7 +349,8 @@ export const useSendMessage = ({
             ...(mode ? { mode } : {}),
             ...(action === "respond" && task_id ? { task_id } : {}),
             ...(service ? { service } : {}),
-            ...(Object.keys(configuration).length > 0 ? { configuration } : {})
+            ...(Object.keys(configuration).length > 0 ? { configuration } : {}),
+            ...(mcpAuth && Object.keys(mcpAuth).length > 0 ? { mcp_auth: mcpAuth } : {})
         };
         emitEventToParent('MESSAGE_SENT', payload.message);
 
@@ -1022,7 +1024,7 @@ export const useSendMessage = ({
         threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal,
         userId, threadList, versionId, images, messageRef, globalDispatch,
         startTimeoutTimer, chatSessionId, timeoutIdRef, latestMessageId,
-        defaultErrorMessage, stream, isTestChatbot
+        defaultErrorMessage, stream, isTestChatbot, mcpConfig, mcpAuth
     ]);
 
     sendMessageRef.current = sendMessage;
