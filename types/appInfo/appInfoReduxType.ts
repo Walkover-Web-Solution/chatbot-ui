@@ -26,7 +26,7 @@ export interface $AppInfoReduxType {
         mcpConfig?: Array<{
             name: string;
             url?: string; // omit to only add auth to the agent's saved server of the same name
-            headers?: Record<string, string>; // e.g. { Authorization: "Bearer <token>" }; values may use {{variable}}
+            headers?: Record<string, string>; // one header, e.g. { Authorization: "Bearer <token>" }
         }>; //MCP servers array
         mcpAuth?: Record<string, string | Record<string, string>>; //MCP server name -> token or headers, sent as mcp_auth
         defaultErrorMessage?: string, //user-configurable fallback shown instead of the original error
