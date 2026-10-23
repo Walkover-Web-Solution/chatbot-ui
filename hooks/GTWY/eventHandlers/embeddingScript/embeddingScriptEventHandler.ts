@@ -33,7 +33,8 @@ interface InterfaceData {
   defaultMessage?: string;
   mcpConfig?: Array<{
     name: string;
-    url: string;
+    url?: string;
+    headers?: Record<string, string>;
   }>;
   config?: Record<string, { path: string[]; code: string }> | { tree: Record<string, any> };
 }
