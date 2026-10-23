@@ -10,6 +10,39 @@ import { useContext, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
 
+type McpAuth = Record<string, string | Record<string, string>>;
+
+// Accepts mcpAuth as an object or a JSON string (e.g. from the script attribute,
+// where a pasted token often carries a line break) and trims every token. Returns
+// null when it can't be read, so a malformed value is never sent as mcp_auth.
+const normalizeMcpAuth = (raw: unknown): McpAuth | null => {
+  let value = raw;
+  if (typeof value === 'string') {
+    try {
+      value = JSON.parse(value.replace(/[\r\n]+/g, ''));
+    } catch {
+      console.error('mcpAuth must be an object like { "<mcp name>": "<token>" }; ignoring it');
+      return null;
+    }
+  }
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+
+  const result: McpAuth = {};
+  for (const [server, auth] of Object.entries(value as Record<string, unknown>)) {
+    if (typeof auth === 'string' && auth.trim()) {
+      result[server] = auth.trim();
+    } else if (auth && typeof auth === 'object' && !Array.isArray(auth)) {
+      const headers = Object.fromEntries(
+        Object.entries(auth as Record<string, unknown>)
+          .filter(([, headerValue]) => typeof headerValue === 'string' && headerValue.trim())
+          .map(([name, headerValue]) => [name.trim(), (headerValue as string).trim()])
+      );
+      if (Object.keys(headers).length) result[server] = headers;
+    }
+  }
+  return result;
+};
+
 interface InterfaceData {
   threadId?: string | null;
   bridgeName?: string | null;
@@ -36,7 +69,7 @@ interface InterfaceData {
     url?: string;
     headers?: Record<string, string>;
   }>;
-  mcpAuth?: Record<string, string | Record<string, string>>;
+  mcpAuth?: McpAuth | string;
   config?: Record<string, { path: string[]; code: string }> | { tree: Record<string, any> };
 }
 
@@ -190,7 +223,7 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
 
     // Per-user MCP auth, e.g. SendDataToChatbot({ mcpAuth: { my_mcp: "<token>" } })
     if ('mcpAuth' in receivedData) {
-      dispatch(setDataInAppInfoReducer({ mcpAuth: receivedData.mcpAuth }));
+      dispatch(setDataInAppInfoReducer({ mcpAuth: normalizeMcpAuth(receivedData.mcpAuth) ?? undefined }));
     }
 
     // Allow parent to set a default error message via SendDataToChatbot({ defaultErrorMessage: "..." })

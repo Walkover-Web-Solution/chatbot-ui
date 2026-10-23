@@ -350,7 +350,7 @@ export const useSendMessage = ({
             ...(action === "respond" && task_id ? { task_id } : {}),
             ...(service ? { service } : {}),
             ...(Object.keys(configuration).length > 0 ? { configuration } : {}),
-            ...(mcpAuth && Object.keys(mcpAuth).length > 0 ? { mcp_auth: mcpAuth } : {})
+            ...(mcpAuth && typeof mcpAuth === 'object' && Object.keys(mcpAuth).length > 0 ? { mcp_auth: mcpAuth } : {})
         };
         emitEventToParent('MESSAGE_SENT', payload.message);
 
