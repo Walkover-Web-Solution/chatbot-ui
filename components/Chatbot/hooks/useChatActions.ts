@@ -639,6 +639,8 @@ export const useSendMessage = ({
                             // Not JSON, use error message as-is
                         }
 
+                        errorToast(errorMessage);
+
                         if (typeof defaultErrorMessage === "string" && defaultErrorMessage.trim()) {
                             displayContent = defaultErrorMessage;
                         }
@@ -836,6 +838,7 @@ export const useSendMessage = ({
         if (!response?.success && response?.error !== "aborted") {
             globalDispatch(setLoading(false));
             const rawErr = response?.error || "Failed to send message. Please try again.";
+            errorToast(rawErr);
             if (typeof defaultErrorMessage === "string" && defaultErrorMessage.trim()) {
                 globalDispatch(updateLastAssistantMessage({
                     role: "assistant",

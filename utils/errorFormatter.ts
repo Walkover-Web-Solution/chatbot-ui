@@ -46,3 +46,54 @@ export const formatErrorMessage = (errorData: any): string => {
 
     return String(errorData);
 };
+
+/**
+ * Extracts a human-readable error message from an API error/response object.
+ *
+ * Priority order:
+ *   1. `error.response.data.detail.error` (e.g. `"Agent has been deleted"`;
+ *      `API_KEY_LIMIT_EXCEEDED` is formatted with `current_usage`/`limit_value`)
+ *   2. `error.response.data.detail` (if string)
+ *   3. `error.response.data.error` (string or object)
+ *   4. `error.response.data.message` / `error.message`
+ *   5. Fallback `"Something went wrong."`
+ *
+ * Also accepts a plain response body object (e.g. `{ detail: { success: false, error: "..." } }`)
+ * so it works both with thrown axios errors and already-parsed error payloads.
+ */
+export const getApiErrorMessage = (error: any): string => {
+    if (typeof error === "string" && error.trim()) return error;
+    if (!error) return "Something went wrong.";
+
+    const responseData = error?.response?.data;
+    const source = responseData ?? error;
+    const detail = source?.detail;
+
+    if (typeof detail === "string" && detail.trim()) return detail;
+
+    if (detail?.error) {
+        if (typeof detail.error === "string") {
+            const rawError = detail.error;
+            const normalized = rawError.toUpperCase();
+            if (
+                normalized.includes("API_KEY_LIMIT_EXCEEDED") ||
+                normalized.includes("APIKEY_LIMIT_EXCEEDED")
+            ) {
+                const { current_usage, limit_value } = detail;
+                if (current_usage !== undefined && limit_value !== undefined) {
+                    return `API key limit exceeded. Current usage: ${current_usage}, Limit: ${limit_value}`;
+                }
+                return "API key limit exceeded.";
+            }
+            return rawError;
+        }
+        return formatErrorMessage(detail.error);
+    }
+
+    if (typeof source?.error === "string") return source.error;
+    if (source?.error) return formatErrorMessage(source.error);
+    if (source?.message) return String(source.message);
+    if (error?.message) return String(error.message);
+
+    return "Something went wrong.";
+};

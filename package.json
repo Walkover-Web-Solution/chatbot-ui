@@ -23,6 +23,7 @@
     "dayjs": "^1.11.13",
     "frimousse": "^0.3.0",
     "linkify-html": "^4.2.0",
+    "linkifyjs": "^4.3.3",
     "lodash.debounce": "^4.0.8",
     "lodash.isplainobject": "^4.0.6",
     "lucide-react": "^0.474.0",
