@@ -25,8 +25,10 @@ export interface $AppInfoReduxType {
         mode: boolean, //whether to show Fast/Planning mode dropdown and send mode in sendMessage api
         mcpConfig?: Array<{
             name: string;
-            url: string;
+            url?: string; // omit to only add auth to the agent's saved server of the same name
+            headers?: Record<string, string>; // one header, e.g. { Authorization: "Bearer <token>" }; value may use {{variable}}
         }>; //MCP servers array
+        mcpAuth?: Record<string, string | Record<string, string>>; //MCP server name -> token or headers, sent as mcp_auth
         defaultErrorMessage?: string, //user-configurable fallback shown instead of the original error
         isTestChatbot?: boolean, //demo/no-token chatbot mode that returns a canned response for any message
     }
