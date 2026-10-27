@@ -78,14 +78,14 @@
                 'fullScreen', 'hideCloseButton', 'hideIcon', 'parentId', 'config',
                 'headerButtons', 'eventsToSubscribe', 'modalConfig', 'allowModalSwitch',
                 'chatTitle', 'chatIcon', 'hideFullScreenButton', 'defaultOpen', 'theme', 'mode',
-                'defaultMessage', 'mcpConfig', 'defaultErrorMessage'
+                'defaultMessage', 'mcpConfig', 'mcpAuth', 'defaultErrorMessage'
             ];
 
             return attributes.reduce((props, attr) => {
                 if (interfaceScript.hasAttribute(attr)) {
                     let value = interfaceScript.getAttribute(attr);
 
-                    if (['config', 'headerButtons', 'eventsToSubscribe', 'modalConfig', 'variables', 'mcpConfig'].includes(attr)) {
+                    if (['config', 'headerButtons', 'eventsToSubscribe', 'modalConfig', 'variables', 'mcpConfig', 'mcpAuth'].includes(attr)) {
                         try {
                             value = JSON.parse(value);
                         } catch (e) {
