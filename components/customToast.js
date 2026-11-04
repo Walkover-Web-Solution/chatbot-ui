@@ -20,7 +20,7 @@ function SlideTransition(props) {
   return <Slide {...props} direction="right" />;
 }
 
-export function showSnackbar(alert) {
+export function showSnackbar(alert, duration = 3000) {
   if (isRendering[`${alert.severity}${alert.message}`]) return;
   isRendering[`${alert.severity}${alert.message}`] = true;
   const alertContainer = createAlertContainer();
@@ -62,21 +62,21 @@ export function showSnackbar(alert) {
   id++;
   setTimeout(() => {
     closeAlert();
-  }, 3000);
+  }, duration);
 }
 
-export function successToast(message) {
-  showSnackbar({ severity: "success", message });
+export function successToast(message, duration) {
+  showSnackbar({ severity: "success", message }, duration);
 }
 
-export function errorToast(message) {
-  showSnackbar({ severity: "error", message });
+export function errorToast(message, duration) {
+  showSnackbar({ severity: "error", message }, duration);
 }
 
-export function warningToast(message) {
-  showSnackbar({ severity: "warning", message });
+export function warningToast(message, duration) {
+  showSnackbar({ severity: "warning", message }, duration);
 }
 
-export function infoToast(message) {
-  showSnackbar({ severity: "info", message });
+export function infoToast(message, duration) {
+  showSnackbar({ severity: "info", message }, duration);
 }
