@@ -1,7 +1,7 @@
 ---
-covers: ["store/**", "utils/ChatbotUtility.ts", "utils/utilities.js", "utils/embedNamespace.ts", "utils/deepCheckSelector.ts", "components/context.tsx", "components/AppWrapper.tsx"]
-verified_at: c7ace0c
-verified_on: 2026-10-20
+covers: ["store/**", "utils/ChatbotUtility.ts", "utils/utilities.js", "utils/embedNamespace.ts", "utils/deepCheckSelector.ts", "utils/experiments.ts", "components/context.tsx", "components/AppWrapper.tsx"]
+verified_at: 6e746ba
+verified_on: 2026-11-04
 ---
 # State
 
@@ -54,6 +54,7 @@ sessionStorage keys go through `utils/ChatbotUtility.ts` (`SetSessionStorage`, `
 | `persist:appInfo` <!-- verify:ignore --> | session | redux-persist | redux-persist | `appInfo` slice |
 | `persist:root` <!-- verify:ignore --> | local | redux-persist | redux-persist | `Interface`, `componentOverrides`, `subscribeData` |
 | `HelloAgentAuth` | local | `components/Chatbot/hooks/useChatActions.ts` | `config/api.ts` | `<helloId>:<uuid>` from the subscribe response |
+| `mw_visitor` | local (not scoped) | `utils/experiments.ts` | `utils/experiments.ts` | Stable browser id for A/B assignment. Shared by same-origin embeds. A 401 `localStorage.clear()` removes it |
 
 Legacy keys that are read but never written in this repo: `helloConfig`, `widgetToken` (session) and `k_clientId`, `a_clientId` (local, only in the unused `hooks/coBrowser/CBManger.ts`).
 

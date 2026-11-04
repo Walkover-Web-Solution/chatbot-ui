@@ -1,7 +1,7 @@
 ---
 covers: ["app/layout.tsx", "app/page.tsx", "app/error.tsx", "app/error/**", "app/globals.css", "app/chatbot/**", "components/AppWrapper.tsx", "components/Chatbot-Wrapper/**", "components/context.tsx", "hoc/**", "store/index.js", "store/combineReducer.js", "store/rootSaga.ts", "store/useTypedHooks.ts", "store/appInfo/**", "store/draftData/**", "store/subscribeData/**", "store/interface/**", "utils/*.ts", "utils/*.js", "utils/*.tsx", "types/**", "hooks/*.ts", "hooks/*.js", "next.config.ts"]
-verified_at: c7ace0c
-verified_on: 2026-10-20
+verified_at: 6e746ba
+verified_on: 2026-11-04
 ---
 # App shell
 
@@ -36,6 +36,7 @@ The Next.js 15 App Router shell that the host page's iframe loads. It holds the 
 | `utils/enums.ts` | `EmbedVerificationStatus`, `ParamsEnums` (field names for `addUrlDataHoc`), `ALLOWED_EVENTS_TO_SUBSCRIBE`, `DEFAULT_AI_SERVICE_MODALS`, `PAGE_SIZE`, `createRandomId`, KB section enums. |
 | `utils/templateEngine.ts` | Double-brace path interpolation (e.g. `item[0].id` inside double braces): `resolvePath`, `interpolate`, `resolveNode`, `resolveAction` (used by richUI components, see [rich-ui-renderer](rich-ui-renderer.md)). |
 | `utils/utility.ts` | `parseNestedJson`: recursively parses double-serialised JSON strings (used by the code block renderer). |
+| `utils/experiments.ts` | `mwVariant` and `mwSend`: local A/B assignment and fire-and-forget event appends. No page calls them yet. |
 | `utils/themeUtility.js` | `isColorLight` (canvas-based, browser only). |
 | `utils/appUtility.js`, `utils/router-utility.tsx` | `supportsLookbehind` (used by markdown renderers); `CustomSuspense` and `lazyWithPreload` are unused. |
 | `hooks/useDynamicMessageStyles.ts` | Listens for `UPDATE_MESSAGE_STYLES` window messages and defines `window.updateMessageStyles` at module load. |
@@ -137,6 +138,25 @@ New tabs announce their id on the `BroadcastChannel` named `tab_session_sync` wi
 
 The streaming send in `config/api.ts:streamDataToAction` uses `fetch`, not this instance, so none of the above applies to it.
 
+### Experiments
+
+`utils/experiments.ts` is the shared helper for middleware A/B tests. Nothing imports it yet, so no page looks or behaves differently. A page opts in by importing it:
+
+```ts
+import { mwSend, mwVariant } from "@/utils/experiments";
+
+// During render. Use the returned key immediately; do not wait and do not call mwSend here.
+const variant = mwVariant("hero-cta", [["control", 50], ["b", 50]]);
+
+// When that variant is shown (an event or a one-shot effect, not the render path):
+mwSend({ event: "exposure", experiment: "hero-cta", variant });
+
+// When the user reaches the goal:
+mwSend({ event: "conversion", experiment: "hero-cta", variant, goal: "signup" });
+```
+
+`mwVariant` hashes the experiment name with the `mw_visitor` localStorage id and returns a key synchronously. It does not fetch. On the server, or on any error, it returns the first variant (the control), so a server render does not share one visitor id across users. A client render of the same call can therefore differ from the server HTML; keep variant-dependent markup in a client-only tree (the chat screens render after client boot). `mwSend` returns nothing: it tries `navigator.sendBeacon` and otherwise `fetch` with a 3 second timeout, and it does not await, retry, or read the response. After one failure it stops for the rest of the page load. If `NEXT_PUBLIC_MW_EVENTS_URL` or `NEXT_PUBLIC_MW_KEY` is unset, it sends nothing. Call `mwSend` from the moment the variant is shown or from the user's action, not from the render path, and do not put it ahead of that action. The weights must match the experiment defined on the middleware, in the same order. See [environment](../environment.md#variables).
+
 ## Contracts
 
 `draftData` (not persisted, never synced):
@@ -202,7 +222,7 @@ Storage keys: see [ui/state](../ui/state.md). All sessionStorage keys and cookie
 > `ChatbotHeader` reads `chatTitle`, `chatSubTitle`, `chatIcon` and `allowBridgeSwitch` from `state.Interface[chatSessionId]` (plain id), but `setDataInInterfaceRedux` writes them under the `<chatbotId>_<chatbotId>_<rawTabId>` key. At c7ace0c nothing writes the plain key, so these four `interfaceData` props look like they have no effect on the header. Check in a browser before relying on them, and fix the read or write side, not both.
 
 > [!WARNING]
-> A 401 from any axios call runs `localStorage.clear()` for the whole iframe origin. That wipes `persist:root` <!-- verify:ignore --> and the localStorage of every other embed and tab on the same origin. Other same-origin documents receive a `storage` event with `key === null`, reset `draftData` and `appInfo`, and emit `RELOAD_PARENT` (`hooks/CORE/eventHandlers/localStorage/localStorageEventsHandler.ts`).
+> A 401 from any axios call runs `localStorage.clear()` for the whole iframe origin. That wipes `persist:root` <!-- verify:ignore --> and the localStorage of every other embed and tab on the same origin, including `mw_visitor` (`utils/experiments.ts`). The handler then navigates to `/error`, so the next page load assigns a new visitor. Other same-origin documents receive a `storage` event with `key === null`, reset `draftData` and `appInfo`, and emit `RELOAD_PARENT` (`hooks/CORE/eventHandlers/localStorage/localStorageEventsHandler.ts`).
 
 > [!WARNING]
 > The 401 handler calls `removeCookie(getCurrentEnvironment())`, and `getCurrentEnvironment` returns `process.env.REACT_APP_API_ENVIRONMENT`. Next.js only inlines `NEXT_PUBLIC_*` vars into client code, so this is `undefined` in the browser and the cookie removal targets a cookie named `undefined`.

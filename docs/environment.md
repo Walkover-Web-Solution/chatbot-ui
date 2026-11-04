@@ -1,11 +1,11 @@
 ---
-covers: ["package.json", "next.config.ts", "config/api.ts", "config/ragApi.ts", "utils/utilities.js", "public/chatbot*.js", "public/rag-*.js", ".gitignore"]
-verified_at: c7ace0c
-verified_on: 2026-10-20
+covers: ["package.json", "next.config.ts", "config/api.ts", "config/ragApi.ts", "utils/utilities.js", "utils/experiments.ts", "public/chatbot*.js", "public/rag-*.js", ".gitignore"]
+verified_at: 6e746ba
+verified_on: 2026-11-04
 ---
 # Environment
 
-The app is a Next.js 15 (App Router) client app, deployed to Cloudflare Pages through `@cloudflare/next-on-pages`. Two env vars matter. Both are `NEXT_PUBLIC_*`, so Next inlines them into the browser bundle at build time. The loader scripts in `public/` read no env vars: each copy hard-codes its hosts (see [Loader copies](#loader-copies-and-their-hard-coded-hosts)). The routes and calls these settings feed are in [api](api.md).
+The app is a Next.js 15 (App Router) client app, deployed to Cloudflare Pages through `@cloudflare/next-on-pages`. Two env vars are required for the chat APIs, and two more are optional for A/B experiments. All four are `NEXT_PUBLIC_*`, so Next inlines them into the browser bundle at build time. The loader scripts in `public/` read no env vars: each copy hard-codes its hosts (see [Loader copies](#loader-copies-and-their-hard-coded-hosts)). The routes and calls these settings feed are in [api](api.md). There is no committed env example file (`.gitignore` ignores every `.env*`).
 
 ## Run it locally
 
@@ -15,6 +15,9 @@ The app is a Next.js 15 (App Router) client app, deployed to Cloudflare Pages th
    ```sh
    NEXT_PUBLIC_API_BASE_URL=<GTWY Node backend origin, no trailing slash>
    NEXT_PUBLIC_PYTHON_API_BASE_URL=<GTWY Python backend origin, no trailing slash>
+   # Optional. Both must be set or experiments stay on the control and send nothing.
+   # NEXT_PUBLIC_MW_EVENTS_URL=
+   # NEXT_PUBLIC_MW_KEY=
    ```
 
    Every call is built as `${URL}/api/...`, so a trailing slash produces `//api/...`. For local work, point both at the **dev** backends: `public/chatbot-local.js` logs in against the dev backend (see [Must match](#must-match-other-services)).
@@ -78,6 +81,8 @@ Other `next.config.ts` settings:
 | `NEXT_PUBLIC_API_BASE_URL` | yes | none | `config/api.ts` (`URL`), `config/ragApi.ts` (`URL`) | GTWY Node backend origin: history, threads, subscribe, service models, feedback, RAG resources. **Reaches the browser.** If missing, every URL starts with "undefined/" and resolves relative to the iframe page, so all those calls 404 and the chat shows no history or agent settings |
 | `NEXT_PUBLIC_PYTHON_API_BASE_URL` | yes | none | `config/api.ts` (`PYTHON_URL`) | GTWY Python backend origin: send message (SSE and non-stream) and file upload. **Reaches the browser.** If missing, no message can be sent |
 | `REACT_APP_API_ENVIRONMENT` | no | none | `utils/utilities.js:getCurrentEnvironment` | Used only as the cookie name that the 401 handler in `utils/interceptor.ts` removes. It is not `NEXT_PUBLIC_*`, so it is `undefined` in the browser and the handler removes a cookie named "undefined". Dead |
+| `NEXT_PUBLIC_MW_EVENTS_URL` | no | none | `utils/experiments.ts` (`MW_EVENTS`) | Public name for `MW_EVENTS_URL`: where `mwSend` appends exposure and conversion events. **Reaches the browser.** If this or the key is missing, `mwVariant` still returns a local variant and `mwSend` sends nothing |
+| `NEXT_PUBLIC_MW_KEY` | no | none | `utils/experiments.ts` (`MW_KEY`) | Public name for `MW_KEY`: publishable key that can only append events. **Reaches the browser.** Same effect if missing. Set both in the hosting environment (and in `.env.local` to try it). Never commit the values |
 | `NODE_ENV` | no | set by Next | `next.config.ts` (commented-out code only) | No effect |
 | `NODE_OPTIONS` | dev only | `--max-http-header-size=131072` | `package.json` `dev` script | Raises Node's HTTP header limit for the dev server. Not an app variable |
 
