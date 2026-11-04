@@ -1,7 +1,7 @@
 ---
-covers: ["app/layout.tsx", "app/chatbot/**", "components/AppWrapper.tsx", "components/Chatbot-Wrapper/**", "components/Chatbot/Chatbot.tsx", "store/index.js", "store/combineReducer.js", "next.config.ts", "package.json"]
+covers: ["app/layout.tsx", "app/chatbot/**", "components/AppWrapper.tsx", "components/Chatbot-Wrapper/**", "components/Chatbot/Chatbot.tsx", "store/index.js", "store/combineReducer.js", "next.config.ts", "package.json", "utils/experiments.ts"]
 verified_at: c7ace0c
-verified_on: 2026-10-20
+verified_on: 2026-11-04
 ---
 # Architecture
 
@@ -68,6 +68,7 @@ Full trace: [ai-message](flows/ai-message.md).
 | GTWY Python API (`NEXT_PUBLIC_PYTHON_API_BASE_URL`) | Sending messages (SSE or plain), image and file upload | `config/api.ts` | [ai-message](flows/ai-message.md) |
 | rtlayer (`rtlayer-client`) | Non-stream replies, thread renames, suggestions | `components/Chatbot/hooks/useRtlayerEventManager.tsx` | [ai-chat](modules/ai-chat.md#receiving-over-rtlayer-usertlayereventmanager) |
 | Tailwind Play CDN | Runtime CSS for classes in host-supplied component overrides | `app/layout.tsx` | [design-system](ui/design-system.md) |
+| Experiment middleware (`NEXT_PUBLIC_MW_EVENTS_URL`) | Optional exposure and conversion events. Sent only when a page calls `mwSend`; nothing calls it yet | `utils/experiments.ts` | [app-shell](modules/app-shell.md#experiments), [environment](environment.md#variables) |
 | Cloudflare Images | Launcher icons | `public/chatbot.js` | [embed-scripts](modules/embed-scripts.md) |
 | React Native WebView | Mobile-SDK hosts receive loader events | `public/chatbot.js` | [embed-scripts](modules/embed-scripts.md) |
 
