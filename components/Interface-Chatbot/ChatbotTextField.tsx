@@ -133,6 +133,18 @@ const ChatbotTextField: React.FC<ChatbotTextFieldProps> = ({ className, chatSess
     if (event?.data?.type === "open") {
       messageRef?.current?.focus();
     }
+    if (event?.data?.type === "setInput") {
+      const data = event?.data?.data;
+      // window.setInput("hello") sends a string; window.SendDataToChatbot({ setInput: "hello" }) sends an object
+      const value = typeof data === "string" ? data : (data?.setInput ?? data?.message ?? "");
+      const text = typeof value === "string" ? value : String(value ?? "");
+      if (messageRef?.current) {
+        messageRef.current.value = text;
+        messageRef.current.focus();
+        messageRef.current.setSelectionRange?.(text.length, text.length);
+      }
+      setInputValue(text);
+    }
   }, [messageRef]);
 
   useEffect(() => {

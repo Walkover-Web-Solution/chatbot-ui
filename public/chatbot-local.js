@@ -50,7 +50,7 @@
             chatBotIcon.appendChild(imgElement);
 
             const textElement = document.createElement('span');
-            textElement.id = 'popup-interfaceEmbed-text';
+            textElement.id = 'popup-interfaceEmbed-text'; 
             chatBotIcon.appendChild(textElement);
 
             return { chatBotIcon, imgElement, textElement };
@@ -78,14 +78,14 @@
                 'fullScreen', 'hideCloseButton', 'hideIcon', 'parentId', 'config',
                 'headerButtons', 'eventsToSubscribe', 'modalConfig', 'allowModalSwitch',
                 'chatTitle', 'chatIcon', 'hideFullScreenButton', 'defaultOpen', 'theme', 'mode',
-                'defaultMessage', 'mcpConfig', 'defaultErrorMessage'
+                'defaultMessage', 'mcpConfig', 'mcpAuth', 'defaultErrorMessage'
             ];
 
             return attributes.reduce((props, attr) => {
                 if (interfaceScript.hasAttribute(attr)) {
                     let value = interfaceScript.getAttribute(attr);
 
-                    if (['config', 'headerButtons', 'eventsToSubscribe', 'modalConfig', 'variables', 'mcpConfig'].includes(attr)) {
+                    if (['config', 'headerButtons', 'eventsToSubscribe', 'modalConfig', 'variables', 'mcpConfig', 'mcpAuth'].includes(attr)) {
                         try {
                             value = JSON.parse(value);
                         } catch (e) {
@@ -596,6 +596,11 @@
             if (data.askAi) {
                 sendMessageToChatbot({ type: 'askAi', data: data || {} });
             }
+
+            // Handle setInput specifically - fills the chatbot text field without sending
+            if ('setInput' in data) {
+                sendMessageToChatbot({ type: 'setInput', data: data || {} });
+            }
         }
 
         // Handle config updates
@@ -634,6 +639,9 @@
         askAi: (data) => {
             sendMessageToChatbot({ type: 'askAi', data: data || "" });
         },
+        setInput: (data) => {
+            sendMessageToChatbot({ type: 'setInput', data: data || "" });
+        },
         sendData: (data) => {
             window.SendDataToChatbot(data);
         }
@@ -652,6 +660,10 @@
 
     window.askAi = (data) => {
         sendMessageToChatbot({ type: 'askAi', data: data || "" });
+    };
+
+    window.setInput = (data) => {
+        sendMessageToChatbot({ type: 'setInput', data: data || "" });
     };
 
     chatbotManager.initializeChatbot();

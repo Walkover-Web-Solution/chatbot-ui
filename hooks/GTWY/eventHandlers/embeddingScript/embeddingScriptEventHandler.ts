@@ -1,4 +1,5 @@
 import { ThemeContext } from "@/components/AppWrapper";
+import { ChatbotContext } from "@/components/context";
 import { EmbeddingScriptEventRegistryInstance } from "@/hooks/CORE/eventHandlers/embeddingScript/embeddingScriptEventHandler";
 import { setDataInAppInfoReducer } from "@/store/appInfo/appInfoSlice";
 import { addDefaultContext, setDataInInterfaceRedux, setEventsSubsribedByParent, setHeaderActionButtons, setModalConfig } from "@/store/interface/interfaceSlice";
@@ -7,6 +8,39 @@ import { RemoveSessionStorage, SetSessionStorage } from "@/utils/ChatbotUtility"
 import { useContext, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useCustomSelector } from "@/utils/deepCheckSelector";
+
+type McpAuth = Record<string, string | Record<string, string>>;
+
+// Accepts mcpAuth as an object or a JSON string (e.g. from the script attribute,
+// where a pasted token often carries a line break) and trims every token. Returns
+// null when it can't be read, so a malformed value is never sent as mcp_auth.
+const normalizeMcpAuth = (raw: unknown): McpAuth | null => {
+  let value = raw;
+  if (typeof value === 'string') {
+    try {
+      value = JSON.parse(value.replace(/[\r\n]+/g, ''));
+    } catch {
+      console.error('mcpAuth must be an object like { "<mcp name>": "<token>" }; ignoring it');
+      return null;
+    }
+  }
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+
+  const result: McpAuth = {};
+  for (const [server, auth] of Object.entries(value as Record<string, unknown>)) {
+    if (typeof auth === 'string' && auth.trim()) {
+      result[server] = auth.trim();
+    } else if (auth && typeof auth === 'object' && !Array.isArray(auth)) {
+      const headers = Object.fromEntries(
+        Object.entries(auth as Record<string, unknown>)
+          .filter(([, headerValue]) => typeof headerValue === 'string' && headerValue.trim())
+          .map(([name, headerValue]) => [name.trim(), (headerValue as string).trim()])
+      );
+      if (Object.keys(headers).length) result[server] = headers;
+    }
+  }
+  return result;
+};
 
 interface InterfaceData {
   threadId?: string | null;
@@ -32,13 +66,16 @@ interface InterfaceData {
   defaultMessage?: string;
   mcpConfig?: Array<{
     name: string;
-    url: string;
+    url?: string;
+    headers?: Record<string, string>;
   }>;
+  mcpAuth?: McpAuth | string;
 }
 
 const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRegistryInstance) => {
   const dispatch = useDispatch();
   const { handleColorSchemeChange } = useContext(ThemeContext);
+  const { onConfigChange, themeColor: currentThemeColor } = useContext<any>(ChatbotContext);
   const tabSessionId = useCustomSelector((state) => `${state.draftData.chatSessionId}_${state.draftData.tabSessionId}`);
 
   const handleInterfaceData = (event: MessageEvent) => {
@@ -87,6 +124,21 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
       );
     } else if (receivedData.variables) {
       dispatch(addDefaultContext({ variables: { ...receivedData.variables } }));
+    }
+
+    // chatbotTitle/chatbotSubtitle/themeColor live in ChatbotContext's chatbotConfig
+    // (set via onConfigChange in app/chatbot/layout.tsx), not in the appInfo redux slice.
+    const nestedConfig = (receivedData?.config && typeof receivedData.config === 'object') ? receivedData.config as Record<string, any> : undefined;
+    const source = (nestedConfig?.themeColor !== undefined || nestedConfig?.chatbotTitle !== undefined || nestedConfig?.chatbotSubtitle !== undefined)
+      ? nestedConfig
+      : receivedData;
+
+    if (source?.themeColor !== undefined || source?.chatbotTitle !== undefined || source?.chatbotSubtitle !== undefined) {
+      onConfigChange({
+        themeColor: source.themeColor ?? currentThemeColor,
+        ...(source.chatbotTitle !== undefined ? { chatbotTitle: source.chatbotTitle } : {}),
+        ...(source.chatbotSubtitle !== undefined ? { chatbotSubtitle: source.chatbotSubtitle } : {}),
+      });
     }
 
     // Process gtwy model change
@@ -170,6 +222,11 @@ const useHandleGtwyEmbeddingScriptEvents = (eventHandler: EmbeddingScriptEventRe
     // Handle mcpConfig
     if ('mcpConfig' in receivedData) {
       dispatch(setDataInAppInfoReducer({ mcpConfig: receivedData.mcpConfig }));
+    }
+
+    // Per-user MCP auth, e.g. SendDataToChatbot({ mcpAuth: { my_mcp: "<token>" } })
+    if ('mcpAuth' in receivedData) {
+      dispatch(setDataInAppInfoReducer({ mcpAuth: normalizeMcpAuth(receivedData.mcpAuth) ?? undefined }));
     }
 
     // Allow parent to set a default error message via SendDataToChatbot({ defaultErrorMessage: "..." })

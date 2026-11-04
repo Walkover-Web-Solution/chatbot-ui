@@ -144,7 +144,7 @@ export const useSendMessage = ({
     const messageRef = propMessageRef ?? context.messageRef;
     const timeoutIdRef = propTimeoutIdRef ?? context.timeoutIdRef;
     const { tabSessionId, chatSessionId } = useChatContext();
-    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, environment, helloMode, latestMessageId, mcpConfig, defaultErrorMessage } = useCustomSelector((state) => ({
+    const { threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal, userId, threadList, versionId, environment, helloMode, latestMessageId, mcpConfig, mcpAuth, defaultErrorMessage } = useCustomSelector((state) => ({
         threadId: state.appInfo?.[tabSessionId]?.threadId,
         subThreadId: state.appInfo?.[tabSessionId]?.subThreadId,
         bridgeName: state.appInfo?.[tabSessionId]?.bridgeName,
@@ -158,6 +158,7 @@ export const useSendMessage = ({
         helloMode: state.Hello?.[chatSessionId]?.mode || [],
         latestMessageId: state.Chat?.messageIds?.[state.appInfo?.[tabSessionId]?.subThreadId]?.[0],
         mcpConfig: state.appInfo?.[tabSessionId]?.mcpConfig,
+        mcpAuth: state.appInfo?.[tabSessionId]?.mcpAuth,
     }));
 
     const { images } = useCustomSelector((state) => ({
@@ -255,6 +256,7 @@ export const useSendMessage = ({
             ...(action === "respond" && task_id ? { task_id } : {}),
             ...(service ? { service } : {}),
             ...(Object.keys(configuration).length > 0 ? { configuration } : {}),
+            ...(mcpAuth && typeof mcpAuth === 'object' && Object.keys(mcpAuth).length > 0 ? { mcp_auth: mcpAuth } : {})
         };
         emitEventToParent('MESSAGE_SENT', payload.message);
 
@@ -855,7 +857,7 @@ export const useSendMessage = ({
         threadId, subThreadId, bridgeName, variables, selectedAiServiceAndModal,
         userId, threadList, versionId, environment, images, messageRef, globalDispatch,
         startTimeoutTimer, chatSessionId, helloMode, timeoutIdRef, latestMessageId,
-        defaultErrorMessage
+        defaultErrorMessage, mcpConfig, mcpAuth
     ]);
 
     sendMessageRef.current = sendMessage;
