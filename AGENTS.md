@@ -15,6 +15,7 @@ This repo is the GTWY AI chatbot that customers embed on their sites. `public/ch
 
 ## Read before you change
 
+- Any request, before you start → [docs/VISION.md](docs/VISION.md) (open product questions: [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md))
 - Anything → [docs/architecture.md](docs/architecture.md)
 - Loader scripts, `window.*` API, postMessage → [docs/modules/embed-scripts.md](docs/modules/embed-scripts.md), [docs/api.md](docs/api.md)
 - Boot, routes, store, session keys, theme → [docs/modules/app-shell.md](docs/modules/app-shell.md), [docs/flows/widget-boot.md](docs/flows/widget-boot.md)

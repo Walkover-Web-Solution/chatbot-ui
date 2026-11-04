@@ -14,6 +14,8 @@ These docs are written for AI coding agents and new engineers. Every claim was c
 | [conventions.md](conventions.md) | Where new code goes, layer rules, errors, approved libraries, checks before you finish |
 | [recipes.md](recipes.md) | Making a common change: loader feature, host config key, richUI node, override target, stream chunk type, API call |
 | [glossary.md](glossary.md) | Terms that mislead: bridge, thread vs sub-thread, `interfaceDetails` vs `interfaceData`, the stream flags |
+| [VISION.md](VISION.md) | Before starting any request: product direction, audience, principles and non-goals that every request is checked against |
+| [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) | Product questions only an owner can answer |
 
 ## Modules
 
