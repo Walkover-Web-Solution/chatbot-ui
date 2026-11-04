@@ -1,6 +1,6 @@
 ---
 covers: ["package.json", "next.config.ts", "config/api.ts", "config/ragApi.ts", "utils/utilities.js", "utils/experiments.ts", "public/chatbot*.js", "public/rag-*.js", ".gitignore"]
-verified_at: c7ace0c
+verified_at: 6e746ba
 verified_on: 2026-11-04
 ---
 # Environment

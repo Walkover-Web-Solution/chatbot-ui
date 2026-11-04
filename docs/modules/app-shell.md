@@ -1,6 +1,6 @@
 ---
 covers: ["app/layout.tsx", "app/page.tsx", "app/error.tsx", "app/error/**", "app/globals.css", "app/chatbot/**", "components/AppWrapper.tsx", "components/Chatbot-Wrapper/**", "components/context.tsx", "hoc/**", "store/index.js", "store/combineReducer.js", "store/rootSaga.ts", "store/useTypedHooks.ts", "store/appInfo/**", "store/draftData/**", "store/subscribeData/**", "store/interface/**", "utils/*.ts", "utils/*.js", "utils/*.tsx", "types/**", "hooks/*.ts", "hooks/*.js", "next.config.ts"]
-verified_at: c7ace0c
+verified_at: 6e746ba
 verified_on: 2026-11-04
 ---
 # App shell

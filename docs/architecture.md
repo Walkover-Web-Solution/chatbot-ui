@@ -1,6 +1,6 @@
 ---
 covers: ["app/layout.tsx", "app/chatbot/**", "components/AppWrapper.tsx", "components/Chatbot-Wrapper/**", "components/Chatbot/Chatbot.tsx", "store/index.js", "store/combineReducer.js", "next.config.ts", "package.json", "utils/experiments.ts"]
-verified_at: c7ace0c
+verified_at: 6e746ba
 verified_on: 2026-11-04
 ---
 # Architecture

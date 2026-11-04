@@ -1,6 +1,6 @@
 ---
 covers: ["store/**", "utils/ChatbotUtility.ts", "utils/utilities.js", "utils/embedNamespace.ts", "utils/deepCheckSelector.ts", "utils/experiments.ts", "components/context.tsx", "components/AppWrapper.tsx"]
-verified_at: c7ace0c
+verified_at: 6e746ba
 verified_on: 2026-11-04
 ---
 # State
